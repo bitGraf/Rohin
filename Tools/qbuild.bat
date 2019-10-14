@@ -1,4 +1,5 @@
 @echo off
+cls
 
 echo ***********************
 echo *** B U I L D I N G ***
@@ -6,8 +7,8 @@ echo ***********************
 echo.
 
 rem BUILD HERE
-pushd ..\Build
-cmake --build . --config Release --target big-disc
+pushd ..\build
+cmake --build . --config Release --target bigDisc
 popd
 rem END BUILDING
 

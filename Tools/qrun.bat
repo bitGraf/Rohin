@@ -7,7 +7,7 @@ echo.
 
 rem BUILD HERE
 pushd ..\bin\Release
-big-disc.exe ..\..\run_tree
+bigDisc.exe ..\..\run_tree
 popd
 rem END BUILDING
 
