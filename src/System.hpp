@@ -5,21 +5,22 @@
 #include <stdlib.h>
 
 #include "types.hpp"
+#include "MessageBus.hpp"
 
 class System {
 public:
-    System(const char* _name);
+    System(const char* _name, MessageBus* _msgBus);
     ~System();
 
-    void handleMessage();
+    void handleMessage(Message* msg);
     void update();
 
-private:
-    //MessageBus *msgBus;
-    // ?  Usage: msgBus->postMessage(msg);
-    uint counter = 0;
-
     char* name;
+
+    uint counter = 0;
+private:
+    MessageBus *msgBus;
+    // ?  Usage: msgBus->postMessage(msg);
     uint nameLength;
 };
 

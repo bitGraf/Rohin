@@ -1,11 +1,13 @@
 #include "System.hpp"
 
-System::System(const char* _name) {
+System::System(const char* _name, MessageBus* _msgBus) {
     nameLength = strlen(_name);
     name = (char*)malloc((nameLength+1)*sizeof(char));
     strcpy(name, _name);
 
-    printf("System [%s] created.\n", name);
+    msgBus = _msgBus;
+    Message msg(MessageType::systemCreation, std::string(name));
+    msgBus->PostMessage(msg);
 }
 
 System::~System() {
@@ -14,11 +16,9 @@ System::~System() {
     nameLength = 0;
 }
 
-void System::handleMessage() {
-    printf("%s::handleMessage()\n", name);
+void System::handleMessage(Message* msg) {
 }
 
 void System::update() {
     counter++;
-    printf("%s::update() #%d\n", name, counter);
 }

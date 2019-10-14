@@ -5,6 +5,9 @@ echo *** G E N E R A T I N G ***
 echo ***************************
 echo.
 
+mkdir ..\build
+mkdir ..\bin
+
 rem BUILD HERE
 pushd ..\build
 cmake ..
