@@ -14,10 +14,12 @@ Console::Console(MessageBus* _msgBus) {
 }
 
 Console::~Console() {
+    OPTICK_EVENT();
     logMessage("destroying console");
 }
 
 void Console::update() {
+    OPTICK_EVENT();
     if (hasChanged) {
         hasChanged = false;
 
@@ -47,12 +49,14 @@ void Console::update() {
 }
 
 void Console::setCursorPos(COORD newPos) {
+    OPTICK_EVENT();
     if (!SetConsoleCursorPosition(hConsole, newPos)) {
         printf("Error setting cursor position!\n");
     }
 }
 
 COORD Console::getCursorPos() {
+    OPTICK_EVENT();
     if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) {
         printf("Error getting cursor position!\n");
     }
@@ -61,6 +65,7 @@ COORD Console::getCursorPos() {
 }
 
 bool Console::clear() {
+    OPTICK_EVENT();
     cursorPos = { 0, 0 };
     DWORD cCharsWritten;
     DWORD dwConSize;
@@ -98,6 +103,7 @@ bool Console::clear() {
 }
 
 void Console::logMessage(const char* text) {
+    OPTICK_EVENT();
     std::string m(text);
 
     lock_text_vector.lock();
@@ -114,6 +120,7 @@ void Console::listen() {
     int num = 0;
     done = false;
     while (!done) {
+        OPTICK_FRAME("MainThread");
         nowTime = std::chrono::system_clock::now();
         update();
 
@@ -129,12 +136,14 @@ void Console::listen() {
 }
 
 void Console::killConsole() {
+    OPTICK_EVENT();
     lock_done_flag.lock();
         done = true;
     lock_done_flag.unlock();
 }
 
 void Console::keyPress(CONSOLE_KEY k, char c) {
+    OPTICK_EVENT();
     switch (k) {
     case CONSOLE_KEY::enter: {
         // pressed enter

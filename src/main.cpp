@@ -16,6 +16,11 @@ int main(int argc, char* argv[]) {
     MessageBus msgBus;
     Console console(&msgBus);
 
+    for (int n = 0; n < 5; n++) {
+        printf("%d\n", n+1);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+
     // Create console thread that listens for commands
     auto console_thread = std::thread(&Console::listen, &console);
 
