@@ -5,12 +5,13 @@
 
 enum class MessageType {
     empty,
-    systemCreation,
-    type2
+    standard,
+    quit
 };
 
 class Message {
 public:
+    Message();
     Message(MessageType _type);
     Message(MessageType _type, std::string _text);
     ~Message();

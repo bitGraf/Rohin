@@ -14,8 +14,8 @@ public:
     ~MessageBus();
 
     void processEntireQueue();
-    void PopQueue();
-    void PostMessage(Message msg);
+    Message PopQueue();
+    void _PostMessage(Message msg);
 
     void PostMessageByType(MessageType type);
 

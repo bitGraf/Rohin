@@ -6,8 +6,8 @@ System::System(const char* _name, MessageBus* _msgBus) {
     strcpy(name, _name);
 
     msgBus = _msgBus;
-    Message msg(MessageType::systemCreation, std::string(name));
-    msgBus->PostMessage(msg);
+    Message msg(MessageType::standard, std::string(name));
+    msgBus->_PostMessage(msg);
 }
 
 System::~System() {

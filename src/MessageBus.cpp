@@ -15,29 +15,19 @@ void MessageBus::processEntireQueue() {
     }
 }
 
-void MessageBus::PopQueue() {
+Message MessageBus::PopQueue() {
     int num = (int)mq.size();
     //printf("%d messages in queue.\n", num);
+    hasMessages = false;
+
+    Message msg;
 
     if (num > 0) {
         //printf("Popping message from queue\n");
         
-        Message msg = mq.front();
+        msg = mq.front();
         mq.pop();
         num--;
-
-        printf("Message type: ");
-        switch (msg.type) {
-        case MessageType::empty: {
-            printf("Empty\n");
-            } break;
-        case MessageType::systemCreation: {
-            printf("System Created [%s]\n", msg.text.c_str());
-            } break;
-        case MessageType::type2: {
-            printf("Type 2\n");
-            } break;
-        }
 
         if (num == 0)
             hasMessages = false;
@@ -45,16 +35,19 @@ void MessageBus::PopQueue() {
             hasMessages = true;
     }
     else {
-        printf("No messages to process\n");
+        printf("No messages to pop\n");
     }
+
+    return msg;
 }
 
-void MessageBus::PostMessage(Message msg) {
+void MessageBus::_PostMessage(Message msg) {
     mq.push(msg);
+    hasMessages = true;
     //printf("Message added to queue\n");
 }
 
 void MessageBus::PostMessageByType(MessageType type) {
-    Message msg(type);
-    PostMessage(msg);
+    Message msg(type, "blank");
+    _PostMessage(msg);
 }

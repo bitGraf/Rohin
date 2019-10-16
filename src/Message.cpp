@@ -1,5 +1,10 @@
 #include "Message.hpp"
 
+Message::Message() {
+    type = MessageType::empty;
+    text = "";
+}
+
 Message::Message(MessageType _type) {
     type = _type;
     text = "";
