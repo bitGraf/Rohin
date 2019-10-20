@@ -7,8 +7,6 @@
 
 #include "MessageBus.hpp"
 
-#include "optick.h"
-
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -16,53 +14,55 @@
 #include <thread>
 #include <mutex>
 
-const int TARGET_RATE = 10;
+#include "optick.h"
+
+const int TARGET_RATE = 10; // Hz
 const int MILLS_PER_UPDATE = 1000 / TARGET_RATE;
 
-#define CONSOLE_TEXT_FIELD_SIZE 64
+#define CONSOLE_MAX_MESSAGES 30
 
-enum class CONSOLE_KEY {
-    enter,
-    letter
+enum class eConsoleStatus {
+    sleep,
+    update,
+    prompt,
+    kill
 };
 
 class Console
 {
 public:
-    Console(MessageBus* _msgBus);
+    Console();
     ~Console();
 
-    void update();
-
-    void listen();
+    void create(MessageBus* _msgBus);
+    void startListening();
 
     void logMessage(const char* text);
+    void logMessage(const char* text, int count, ...); // ONLY ALLOWS INTS
+    void logMessage(std::string text);
 
     void killConsole();
-
-    void keyPress(CONSOLE_KEY k, char c);
+    void prompt();
 
 private:
+    void update();
+    bool clear();
+    void  setCursorPos(COORD newPos);
+    COORD getCursorPos();
+
     MessageBus* msgBus;
     HANDLE hConsole;
     CONSOLE_SCREEN_BUFFER_INFO csbi;
 
     COORD cursorPos;
 
-    bool clear();
-    void  setCursorPos(COORD newPos);
-    COORD getCursorPos();
-
     std::vector<std::string> textBuffer;
-    char textField[CONSOLE_TEXT_FIELD_SIZE];
-    int numChars;
     int bufferPos;
 
-    bool done;
+    eConsoleStatus status;
+    bool forceKill;
 
-    bool hasChanged;
-
-    std::mutex lock_text_vector, lock_done_flag, lock_key_press, lock_has_changed;
+    std::mutex status_lock;
 };
 
 #endif

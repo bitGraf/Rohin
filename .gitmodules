@@ -4,3 +4,6 @@
 [submodule "deps/optick"]
 	path = deps/optick
 	url = https://github.com/bombomby/optick.git
+[submodule "deps/gason"]
+	path = deps/gason
+	url = https://github.com/vivkin/gason.git

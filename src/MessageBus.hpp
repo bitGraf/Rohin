@@ -13,6 +13,8 @@ public:
     MessageBus();
     ~MessageBus();
 
+    void create();
+
     void processEntireQueue();
     Message PopQueue();
     void _PostMessage(Message msg);

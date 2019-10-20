@@ -1,6 +1,9 @@
 #include "MessageBus.hpp"
 
 MessageBus::MessageBus() {
+}
+
+void MessageBus::create() {
     printf("MessageBus created\n");
     hasMessages = true;
 }
