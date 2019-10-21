@@ -48,3 +48,17 @@ add_library(optick STATIC ${OPTICK_FILES})
 set_target_properties(optick PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(${PROJECT_NAME} PRIVATE ${OPTICK_DIR}/src/)
 target_link_libraries(${PROJECT_NAME} optick ${CMAKE_DL_LIBS})
+
+# tinyglTF
+set(TINYGLTF_DIR ${LIB_DIR}/tinygltf)
+set(TINYGLTF_FILES
+    ${TINYGLTF_DIR}/stb_image.h
+    ${TINYGLTF_DIR}/stb_image_write.h
+    ${TINYGLTF_DIR}/json.hpp
+    ${TINYGLTF_DIR}/tiny_gltf.h
+    ${SRC_DIR}/tinygltf.cpp)
+add_library(tinygltf STATIC ${TINYGLTF_FILES})
+set_target_properties(tinygltf PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(${PROJECT_NAME} PRIVATE ${TINYGLTF_DIR}/)
+target_include_directories(tinygltf PRIVATE ${TINYGLTF_DIR}/)
+target_link_libraries(${PROJECT_NAME} tinygltf ${CMAKE_DL_LIBS})

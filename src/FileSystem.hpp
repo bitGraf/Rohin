@@ -40,7 +40,7 @@ public:
 
 private:
     MessageBus* m_msgBus;
-    Console* m_console;
+    Console*    m_console;
 
     char rootDirectory[MAX_PATH];
 };

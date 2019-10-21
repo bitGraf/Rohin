@@ -31,6 +31,8 @@ void inline EnsureDataTypeSize() {
     static_assert(sizeof(s16) == 2, "SInt16 not 16-bits");
     static_assert(sizeof(s32) == 4, "SInt32 not 32-bits");
     static_assert(sizeof(s64) == 8, "SInt64 not 64-bits");
+
+    static_assert(sizeof(void*) == sizeof(u32), "u32 is not the same size as pointer");
 }
 
 #endif
