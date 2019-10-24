@@ -6,6 +6,8 @@
 #include "DataTypes.hpp"
 #include "FileSystem.hpp"
 
+#include "tiny_gltf.h"
+
 struct Resource {
     stringID ID;
     void* data;
@@ -31,6 +33,8 @@ public:
     void createNewResource(stringID id = 0);
     void printAllResources();
 
+    void loadModelFromFile(std::string path);
+
 private:
     FileSystem*     m_FileSystem;
     MessageBus*     m_msgBus;
@@ -39,6 +43,11 @@ private:
 
     ResourceList    m_resourceList;
     ResourceList*   m_tail;
+
+    tinygltf::TinyGLTF loader;
+
+    void* readAccessor(tinygltf::Model* root, int accessorID);
+    void* readImage(tinygltf::Model* root, int imageID);
 
     void freeResource(Resource* res);
 };
