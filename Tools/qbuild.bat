@@ -8,7 +8,7 @@ echo.
 
 rem BUILD HERE
 pushd ..\build
-cmake --build . --config Release --target bigDisc
+cmake --build . --config Release --target ALL_BUILD
 popd
 rem END BUILDING
 

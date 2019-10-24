@@ -25,6 +25,7 @@ int main(int argc, char* argv[]) {
 
     // Create subsystems
     g_MessageBus.create();
+    g_MessageBus.SetConsole(&g_Console);
 
     g_Console.create(&g_MessageBus);
 
@@ -66,7 +67,9 @@ int main(int argc, char* argv[]) {
 
     g_MainWindow.makeCurrent();
 
-    glClearColor(0.2f, 0.5f, 0.3f, 1.0f);
+    //glClearColor(0.2f, 0.5f, 0.3f, 1.0f);
+    //glClearColor(0.716f, 0.68f, 0.652f, 1.0f);
+    glClearColor(255.0f/255.0f, 248.0f/255.0f, 231.0f/255.0f, 1.0f);//Cosmic Latte, too bright :(
 
     g_Console.logMessage("Starting message loop.");
     bool done = false;
@@ -77,6 +80,8 @@ int main(int argc, char* argv[]) {
             done = true;
             break;
         }
+
+        g_MessageBus.processEntireQueue();
 
         glClear(GL_COLOR_BUFFER_BIT);
 

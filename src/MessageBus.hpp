@@ -8,6 +8,9 @@
 
 using namespace std;
 
+#include "Console.hpp"
+class Console;
+
 class MessageBus {
 public:
     MessageBus();
@@ -15,16 +18,21 @@ public:
 
     void create();
 
+    void SetConsole(Console* _console);
+
     void processEntireQueue();
     Message PopQueue();
     void _PostMessage(Message msg);
 
     void PostMessageByType(MessageType type);
-
     bool hasMessages;
 
 private:
     queue<Message> mq;
+
+    Console* m_console;
+
+    void processMessage(Message msg);
 };
 
 #endif

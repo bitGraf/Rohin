@@ -187,3 +187,22 @@ void Console::prompt() {
     status = eConsoleStatus::prompt;
     status_lock.unlock();
 }
+
+void Console::handleMessage(Message msg) {
+    std::ostringstream stringStream;
+    switch (msg.type) {
+    case MessageType::empty: {
+        stringStream << "Empty Message:: [";
+    } break;
+    case MessageType::standard: {
+        stringStream << "Standard Message:: [";
+    } break;
+    case MessageType::quit: {
+        stringStream << "Quit Message:: [";
+    } break;
+    }
+    stringStream << msg.text << "].";
+    std::string copyOfStr = stringStream.str();
+
+    logMessage(copyOfStr);
+}

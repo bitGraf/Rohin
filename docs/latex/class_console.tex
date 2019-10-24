@@ -1,0 +1,84 @@
+\hypertarget{class_console}{}\section{Console Class Reference}
+\label{class_console}\index{Console@{Console}}
+
+
+Command \mbox{\hyperlink{class_console}{Console}} Wrapper.  
+
+
+
+
+{\ttfamily \#include $<$Console.\+hpp$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_console_aba16cfd9f0894eb1312b1bc1155b6646}\label{class_console_aba16cfd9f0894eb1312b1bc1155b6646}} 
+\mbox{\hyperlink{class_console_aba16cfd9f0894eb1312b1bc1155b6646}{Console}} ()
+\begin{DoxyCompactList}\small\item\em Empty constructor. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_console_aac554a002159d86aaa63811da268224a}\label{class_console_aac554a002159d86aaa63811da268224a}} 
+void \mbox{\hyperlink{class_console_aac554a002159d86aaa63811da268224a}{create}} (\mbox{\hyperlink{class_message_bus}{Message\+Bus}} $\ast$\+\_\+msg\+Bus)
+\begin{DoxyCompactList}\small\item\em Initialize console with \mbox{\hyperlink{class_message_bus}{Message\+Bus}}. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_console_a6bd41db211cca0b244841a9e788aee3c}{start\+Listening}} ()
+\item 
+\mbox{\Hypertarget{class_console_af56253eda0e27d95fbbc2ac024110676}\label{class_console_af56253eda0e27d95fbbc2ac024110676}} 
+void \mbox{\hyperlink{class_console_af56253eda0e27d95fbbc2ac024110676}{log\+Message}} (const char $\ast$text)
+\begin{DoxyCompactList}\small\item\em Post a message to be printed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_console_aa003eda272ee1a7fd9ca2431540871c3}\label{class_console_aa003eda272ee1a7fd9ca2431540871c3}} 
+void \mbox{\hyperlink{class_console_aa003eda272ee1a7fd9ca2431540871c3}{log\+Message}} (const char $\ast$text, int count,...)
+\begin{DoxyCompactList}\small\item\em Post a message to be printed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_console_a1464236e7a4e372394757b4c71cfffa3}\label{class_console_a1464236e7a4e372394757b4c71cfffa3}} 
+void \mbox{\hyperlink{class_console_a1464236e7a4e372394757b4c71cfffa3}{log\+Message}} (std\+::string text)
+\begin{DoxyCompactList}\small\item\em Post a message to be printed. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_console_a77b606313ab488631efcf145f2d889e6}\label{class_console_a77b606313ab488631efcf145f2d889e6}} 
+void \mbox{\hyperlink{class_console_a77b606313ab488631efcf145f2d889e6}{kill\+Console}} ()
+\begin{DoxyCompactList}\small\item\em End this console instance. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_console_a6316a11484f3cc1d392d9bbdab8533b4}\label{class_console_a6316a11484f3cc1d392d9bbdab8533b4}} 
+void \mbox{\hyperlink{class_console_a6316a11484f3cc1d392d9bbdab8533b4}{prompt}} ()
+\begin{DoxyCompactList}\small\item\em Ask console for input. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{class_console_af1d3a54bd8649b46574ad35998563fea}\label{class_console_af1d3a54bd8649b46574ad35998563fea}} 
+void \mbox{\hyperlink{class_console_af1d3a54bd8649b46574ad35998563fea}{update}} ()
+\begin{DoxyCompactList}\small\item\em Update \mbox{\hyperlink{class_console}{Console}}. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Command \mbox{\hyperlink{class_console}{Console}} Wrapper. 
+
+This is intended to be a wrapper for a command console that can receive and send messages on the \mbox{\hyperlink{class_message_bus}{Message\+Bus}}
+
+\begin{DoxyAuthor}{Author}
+
+\end{DoxyAuthor}
+\begin{DoxyParagraph}{Author}
+bv 
+\end{DoxyParagraph}
+
+
+\begin{DoxyVersion}{Version}
+
+\end{DoxyVersion}
+\begin{DoxyParagraph}{Revision}
+1.\+5 
+\end{DoxyParagraph}
+
+
+\begin{DoxyDate}{Date}
+
+\end{DoxyDate}
+\begin{DoxyParagraph}{Date}
+2005/04/14 14\+:16\+:20 
+\end{DoxyParagraph}
+
+
+\subsection{Member Function Documentation}
+\mbox{\Hypertarget{class_console_a6bd41db211cca0b244841a9e788aee3c}\label{class_console_a6bd41db211cca0b244841a9e788aee3c}} 
+\index{Console@{Console}!startListening@{startListening}}
+\index{startListening@{startListening}!Console@{Console}}
+\subsubsection{\texorpdfstring{startListening()}{startListening()}}
+{\footnotesize\ttfamily void Console\+::start\+Listening (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+Run this method on a separate thread to begin listening for messages and output log messages 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Game\+Dev/\+Big-\/\+Disc-\/\+Mk-\/\+I\+I/src/Console.\+hpp\item 
+D\+:/\+Game\+Dev/\+Big-\/\+Disc-\/\+Mk-\/\+I\+I/src/Console.\+cpp\end{DoxyCompactItemize}

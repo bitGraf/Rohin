@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include "MessageBus.hpp"
@@ -21,6 +22,7 @@ const int MILLS_PER_UPDATE = 1000 / TARGET_RATE;
 
 #define CONSOLE_MAX_MESSAGES 30
 
+/// Console Status
 enum class eConsoleStatus {
     sleep,
     update,
@@ -28,24 +30,60 @@ enum class eConsoleStatus {
     kill
 };
 
+class MessageBus;
+
+/**
+  * \class Console
+  *
+  * \ingroup Systems
+  *
+  * \brief Command Console Wrapper
+  * 
+  * This is intended to be a wrapper for a 
+  * command console that can receive and send
+  * messages on the MessageBus
+  * 
+  * \author $Author: bv $
+  * 
+  * \version $Revision: 1.5 $
+  * 
+  * \date $Date: 2005/04/14 14:16:20 $
+  */
+
 class Console
 {
 public:
+    /// Empty constructor
     Console();
     ~Console();
 
+    /// Initialize console with MessageBus
     void create(MessageBus* _msgBus);
+
+    /** Run this method on a separate thread
+      * to begin listening for messages
+      * and output log messages
+      */
     void startListening();
 
+    /// Post a message to be printed
     void logMessage(const char* text);
+    /// Post a message to be printed
     void logMessage(const char* text, int count, ...); // ONLY ALLOWS INTS
+    /// Post a message to be printed
     void logMessage(std::string text);
 
+    /// Handle standard event message
+    void handleMessage(Message msg);
+
+    /// End this console instance
     void killConsole();
+    /// Ask console for input
     void prompt();
 
-private:
+    /// Update Console
     void update();
+private:
     bool clear();
     void  setCursorPos(COORD newPos);
     COORD getCursorPos();

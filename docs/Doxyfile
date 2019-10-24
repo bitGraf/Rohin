@@ -1,0 +1,2 @@
+OUTPUT_DIRECTORY       = D:/GameDev/Big-Disc-Mk-II/build/../docs
+INPUT                  = D:/GameDev/Big-Disc-Mk-II/src/ D:/GameDev/Big-Disc-Mk-II/docs

@@ -14,7 +14,9 @@ MessageBus::~MessageBus() {
 
 void MessageBus::processEntireQueue() {
     while (hasMessages) {
-        PopQueue();
+        auto msg = PopQueue();
+
+        processMessage(msg);
     }
 }
 
@@ -53,4 +55,12 @@ void MessageBus::_PostMessage(Message msg) {
 void MessageBus::PostMessageByType(MessageType type) {
     Message msg(type, "blank");
     _PostMessage(msg);
+}
+
+void MessageBus::processMessage(Message msg) {
+    m_console->handleMessage(msg);
+}
+
+void MessageBus::SetConsole(Console* _console) {
+    m_console = _console;
 }

@@ -1,0 +1,86 @@
+\hypertarget{class_window}{}\section{Window Class Reference}
+\label{class_window}\index{Window@{Window}}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_window_afbd9da61dc1a1ed2655757d6ebf30e06}\label{class_window_afbd9da61dc1a1ed2655757d6ebf30e06}} 
+void {\bfseries create} (const char $\ast$title=\char`\"{}Window\char`\"{}, int width=W\+I\+N\+D\+O\+W\+\_\+\+D\+E\+F\+A\+U\+L\+T\+\_\+\+W\+I\+D\+TH, int height=W\+I\+N\+D\+O\+W\+\_\+\+D\+E\+F\+A\+U\+L\+T\+\_\+\+H\+E\+I\+G\+HT)
+\item 
+\mbox{\Hypertarget{class_window_a98299cc31328052741e2f73d8c0a6eb5}\label{class_window_a98299cc31328052741e2f73d8c0a6eb5}} 
+void {\bfseries set\+Message\+Bus} (\mbox{\hyperlink{class_message_bus}{Message\+Bus}} $\ast$\+\_\+message\+Bus)
+\item 
+\mbox{\Hypertarget{class_window_a3b80ba02292bcf8854276094317aa73e}\label{class_window_a3b80ba02292bcf8854276094317aa73e}} 
+void {\bfseries set\+Console} (\mbox{\hyperlink{class_console}{Console}} $\ast$console)
+\item 
+\mbox{\Hypertarget{class_window_aa89262ad2538473c8d7e4d8dd641849d}\label{class_window_aa89262ad2538473c8d7e4d8dd641849d}} 
+void {\bfseries destroy} ()
+\item 
+\mbox{\Hypertarget{class_window_ae779be3a5327f62c5e86a3e3d8a37289}\label{class_window_ae779be3a5327f62c5e86a3e3d8a37289}} 
+bool {\bfseries should\+Close} ()
+\item 
+\mbox{\Hypertarget{class_window_a9a26761fd7a9653de4847bc309763863}\label{class_window_a9a26761fd7a9653de4847bc309763863}} 
+void {\bfseries swap\+And\+Poll} ()
+\item 
+\mbox{\Hypertarget{class_window_a1ebbfc7cd6e34ca3d70257305a97b525}\label{class_window_a1ebbfc7cd6e34ca3d70257305a97b525}} 
+void {\bfseries make\+Current} ()
+\item 
+\mbox{\Hypertarget{class_window_a397289ae6968f13beec07f071560a4e7}\label{class_window_a397289ae6968f13beec07f071560a4e7}} 
+void {\bfseries set\+Position} (int x, int y)
+\item 
+\mbox{\Hypertarget{class_window_ae20b120985c60737d6bc12a09b60c2d6}\label{class_window_ae20b120985c60737d6bc12a09b60c2d6}} 
+void {\bfseries Window\+Position\+Update} (int xpos, int ypos)
+\item 
+\mbox{\Hypertarget{class_window_a7b664a5df620fa39c22cfc9884482d29}\label{class_window_a7b664a5df620fa39c22cfc9884482d29}} 
+void {\bfseries Window\+Size\+Update} (int w, int h)
+\item 
+\mbox{\Hypertarget{class_window_ab46b37bdc7b611bd7fc9f340eb62f159}\label{class_window_ab46b37bdc7b611bd7fc9f340eb62f159}} 
+void {\bfseries Window\+Quit} ()
+\item 
+\mbox{\Hypertarget{class_window_a58e40fd1e3b92a17702b8b3a3fe06558}\label{class_window_a58e40fd1e3b92a17702b8b3a3fe06558}} 
+void {\bfseries Window\+Refresh} ()
+\item 
+\mbox{\Hypertarget{class_window_a8ab9817d410bcd5cb38b831225b05bdb}\label{class_window_a8ab9817d410bcd5cb38b831225b05bdb}} 
+void {\bfseries Window\+Focus\+Update} (int focused)
+\item 
+\mbox{\Hypertarget{class_window_a9935abc4249f320dc678672e01c5857e}\label{class_window_a9935abc4249f320dc678672e01c5857e}} 
+void {\bfseries Window\+Iconify\+Update} (int iconify)
+\item 
+\mbox{\Hypertarget{class_window_ad8250d17af34609f5a943b1c8f0ae79c}\label{class_window_ad8250d17af34609f5a943b1c8f0ae79c}} 
+void {\bfseries Window\+Maximize\+Update} (int maximize)
+\item 
+\mbox{\Hypertarget{class_window_abf47d308529d30971692d5657023a2b6}\label{class_window_abf47d308529d30971692d5657023a2b6}} 
+void {\bfseries Window\+Framebuffer\+Update} (int w, int h)
+\item 
+\mbox{\Hypertarget{class_window_ac61d3e5e90c003715c392db87fd9f3a8}\label{class_window_ac61d3e5e90c003715c392db87fd9f3a8}} 
+void {\bfseries Window\+Scale\+Update} (float xscale, float yscale)
+\item 
+\mbox{\Hypertarget{class_window_a4e445b363631485cfaf0896daad5d831}\label{class_window_a4e445b363631485cfaf0896daad5d831}} 
+void {\bfseries Input\+Key} (int key, int scancode, int action, int mods)
+\item 
+\mbox{\Hypertarget{class_window_a2b1d8043dc0d18aefd5bdf9f8a2a0540}\label{class_window_a2b1d8043dc0d18aefd5bdf9f8a2a0540}} 
+void {\bfseries Input\+Char} (unsigned int codepoint)
+\item 
+\mbox{\Hypertarget{class_window_ae25bedbd8126864816b61e06f822dc2d}\label{class_window_ae25bedbd8126864816b61e06f822dc2d}} 
+void {\bfseries Input\+Char\+Mod} (unsigned int codepoint, int mods)
+\item 
+\mbox{\Hypertarget{class_window_aba08569476d6ca6ceeb59deaf282d753}\label{class_window_aba08569476d6ca6ceeb59deaf282d753}} 
+void {\bfseries Input\+Mouse\+Button} (int button, int action, int mods)
+\item 
+\mbox{\Hypertarget{class_window_a45f4c362aa39464500a3e2699378967c}\label{class_window_a45f4c362aa39464500a3e2699378967c}} 
+void {\bfseries Input\+Cursor\+Pos} (double xpos, double ypos)
+\item 
+\mbox{\Hypertarget{class_window_a6d5def277798a34d48e80be32182f5dc}\label{class_window_a6d5def277798a34d48e80be32182f5dc}} 
+void {\bfseries Input\+Cursor\+Enter} (int entered)
+\item 
+\mbox{\Hypertarget{class_window_a4ab0163a8c9fb24ae8cfaa255ca39e31}\label{class_window_a4ab0163a8c9fb24ae8cfaa255ca39e31}} 
+void {\bfseries Input\+Scroll} (double xoffset, double yoffset)
+\item 
+\mbox{\Hypertarget{class_window_ac0b9d2e31cb1c9916160582d97f970f7}\label{class_window_ac0b9d2e31cb1c9916160582d97f970f7}} 
+void {\bfseries Input\+Drop} (int count, const char $\ast$$\ast$paths)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+D\+:/\+Game\+Dev/\+Big-\/\+Disc-\/\+Mk-\/\+I\+I/src/Window.\+hpp\item 
+D\+:/\+Game\+Dev/\+Big-\/\+Disc-\/\+Mk-\/\+I\+I/src/Window.\+cpp\end{DoxyCompactItemize}
