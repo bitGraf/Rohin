@@ -6,10 +6,8 @@
 
 #include "Message.hpp"
 
-using namespace std;
-
-#include "Console.hpp"
-class Console;
+#include "CoreSystem.hpp"
+class CoreSystem;
 
 class MessageBus {
 public:
@@ -18,19 +16,21 @@ public:
 
     void create();
 
-    void SetConsole(Console* _console);
+    //void SetConsole(Console* _console);
+    void RegisterSystem(CoreSystem* sys);
 
     void processEntireQueue();
     Message PopQueue();
-    void _PostMessage(Message msg);
+    void putMessage(Message msg);
 
-    void PostMessageByType(MessageType type);
+    void PostMessageByType(Message::Type type);
     bool hasMessages;
 
 private:
-    queue<Message> mq;
+    std::queue<Message> mq;
 
-    Console* m_console;
+    //Console* m_console;
+    std::vector<CoreSystem*> systems;
 
     void processMessage(Message msg);
 };

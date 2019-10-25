@@ -2,14 +2,29 @@
 
 Window::Window() {
     m_glfwWindow = nullptr;
-    m_messageBus = nullptr;
-    m_console = nullptr;
 
     m_height = 600;
     m_width = 800;
 }
 
-void Window::create(const char* title, int width, int height) {
+void Window::update(double dt) {
+
+}
+
+void Window::handleMessage(Message msg) {
+
+}
+
+void Window::destroy() {
+    //glfwDestroyWindow(m_glfwWindow);
+    m_glfwWindow = nullptr;
+}
+
+void Window::sys_create(ConfigurationManager* configMgr) {
+    create_window();
+}
+
+void Window::create_window(const char* title, int width, int height) {
     // Set window size
     m_width = width;
     m_height = height;
@@ -28,7 +43,9 @@ void Window::create(const char* title, int width, int height) {
     m_glfwWindow = glfwCreateWindow(m_width, m_height, title, NULL, NULL);
 
     if (m_glfwWindow == NULL) {
-        m_console->logMessage("Failed to create GLFW window. ");
+        logMessage("Failed to create GLFW window. ");
+
+        //m_console->logMessage("Failed to create GLFW window. ");
         glfwTerminate();
         // return NULL
     }
@@ -36,7 +53,7 @@ void Window::create(const char* title, int width, int height) {
     makeCurrent();
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        m_console->logMessage("Failed to initialize GLAD");
+        logMessage("Failed to initialize GLAD");
         // return NULL
     }
 
@@ -69,18 +86,6 @@ void Window::create(const char* title, int width, int height) {
     glfwSetDropCallback(m_glfwWindow, InputDropCallback);
 }
 
-void Window::setMessageBus(MessageBus* _messageBus) {
-    m_messageBus = _messageBus;
-}
-
-void Window::setConsole(Console* _console) {
-    m_console = _console;
-}
-
-void Window::destroy() {
-    glfwDestroyWindow(m_glfwWindow);
-}
-
 void Window::makeCurrent() {
     glfwMakeContextCurrent(m_glfwWindow);
 }
@@ -97,32 +102,32 @@ void Window::WindowPositionUpdate(int xpos, int ypos) {
 }
 
 void Window::WindowSizeUpdate(int w, int h) {
-    m_console->logMessage("Window::WindowSizeUpdate: ", 2, w, h);
+    logMessage("Window::WindowSizeUpdate: ", 2, w, h);
 }
 
 void Window::WindowQuit() {
-    m_console->logMessage("Window::WindowQuit");
-    destroy();
+    logMessage("Window::WindowQuit");
+    //destroy();
 }
 
 void Window::WindowRefresh() {
-    m_console->logMessage("Window::WindowRefresh");
+    logMessage("Window::WindowRefresh");
 }
 
 void Window::WindowFocusUpdate(int focused) {
-    m_console->logMessage("Window::WindowFocusUpdate: ", 1, focused);
+    logMessage("Window::WindowFocusUpdate: ", 1, focused);
 }
 
 void Window::WindowIconifyUpdate(int iconify) {
-    m_console->logMessage("Window::WindowIconifyUpdate: ", 1, iconify);
+    logMessage("Window::WindowIconifyUpdate: ", 1, iconify);
 }
 
 void Window::WindowMaximizeUpdate(int maximize) {
-    m_console->logMessage("Window::WindowMaximizeUpdate: ", 1, maximize);
+    logMessage("Window::WindowMaximizeUpdate: ", 1, maximize);
 }
 
 void Window::WindowFramebufferUpdate(int w, int h) {
-    m_console->logMessage("Window::WindowFramebufferUpdate: ", 2, w, h);
+    logMessage("Window::WindowFramebufferUpdate: ", 2, w, h);
     //glViewport(0, 0, w, h);
 }
 
@@ -133,16 +138,14 @@ void Window::WindowScaleUpdate(float xscale, float yscale) {
 
 /* Input Callback Function */
 void Window::InputKey(int key, int scancode, int action, int mods) {
-    m_console->logMessage("Window::InputKey: ", 4, key, scancode, action, mods);
+    logMessage("Window::InputKey: ", 4, key, scancode, action, mods);
 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        Message msg(MessageType::standard, "Spacebar pressed");
-        m_messageBus->_PostMessage(msg);
+        logMessage("Spacebar pressed");
     }
 
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-        Message msg(MessageType::empty, "P pressed");
-        m_messageBus->_PostMessage(msg);
+        logMessage("P pressed");
     }
 }
 
@@ -173,8 +176,8 @@ void Window::InputScroll(double xoffset, double yoffset) {
 }
 
 void Window::InputDrop(int count, const char** paths) {
-    m_console->logMessage("Window::InputDrop: ", 1, count);
-    m_console->logMessage(paths[0]);
+    logMessage("Window::InputDrop: ", 1, count);
+    logMessage(paths[0]);
 }
 
 

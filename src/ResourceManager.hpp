@@ -3,7 +3,7 @@
 
 #include <cassert>
 
-#include "DataTypes.hpp"
+#include "CoreSystem.hpp"
 #include "FileSystem.hpp"
 
 #include "tiny_gltf.h"
@@ -18,16 +18,17 @@ struct ResourceList {
     ResourceList* next;
 };
 
-class ResourceManager {
+class ResourceManager : public CoreSystem {
 public:
     ResourceManager();
     ~ResourceManager();
 
-    void create();
+    void update(double dt);
+    void handleMessage(Message msg);
     void destroy();
-    void setConsole(Console* console);
+    void sys_create(ConfigurationManager* configMgr);
+
     void setFileSystem(FileSystem* _filesys);
-    void setMessageBus(MessageBus* _messageBus);
     //void setMemoryManager(MemoryManager* _memManager);
 
     void createNewResource(stringID id = 0);
@@ -37,8 +38,6 @@ public:
 
 private:
     FileSystem*     m_FileSystem;
-    MessageBus*     m_msgBus;
-    Console*        m_console;
     //MemoryManager*  m_memoryManager;
 
     ResourceList    m_resourceList;

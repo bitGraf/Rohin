@@ -3,14 +3,13 @@
 
 #include <stdio.h>
 
-#include "Console.hpp"
-#include "MessageBus.hpp"
+#include "CoreSystem.hpp"
 
 #include "DataTypes.hpp"
 #include "Platform.hpp"
 
 
-class FileSystem {
+class FileSystem : public CoreSystem {
 public:
     /* 
     Plans and Features:
@@ -27,10 +26,11 @@ public:
     FileSystem();
     ~FileSystem();
 
-    void create();
+    /* Virtuals */
+    void update(double dt);
+    void handleMessage(Message msg);
     void destroy();
-    void setMessageBus(MessageBus* _messageBus);
-    void setConsole(Console* console);
+    void sys_create(ConfigurationManager* configMgr);
 
     /* File IO */
     bool syncReadFile(const char* filepath, u8* buffer, size_t bufferSize, size_t& rBytesRead);
@@ -39,9 +39,6 @@ public:
     void setRootDirectory(char directory[128]);
 
 private:
-    MessageBus* m_msgBus;
-    Console*    m_console;
-
     char rootDirectory[MAX_PATH];
 };
 

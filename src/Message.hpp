@@ -3,21 +3,21 @@
 
 #include <string>
 
-enum class MessageType {
-    empty,
-    standard,
-    quit
-};
-
 class Message {
 public:
+    enum Type {
+        empty = 0,
+        standard,
+        quit,
+        log
+    };
+
     Message();
-    Message(MessageType _type);
-    Message(MessageType _type, std::string _text);
+    Message(Type _type);
+    Message(Type _type, std::string _text);
     ~Message();
 
-//private:
-    MessageType type;
+    Type type;
     std::string text;
 };
 

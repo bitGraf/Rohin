@@ -46,21 +46,28 @@ Message MessageBus::PopQueue() {
     return msg;
 }
 
-void MessageBus::_PostMessage(Message msg) {
+void MessageBus::putMessage(Message msg) {
     mq.push(msg);
     hasMessages = true;
     //printf("Message added to queue\n");
 }
 
-void MessageBus::PostMessageByType(MessageType type) {
+void MessageBus::PostMessageByType(Message::Type type) {
     Message msg(type, "blank");
-    _PostMessage(msg);
+    putMessage(msg);
 }
 
 void MessageBus::processMessage(Message msg) {
-    m_console->handleMessage(msg);
+    //m_console->handleMessage(msg);
+    for (auto system : systems) {
+        system->handleMessage(msg);
+    }
 }
 
-void MessageBus::SetConsole(Console* _console) {
-    m_console = _console;
+//void MessageBus::SetConsole(Console* _console) {
+//    m_console = _console;
+//}
+
+void MessageBus::RegisterSystem(CoreSystem* sys) {
+    systems.push_back(sys);
 }

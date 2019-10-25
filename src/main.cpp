@@ -1,16 +1,15 @@
 #include <stdio.h>
 
+#include "CoreSystem.hpp"
+
 #include "Window.hpp"
-#include "HashTable.hpp"
-
 #include "ResourceManager.hpp"
+#include "Console.hpp"
 
-#include "tiny_gltf.h"
-#include "optick.h"
-
+ConfigurationManager g_ConfigManager;
+MessageBus g_MessageBus;
 Window g_MainWindow;
 Console g_Console;
-MessageBus g_MessageBus;
 FileSystem g_FileSystem;
 ResourceManager g_ResourceManager;
 
@@ -24,43 +23,25 @@ int main(int argc, char* argv[]) {
     printf("\n");
 
     // Create subsystems
+    g_ConfigManager.create();
+
     g_MessageBus.create();
-    g_MessageBus.SetConsole(&g_Console);
+    g_MessageBus.RegisterSystem(&g_Console);
+    //g_MessageBus.SetConsole(&g_Console);
 
-    g_Console.create(&g_MessageBus);
+    g_MainWindow.create(&g_ConfigManager);
+    g_Console.create(&g_ConfigManager);
+    g_FileSystem.create(&g_ConfigManager);
+    g_ResourceManager.create(&g_ConfigManager);
 
-    g_FileSystem.create();
-    g_FileSystem.setMessageBus(&g_MessageBus);
-    g_FileSystem.setConsole(&g_Console);
-
-    g_ResourceManager.create();
-    g_ResourceManager.setConsole(&g_Console);
-    g_ResourceManager.setMessageBus(&g_MessageBus);
-    g_ResourceManager.setFileSystem(&g_FileSystem);
-
-    g_ResourceManager.loadModelFromFile("Data/Models/cube_emb.gltf");
-    //return 0;
-
-    g_ResourceManager.printAllResources();
-    g_ResourceManager.createNewResource("res1"_sid);
-    g_ResourceManager.createNewResource("res2"_sid);
-    g_ResourceManager.printAllResources();
-    g_ResourceManager.destroy();
-
-    //return 0;
-
-    g_MainWindow.setConsole(&g_Console);
+    // Set Message Busses
     g_MainWindow.setMessageBus(&g_MessageBus);
-    g_MainWindow.create("Main window");
+    g_Console.setMessageBus(&g_MessageBus);
+    g_FileSystem.setMessageBus(&g_MessageBus);
+    g_ResourceManager.setMessageBus(&g_MessageBus);
 
-    Window window2;
-    window2.setConsole(&g_Console);
-    window2.setMessageBus(&g_MessageBus);
-    window2.create("Other window", 400, 300);
-    window2.setPosition(100, 680);
-
-    ////////////////////
-    ////////////////////
+    // Other sets
+    g_ResourceManager.setFileSystem(&g_FileSystem);
 
     // Create console thread that listens for commands
     auto console_thread = std::thread(&Console::startListening, &g_Console);
@@ -74,8 +55,6 @@ int main(int argc, char* argv[]) {
     g_Console.logMessage("Starting message loop.");
     bool done = false;
     while (!done) {
-        OPTICK_FRAME("MainThread"); // Profiling
-
         if (g_MainWindow.shouldClose()) {
             done = true;
             break;
@@ -93,8 +72,14 @@ int main(int argc, char* argv[]) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    // Rejoin threads together
-    g_Console.killConsole();
+    // Destroy all subsystems
+    g_ResourceManager.destroy();
+    g_FileSystem.destroy();
+    g_Console.destroy();
+    g_MainWindow.destroy();
+    g_ConfigManager.destroy();
+
+    // End threads
     console_thread.join();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));

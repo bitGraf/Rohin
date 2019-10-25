@@ -8,7 +8,19 @@ FileSystem::~FileSystem() {
 
 }
 
-void FileSystem::create() {
+void FileSystem::update(double dt) {
+
+}
+
+void FileSystem::handleMessage(Message msg) {
+
+}
+
+void FileSystem::destroy() {
+
+}
+
+void FileSystem::sys_create(ConfigurationManager* configMgr) {
     // TODO: Make this not poopoo
 
     getDirectory(rootDirectory);
@@ -16,17 +28,7 @@ void FileSystem::create() {
     setDirectory(rootDirectory);
 }
 
-void FileSystem::destroy() {
-}
 
-
-void FileSystem::setMessageBus(MessageBus* _messageBus) {
-    m_msgBus = _messageBus;
-}
-
-void FileSystem::setConsole(Console* _console) {
-    m_console = _console;
-}
 
 /* File IO */
 bool FileSystem::syncReadFile(

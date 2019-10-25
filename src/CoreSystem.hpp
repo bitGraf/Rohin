@@ -1,34 +1,38 @@
 #ifndef __SYSTEM_HPP__
 #define __SYSTEM_HPP__
 
-/*
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstdarg>
 
+#include "Configuration.hpp"
 #include "HashTable.hpp"
 
 #include "MessageBus.hpp"
-#include "Console.hpp"
+class MessageBus;
 
 class CoreSystem {
 public:
     CoreSystem();
     ~CoreSystem();
 
-    void setMessageBus(MessageBus* _msgBus);
-    void setConsole(Console* _console);
+    void create(ConfigurationManager* configMgr);
+    void setMessageBus(MessageBus* msgBus); // remove this, move into configMgr
+    void putMessage(Message msg);
 
-    virtual void sys_create() = 0;
-    virtual void sys_destroy() = 0;
-    virtual void sys_handleMessage(Message* msg) = 0;
-    virtual void sys_update() = 0;
+    void logMessage(const char* text);
+    void logMessage(const char* text, int count, ...); // ONLY ALLOWS INTS
+    
+    /* Virtuals */
+    virtual void update(double dt) = 0;
+    virtual void handleMessage(Message msg) = 0;
+    virtual void destroy() = 0;
+    virtual void sys_create(ConfigurationManager* configMgr) = 0;
 
 private:
-    MessageBus* m_messageBus;
-    Console* m_console;
-
-    stringID ID;
+    ConfigurationManager*   m_configMgr;
+    MessageBus*             m_msgBus;
 };
-*/
 
 #endif

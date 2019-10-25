@@ -3,7 +3,7 @@
 
 #include <unordered_map>
 
-#include "HashTable.hpp"
+#include "CoreSystem.hpp"
 #include "Shader.hpp"
 
 namespace ShaderList {
@@ -13,15 +13,17 @@ namespace ShaderList {
     const stringID shader4      = "shader4"_sid;
 }
 
-class RenderManager {
+class RenderManager : public CoreSystem {
 public:
-
     RenderManager();
     ~RenderManager();
 
-    void create();
+    void update(double dt);
+    void handleMessage(Message msg);
     void destroy();
-
+    void sys_create(ConfigurationManager* configMgr);
+        
+    /* System Unique functions */
     void setShader(stringID id);
 
 private:

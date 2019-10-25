@@ -3,27 +3,12 @@
 Console::Console() {
 }
 
-void Console::create(MessageBus* _msgBus) {
-    msgBus = _msgBus;
-
-    // TODO: decouple this from the main console:
-    //       each console should have its own window
-    //       and input/output buffer
-    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    bufferPos = 0;
-    status = eConsoleStatus::update;
-    logMessage("Console created");
-    forceKill = false;
-    update();
-}
-
 Console::~Console() {
 }
 
-void Console::update() {
-    OPTICK_EVENT();
 
+
+void Console::update(double dt) {
     switch (status) {
     case eConsoleStatus::sleep: {
         // Do nothing this update cycle
@@ -60,13 +45,12 @@ void Console::update() {
         std::cin >> input;
 
         input.insert((size_t)0, "Command entered: ", (size_t)17);
-
-        logMessage(input);
+        logMessage(input.c_str());
 
         status = eConsoleStatus::update;
     } break;
     case eConsoleStatus::kill: {
-        logMessage("Killing console");
+        logMessage("Killing Console");
     } break;
     }
 
@@ -75,19 +59,84 @@ void Console::update() {
     }
 }
 
-void Console::setCursorPos(COORD newPos) {
-    if (!SetConsoleCursorPosition(hConsole, newPos)) {
-        printf("Error setting cursor position!\n");
+void Console::handleMessage(Message msg) {
+    std::ostringstream stringStream;
+
+    switch (msg.type) {
+        case Message::Type::empty: {
+            stringStream << "Empty Message:: [";
+        } break;
+        case Message::Type::standard: {
+            stringStream << "Standard Message:: [";
+        } break;
+        case Message::Type::log: {
+            stringStream << "LOG:: [";
+        } break;
+        case Message::Type::quit: {
+            stringStream << "Quit Message:: [";
+        } break;
+        default: {
+            stringStream << "  [";
+        } break;
     }
+    stringStream << msg.text << "].";
+    std::string copyOfStr = stringStream.str();
+
+    textBuffer.push_back(copyOfStr);
+
+    status_lock.lock();
+    status = eConsoleStatus::update;
+    status_lock.unlock();
 }
 
-COORD Console::getCursorPos() {
-    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) {
-        printf("Error getting cursor position!\n");
-    }
-
-    return csbi.dwCursorPosition;
+void Console::destroy() {
+    status_lock.lock();
+    status = eConsoleStatus::kill;
+    forceKill = true;
+    status_lock.unlock();
 }
+
+void Console::sys_create(ConfigurationManager* configManager) {
+    // TODO: decouple this from the main console:
+    //       each console should have its own window
+    //       and input/output buffer
+    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    bufferPos = 0;
+    status = eConsoleStatus::update;
+    logMessage("Console created");
+    forceKill = false;
+    update(0);
+}
+
+
+
+void Console::prompt() {
+    // Tell the console to ask for input
+    status_lock.lock();
+    status = eConsoleStatus::prompt;
+    status_lock.unlock();
+}
+
+void Console::startListening() {
+    update(0);
+
+    auto nowTime = std::chrono::system_clock::now();
+
+    int num = 0;
+    while (status != eConsoleStatus::kill) {
+        nowTime = std::chrono::system_clock::now();
+        update(0);
+
+        //limit this loop to the update rate set
+        nowTime += std::chrono::milliseconds(MILLS_PER_UPDATE);
+        std::this_thread::sleep_until(nowTime);
+    }
+    update(0);
+}
+
+
+
 
 bool Console::clear() {
     cursorPos = { 0, 0 };
@@ -126,83 +175,16 @@ bool Console::clear() {
     return true;
 }
 
-void Console::logMessage(const char* text) {
-    std::string m(text);
-    logMessage(m);
-}
-
-void Console::logMessage(const char* text, int count, ...) {
-    va_list args;
-    va_start(args, count);
-
-    std::string m(text);
-
-    for (int n = 0; n < count-1; n++) {
-        int num = va_arg(args, int);
-        m.append(std::to_string(num));
-        m.append(", ");
+void Console::setCursorPos(COORD newPos) {
+    if (!SetConsoleCursorPosition(hConsole, newPos)) {
+        printf("Error setting cursor position!\n");
     }
-    int num = va_arg(args, int);
-    m.append(std::to_string(num));
-
-    logMessage(m);
 }
 
-void Console::logMessage(std::string text) {
-    status_lock.lock();
-    textBuffer.push_back(text);
-    status = eConsoleStatus::update;
-    status_lock.unlock();
-}
-
-void Console::startListening() {
-    OPTICK_THREAD("Console");
-
-    update();
-
-    auto nowTime = std::chrono::system_clock::now();
-
-    int num = 0;
-    while (status != eConsoleStatus::kill) {
-        nowTime = std::chrono::system_clock::now();
-        update();
-
-        //limit this loop to the update rate set
-        nowTime += std::chrono::milliseconds(MILLS_PER_UPDATE);
-        std::this_thread::sleep_until(nowTime);
+COORD Console::getCursorPos() {
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi)) {
+        printf("Error getting cursor position!\n");
     }
-    update();
-}
 
-void Console::killConsole() {
-    status_lock.lock();
-    status = eConsoleStatus::kill;
-    forceKill = true;
-    status_lock.unlock();
-}
-
-void Console::prompt() {
-    // Tell the console to ask for input
-    status_lock.lock();
-    status = eConsoleStatus::prompt;
-    status_lock.unlock();
-}
-
-void Console::handleMessage(Message msg) {
-    std::ostringstream stringStream;
-    switch (msg.type) {
-    case MessageType::empty: {
-        stringStream << "Empty Message:: [";
-    } break;
-    case MessageType::standard: {
-        stringStream << "Standard Message:: [";
-    } break;
-    case MessageType::quit: {
-        stringStream << "Quit Message:: [";
-    } break;
-    }
-    stringStream << msg.text << "].";
-    std::string copyOfStr = stringStream.str();
-
-    logMessage(copyOfStr);
+    return csbi.dwCursorPosition;
 }

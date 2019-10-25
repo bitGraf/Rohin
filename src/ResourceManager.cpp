@@ -2,18 +2,17 @@
 
 ResourceManager::ResourceManager() {
     m_FileSystem = nullptr;
-    m_msgBus = nullptr;
-    m_console = nullptr;
 }
 
 ResourceManager::~ResourceManager() {
 }
 
-void ResourceManager::create() {
-    m_resourceList.resource.data = nullptr;
-    m_resourceList.next = nullptr;
+void ResourceManager::update(double dt) {
 
-    m_tail = &m_resourceList;
+}
+
+void ResourceManager::handleMessage(Message msg) {
+
 }
 
 void ResourceManager::destroy() {
@@ -37,16 +36,15 @@ void ResourceManager::destroy() {
     freeResource(&m_resourceList.resource);
 }
 
-void ResourceManager::setMessageBus(MessageBus* _messageBus) {
-    m_msgBus = _messageBus;
+void ResourceManager::sys_create(ConfigurationManager* configMgr) {
+    m_resourceList.resource.data = nullptr;
+    m_resourceList.next = nullptr;
+
+    m_tail = &m_resourceList;
 }
 
 void ResourceManager::setFileSystem(FileSystem* _filesys) {
     m_FileSystem = _filesys;
-}
-
-void ResourceManager::setConsole(Console* _console) {
-    m_console = _console;
 }
 
 /*void ResourceManager::setMemoryManager(MemoryManager* _memManager) {

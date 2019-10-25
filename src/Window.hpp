@@ -4,21 +4,23 @@
 #include <GLFW\glfw3.h>
 #include <glad\glad.h>
 
-#include "Console.hpp"
-#include "MessageBus.hpp"
+#include "CoreSystem.hpp"
 
 #define WINDOW_DEFAULT_HEIGHT   600
 #define WINDOW_DEFAULT_WIDTH    800
 
-class Window {
+/// acting as WindowManager for now
+class Window : public CoreSystem {
 public:
     Window();
 
     /* Initialization functions*/
-    void create(const char* title = "Window", int width = WINDOW_DEFAULT_WIDTH, int height = WINDOW_DEFAULT_HEIGHT);
-    void setMessageBus(MessageBus* _messageBus);
-    void setConsole(Console* console);
+    void update(double dt);
+    void handleMessage(Message msg);
     void destroy();
+    void sys_create(ConfigurationManager* configMgr);
+
+    void create_window(const char* title = "Window", int width = WINDOW_DEFAULT_WIDTH, int height = WINDOW_DEFAULT_HEIGHT);
 
     /* Window functions */
     bool shouldClose();
@@ -48,8 +50,6 @@ public:
 
 private:
     GLFWwindow*     m_glfwWindow;
-    MessageBus*     m_messageBus;
-    Console*        m_console;
 
     // Window properties
     int m_height;
