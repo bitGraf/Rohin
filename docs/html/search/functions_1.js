@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['killconsole',['killConsole',['../class_console.html#a77b606313ab488631efcf145f2d889e6',1,'Console']]]
+  ['create',['create',['../class_pool_allocator.html#a297473188e77bd80f4d9e025f5d7bb6f',1,'PoolAllocator']]]
 ];

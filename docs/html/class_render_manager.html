@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: RenderManager Class Reference</title>
+<title>Epic Project Time: RenderManager Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -20,9 +20,11 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Epic Project Time
    </div>
+   <div id="projectbrief">A second attempt at a game using lessons learned from big-time-disc-tomorrow</div>
   </td>
  </tr>
  </tbody>
@@ -68,18 +70,62 @@ $(function() {
 <div class="title">RenderManager Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="dynheader">
+Inheritance diagram for RenderManager:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="class_render_manager.png" usemap="#RenderManager_map" alt=""/>
+  <map id="RenderManager_map" name="RenderManager_map">
+<area href="class_core_system.html" alt="CoreSystem" shape="rect" coords="0,0,104,24"/>
+  </map>
+</div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a967ff4cd34cc9bafa0c50cbbf2a12d38"><td class="memItemLeft" align="right" valign="top"><a id="a967ff4cd34cc9bafa0c50cbbf2a12d38"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> ()</td></tr>
-<tr class="separator:a967ff4cd34cc9bafa0c50cbbf2a12d38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90eb82b1ee412b44a63cf76279be3234"><td class="memItemLeft" align="right" valign="top"><a id="a90eb82b1ee412b44a63cf76279be3234"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>update</b> (double dt)</td></tr>
+<tr class="separator:a90eb82b1ee412b44a63cf76279be3234"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade7401848b1db36479d5bc88bf5d1c4e"><td class="memItemLeft" align="right" valign="top"><a id="ade7401848b1db36479d5bc88bf5d1c4e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>handleMessage</b> (<a class="el" href="class_message.html">Message</a> msg)</td></tr>
+<tr class="separator:ade7401848b1db36479d5bc88bf5d1c4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed2fef86a5104dafaaeea74aa77ce135"><td class="memItemLeft" align="right" valign="top"><a id="aed2fef86a5104dafaaeea74aa77ce135"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>destroy</b> ()</td></tr>
 <tr class="separator:aed2fef86a5104dafaaeea74aa77ce135"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fdaeb54110de7d9efaba6e76964a53d"><td class="memItemLeft" align="right" valign="top"><a id="a6fdaeb54110de7d9efaba6e76964a53d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>sys_create</b> (<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *configMgr)</td></tr>
+<tr class="separator:a6fdaeb54110de7d9efaba6e76964a53d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a86a1b0a75149fca80945c8a80db6ce6e"><td class="memItemLeft" align="right" valign="top"><a id="a86a1b0a75149fca80945c8a80db6ce6e"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setShader</b> (stringID id)</td></tr>
 <tr class="separator:a86a1b0a75149fca80945c8a80db6ce6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_class_core_system"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_core_system')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_core_system.html">CoreSystem</a></td></tr>
+<tr class="memitem:ad24ab26e7071e7b9aeeba038a9642f4e inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="ad24ab26e7071e7b9aeeba038a9642f4e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> (<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *configMgr)</td></tr>
+<tr class="separator:ad24ab26e7071e7b9aeeba038a9642f4e inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a760244a6d3f503e25aed9dbfb20891 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="a1a760244a6d3f503e25aed9dbfb20891"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setMessageBus</b> (<a class="el" href="class_message_bus.html">MessageBus</a> *msgBus)</td></tr>
+<tr class="separator:a1a760244a6d3f503e25aed9dbfb20891 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeed879de045792f192297cc8d2dc6474 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="aeed879de045792f192297cc8d2dc6474"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>putMessage</b> (<a class="el" href="class_message.html">Message</a> msg)</td></tr>
+<tr class="separator:aeed879de045792f192297cc8d2dc6474 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac115995ca3201aaaf8b05656fad0398 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="aac115995ca3201aaaf8b05656fad0398"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>putMessage</b> (Message::Type _type, std::string data)</td></tr>
+<tr class="separator:aac115995ca3201aaaf8b05656fad0398 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add11c5aadb29d10cc8b6fbaa4f1ad1ac inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="add11c5aadb29d10cc8b6fbaa4f1ad1ac"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>logMessage</b> (const char *text)</td></tr>
+<tr class="separator:add11c5aadb29d10cc8b6fbaa4f1ad1ac inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41f1a473630b6e62f75816efb8342703 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="a41f1a473630b6e62f75816efb8342703"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>logMessage</b> (const char *text, int count,...)</td></tr>
+<tr class="separator:a41f1a473630b6e62f75816efb8342703 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pro_attribs_class_core_system"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_core_system')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_core_system.html">CoreSystem</a></td></tr>
+<tr class="memitem:a03985f78036e02564ec358a7e67b714f inherit pro_attribs_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="a03985f78036e02564ec358a7e67b714f"></a>
+<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_configMgr</b></td></tr>
+<tr class="separator:a03985f78036e02564ec358a7e67b714f inherit pro_attribs_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9d81ad5b4b7f413a68e026f45166a45 inherit pro_attribs_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="aa9d81ad5b4b7f413a68e026f45166a45"></a>
+<a class="el" href="class_message_bus.html">MessageBus</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_msgBus</b></td></tr>
+<tr class="separator:aa9d81ad5b4b7f413a68e026f45166a45 inherit pro_attribs_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>D:/GameDev/Big-Disc-Mk-II/src/<a class="el" href="_render_manager_8hpp_source.html">RenderManager.hpp</a></li>

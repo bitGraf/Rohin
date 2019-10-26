@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: Member List</title>
+<title>Epic Project Time: Member List</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -20,9 +20,11 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Epic Project Time
    </div>
+   <div id="projectbrief">A second attempt at a game using lessons learned from big-time-disc-tomorrow</div>
   </td>
  </tr>
  </tbody>
@@ -68,13 +70,16 @@ $(function() {
 
 <p>This is the complete list of members for <a class="el" href="class_pool_allocator.html">PoolAllocator</a>, including all inherited members.</p>
 <table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>create</b>() (defined in <a class="el" href="class_pool_allocator.html">PoolAllocator</a>)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>data</b> (defined in <a class="el" href="class_pool_allocator.html">PoolAllocator</a>)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>destroy</b>() (defined in <a class="el" href="class_pool_allocator.html">PoolAllocator</a>)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>freeDataBlock</b>(MemoryBlock *block) (defined in <a class="el" href="class_pool_allocator.html">PoolAllocator</a>)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>getBlock</b>() (defined in <a class="el" href="class_pool_allocator.html">PoolAllocator</a>)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>PoolAllocator</b>(u16 numElements, u16 elementSize) (defined in <a class="el" href="class_pool_allocator.html">PoolAllocator</a>)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>~PoolAllocator</b>() (defined in <a class="el" href="class_pool_allocator.html">PoolAllocator</a>)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_pool_allocator.html#af9b688a4973655c4fe83c4dd59521aa4">allocBlock</a>(u32 howManyElements, bool pullFromFront=true)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="class_pool_allocator.html#afb6e84ffcfec7b21c170a78ca2802508">allocBlock_raw</a>(u32 howManyBytes, bool pullFromFront=true)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_pool_allocator.html#a297473188e77bd80f4d9e025f5d7bb6f">create</a>()</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="class_pool_allocator.html#a5f885615f08fdc0ce4e468307fb99a46">destroy</a>()</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_pool_allocator.html#a0c2e6cf38e10e25e7fc979262eb2d99d">getBytesLeft</a>()</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr><td class="entry"><a class="el" href="class_pool_allocator.html#a3ebd3ea705bc2a2061503ea48a6c3844">getTotalBytes</a>()</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"><span class="mlabel">inline</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_pool_allocator.html#a2c049c7a5aab8f5854046e10656bca02">PoolAllocator</a>(const u32 howManyBytes)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="class_pool_allocator.html#a8c784374703d5d557dbaad7d1964c765">returnBlock</a>(DataBlock&lt; T &gt; &amp;block)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="class_pool_allocator.html#a53f48522b7f0a1bb67b26719a1982335">returnBlock_raw</a>(void *block)</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="class_pool_allocator.html#ac4ac1fe039f85056fa928b7c74970ab1">~PoolAllocator</a>()</td><td class="entry"><a class="el" href="class_pool_allocator.html">PoolAllocator</a></td><td class="entry"></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

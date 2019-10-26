@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: Console Class Reference</title>
+<title>Epic Project Time: Console Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -20,9 +20,11 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Epic Project Time
    </div>
+   <div id="projectbrief">A second attempt at a game using lessons learned from big-time-disc-tomorrow</div>
   </td>
  </tr>
  </tbody>
@@ -68,77 +70,66 @@ $(function() {
 <div class="title">Console Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-
-<p>Command <a class="el" href="class_console.html" title="Command Console Wrapper.">Console</a> Wrapper.  
- <a href="class_console.html#details">More...</a></p>
-
-<p><code>#include &lt;<a class="el" href="_console_8hpp_source.html">Console.hpp</a>&gt;</code></p>
+<div class="dynheader">
+Inheritance diagram for Console:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="class_console.png" usemap="#Console_map" alt=""/>
+  <map id="Console_map" name="Console_map">
+<area href="class_core_system.html" alt="CoreSystem" shape="rect" coords="0,0,80,24"/>
+  </map>
+</div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aba16cfd9f0894eb1312b1bc1155b6646"><td class="memItemLeft" align="right" valign="top"><a id="aba16cfd9f0894eb1312b1bc1155b6646"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_console.html#aba16cfd9f0894eb1312b1bc1155b6646">Console</a> ()</td></tr>
-<tr class="memdesc:aba16cfd9f0894eb1312b1bc1155b6646"><td class="mdescLeft">&#160;</td><td class="mdescRight">Empty constructor. <br /></td></tr>
-<tr class="separator:aba16cfd9f0894eb1312b1bc1155b6646"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac554a002159d86aaa63811da268224a"><td class="memItemLeft" align="right" valign="top"><a id="aac554a002159d86aaa63811da268224a"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_console.html#aac554a002159d86aaa63811da268224a">create</a> (<a class="el" href="class_message_bus.html">MessageBus</a> *_msgBus)</td></tr>
-<tr class="memdesc:aac554a002159d86aaa63811da268224a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize console with <a class="el" href="class_message_bus.html">MessageBus</a>. <br /></td></tr>
-<tr class="separator:aac554a002159d86aaa63811da268224a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6bd41db211cca0b244841a9e788aee3c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_console.html#a6bd41db211cca0b244841a9e788aee3c">startListening</a> ()</td></tr>
-<tr class="separator:a6bd41db211cca0b244841a9e788aee3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af56253eda0e27d95fbbc2ac024110676"><td class="memItemLeft" align="right" valign="top"><a id="af56253eda0e27d95fbbc2ac024110676"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_console.html#af56253eda0e27d95fbbc2ac024110676">logMessage</a> (const char *text)</td></tr>
-<tr class="memdesc:af56253eda0e27d95fbbc2ac024110676"><td class="mdescLeft">&#160;</td><td class="mdescRight">Post a message to be printed. <br /></td></tr>
-<tr class="separator:af56253eda0e27d95fbbc2ac024110676"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa003eda272ee1a7fd9ca2431540871c3"><td class="memItemLeft" align="right" valign="top"><a id="aa003eda272ee1a7fd9ca2431540871c3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_console.html#aa003eda272ee1a7fd9ca2431540871c3">logMessage</a> (const char *text, int count,...)</td></tr>
-<tr class="memdesc:aa003eda272ee1a7fd9ca2431540871c3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Post a message to be printed. <br /></td></tr>
-<tr class="separator:aa003eda272ee1a7fd9ca2431540871c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1464236e7a4e372394757b4c71cfffa3"><td class="memItemLeft" align="right" valign="top"><a id="a1464236e7a4e372394757b4c71cfffa3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_console.html#a1464236e7a4e372394757b4c71cfffa3">logMessage</a> (std::string text)</td></tr>
-<tr class="memdesc:a1464236e7a4e372394757b4c71cfffa3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Post a message to be printed. <br /></td></tr>
-<tr class="separator:a1464236e7a4e372394757b4c71cfffa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a77b606313ab488631efcf145f2d889e6"><td class="memItemLeft" align="right" valign="top"><a id="a77b606313ab488631efcf145f2d889e6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_console.html#a77b606313ab488631efcf145f2d889e6">killConsole</a> ()</td></tr>
-<tr class="memdesc:a77b606313ab488631efcf145f2d889e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">End this console instance. <br /></td></tr>
-<tr class="separator:a77b606313ab488631efcf145f2d889e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b54a180c9653279cb033343be18521a"><td class="memItemLeft" align="right" valign="top"><a id="a2b54a180c9653279cb033343be18521a"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>update</b> (double dt)</td></tr>
+<tr class="separator:a2b54a180c9653279cb033343be18521a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51344010b193771a41fd21e81298141c"><td class="memItemLeft" align="right" valign="top"><a id="a51344010b193771a41fd21e81298141c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>handleMessage</b> (<a class="el" href="class_message.html">Message</a> msg)</td></tr>
+<tr class="separator:a51344010b193771a41fd21e81298141c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ea408a6438e0168b26c219da5bc690e"><td class="memItemLeft" align="right" valign="top"><a id="a7ea408a6438e0168b26c219da5bc690e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>destroy</b> ()</td></tr>
+<tr class="separator:a7ea408a6438e0168b26c219da5bc690e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abadeb6060d9107e909953b64b884a937"><td class="memItemLeft" align="right" valign="top"><a id="abadeb6060d9107e909953b64b884a937"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>sys_create</b> (<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *configMgr)</td></tr>
+<tr class="separator:abadeb6060d9107e909953b64b884a937"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6316a11484f3cc1d392d9bbdab8533b4"><td class="memItemLeft" align="right" valign="top"><a id="a6316a11484f3cc1d392d9bbdab8533b4"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_console.html#a6316a11484f3cc1d392d9bbdab8533b4">prompt</a> ()</td></tr>
-<tr class="memdesc:a6316a11484f3cc1d392d9bbdab8533b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ask console for input. <br /></td></tr>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>prompt</b> ()</td></tr>
 <tr class="separator:a6316a11484f3cc1d392d9bbdab8533b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af1d3a54bd8649b46574ad35998563fea"><td class="memItemLeft" align="right" valign="top"><a id="af1d3a54bd8649b46574ad35998563fea"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_console.html#af1d3a54bd8649b46574ad35998563fea">update</a> ()</td></tr>
-<tr class="memdesc:af1d3a54bd8649b46574ad35998563fea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update <a class="el" href="class_console.html" title="Command Console Wrapper.">Console</a>. <br /></td></tr>
-<tr class="separator:af1d3a54bd8649b46574ad35998563fea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bd41db211cca0b244841a9e788aee3c"><td class="memItemLeft" align="right" valign="top"><a id="a6bd41db211cca0b244841a9e788aee3c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>startListening</b> ()</td></tr>
+<tr class="separator:a6bd41db211cca0b244841a9e788aee3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_class_core_system"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_core_system')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_core_system.html">CoreSystem</a></td></tr>
+<tr class="memitem:ad24ab26e7071e7b9aeeba038a9642f4e inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="ad24ab26e7071e7b9aeeba038a9642f4e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> (<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *configMgr)</td></tr>
+<tr class="separator:ad24ab26e7071e7b9aeeba038a9642f4e inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a760244a6d3f503e25aed9dbfb20891 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="a1a760244a6d3f503e25aed9dbfb20891"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setMessageBus</b> (<a class="el" href="class_message_bus.html">MessageBus</a> *msgBus)</td></tr>
+<tr class="separator:a1a760244a6d3f503e25aed9dbfb20891 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeed879de045792f192297cc8d2dc6474 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="aeed879de045792f192297cc8d2dc6474"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>putMessage</b> (<a class="el" href="class_message.html">Message</a> msg)</td></tr>
+<tr class="separator:aeed879de045792f192297cc8d2dc6474 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac115995ca3201aaaf8b05656fad0398 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="aac115995ca3201aaaf8b05656fad0398"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>putMessage</b> (Message::Type _type, std::string data)</td></tr>
+<tr class="separator:aac115995ca3201aaaf8b05656fad0398 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add11c5aadb29d10cc8b6fbaa4f1ad1ac inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="add11c5aadb29d10cc8b6fbaa4f1ad1ac"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>logMessage</b> (const char *text)</td></tr>
+<tr class="separator:add11c5aadb29d10cc8b6fbaa4f1ad1ac inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41f1a473630b6e62f75816efb8342703 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="a41f1a473630b6e62f75816efb8342703"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>logMessage</b> (const char *text, int count,...)</td></tr>
+<tr class="separator:a41f1a473630b6e62f75816efb8342703 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pro_attribs_class_core_system"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_core_system')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_core_system.html">CoreSystem</a></td></tr>
+<tr class="memitem:a03985f78036e02564ec358a7e67b714f inherit pro_attribs_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="a03985f78036e02564ec358a7e67b714f"></a>
+<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_configMgr</b></td></tr>
+<tr class="separator:a03985f78036e02564ec358a7e67b714f inherit pro_attribs_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9d81ad5b4b7f413a68e026f45166a45 inherit pro_attribs_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="aa9d81ad5b4b7f413a68e026f45166a45"></a>
+<a class="el" href="class_message_bus.html">MessageBus</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_msgBus</b></td></tr>
+<tr class="separator:aa9d81ad5b4b7f413a68e026f45166a45 inherit pro_attribs_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Command <a class="el" href="class_console.html" title="Command Console Wrapper.">Console</a> Wrapper. </p>
-<p>This is intended to be a wrapper for a command console that can receive and send messages on the <a class="el" href="class_message_bus.html">MessageBus</a></p>
-<dl class="section author"><dt>Author</dt><dd></dd></dl>
-<dl class="section rcs"><dt>Author</dt><dd>bv </dd></dl>
-<dl class="section version"><dt>Version</dt><dd></dd></dl>
-<dl class="section rcs"><dt>Revision</dt><dd>1.5 </dd></dl>
-<dl class="section date"><dt>Date</dt><dd></dd></dl>
-<dl class="section rcs"><dt>Date</dt><dd>2005/04/14 14:16:20 </dd></dl>
-</div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a6bd41db211cca0b244841a9e788aee3c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6bd41db211cca0b244841a9e788aee3c">&#9670;&nbsp;</a></span>startListening()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void Console::startListening </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Run this method on a separate thread to begin listening for messages and output log messages </p>
-
-</div>
-</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>D:/GameDev/Big-Disc-Mk-II/src/<a class="el" href="_console_8hpp_source.html">Console.hpp</a></li>
 <li>D:/GameDev/Big-Disc-Mk-II/src/Console.cpp</li>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: Member List</title>
+<title>Epic Project Time: Member List</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -20,9 +20,11 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Epic Project Time
    </div>
+   <div id="projectbrief">A second attempt at a game using lessons learned from big-time-disc-tomorrow</div>
   </td>
  </tr>
  </tbody>
@@ -68,13 +70,23 @@ $(function() {
 
 <p>This is the complete list of members for <a class="el" href="class_file_system.html">FileSystem</a>, including all inherited members.</p>
 <table class="directory">
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>create</b>() (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>destroy</b>() (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>FileSystem</b>() (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>setConsole</b>(Console *console) (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>setMessageBus</b>(MessageBus *_messageBus) (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0"><td class="entry"><b>setRootDirectory</b>(char directory[128]) (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>syncReadFile</b>(const char *filepath, u8 *buffer, size_t bufferSize, size_t &amp;rBytesRead) (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>CoreSystem</b>() (defined in <a class="el" href="class_core_system.html">CoreSystem</a>)</td><td class="entry"><a class="el" href="class_core_system.html">CoreSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>create</b>(ConfigurationManager *configMgr) (defined in <a class="el" href="class_core_system.html">CoreSystem</a>)</td><td class="entry"><a class="el" href="class_core_system.html">CoreSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>destroy</b>() (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>FileSystem</b>() (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>handleMessage</b>(Message msg) (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>logMessage</b>(const char *text) (defined in <a class="el" href="class_core_system.html">CoreSystem</a>)</td><td class="entry"><a class="el" href="class_core_system.html">CoreSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>logMessage</b>(const char *text, int count,...) (defined in <a class="el" href="class_core_system.html">CoreSystem</a>)</td><td class="entry"><a class="el" href="class_core_system.html">CoreSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>m_configMgr</b> (defined in <a class="el" href="class_core_system.html">CoreSystem</a>)</td><td class="entry"><a class="el" href="class_core_system.html">CoreSystem</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>m_msgBus</b> (defined in <a class="el" href="class_core_system.html">CoreSystem</a>)</td><td class="entry"><a class="el" href="class_core_system.html">CoreSystem</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>putMessage</b>(Message msg) (defined in <a class="el" href="class_core_system.html">CoreSystem</a>)</td><td class="entry"><a class="el" href="class_core_system.html">CoreSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>putMessage</b>(Message::Type _type, std::string data) (defined in <a class="el" href="class_core_system.html">CoreSystem</a>)</td><td class="entry"><a class="el" href="class_core_system.html">CoreSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>setMessageBus</b>(MessageBus *msgBus) (defined in <a class="el" href="class_core_system.html">CoreSystem</a>)</td><td class="entry"><a class="el" href="class_core_system.html">CoreSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>setRootDirectory</b>(char directory[128]) (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>syncReadFile</b>(const char *filepath, u8 *buffer, size_t bufferSize, size_t &amp;rBytesRead) (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>sys_create</b>(ConfigurationManager *configMgr) (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>update</b>(double dt) (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>~CoreSystem</b>() (defined in <a class="el" href="class_core_system.html">CoreSystem</a>)</td><td class="entry"><a class="el" href="class_core_system.html">CoreSystem</a></td><td class="entry"></td></tr>
   <tr bgcolor="#f0f0f0"><td class="entry"><b>~FileSystem</b>() (defined in <a class="el" href="class_file_system.html">FileSystem</a>)</td><td class="entry"><a class="el" href="class_file_system.html">FileSystem</a></td><td class="entry"></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->

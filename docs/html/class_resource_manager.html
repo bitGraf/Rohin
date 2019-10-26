@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: ResourceManager Class Reference</title>
+<title>Epic Project Time: ResourceManager Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -20,9 +20,11 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Epic Project Time
    </div>
+   <div id="projectbrief">A second attempt at a game using lessons learned from big-time-disc-tomorrow</div>
   </td>
  </tr>
  </tbody>
@@ -68,24 +70,33 @@ $(function() {
 <div class="title">ResourceManager Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="dynheader">
+Inheritance diagram for ResourceManager:</div>
+<div class="dyncontent">
+ <div class="center">
+  <img src="class_resource_manager.png" usemap="#ResourceManager_map" alt=""/>
+  <map id="ResourceManager_map" name="ResourceManager_map">
+<area href="class_core_system.html" alt="CoreSystem" shape="rect" coords="0,0,117,24"/>
+  </map>
+</div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a91109c3132c35c7189ff160cf00e45e7"><td class="memItemLeft" align="right" valign="top"><a id="a91109c3132c35c7189ff160cf00e45e7"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> ()</td></tr>
-<tr class="separator:a91109c3132c35c7189ff160cf00e45e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa539e216d98e81805af10b330f7f06c"><td class="memItemLeft" align="right" valign="top"><a id="aaa539e216d98e81805af10b330f7f06c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>update</b> (double dt)</td></tr>
+<tr class="separator:aaa539e216d98e81805af10b330f7f06c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a05bfe90c9e6be2ab33e1bb3e28cfea"><td class="memItemLeft" align="right" valign="top"><a id="a0a05bfe90c9e6be2ab33e1bb3e28cfea"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>handleMessage</b> (<a class="el" href="class_message.html">Message</a> msg)</td></tr>
+<tr class="separator:a0a05bfe90c9e6be2ab33e1bb3e28cfea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a7e1c5f097d977ebd90a685b293af35"><td class="memItemLeft" align="right" valign="top"><a id="a1a7e1c5f097d977ebd90a685b293af35"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>destroy</b> ()</td></tr>
 <tr class="separator:a1a7e1c5f097d977ebd90a685b293af35"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a56d83d9ef48904ffe40c98ba05cce00f"><td class="memItemLeft" align="right" valign="top"><a id="a56d83d9ef48904ffe40c98ba05cce00f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setConsole</b> (<a class="el" href="class_console.html">Console</a> *console)</td></tr>
-<tr class="separator:a56d83d9ef48904ffe40c98ba05cce00f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a199684a53b89124ba20a3fd17f312ed2"><td class="memItemLeft" align="right" valign="top"><a id="a199684a53b89124ba20a3fd17f312ed2"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>sys_create</b> (<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *configMgr)</td></tr>
+<tr class="separator:a199684a53b89124ba20a3fd17f312ed2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d31a35606b792744cea2ab9e5eefa58"><td class="memItemLeft" align="right" valign="top"><a id="a6d31a35606b792744cea2ab9e5eefa58"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setFileSystem</b> (<a class="el" href="class_file_system.html">FileSystem</a> *_filesys)</td></tr>
 <tr class="separator:a6d31a35606b792744cea2ab9e5eefa58"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aee3598cf1721028d14e14930ba7479c3"><td class="memItemLeft" align="right" valign="top"><a id="aee3598cf1721028d14e14930ba7479c3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setMessageBus</b> (<a class="el" href="class_message_bus.html">MessageBus</a> *_messageBus)</td></tr>
-<tr class="separator:aee3598cf1721028d14e14930ba7479c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a525685e5780cad648d5f2d596799fe96"><td class="memItemLeft" align="right" valign="top"><a id="a525685e5780cad648d5f2d596799fe96"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>createNewResource</b> (stringID id=0)</td></tr>
 <tr class="separator:a525685e5780cad648d5f2d596799fe96"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -95,6 +106,35 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>printAllResources</b>
 <tr class="memitem:a7970f4e7eac8dcba8e055a1dcd25a732"><td class="memItemLeft" align="right" valign="top"><a id="a7970f4e7eac8dcba8e055a1dcd25a732"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>loadModelFromFile</b> (std::string path)</td></tr>
 <tr class="separator:a7970f4e7eac8dcba8e055a1dcd25a732"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_class_core_system"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_core_system')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_core_system.html">CoreSystem</a></td></tr>
+<tr class="memitem:ad24ab26e7071e7b9aeeba038a9642f4e inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="ad24ab26e7071e7b9aeeba038a9642f4e"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> (<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *configMgr)</td></tr>
+<tr class="separator:ad24ab26e7071e7b9aeeba038a9642f4e inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a760244a6d3f503e25aed9dbfb20891 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="a1a760244a6d3f503e25aed9dbfb20891"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setMessageBus</b> (<a class="el" href="class_message_bus.html">MessageBus</a> *msgBus)</td></tr>
+<tr class="separator:a1a760244a6d3f503e25aed9dbfb20891 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeed879de045792f192297cc8d2dc6474 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="aeed879de045792f192297cc8d2dc6474"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>putMessage</b> (<a class="el" href="class_message.html">Message</a> msg)</td></tr>
+<tr class="separator:aeed879de045792f192297cc8d2dc6474 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac115995ca3201aaaf8b05656fad0398 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="aac115995ca3201aaaf8b05656fad0398"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>putMessage</b> (Message::Type _type, std::string data)</td></tr>
+<tr class="separator:aac115995ca3201aaaf8b05656fad0398 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add11c5aadb29d10cc8b6fbaa4f1ad1ac inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="add11c5aadb29d10cc8b6fbaa4f1ad1ac"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>logMessage</b> (const char *text)</td></tr>
+<tr class="separator:add11c5aadb29d10cc8b6fbaa4f1ad1ac inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41f1a473630b6e62f75816efb8342703 inherit pub_methods_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="a41f1a473630b6e62f75816efb8342703"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>logMessage</b> (const char *text, int count,...)</td></tr>
+<tr class="separator:a41f1a473630b6e62f75816efb8342703 inherit pub_methods_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pro_attribs_class_core_system"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_core_system')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_core_system.html">CoreSystem</a></td></tr>
+<tr class="memitem:a03985f78036e02564ec358a7e67b714f inherit pro_attribs_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="a03985f78036e02564ec358a7e67b714f"></a>
+<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_configMgr</b></td></tr>
+<tr class="separator:a03985f78036e02564ec358a7e67b714f inherit pro_attribs_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9d81ad5b4b7f413a68e026f45166a45 inherit pro_attribs_class_core_system"><td class="memItemLeft" align="right" valign="top"><a id="aa9d81ad5b4b7f413a68e026f45166a45"></a>
+<a class="el" href="class_message_bus.html">MessageBus</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_msgBus</b></td></tr>
+<tr class="separator:aa9d81ad5b4b7f413a68e026f45166a45 inherit pro_attribs_class_core_system"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>D:/GameDev/Big-Disc-Mk-II/src/<a class="el" href="_resource_manager_8hpp_source.html">ResourceManager.hpp</a></li>

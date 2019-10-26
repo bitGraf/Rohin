@@ -8,7 +8,9 @@ echo.
 
 rem BUILD HERE
 pushd ..\build
-cmake --build . --config Release --target ALL_BUILD
+rem cmake --build . --config Release --target ALL_BUILD
+cmake ..
+cmake --build . --config Release --target doc_dox
 popd
 rem END BUILDING
 

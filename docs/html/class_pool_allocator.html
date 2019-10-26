@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: PoolAllocator Class Reference</title>
+<title>Epic Project Time: PoolAllocator Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -20,9 +20,11 @@
 <table cellspacing="0" cellpadding="0">
  <tbody>
  <tr style="height: 56px;">
+  <td id="projectlogo"><img alt="Logo" src="logo.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">Epic Project Time
    </div>
+   <div id="projectbrief">A second attempt at a game using lessons learned from big-time-disc-tomorrow</div>
   </td>
  </tr>
  </tbody>
@@ -63,37 +65,338 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="class_pool_allocator-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">PoolAllocator Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Two-Sided Memory Pool.  
+ <a href="class_pool_allocator.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="_memory_manager_8hpp_source.html">MemoryManager.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a63694ab0370e83aaae09f127239c9b8f"><td class="memItemLeft" align="right" valign="top"><a id="a63694ab0370e83aaae09f127239c9b8f"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>PoolAllocator</b> (u16 numElements, u16 elementSize)</td></tr>
-<tr class="separator:a63694ab0370e83aaae09f127239c9b8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a297473188e77bd80f4d9e025f5d7bb6f"><td class="memItemLeft" align="right" valign="top"><a id="a297473188e77bd80f4d9e025f5d7bb6f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> ()</td></tr>
+<tr class="memitem:a2c049c7a5aab8f5854046e10656bca02"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_pool_allocator.html#a2c049c7a5aab8f5854046e10656bca02">PoolAllocator</a> (const u32 howManyBytes)</td></tr>
+<tr class="memdesc:a2c049c7a5aab8f5854046e10656bca02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct <a class="el" href="class_pool_allocator.html" title="Two-Sided Memory Pool.">PoolAllocator</a>.  <a href="#a2c049c7a5aab8f5854046e10656bca02">More...</a><br /></td></tr>
+<tr class="separator:a2c049c7a5aab8f5854046e10656bca02"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4ac1fe039f85056fa928b7c74970ab1"><td class="memItemLeft" align="right" valign="top"><a id="ac4ac1fe039f85056fa928b7c74970ab1"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_pool_allocator.html#ac4ac1fe039f85056fa928b7c74970ab1">~PoolAllocator</a> ()</td></tr>
+<tr class="memdesc:ac4ac1fe039f85056fa928b7c74970ab1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Empty destructor. <br /></td></tr>
+<tr class="separator:ac4ac1fe039f85056fa928b7c74970ab1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a297473188e77bd80f4d9e025f5d7bb6f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_pool_allocator.html#a297473188e77bd80f4d9e025f5d7bb6f">create</a> ()</td></tr>
+<tr class="memdesc:a297473188e77bd80f4d9e025f5d7bb6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initaize the allocator.  <a href="#a297473188e77bd80f4d9e025f5d7bb6f">More...</a><br /></td></tr>
 <tr class="separator:a297473188e77bd80f4d9e025f5d7bb6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5f885615f08fdc0ce4e468307fb99a46"><td class="memItemLeft" align="right" valign="top"><a id="a5f885615f08fdc0ce4e468307fb99a46"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>destroy</b> ()</td></tr>
+<tr class="memitem:a5f885615f08fdc0ce4e468307fb99a46"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_pool_allocator.html#a5f885615f08fdc0ce4e468307fb99a46">destroy</a> ()</td></tr>
+<tr class="memdesc:a5f885615f08fdc0ce4e468307fb99a46"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroys the whole pool, freeing all memory in the process.  <a href="#a5f885615f08fdc0ce4e468307fb99a46">More...</a><br /></td></tr>
 <tr class="separator:a5f885615f08fdc0ce4e468307fb99a46"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f15f198bd531917698c3ce44d15ca44"><td class="memItemLeft" align="right" valign="top"><a id="a4f15f198bd531917698c3ce44d15ca44"></a>
-MemoryBlock *&#160;</td><td class="memItemRight" valign="bottom"><b>getBlock</b> ()</td></tr>
-<tr class="separator:a4f15f198bd531917698c3ce44d15ca44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c99d67869c9e7e2bf234db14d7a0861"><td class="memItemLeft" align="right" valign="top"><a id="a2c99d67869c9e7e2bf234db14d7a0861"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>freeDataBlock</b> (MemoryBlock *block)</td></tr>
-<tr class="separator:a2c99d67869c9e7e2bf234db14d7a0861"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:a84c81d9fa882d62be860eff33aa96817"><td class="memItemLeft" align="right" valign="top"><a id="a84c81d9fa882d62be860eff33aa96817"></a>
-MemoryBlock *&#160;</td><td class="memItemRight" valign="bottom"><b>data</b></td></tr>
-<tr class="separator:a84c81d9fa882d62be860eff33aa96817"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb6e84ffcfec7b21c170a78ca2802508"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_pool_allocator.html#afb6e84ffcfec7b21c170a78ca2802508">allocBlock_raw</a> (u32 howManyBytes, bool pullFromFront=true)</td></tr>
+<tr class="memdesc:afb6e84ffcfec7b21c170a78ca2802508"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request a raw chunk of data (void pointer)  <a href="#afb6e84ffcfec7b21c170a78ca2802508">More...</a><br /></td></tr>
+<tr class="separator:afb6e84ffcfec7b21c170a78ca2802508"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9b688a4973655c4fe83c4dd59521aa4"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:af9b688a4973655c4fe83c4dd59521aa4"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="struct_data_block.html">DataBlock</a>&lt; T &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_pool_allocator.html#af9b688a4973655c4fe83c4dd59521aa4">allocBlock</a> (u32 howManyElements, bool pullFromFront=true)</td></tr>
+<tr class="memdesc:af9b688a4973655c4fe83c4dd59521aa4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Request memory block of desired type.  <a href="#af9b688a4973655c4fe83c4dd59521aa4">More...</a><br /></td></tr>
+<tr class="separator:af9b688a4973655c4fe83c4dd59521aa4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53f48522b7f0a1bb67b26719a1982335"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_pool_allocator.html#a53f48522b7f0a1bb67b26719a1982335">returnBlock_raw</a> (void *block)</td></tr>
+<tr class="memdesc:a53f48522b7f0a1bb67b26719a1982335"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a memory block to the pool.  <a href="#a53f48522b7f0a1bb67b26719a1982335">More...</a><br /></td></tr>
+<tr class="separator:a53f48522b7f0a1bb67b26719a1982335"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c784374703d5d557dbaad7d1964c765"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a8c784374703d5d557dbaad7d1964c765"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_pool_allocator.html#a8c784374703d5d557dbaad7d1964c765">returnBlock</a> (<a class="el" href="struct_data_block.html">DataBlock</a>&lt; T &gt; &amp;block)</td></tr>
+<tr class="memdesc:a8c784374703d5d557dbaad7d1964c765"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a memory block to the pool.  <a href="#a8c784374703d5d557dbaad7d1964c765">More...</a><br /></td></tr>
+<tr class="separator:a8c784374703d5d557dbaad7d1964c765"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ebd3ea705bc2a2061503ea48a6c3844"><td class="memItemLeft" align="right" valign="top">u32&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_pool_allocator.html#a3ebd3ea705bc2a2061503ea48a6c3844">getTotalBytes</a> ()</td></tr>
+<tr class="memdesc:a3ebd3ea705bc2a2061503ea48a6c3844"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get size of this pool.  <a href="#a3ebd3ea705bc2a2061503ea48a6c3844">More...</a><br /></td></tr>
+<tr class="separator:a3ebd3ea705bc2a2061503ea48a6c3844"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c2e6cf38e10e25e7fc979262eb2d99d"><td class="memItemLeft" align="right" valign="top">u32&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_pool_allocator.html#a0c2e6cf38e10e25e7fc979262eb2d99d">getBytesLeft</a> ()</td></tr>
+<tr class="memdesc:a0c2e6cf38e10e25e7fc979262eb2d99d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get bytes left in pool.  <a href="#a0c2e6cf38e10e25e7fc979262eb2d99d">More...</a><br /></td></tr>
+<tr class="separator:a0c2e6cf38e10e25e7fc979262eb2d99d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Two-Sided Memory Pool. </p>
+<p>This class represents a memory pool allocator. The allocator secures a large chunk of data at creation, then passes out <a class="el" href="struct_data_block.html">DataBlock</a> objects when asked. This is done to allow run-time dynamic memory allocation without incurring the heavy performance toll of using malloc() in real time.</p>
+<p>This is a two-sided pool, meaning the memory chunk can be pulled from both sides independently, eventually meeting in the middle.</p>
+<p>Usage: </p><div class="fragment"><div class="line"><a class="code" href="class_pool_allocator.html#a2c049c7a5aab8f5854046e10656bca02">PoolAllocator</a>(80) pool; <span class="comment">// Create a memory pool with a size of 80 bytes.</span></div><div class="line"></div><div class="line">pool.<a class="code" href="class_pool_allocator.html#a297473188e77bd80f4d9e025f5d7bb6f">create</a>(); <span class="comment">// Allocate the memory needed from the system. Calls malloc() once.</span></div><div class="line"></div><div class="line">MemoryBlock&lt;u32&gt; block1 = pool.<a class="code" href="class_pool_allocator.html#af9b688a4973655c4fe83c4dd59521aa4">allocBlock</a>&lt;u32&gt;(10);         <span class="comment">// This pulls 40 bytes off the front. There are 40 bytes left.</span></div><div class="line">MemoryBlock&lt;f32&gt; block2 = pool.<a class="code" href="class_pool_allocator.html#af9b688a4973655c4fe83c4dd59521aa4">allocBlock</a>&lt;f32&gt;(8, false);   <span class="comment">// This pulls 32 bytes off the back.  There are  8 bytes left.</span></div><div class="line">MemoryBlock&lt;f32&gt; block3 = pool.<a class="code" href="class_pool_allocator.html#af9b688a4973655c4fe83c4dd59521aa4">allocBlock</a>&lt;f32&gt;(5, false);   <span class="comment">// This fails as there are only 8 bytes left in the pool. block3.data is nullptr</span></div><div class="line">MemoryBlock&lt;f64&gt; block4 = pool.<a class="code" href="class_pool_allocator.html#af9b688a4973655c4fe83c4dd59521aa4">allocBlock</a>&lt;f64&gt;(1, true);   <span class="comment">// This succeeds, pulling 8 bytes off the front. There are 0 bytes left.</span></div><div class="line"></div><div class="line">if (block1.data) { <span class="comment">// check if block was created correctly</span></div><div class="line">    useData(block1.data, block1.m_elementSize, block1.m_numElements); <span class="comment">// use the data however is needed</span></div><div class="line">}</div><div class="line"></div><div class="line">...</div><div class="line"></div><div class="line"><span class="comment">// Return all the blocks to the pool</span></div><div class="line">pool.returnBlock(block1); </div><div class="line">pool.returnBlock(block2);</div><div class="line">pool.returnBlock(block3);   <span class="comment">// Even failed blocks</span></div><div class="line">pool.returnBlock(block4);</div><div class="line"></div><div class="line">pool.destroy();     <span class="comment">// Destroy the pool allocator, freeing the entire block of memory back to the operating system.</span></div></div><!-- fragment --> </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="a2c049c7a5aab8f5854046e10656bca02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c049c7a5aab8f5854046e10656bca02">&#9670;&nbsp;</a></span>PoolAllocator()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">PoolAllocator::PoolAllocator </td>
+          <td>(</td>
+          <td class="paramtype">const u32&#160;</td>
+          <td class="paramname"><em>howManyBytes</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Construct <a class="el" href="class_pool_allocator.html" title="Two-Sided Memory Pool.">PoolAllocator</a>. </p>
+<p>Construct a Two-Sided Memory Pool Allocator, choosing the size at construction.</p>
+<dl class="section warning"><dt>Warning</dt><dd>Does not initialize data of pool, must call <a class="el" href="class_pool_allocator.html#a297473188e77bd80f4d9e025f5d7bb6f">create</a> first </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">howManyBytes</td><td>u32 Size of the memory pool. Must be non-zero. Constant once set </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="af9b688a4973655c4fe83c4dd59521aa4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9b688a4973655c4fe83c4dd59521aa4">&#9670;&nbsp;</a></span>allocBlock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="struct_data_block.html">DataBlock</a>&lt; T &gt; PoolAllocator::allocBlock </td>
+          <td>(</td>
+          <td class="paramtype">u32&#160;</td>
+          <td class="paramname"><em>howManyElements</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>pullFromFront</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Request memory block of desired type. </p>
+<p>Request a block of memory of a specified type. The type is specified as a template, and the element size is automatically set at construction. When using this method, specify the number of elements you want.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Data type of the memory block </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">howManyElements</td><td>How many elements of T you want </td></tr>
+    <tr><td class="paramname">pullFromFront</td><td>bool Pull from front or back of pool (Default front) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>DataBlock&lt;T&gt; A <a class="el" href="struct_data_block.html">DataBlock</a> struct, that contains the raw data, the size of each element, and the number of elemetns </dd></dl>
+
+</div>
+</div>
+<a id="afb6e84ffcfec7b21c170a78ca2802508"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afb6e84ffcfec7b21c170a78ca2802508">&#9670;&nbsp;</a></span>allocBlock_raw()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void * PoolAllocator::allocBlock_raw </td>
+          <td>(</td>
+          <td class="paramtype">u32&#160;</td>
+          <td class="paramname"><em>howManyBytes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>pullFromFront</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Request a raw chunk of data (void pointer) </p>
+<p>Request a raw pointer to a block of memory. The type is a void pointer When using this method, specify the number of bytes you want.</p>
+<p>@depreciated Use <a class="el" href="class_pool_allocator.html#af9b688a4973655c4fe83c4dd59521aa4">allocBlock</a> instead</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">howManyBytes</td><td>Requested size of block </td></tr>
+    <tr><td class="paramname">pullFromFront</td><td>bool Pull from front or back of pool (Default front) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>void Pointer to dataBlock. nullptr if failed to request </dd></dl>
+
+</div>
+</div>
+<a id="a297473188e77bd80f4d9e025f5d7bb6f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a297473188e77bd80f4d9e025f5d7bb6f">&#9670;&nbsp;</a></span>create()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PoolAllocator::create </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initaize the allocator. </p>
+<p>Allocate the entire memory block and setup front and back pointers. Must be called before requesting data.</p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>possible return error code if failed </dd></dl>
+
+</div>
+</div>
+<a id="a5f885615f08fdc0ce4e468307fb99a46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f885615f08fdc0ce4e468307fb99a46">&#9670;&nbsp;</a></span>destroy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PoolAllocator::destroy </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Destroys the whole pool, freeing all memory in the process. </p>
+<p>Destroys the whole pool, freeing all memory in the process. Be careful to only call this when all blocks no longer referenced.</p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>put in a check to make sure all blocks are not referenced anymore </dd></dl>
+
+</div>
+</div>
+<a id="a0c2e6cf38e10e25e7fc979262eb2d99d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0c2e6cf38e10e25e7fc979262eb2d99d">&#9670;&nbsp;</a></span>getBytesLeft()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">u32 PoolAllocator::getBytesLeft </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get bytes left in pool. </p>
+<p>Get the remaining size of this pool in bytes</p>
+<dl class="section return"><dt>Returns</dt><dd>u32 Remaining size of pool in bytes </dd></dl>
+
+</div>
+</div>
+<a id="a3ebd3ea705bc2a2061503ea48a6c3844"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ebd3ea705bc2a2061503ea48a6c3844">&#9670;&nbsp;</a></span>getTotalBytes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">u32 PoolAllocator::getTotalBytes </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Get size of this pool. </p>
+<p>Get the total size of this pool in bytes</p>
+<dl class="section return"><dt>Returns</dt><dd>u32 Total size of pool in bytes </dd></dl>
+
+</div>
+</div>
+<a id="a8c784374703d5d557dbaad7d1964c765"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8c784374703d5d557dbaad7d1964c765">&#9670;&nbsp;</a></span>returnBlock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void PoolAllocator::returnBlock </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="struct_data_block.html">DataBlock</a>&lt; T &gt; &amp;&#160;</td>
+          <td class="paramname"><em>block</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return a memory block to the pool. </p>
+<p>Return a memory block to the pool. The data pointer in the block you pass in is set to nullptr.</p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd>Add the returned block ~back~ to the pool , allowing it to be used again</dd></dl>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T</td><td>Data type of the memory block (Inherited from block) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">block</td><td>The memory block to free </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a53f48522b7f0a1bb67b26719a1982335"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a53f48522b7f0a1bb67b26719a1982335">&#9670;&nbsp;</a></span>returnBlock_raw()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void PoolAllocator::returnBlock_raw </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>block</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return a memory block to the pool. </p>
+<p>Return a memory block to the pool.</p>
+<p>@depreciated Use <a class="el" href="class_pool_allocator.html#a8c784374703d5d557dbaad7d1964c765">returnBlock</a> instead</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">block</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>D:/GameDev/Big-Disc-Mk-II/src/<a class="el" href="_memory_manager_8hpp_source.html">MemoryManager.hpp</a></li>
 <li>D:/GameDev/Big-Disc-Mk-II/src/MemoryManager.cpp</li>
