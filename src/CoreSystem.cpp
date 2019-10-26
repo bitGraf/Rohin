@@ -15,7 +15,7 @@ void CoreSystem::setMessageBus(MessageBus* msgBus) {
 
 void CoreSystem::create(ConfigurationManager* configMgr) {
     /* Do generic system configuration */
-    //m_msgBus = configMgr->getMessageBus();
+    m_configMgr = configMgr;
 
     /* Pass on to specific implementation */
     sys_create(configMgr);
@@ -27,11 +27,17 @@ void CoreSystem::putMessage(Message msg) {
     }
 }
 
+void CoreSystem::putMessage(Message::Type _type, std::string data) {
+    if (m_msgBus) {
+        Message msg;
+        msg.type = _type;
+        msg.text = data;
+        m_msgBus->putMessage(msg);
+    }
+}
+
 void CoreSystem::logMessage(const char* text) {
-    Message msg;
-    msg.type = Message::Type::log;
-    msg.text = std::string(text);
-    putMessage(msg);
+    putMessage(Message::Type::log, std::string(text));
 }
 
 void CoreSystem::logMessage(const char* text, int count, ...) {

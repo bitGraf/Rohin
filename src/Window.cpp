@@ -102,7 +102,7 @@ void Window::WindowPositionUpdate(int xpos, int ypos) {
 }
 
 void Window::WindowSizeUpdate(int w, int h) {
-    logMessage("Window::WindowSizeUpdate: ", 2, w, h);
+    putMessage(Message::Type::windowEvent, "WindowSizeUpdate");
 }
 
 void Window::WindowQuit() {
@@ -138,7 +138,7 @@ void Window::WindowScaleUpdate(float xscale, float yscale) {
 
 /* Input Callback Function */
 void Window::InputKey(int key, int scancode, int action, int mods) {
-    logMessage("Window::InputKey: ", 4, key, scancode, action, mods);
+    //logMessage("Window::InputKey: ", 4, key, scancode, action, mods);
 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         logMessage("Spacebar pressed");
@@ -146,6 +146,14 @@ void Window::InputKey(int key, int scancode, int action, int mods) {
 
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
         logMessage("P pressed");
+    }
+
+    if (key == GLFW_KEY_R && action == GLFW_PRESS && !(mods & GLFW_MOD_SHIFT)) {
+        putMessage(Message::Type::renderEvent, "startDraw");
+    }
+
+    if (key == GLFW_KEY_R && action == GLFW_PRESS && (mods & GLFW_MOD_SHIFT)) {
+        putMessage(Message::Type::renderEvent, "endDraw");
     }
 }
 

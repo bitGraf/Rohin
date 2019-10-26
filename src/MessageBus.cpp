@@ -3,9 +3,14 @@
 MessageBus::MessageBus() {
 }
 
-void MessageBus::create() {
+void MessageBus::create(ConfigurationManager* configMgr) {
     printf("MessageBus created\n");
     hasMessages = true;
+    m_configManager = configMgr;
+
+    for (auto sys : configMgr->m_coreSystems) {
+        sys->setMessageBus(this);
+    }
 }
 
 MessageBus::~MessageBus() {
@@ -59,15 +64,7 @@ void MessageBus::PostMessageByType(Message::Type type) {
 
 void MessageBus::processMessage(Message msg) {
     //m_console->handleMessage(msg);
-    for (auto system : systems) {
+    for (auto system : m_configManager->m_coreSystems) {
         system->handleMessage(msg);
     }
-}
-
-//void MessageBus::SetConsole(Console* _console) {
-//    m_console = _console;
-//}
-
-void MessageBus::RegisterSystem(CoreSystem* sys) {
-    systems.push_back(sys);
 }

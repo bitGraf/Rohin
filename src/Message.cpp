@@ -3,6 +3,7 @@
 Message::Message() {
     type = Type::empty;
     text = "";
+    subtype = 0;
 }
 
 Message::Message(Type _type) {

@@ -1,23 +1,20 @@
 #ifndef __MESSAGE_BUS__
 #define __MESSAGE_BUS__
 
+class MessageBus;
+
 #include <queue>
 #include <vector>
 
 #include "Message.hpp"
-
 #include "CoreSystem.hpp"
-class CoreSystem;
 
 class MessageBus {
 public:
     MessageBus();
     ~MessageBus();
 
-    void create();
-
-    //void SetConsole(Console* _console);
-    void RegisterSystem(CoreSystem* sys);
+    void create(ConfigurationManager* configMgr);
 
     void processEntireQueue();
     Message PopQueue();
@@ -27,10 +24,8 @@ public:
     bool hasMessages;
 
 private:
+    ConfigurationManager* m_configManager;
     std::queue<Message> mq;
-
-    //Console* m_console;
-    std::vector<CoreSystem*> systems;
 
     void processMessage(Message msg);
 };

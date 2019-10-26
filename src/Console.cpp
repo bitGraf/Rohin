@@ -62,24 +62,9 @@ void Console::update(double dt) {
 void Console::handleMessage(Message msg) {
     std::ostringstream stringStream;
 
-    switch (msg.type) {
-        case Message::Type::empty: {
-            stringStream << "Empty Message:: [";
-        } break;
-        case Message::Type::standard: {
-            stringStream << "Standard Message:: [";
-        } break;
-        case Message::Type::log: {
-            stringStream << "LOG:: [";
-        } break;
-        case Message::Type::quit: {
-            stringStream << "Quit Message:: [";
-        } break;
-        default: {
-            stringStream << "  [";
-        } break;
-    }
-    stringStream << msg.text << "].";
+    stringStream << 
+        m_configMgr->messageTypeToString(msg.type) 
+        << msg.text << ".";
     std::string copyOfStr = stringStream.str();
 
     textBuffer.push_back(copyOfStr);

@@ -1,54 +1,125 @@
 #include "MemoryManager.hpp"
 
-PoolAllocator::PoolAllocator(u16 numElements, u16 elementSize) :
-    m_numElements(numElements), 
-    m_elementSize(elementSize) {
-    data = nullptr;
-    freeList = nullptr;
+// 
+template void PoolAllocator::returnBlock(DataBlock<f32>&);
+template void PoolAllocator::returnBlock(DataBlock<f64>&);
+template void PoolAllocator::returnBlock(DataBlock<vec3>&);
+
+// Explicit instantiation for various types
+template DataBlock<f32> PoolAllocator::allocBlock(u32, bool);
+template DataBlock<f64> PoolAllocator::allocBlock(u32, bool);
+template DataBlock<vec3> PoolAllocator::allocBlock(u32, bool);
+
+PoolAllocator::PoolAllocator(const u32 howManyBytes) :
+    m_totalBytesInPool(howManyBytes),
+    m_bytesLeft(howManyBytes) {
+
+    m_rawData = nullptr;
+
+    m_frontPointer = nullptr;
+    m_backPointer = nullptr;
 }
 
 PoolAllocator::~PoolAllocator() {
 }
 
 void PoolAllocator::create() {
-    // create a block of memory to use
-    data = (MemoryBlock*)calloc(m_numElements, m_elementSize *sizeof(MemoryBlock));
-    // |----|----|----|----|
+    m_rawData = malloc(m_totalBytesInPool);
 
-    for (u32 n = 0; n < m_numElements -1; n++) {
-        u32* ptr = data + (n*m_elementSize);
-        u32* next = ptr + m_elementSize;
+    if (m_rawData) {
+        // successfully alloc'd the data
 
-        *ptr = reinterpret_cast<u32>(next);
+        m_frontPointer = m_rawData;
+        m_backPointer = byteOffset(m_frontPointer, m_totalBytesInPool);
     }
-
-    freeList = data;
+    else {
+        printf("Error, failed to allocate %d bytes of data.\n", 
+            m_totalBytesInPool);
+    }
 }
 
 void PoolAllocator::destroy() {
-    free(data);
-    for (int n = 0; n < m_numElements*m_elementSize; n++) {
-        *(data+n) = 0;
+    if (m_rawData) {
+        free(m_rawData);
     }
-    //elements = nullptr;
+    m_rawData = nullptr;
+
+    m_frontPointer = nullptr;
+    m_backPointer = nullptr;
+
+    m_bytesLeft = 0;
 }
 
-void PoolAllocator::freeDataBlock(MemoryBlock* block) {
-    u32* ptr = freeList;
+void* PoolAllocator::allocBlock_raw(u32 howManyBytes, bool pullFromFront) {
+    if (m_rawData && m_bytesLeft >= howManyBytes) {
+        void* start = nullptr;
 
-    *block = reinterpret_cast<u32>(ptr);
-    freeList = block;
-}
+        if (pullFromFront) {
+            start = m_frontPointer;
+            m_frontPointer = byteOffset(start, howManyBytes);
+        } else {
+            start = byteOffset(m_backPointer, -static_cast<s32>(howManyBytes));
+            m_backPointer = start;
+        }
 
-MemoryBlock* PoolAllocator::getBlock() {
-    // Find next free block and take it.
-    u32* ptr = freeList;
-    u32* next = reinterpret_cast<u32*>(*ptr);
-    freeList = next;
+        m_bytesLeft -= howManyBytes;
 
-    for (int n = 0; n < m_elementSize; n++) {
-        *(ptr+n) = 0;
+        return start;
     }
 
-    return ptr;
+    return nullptr;
+}
+
+template<typename T>
+DataBlock<T> PoolAllocator::allocBlock(u32 howManyElements, bool pullFromFront) {
+    DataBlock<T> ret(howManyElements);
+
+    u32 howManyBytes = (howManyElements*ret.m_elementSize);
+    if (m_rawData && m_bytesLeft >= howManyBytes) {
+        T* start = nullptr;
+
+        if (pullFromFront) {
+            start = static_cast<T*>(m_frontPointer);
+            m_frontPointer = static_cast<void*>(start + howManyElements);
+        }
+        else {
+            start = static_cast<T*>(m_backPointer) - howManyElements;
+            m_backPointer = static_cast<void*>(start);
+        }
+
+        m_bytesLeft -= howManyBytes;
+
+        ret.data = start;
+        return ret;
+    }
+
+    ret.m_numElements = 0;
+    ret.data = nullptr;
+    return ret;
+}
+
+void PoolAllocator::returnBlock_raw(void* block) {
+    // don't really need to do anything right now, as the
+    // allocator doesn't return the data back to the pool yet
+    block = nullptr;
+}
+
+template<typename T>
+void PoolAllocator::returnBlock(DataBlock<T>& block) {
+    block.data = nullptr;
+    block.m_numElements = 0;
+}
+
+void* PoolAllocator::byteOffset(void* start, s32 numBytes) {
+    // First cast to u8 (one-byte type)
+    u8* ptr = static_cast<u8*>(start);
+
+    // Add byte offset to pointer
+    ptr += numBytes;
+
+    // cast back to void pointer
+    return static_cast<void*>(ptr);
+
+    /* in one disgusting line */
+    //return static_cast<void*>(static_cast<u8*>(start) + numBytes);
 }

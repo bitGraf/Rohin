@@ -1,6 +1,8 @@
 #ifndef __CONSOLE_H__
 #define __CONSOLE_H__
 
+class Console;
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -18,13 +20,6 @@ const int MILLS_PER_UPDATE = 1000 / TARGET_RATE;
 
 #define CONSOLE_MAX_MESSAGES 30
 
-enum class eConsoleStatus {
-    sleep,
-    update,
-    prompt,
-    kill
-};
-
 class Console : public CoreSystem
 {
 public:
@@ -40,6 +35,13 @@ public:
     void startListening();
 
 private:
+    enum class eConsoleStatus {
+        sleep,
+        update,
+        prompt,
+        kill
+    };
+
     bool clear();
     void  setCursorPos(COORD newPos);
     COORD getCursorPos();

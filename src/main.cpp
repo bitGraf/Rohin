@@ -6,12 +6,25 @@
 #include "ResourceManager.hpp"
 #include "Console.hpp"
 
+#include "MemoryManager.hpp"
+
 ConfigurationManager g_ConfigManager;
 MessageBus g_MessageBus;
+
+/* Core Systems */
 Window g_MainWindow;
 Console g_Console;
 FileSystem g_FileSystem;
 ResourceManager g_ResourceManager;
+
+u32 offset(void* value, void* ref) {
+    u8* p1 = static_cast<u8*>(value);
+    u8* p2 = static_cast<u8*>(ref);
+
+    return (p1 - p2);
+}
+
+
 
 int main(int argc, char* argv[]) {
     EnsureDataTypeSize();
@@ -22,26 +35,20 @@ int main(int argc, char* argv[]) {
     }
     printf("\n");
 
-    // Create subsystems
-    g_ConfigManager.create();
+    // Create core systems
+    g_ConfigManager.create(4,
+        &g_MainWindow,
+        &g_Console,
+        &g_FileSystem,
+        &g_ResourceManager);
 
-    g_MessageBus.create();
-    g_MessageBus.RegisterSystem(&g_Console);
-    //g_MessageBus.SetConsole(&g_Console);
-
-    g_MainWindow.create(&g_ConfigManager);
-    g_Console.create(&g_ConfigManager);
-    g_FileSystem.create(&g_ConfigManager);
-    g_ResourceManager.create(&g_ConfigManager);
-
-    // Set Message Busses
-    g_MainWindow.setMessageBus(&g_MessageBus);
-    g_Console.setMessageBus(&g_MessageBus);
-    g_FileSystem.setMessageBus(&g_MessageBus);
-    g_ResourceManager.setMessageBus(&g_MessageBus);
+    g_MessageBus.create(&g_ConfigManager);
 
     // Other sets
     g_ResourceManager.setFileSystem(&g_FileSystem);
+
+    /* TESTING START */
+    /*  TESTING END  */
 
     // Create console thread that listens for commands
     auto console_thread = std::thread(&Console::startListening, &g_Console);

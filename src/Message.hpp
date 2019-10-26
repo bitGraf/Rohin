@@ -5,11 +5,14 @@
 
 class Message {
 public:
-    enum Type {
-        empty = 0,
-        standard,
-        quit,
-        log
+    enum class Type {
+        empty,
+        log,
+        coreSystemCreate,
+        inputEvent,
+        windowEvent,
+        gameEvent,
+        renderEvent
     };
 
     Message();
@@ -17,8 +20,10 @@ public:
     Message(Type _type, std::string _text);
     ~Message();
 
+    /* Data */
     Type type;
     std::string text;
+    int subtype;
 };
 
 #endif

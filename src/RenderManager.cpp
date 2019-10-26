@@ -22,7 +22,7 @@ void RenderManager::destroy() {
 
 void RenderManager::setShader(stringID id) {
     Message msg;
-    msg.type = Message::Type::standard;
+    msg.type = Message::Type::renderEvent;
     msg.text = std::to_string(id);
     this->putMessage(msg);
 }

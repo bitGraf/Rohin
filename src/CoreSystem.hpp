@@ -1,6 +1,7 @@
 #ifndef __SYSTEM_HPP__
 #define __SYSTEM_HPP__
 
+class CoreSystem;
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +11,6 @@
 #include "HashTable.hpp"
 
 #include "MessageBus.hpp"
-class MessageBus;
 
 class CoreSystem {
 public:
@@ -19,8 +19,10 @@ public:
 
     void create(ConfigurationManager* configMgr);
     void setMessageBus(MessageBus* msgBus); // remove this, move into configMgr
-    void putMessage(Message msg);
 
+    /* Push messages to the queue */
+    void putMessage(Message msg);
+    void putMessage(Message::Type _type, std::string data);
     void logMessage(const char* text);
     void logMessage(const char* text, int count, ...); // ONLY ALLOWS INTS
     
@@ -30,7 +32,7 @@ public:
     virtual void destroy() = 0;
     virtual void sys_create(ConfigurationManager* configMgr) = 0;
 
-private:
+protected:
     ConfigurationManager*   m_configMgr;
     MessageBus*             m_msgBus;
 };
