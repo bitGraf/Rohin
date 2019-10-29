@@ -71,6 +71,9 @@ $(function() {
 <div class="title">CoreSystem Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Comon interface for core engine systems.  
+ <a href="class_core_system.html#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for CoreSystem:</div>
 <div class="dyncontent">
@@ -87,35 +90,43 @@ Inheritance diagram for CoreSystem:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ad24ab26e7071e7b9aeeba038a9642f4e"><td class="memItemLeft" align="right" valign="top"><a id="ad24ab26e7071e7b9aeeba038a9642f4e"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> (<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *configMgr)</td></tr>
+<tr class="memitem:a72863a0a4f895718b5e5db767bc46199"><td class="memItemLeft" align="right" valign="top"><a id="a72863a0a4f895718b5e5db767bc46199"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#a72863a0a4f895718b5e5db767bc46199">CoreSystem</a> ()</td></tr>
+<tr class="memdesc:a72863a0a4f895718b5e5db767bc46199"><td class="mdescLeft">&#160;</td><td class="mdescRight">Empty Constructor. <br /></td></tr>
+<tr class="separator:a72863a0a4f895718b5e5db767bc46199"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea46939a9ff3faabda61da7f314a70b4"><td class="memItemLeft" align="right" valign="top"><a id="aea46939a9ff3faabda61da7f314a70b4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#aea46939a9ff3faabda61da7f314a70b4">~CoreSystem</a> ()</td></tr>
+<tr class="memdesc:aea46939a9ff3faabda61da7f314a70b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Empty Destructor. <br /></td></tr>
+<tr class="separator:aea46939a9ff3faabda61da7f314a70b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad24ab26e7071e7b9aeeba038a9642f4e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#ad24ab26e7071e7b9aeeba038a9642f4e">create</a> (<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *configMgr)</td></tr>
+<tr class="memdesc:ad24ab26e7071e7b9aeeba038a9642f4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Main startup function.  <a href="#ad24ab26e7071e7b9aeeba038a9642f4e">More...</a><br /></td></tr>
 <tr class="separator:ad24ab26e7071e7b9aeeba038a9642f4e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a760244a6d3f503e25aed9dbfb20891"><td class="memItemLeft" align="right" valign="top"><a id="a1a760244a6d3f503e25aed9dbfb20891"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setMessageBus</b> (<a class="el" href="class_message_bus.html">MessageBus</a> *msgBus)</td></tr>
+<tr class="memitem:a1a760244a6d3f503e25aed9dbfb20891"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#a1a760244a6d3f503e25aed9dbfb20891">setMessageBus</a> (<a class="el" href="class_message_bus.html">MessageBus</a> *msgBus)</td></tr>
+<tr class="memdesc:a1a760244a6d3f503e25aed9dbfb20891"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the <a class="el" href="class_message.html">Message</a> Bus object.  <a href="#a1a760244a6d3f503e25aed9dbfb20891">More...</a><br /></td></tr>
 <tr class="separator:a1a760244a6d3f503e25aed9dbfb20891"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeed879de045792f192297cc8d2dc6474"><td class="memItemLeft" align="right" valign="top"><a id="aeed879de045792f192297cc8d2dc6474"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>putMessage</b> (<a class="el" href="class_message.html">Message</a> msg)</td></tr>
+<tr class="memitem:aeed879de045792f192297cc8d2dc6474"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#aeed879de045792f192297cc8d2dc6474">putMessage</a> (<a class="el" href="class_message.html">Message</a> msg)</td></tr>
+<tr class="memdesc:aeed879de045792f192297cc8d2dc6474"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push a <a class="el" href="class_message.html">Message</a> to the <a class="el" href="class_message_bus.html">MessageBus</a>.  <a href="#aeed879de045792f192297cc8d2dc6474">More...</a><br /></td></tr>
 <tr class="separator:aeed879de045792f192297cc8d2dc6474"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac115995ca3201aaaf8b05656fad0398"><td class="memItemLeft" align="right" valign="top"><a id="aac115995ca3201aaaf8b05656fad0398"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>putMessage</b> (Message::Type _type, std::string data)</td></tr>
+<tr class="memitem:aac115995ca3201aaaf8b05656fad0398"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#aac115995ca3201aaaf8b05656fad0398">putMessage</a> (Message::Type _type, std::string data)</td></tr>
+<tr class="memdesc:aac115995ca3201aaaf8b05656fad0398"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push a <a class="el" href="class_message.html">Message</a> to the <a class="el" href="class_message_bus.html">MessageBus</a> by type and data.  <a href="#aac115995ca3201aaaf8b05656fad0398">More...</a><br /></td></tr>
 <tr class="separator:aac115995ca3201aaaf8b05656fad0398"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:add11c5aadb29d10cc8b6fbaa4f1ad1ac"><td class="memItemLeft" align="right" valign="top"><a id="add11c5aadb29d10cc8b6fbaa4f1ad1ac"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>logMessage</b> (const char *text)</td></tr>
+<tr class="memitem:add11c5aadb29d10cc8b6fbaa4f1ad1ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#add11c5aadb29d10cc8b6fbaa4f1ad1ac">logMessage</a> (const char *text)</td></tr>
+<tr class="memdesc:add11c5aadb29d10cc8b6fbaa4f1ad1ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a Log <a class="el" href="class_message.html">Message</a> with the specified text.  <a href="#add11c5aadb29d10cc8b6fbaa4f1ad1ac">More...</a><br /></td></tr>
 <tr class="separator:add11c5aadb29d10cc8b6fbaa4f1ad1ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a41f1a473630b6e62f75816efb8342703"><td class="memItemLeft" align="right" valign="top"><a id="a41f1a473630b6e62f75816efb8342703"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>logMessage</b> (const char *text, int count,...)</td></tr>
+<tr class="memitem:a41f1a473630b6e62f75816efb8342703"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#a41f1a473630b6e62f75816efb8342703">logMessage</a> (const char *text, int count,...)</td></tr>
+<tr class="memdesc:a41f1a473630b6e62f75816efb8342703"><td class="mdescLeft">&#160;</td><td class="mdescRight">Send a Log <a class="el" href="class_message.html">Message</a> with the specified text, along with some ints.  <a href="#a41f1a473630b6e62f75816efb8342703">More...</a><br /></td></tr>
 <tr class="separator:a41f1a473630b6e62f75816efb8342703"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92f7e208353dd99dfcd9d15813b56d44"><td class="memItemLeft" align="right" valign="top"><a id="a92f7e208353dd99dfcd9d15813b56d44"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>update</b> (double dt)=0</td></tr>
+<tr class="memitem:a92f7e208353dd99dfcd9d15813b56d44"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#a92f7e208353dd99dfcd9d15813b56d44">update</a> (double dt)=0</td></tr>
+<tr class="memdesc:a92f7e208353dd99dfcd9d15813b56d44"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update <a class="el" href="class_core_system.html" title="Comon interface for core engine systems.">CoreSystem</a> state.  <a href="#a92f7e208353dd99dfcd9d15813b56d44">More...</a><br /></td></tr>
 <tr class="separator:a92f7e208353dd99dfcd9d15813b56d44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b970b47bf2c7cbc5ad18a779fefa7e2"><td class="memItemLeft" align="right" valign="top"><a id="a1b970b47bf2c7cbc5ad18a779fefa7e2"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>handleMessage</b> (<a class="el" href="class_message.html">Message</a> msg)=0</td></tr>
+<tr class="memitem:a1b970b47bf2c7cbc5ad18a779fefa7e2"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#a1b970b47bf2c7cbc5ad18a779fefa7e2">handleMessage</a> (<a class="el" href="class_message.html">Message</a> msg)=0</td></tr>
+<tr class="memdesc:a1b970b47bf2c7cbc5ad18a779fefa7e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Handle a message.  <a href="#a1b970b47bf2c7cbc5ad18a779fefa7e2">More...</a><br /></td></tr>
 <tr class="separator:a1b970b47bf2c7cbc5ad18a779fefa7e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a972559faa07ad6593afb10f1583016a4"><td class="memItemLeft" align="right" valign="top"><a id="a972559faa07ad6593afb10f1583016a4"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>destroy</b> ()=0</td></tr>
+<tr class="memitem:a972559faa07ad6593afb10f1583016a4"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#a972559faa07ad6593afb10f1583016a4">destroy</a> ()=0</td></tr>
+<tr class="memdesc:a972559faa07ad6593afb10f1583016a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">System specific shut-down.  <a href="#a972559faa07ad6593afb10f1583016a4">More...</a><br /></td></tr>
 <tr class="separator:a972559faa07ad6593afb10f1583016a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad95e6713dabacf59e5d0a8ddbb896afa"><td class="memItemLeft" align="right" valign="top"><a id="ad95e6713dabacf59e5d0a8ddbb896afa"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>sys_create</b> (<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *configMgr)=0</td></tr>
+<tr class="memitem:ad95e6713dabacf59e5d0a8ddbb896afa"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_core_system.html#ad95e6713dabacf59e5d0a8ddbb896afa">sys_create</a> (<a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *configMgr)=0</td></tr>
+<tr class="memdesc:ad95e6713dabacf59e5d0a8ddbb896afa"><td class="mdescLeft">&#160;</td><td class="mdescRight">System specific startup.  <a href="#ad95e6713dabacf59e5d0a8ddbb896afa">More...</a><br /></td></tr>
 <tr class="separator:ad95e6713dabacf59e5d0a8ddbb896afa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
@@ -127,6 +138,339 @@ Protected Attributes</h2></td></tr>
 <a class="el" href="class_message_bus.html">MessageBus</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>m_msgBus</b></td></tr>
 <tr class="separator:aa9d81ad5b4b7f413a68e026f45166a45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Comon interface for core engine systems. </p>
+<p>The standard interface for every engine <a class="el" href="class_core_system.html" title="Comon interface for core engine systems.">CoreSystem</a>. <a class="el" href="class_core_system.html" title="Comon interface for core engine systems.">CoreSystem</a> objects do not communicate with each other directly, but rather put Messages on a queue using the <a class="el" href="class_message_bus.html">MessageBus</a>. The <a class="el" href="class_message_bus.html">MessageBus</a> then passes out the messages to each <a class="el" href="class_core_system.html" title="Comon interface for core engine systems.">CoreSystem</a>, and then they handle them with their own specific code. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="ad24ab26e7071e7b9aeeba038a9642f4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad24ab26e7071e7b9aeeba038a9642f4e">&#9670;&nbsp;</a></span>create()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CoreSystem::create </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *&#160;</td>
+          <td class="paramname"><em>configMgr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Main startup function. </p>
+<p>This is where any initialization happens for the <a class="el" href="class_core_system.html" title="Comon interface for core engine systems.">CoreSystem</a>, rather than in the constructor. This allows systems to be start and stopped in the correct order. Takes a <a class="el" href="class_configuration_manager.html">ConfigurationManager</a> as an input to set any configuration parameters.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">configMgr</td><td>A pointer to the <a class="el" href="class_configuration_manager.html">ConfigurationManager</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a972559faa07ad6593afb10f1583016a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a972559faa07ad6593afb10f1583016a4">&#9670;&nbsp;</a></span>destroy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void CoreSystem::destroy </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>System specific shut-down. </p>
+<p>System specific shut-down function. </p>
+
+<p>Implemented in <a class="el" href="class_file_system.html#a775c5b03a5a945c8b15eb66537997094">FileSystem</a>, <a class="el" href="class_console.html#a7ea408a6438e0168b26c219da5bc690e">Console</a>, <a class="el" href="class_render_manager.html#aed2fef86a5104dafaaeea74aa77ce135">RenderManager</a>, <a class="el" href="class_resource_manager.html#a1a7e1c5f097d977ebd90a685b293af35">ResourceManager</a>, and <a class="el" href="class_window.html#aa89262ad2538473c8d7e4d8dd641849d">Window</a>.</p>
+
+</div>
+</div>
+<a id="a1b970b47bf2c7cbc5ad18a779fefa7e2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1b970b47bf2c7cbc5ad18a779fefa7e2">&#9670;&nbsp;</a></span>handleMessage()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void CoreSystem::handleMessage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_message.html">Message</a>&#160;</td>
+          <td class="paramname"><em>msg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Handle a message. </p>
+<p>This is how the <a class="el" href="class_message_bus.html">MessageBus</a> sends a <a class="el" href="class_message.html">Message</a> to a <a class="el" href="class_core_system.html" title="Comon interface for core engine systems.">CoreSystem</a>. Overwrite this function to provide specific system implementation.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msg</td><td>The <a class="el" href="class_message.html">Message</a> sent to the <a class="el" href="class_core_system.html" title="Comon interface for core engine systems.">CoreSystem</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="class_file_system.html#ac016a45c65a3fe24b562963132830b09">FileSystem</a>, <a class="el" href="class_console.html#a51344010b193771a41fd21e81298141c">Console</a>, <a class="el" href="class_render_manager.html#ade7401848b1db36479d5bc88bf5d1c4e">RenderManager</a>, <a class="el" href="class_resource_manager.html#a0a05bfe90c9e6be2ab33e1bb3e28cfea">ResourceManager</a>, and <a class="el" href="class_window.html#a59348a227b6f0342cc790d1a9ee2e688">Window</a>.</p>
+
+</div>
+</div>
+<a id="add11c5aadb29d10cc8b6fbaa4f1ad1ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add11c5aadb29d10cc8b6fbaa4f1ad1ac">&#9670;&nbsp;</a></span>logMessage() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CoreSystem::logMessage </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>text</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Send a Log <a class="el" href="class_message.html">Message</a> with the specified text. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">text</td><td>The text </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a41f1a473630b6e62f75816efb8342703"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41f1a473630b6e62f75816efb8342703">&#9670;&nbsp;</a></span>logMessage() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CoreSystem::logMessage </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>text</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Send a Log <a class="el" href="class_message.html">Message</a> with the specified text, along with some ints. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">text</td><td>The text </td></tr>
+    <tr><td class="paramname">count</td><td>How many ints </td></tr>
+    <tr><td class="paramname">...</td><td>The ints </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aeed879de045792f192297cc8d2dc6474"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeed879de045792f192297cc8d2dc6474">&#9670;&nbsp;</a></span>putMessage() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CoreSystem::putMessage </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_message.html">Message</a>&#160;</td>
+          <td class="paramname"><em>msg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Push a <a class="el" href="class_message.html">Message</a> to the <a class="el" href="class_message_bus.html">MessageBus</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msg</td><td>The <a class="el" href="class_message.html">Message</a> to push. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aac115995ca3201aaaf8b05656fad0398"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac115995ca3201aaaf8b05656fad0398">&#9670;&nbsp;</a></span>putMessage() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CoreSystem::putMessage </td>
+          <td>(</td>
+          <td class="paramtype">Message::Type&#160;</td>
+          <td class="paramname"><em>_type</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>data</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Push a <a class="el" href="class_message.html">Message</a> to the <a class="el" href="class_message_bus.html">MessageBus</a> by type and data. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">_type</td><td>Type of <a class="el" href="class_message.html">Message</a> to send. </td></tr>
+    <tr><td class="paramname">data</td><td>String of data to send. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a1a760244a6d3f503e25aed9dbfb20891"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a760244a6d3f503e25aed9dbfb20891">&#9670;&nbsp;</a></span>setMessageBus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CoreSystem::setMessageBus </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_message_bus.html">MessageBus</a> *&#160;</td>
+          <td class="paramname"><em>msgBus</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the <a class="el" href="class_message.html">Message</a> Bus object. </p>
+<p>Give the <a class="el" href="class_core_system.html" title="Comon interface for core engine systems.">CoreSystem</a> a reference to the engine's <a class="el" href="class_message_bus.html">MessageBus</a>.</p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd><a class="el" href="class_message_bus.html">MessageBus</a> should probably be a static class that can be accessed globally.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">msgBus</td><td>A pointer to the <a class="el" href="class_message_bus.html">MessageBus</a> object. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ad95e6713dabacf59e5d0a8ddbb896afa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad95e6713dabacf59e5d0a8ddbb896afa">&#9670;&nbsp;</a></span>sys_create()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void CoreSystem::sys_create </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_configuration_manager.html">ConfigurationManager</a> *&#160;</td>
+          <td class="paramname"><em>configMgr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>System specific startup. </p>
+<p>System specific start-up function. Called by <a class="el" href="class_core_system.html#ad24ab26e7071e7b9aeeba038a9642f4e">create</a>.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">configMgr</td><td>Reference to <a class="el" href="class_configuration_manager.html">ConfigurationManager</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="class_file_system.html#ab32b6502cb42d9a5a7761c08df50e3b8">FileSystem</a>, <a class="el" href="class_console.html#abadeb6060d9107e909953b64b884a937">Console</a>, <a class="el" href="class_render_manager.html#a6fdaeb54110de7d9efaba6e76964a53d">RenderManager</a>, <a class="el" href="class_resource_manager.html#a199684a53b89124ba20a3fd17f312ed2">ResourceManager</a>, and <a class="el" href="class_window.html#a0832711f7f201e743fede3e6b6a99a9f">Window</a>.</p>
+
+</div>
+</div>
+<a id="a92f7e208353dd99dfcd9d15813b56d44"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92f7e208353dd99dfcd9d15813b56d44">&#9670;&nbsp;</a></span>update()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void CoreSystem::update </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>dt</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Update <a class="el" href="class_core_system.html" title="Comon interface for core engine systems.">CoreSystem</a> state. </p>
+<p>Virtual function that gets called every update cycle. Specific implementations should provide whatever functionality is appropriate here.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dt</td><td>Time passed since last update </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Implemented in <a class="el" href="class_file_system.html#a94ad43f00f5034b0d39d52bd888775eb">FileSystem</a>, <a class="el" href="class_console.html#a2b54a180c9653279cb033343be18521a">Console</a>, <a class="el" href="class_render_manager.html#a90eb82b1ee412b44a63cf76279be3234">RenderManager</a>, <a class="el" href="class_resource_manager.html#aaa539e216d98e81805af10b330f7f06c">ResourceManager</a>, and <a class="el" href="class_window.html#a5037df45dbb2f456d46e75cf3acb2614">Window</a>.</p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>D:/GameDev/Big-Disc-Mk-II/src/<a class="el" href="_core_system_8hpp_source.html">CoreSystem.hpp</a></li>
 <li>D:/GameDev/Big-Disc-Mk-II/src/CoreSystem.cpp</li>

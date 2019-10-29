@@ -250,7 +250,7 @@ template&lt;typename T &gt; </div>
 
 <p>Initaize the allocator. </p>
 <p>Allocate the entire memory block and setup front and back pointers. Must be called before requesting data.</p>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>possible return error code if failed </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>possible return error code if failed </dd></dl>
 
 </div>
 </div>
@@ -271,7 +271,7 @@ template&lt;typename T &gt; </div>
 
 <p>Destroys the whole pool, freeing all memory in the process. </p>
 <p>Destroys the whole pool, freeing all memory in the process. Be careful to only call this when all blocks no longer referenced.</p>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>put in a check to make sure all blocks are not referenced anymore </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd>put in a check to make sure all blocks are not referenced anymore </dd></dl>
 
 </div>
 </div>
@@ -353,7 +353,7 @@ template&lt;typename T &gt; </div>
 
 <p>Return a memory block to the pool. </p>
 <p>Return a memory block to the pool. The data pointer in the block you pass in is set to nullptr.</p>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd>Add the returned block ~back~ to the pool , allowing it to be used again</dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>Add the returned block ~back~ to the pool , allowing it to be used again</dd></dl>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">T</td><td>Data type of the memory block (Inherited from block) </td></tr>

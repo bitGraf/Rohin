@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['returnblock',['returnBlock',['../class_pool_allocator.html#a8c784374703d5d557dbaad7d1964c765',1,'PoolAllocator']]],
-  ['returnblock_5fraw',['returnBlock_raw',['../class_pool_allocator.html#a53f48522b7f0a1bb67b26719a1982335',1,'PoolAllocator']]]
+  ['logmessage',['logMessage',['../class_core_system.html#add11c5aadb29d10cc8b6fbaa4f1ad1ac',1,'CoreSystem::logMessage(const char *text)'],['../class_core_system.html#a41f1a473630b6e62f75816efb8342703',1,'CoreSystem::logMessage(const char *text, int count,...)']]]
 ];
