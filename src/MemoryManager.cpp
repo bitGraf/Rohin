@@ -1,14 +1,34 @@
 #include "MemoryManager.hpp"
 
-// 
+// Explicit instantiation for various types
 template void PoolAllocator::returnBlock(DataBlock<f32>&);
 template void PoolAllocator::returnBlock(DataBlock<f64>&);
-template void PoolAllocator::returnBlock(DataBlock<vec3>&);
+template void PoolAllocator::returnBlock(DataBlock<math::vec3>&);
 
 // Explicit instantiation for various types
 template DataBlock<f32> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<f64> PoolAllocator::allocBlock(u32, bool);
-template DataBlock<vec3> PoolAllocator::allocBlock(u32, bool);
+template DataBlock<math::vec3> PoolAllocator::allocBlock(u32, bool);
+template DataBlock<math::vec2> PoolAllocator::allocBlock(u32, bool);
+template DataBlock<index_t> PoolAllocator::allocBlock(u32, bool);
+
+// Explicit instantiation for various types
+template DataBlock<math::vec3>& DataBlock<math::vec3>::operator=(const DataBlock<math::vec3>& db);
+template DataBlock<math::vec2>& DataBlock<math::vec2>::operator=(const DataBlock<math::vec2>& db);
+template DataBlock<index_t>& DataBlock<index_t>::operator=(const DataBlock<index_t>& db);
+
+/* Assignment Operator */
+template<typename dataType>
+DataBlock<dataType>& DataBlock<dataType>::operator=(const DataBlock<dataType>& db) {
+    assert(this->m_elementSize == db.m_elementSize);
+    assert(db.data != nullptr);
+    assert(db.m_numElements > 0);
+
+    this->m_numElements = db.m_numElements;
+    this->data = db.data;
+
+    return *this;
+}
 
 PoolAllocator::PoolAllocator(const u32 howManyBytes) :
     m_totalBytesInPool(howManyBytes),

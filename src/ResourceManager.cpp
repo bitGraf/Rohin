@@ -1,6 +1,8 @@
 #include "ResourceManager.hpp"
 
-ResourceManager::ResourceManager() {
+ResourceManager::ResourceManager() :
+    m_pool(MEGABYTE)
+{
     m_FileSystem = nullptr;
 }
 
@@ -16,71 +18,15 @@ void ResourceManager::handleMessage(Message msg) {
 }
 
 void ResourceManager::destroy() {
-    ResourceList* head = m_resourceList.next;
-    ResourceList* next = nullptr;
-
-    while (head != nullptr) {
-        // save pointer to next element 
-        // before deleting this element
-        next = head->next;
-
-        freeResource(&head->resource);
-        free(head);
-
-        head = next;
-        next = nullptr;
-    }
-
-    // done stepping through the list
-    // free the root resource.
-    freeResource(&m_resourceList.resource);
+    m_pool.destroy();
 }
 
 void ResourceManager::sys_create(ConfigurationManager* configMgr) {
-    m_resourceList.resource.data = nullptr;
-    m_resourceList.next = nullptr;
-
-    m_tail = &m_resourceList;
+    m_pool.create();
 }
 
 void ResourceManager::setFileSystem(FileSystem* _filesys) {
     m_FileSystem = _filesys;
-}
-
-/*void ResourceManager::setMemoryManager(MemoryManager* _memManager) {
-    m_memoryManager = _memManager;
-}*/
-
-void ResourceManager::createNewResource(stringID id) {
-    ResourceList* res = new ResourceList;
-    res->next = nullptr;
-    res->resource.data = nullptr;
-    res->resource.ID = id;
-
-    assert(m_tail->next == nullptr);
-
-    m_tail->next = res;
-    m_tail = m_tail->next;
-}
-
-void ResourceManager::printAllResources() {
-    int numResources = 0;
-    ResourceList* next = m_resourceList.next;
-    while (next != nullptr) {
-        // next is a valid entry in the list
-        printf("ID: %d\n", next->resource.ID);
-
-        next = next->next;
-        
-        numResources++;
-    }
-    printf("%d resources cycled.\n", numResources);
-}
-
-void ResourceManager::freeResource(Resource* res) {
-    res->ID = 0;
-    free(res->data);
-    res->data = nullptr;
 }
 
 void ResourceManager::loadModelFromFile(std::string path) {
@@ -106,71 +52,147 @@ void ResourceManager::loadModelFromFile(std::string path) {
     }
 
     /* Start parsing file */
+    int defaultScene = root.defaultScene;
 
-    auto currScene = root.defaultScene;
+    /* For all the scenes in the model */
+    for (tinygltf::Scene currentScene : root.scenes) {
+        std::string sceneName = currentScene.name;
+        
+        /* For all nodes in this scene*/
+        int numNodesInScene = currentScene.nodes.size();
+        for (int currNodeID : currentScene.nodes) {
+            tinygltf::Node currentNode = root.nodes[currNodeID];
 
-    // Loop through all scenes
-    for (auto scene : root.scenes) {
-        auto sceneName = scene.name;
-        printf("Parsing scene: %s\n", sceneName.c_str());
+            std::string nodeName = currentNode.name;
+            std::vector<double> nodePosition = currentNode.translation;
+            int meshID = currentNode.mesh;
 
-        // For every scene, loop through all nodes
-        for (auto nodeID : scene.nodes) {
-            auto node = root.nodes[nodeID];
-            auto nodeName = node.name;
-            printf("Parsing node: %s\n", nodeName.c_str());
-
-            auto nodePos = node.translation;
-            auto nodeMeshID = node.mesh;
-
-            auto mesh = root.meshes[nodeMeshID];
-
-            auto meshName = mesh.name;
-            printf("Parsing mesh: %s\n", meshName.c_str());
-
-            // Extract mesh primitive data indices
-            auto positionsID = mesh.primitives[0].attributes["POSITION"];
-            auto normalsID   = mesh.primitives[0].attributes["NORMAL"];
-            auto tangentsID  = mesh.primitives[0].attributes["TANGENT"];
-            auto texCoord0ID = mesh.primitives[0].attributes["TEXCOORD_0"];
-            auto indicesID   = mesh.primitives[0].indices;
-            auto materialID  = mesh.primitives[0].material;
-
-            /* Access Mesh data */
-            /* Use root.accessors[positionsID].type to determine what dataType for each array*/
-            float* posData = (float*)readAccessor(&root, positionsID);
-            float* normalsData = (float*)readAccessor(&root, normalsID);
-            float* tangentsData = (float*)readAccessor(&root, tangentsID);
-            float* texCoordsData = (float*)readAccessor(&root, texCoord0ID);
-            int* indicesData = (int*)readAccessor(&root, indicesID);
-
-            /* Access material data */
-            auto material = root.materials[materialID];
-            printf("Material: %s\n", material.name.c_str());
-
-            auto bcf = material.pbrMetallicRoughness.baseColorFactor;
-            auto mf  = material.pbrMetallicRoughness.metallicFactor;
-            auto rf = material.pbrMetallicRoughness.roughnessFactor;
-            auto bct = material.pbrMetallicRoughness.baseColorTexture;
-
-            auto bci = bct.index;
-            auto bctx = bct.texCoord;
-
-            auto texture = root.textures[bci];
-            auto texID = texture.source;
-
-            /* read textures */
-            void* image = readImage(&root, texID);
-
-            /* Delete everything I just allocated */
-            free(posData);
-            free(normalsData);
-            free(tangentsData);
-            free(texCoordsData);
-            free(indicesData);
-            free(image);
+            processMesh(&root, meshID);
         }
     }
+}
+
+void ResourceManager::processMesh(tinygltf::Model* root, int id) {
+    tinygltf::Mesh mesh = root->meshes[id];
+
+    std::string name = mesh.name;
+
+    int numPrimitives = mesh.primitives.size();
+    assert(numPrimitives == 1);
+
+    int primID = 0;
+
+    {
+        /* Instance of Engine mesh object */
+        TriangleMesh myMesh;
+
+        /* Get accessor ID for attributes */
+        int attr_posID   = mesh.primitives[primID].attributes["POSITION"];
+        int attr_normID  = mesh.primitives[primID].attributes["NORMAL"];
+        int attr_tanID   = mesh.primitives[primID].attributes["TANGENT"];
+        int attr_texID   = mesh.primitives[primID].attributes["TEXCOORD_0"];
+        int attr_bitanID = mesh.primitives[primID].attributes["BITANGENT"];
+
+        int attr_indexID = mesh.primitives[primID].indices;
+
+        /* Fill out TriMesh struct */
+        myMesh.vertPositions = processAccessor<math::vec3>(root, attr_posID);
+        myMesh.vertNormals = processAccessor<math::vec3>(root, attr_normID);
+        myMesh.vertTexCoords = processAccessor<math::vec2>(root, attr_tanID);
+        myMesh.vertTangents = processAccessor<math::vec3>(root, attr_texID);
+        myMesh.vertBitangents = processAccessor<math::vec3>(root, attr_bitanID);
+
+        myMesh.indices = processAccessor<index_t>(root, attr_indexID);
+
+        /* Process the material info */
+        int materialID = mesh.primitives[primID].material;
+
+        /* Update TriangleMesh information */
+        myMesh.numVerts = myMesh.vertPositions.m_numElements;
+        myMesh.numFaces = myMesh.indices.m_numElements / 3;
+
+        initializeTriangleMesh(&myMesh);
+
+        /* Push to stack */
+        meshes.push_back(myMesh);
+    }
+}
+
+void ResourceManager::initializeTriangleMesh(TriangleMesh* mesh) {
+    /* Perform openGL initialization of mesh */
+    
+    glGenVertexArrays(1, &mesh->VAO);
+    glBindVertexArray(mesh->VAO);
+
+    //buffer Vertex position data;
+    glGenBuffers(1, &mesh->VBOpos);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->VBOpos);
+    glBufferData(GL_ARRAY_BUFFER, mesh->numVerts * mesh->vertPositions.m_elementSize, &(mesh->vertPositions.data[0]), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, mesh->vertPositions.m_elementSize, (void*)0);
+    glEnableVertexAttribArray(0);
+
+    //buffer Vertex normal data;
+    glGenBuffers(1, &mesh->VBOnorm);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->VBOnorm);
+    glBufferData(GL_ARRAY_BUFFER, mesh->numVerts * mesh->vertNormals.m_elementSize, &(mesh->vertNormals.data[0]), GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, mesh->vertNormals.m_elementSize, (void*)0);
+    glEnableVertexAttribArray(1);
+
+    //buffer Vertex texture data
+    glGenBuffers(1, &mesh->VBOtex);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->VBOtex);
+    glBufferData(GL_ARRAY_BUFFER, mesh->numVerts * mesh->vertTexCoords.m_elementSize, &(mesh->vertTexCoords.data[0].x), GL_STATIC_DRAW);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, mesh->vertTexCoords.m_elementSize, (void*)0);
+    glEnableVertexAttribArray(2);
+
+    //buffer Vertex tangent data
+    glGenBuffers(1, &mesh->VBOtan);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->VBOtan);
+    glBufferData(GL_ARRAY_BUFFER, mesh->numVerts * mesh->vertTangents.m_elementSize, &(mesh->vertTangents.data[0]), GL_STATIC_DRAW);
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, mesh->vertTangents.m_elementSize, (void*)0);
+    glEnableVertexAttribArray(3);
+
+    //buffer Vertex bitangent data
+    glGenBuffers(1, &mesh->VBObitan);
+    glBindBuffer(GL_ARRAY_BUFFER, mesh->VBObitan);
+    glBufferData(GL_ARRAY_BUFFER, mesh->numVerts * mesh->vertBitangents.m_elementSize, &(mesh->vertBitangents.data[0].x), GL_STATIC_DRAW);
+    glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, mesh->vertBitangents.m_elementSize, (void*)0);
+    glEnableVertexAttribArray(4);
+
+    //buffer indexing
+    glGenBuffers(1, &mesh->EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->numFaces * mesh->indices.m_elementSize * 3, &mesh->indices.data[0], GL_STATIC_DRAW);
+
+    glBindVertexArray(0);
+}
+
+template<typename T>
+DataBlock<T> ResourceManager::processAccessor(tinygltf::Model* root, int id) {
+    int bufferViewID = root->accessors[id].bufferView;
+    //int compType = root->accessors[id].componentType;
+    size_t count = root->accessors[id].count;
+    //std::vector<double> max = root->accessors[id].maxValues;
+    //std::vector<double> min = root->accessors[id].minValues;
+    //int type = root->accessors[id].type;
+
+    // read buffer view
+    tinygltf::BufferView buffView = root->bufferViews[bufferViewID];
+
+    int buffID = buffView.buffer;
+    size_t byteLength = buffView.byteLength;
+    //size_t byteOffset = buffView.byteOffset;
+
+    /* read buffer */
+    tinygltf::Buffer buffer = root->buffers[buffID];
+
+    //size_t buffByteLength = buffer.data.size();
+    std::vector<u8> data = buffer.data;
+
+    DataBlock<T> block = m_pool.allocBlock<T>(count, true);
+    memcpy(block.data, data.data(), byteLength);
+
+    return block;
 }
 
 void* ResourceManager::readAccessor(tinygltf::Model* root, int accessorID) {

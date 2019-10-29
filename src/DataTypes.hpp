@@ -18,6 +18,8 @@ typedef std::int64_t    s64;    // [-9,223,372,036,854,775,808, 9,223,372,036,85
 
 typedef u32 stringID;
 
+typedef u16                     index_t;
+
 void inline EnsureDataTypeSize() {
     static_assert(sizeof(f32) == 4, "Float32 not 32-bits");
     static_assert(sizeof(f64) == 8, "Float64 not 64-bits");

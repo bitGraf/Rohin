@@ -1,9 +1,10 @@
 #ifndef MEMORY_MANAGER_H
 #define MEMORY_MANAGER_H
 
-#include "DataTypes.hpp"
+#include "GameMath.hpp"
 #include <stdlib.h>
 #include <stdio.h>
+#include <cassert>
 
 template<typename dataType>
 struct DataBlock {
@@ -11,15 +12,19 @@ struct DataBlock {
     u32 m_numElements;
     dataType* data;
 
+    DataBlock() :
+        m_elementSize(sizeof(dataType)),
+        m_numElements(0),
+        data(nullptr)
+    {}
+
     DataBlock(u32 num) : 
         m_elementSize(sizeof(dataType)),
         m_numElements(num),
         data(nullptr)
     {}
-};
 
-struct vec3 {
-    u32 x[3];
+    DataBlock<dataType>& operator=(const DataBlock<dataType>& db);
 };
 
 /**

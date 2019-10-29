@@ -48,6 +48,7 @@ int main(int argc, char* argv[]) {
     g_ResourceManager.setFileSystem(&g_FileSystem);
 
     /* TESTING START */
+    g_ResourceManager.loadModelFromFile("Data/Models/cube.gltf");
     /*  TESTING END  */
 
     // Create console thread that listens for commands
