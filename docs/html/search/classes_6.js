@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['shader',['Shader',['../class_shader.html',1,'']]]
+  ['rendermanager',['RenderManager',['../class_render_manager.html',1,'']]],
+  ['resourcemanager',['ResourceManager',['../class_resource_manager.html',1,'']]]
 ];

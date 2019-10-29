@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Epic Project Time: DataBlock&lt; dataType &gt; Struct Template Reference</title>
+<title>Epic Project Time: Entity Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -66,36 +66,42 @@ $(function() {
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
-<a href="struct_data_block-members.html">List of all members</a>  </div>
+<a href="class_entity-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">DataBlock&lt; dataType &gt; Struct Template Reference</div>  </div>
+<div class="title">Entity Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a0d5ba7ff409c958c200a776914687d9d"><td class="memItemLeft" align="right" valign="top"><a id="a0d5ba7ff409c958c200a776914687d9d"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>DataBlock</b> (u32 num)</td></tr>
-<tr class="separator:a0d5ba7ff409c958c200a776914687d9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00f30024abc7553d509f7ba53fc58a4d"><td class="memItemLeft" align="right" valign="top"><a id="a00f30024abc7553d509f7ba53fc58a4d"></a>
-<a class="el" href="struct_data_block.html">DataBlock</a>&lt; dataType &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="struct_data_block.html">DataBlock</a>&lt; dataType &gt; &amp;db)</td></tr>
-<tr class="separator:a00f30024abc7553d509f7ba53fc58a4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a401d422adf0ec79e1215f7e00da83dc1"><td class="memItemLeft" align="right" valign="top"><a id="a401d422adf0ec79e1215f7e00da83dc1"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>create</b> ()</td></tr>
+<tr class="separator:a401d422adf0ec79e1215f7e00da83dc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4bdc01282300dffac86cae3d49d9e81"><td class="memItemLeft" align="right" valign="top"><a id="af4bdc01282300dffac86cae3d49d9e81"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>update</b> (double dt)</td></tr>
+<tr class="separator:af4bdc01282300dffac86cae3d49d9e81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5ca41372ff108e4c044e8d927995a27"><td class="memItemLeft" align="right" valign="top"><a id="af5ca41372ff108e4c044e8d927995a27"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>render</b> ()</td></tr>
+<tr class="separator:af5ca41372ff108e4c044e8d927995a27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98ff6473f703422a1de8cc7c3c764e2c"><td class="memItemLeft" align="right" valign="top"><a id="a98ff6473f703422a1de8cc7c3c764e2c"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setMesh</b> (<a class="el" href="class_triangle_mesh.html">meshRef</a> _mesh)</td></tr>
+<tr class="separator:a98ff6473f703422a1de8cc7c3c764e2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a829faf33681ff988475a1564fe0c9bca"><td class="memItemLeft" align="right" valign="top"><a id="a829faf33681ff988475a1564fe0c9bca"></a>
-const size_t&#160;</td><td class="memItemRight" valign="bottom"><b>m_elementSize</b></td></tr>
-<tr class="separator:a829faf33681ff988475a1564fe0c9bca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abdb3248edb367ea1dab9b276418b72bc"><td class="memItemLeft" align="right" valign="top"><a id="abdb3248edb367ea1dab9b276418b72bc"></a>
-u32&#160;</td><td class="memItemRight" valign="bottom"><b>m_numElements</b></td></tr>
-<tr class="separator:abdb3248edb367ea1dab9b276418b72bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaf1f1711187dd2722b5ef44228801b74"><td class="memItemLeft" align="right" valign="top"><a id="aaf1f1711187dd2722b5ef44228801b74"></a>
-dataType *&#160;</td><td class="memItemRight" valign="bottom"><b>data</b></td></tr>
-<tr class="separator:aaf1f1711187dd2722b5ef44228801b74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abac28577d22c3ca093222130ac9178f7"><td class="memItemLeft" align="right" valign="top"><a id="abac28577d22c3ca093222130ac9178f7"></a>
+<a class="el" href="classmath_1_1vec3.html">math::vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>position</b></td></tr>
+<tr class="separator:abac28577d22c3ca093222130ac9178f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7058e9f7a555f8d2a3820e9b576181cb"><td class="memItemLeft" align="right" valign="top"><a id="a7058e9f7a555f8d2a3820e9b576181cb"></a>
+<a class="el" href="classmath_1_1mat3.html">math::mat3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>orientation</b></td></tr>
+<tr class="separator:a7058e9f7a555f8d2a3820e9b576181cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3dc404cc7a06837d34cf2c849995ff64"><td class="memItemLeft" align="right" valign="top"><a id="a3dc404cc7a06837d34cf2c849995ff64"></a>
+<a class="el" href="classmath_1_1vec3.html">math::vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><b>scale</b></td></tr>
+<tr class="separator:a3dc404cc7a06837d34cf2c849995ff64"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this struct was generated from the following files:<ul>
-<li>D:/GameDev/Big-Disc-Mk-II/src/<a class="el" href="_memory_manager_8hpp_source.html">MemoryManager.hpp</a></li>
-<li>D:/GameDev/Big-Disc-Mk-II/src/MemoryManager.cpp</li>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>D:/GameDev/Big-Disc-Mk-II/src/<a class="el" href="_entity_8hpp_source.html">Entity.hpp</a></li>
+<li>D:/GameDev/Big-Disc-Mk-II/src/Entity.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
