@@ -44,4 +44,6 @@ public:
     bool initialized = false;
 };
 
+typedef TriangleMesh*   meshRef;
+
 #endif

@@ -11,6 +11,7 @@ namespace math {
         vec2();
         vec2(f32 v);
         vec2(f32 a, f32 b);
+        vec2(double* data);
 
         friend std::ostream& operator<<(std::ostream& os, const vec2& v);
 
@@ -21,10 +22,22 @@ namespace math {
         vec3();
         vec3(f32 v);
         vec3(f32 a, f32 b, f32 c);
+        vec3(double* data);
 
         friend std::ostream& operator<<(std::ostream& os, const vec3& v);
 
         f32 x,y,z;
+    };
+    class vec4 {
+    public:
+        vec4();
+        vec4(f32 v);
+        vec4(f32 a, f32 b, f32 c, f32 d);
+        vec4(double* data);
+
+        friend std::ostream& operator<<(std::ostream& os, const vec4& v);
+
+        f32 w, x, y, z;
     };
 
     class mat3 {

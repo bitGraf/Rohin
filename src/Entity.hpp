@@ -3,8 +3,7 @@
 
 #include "GameMath.hpp"
 #include "Models.hpp"
-
-typedef TriangleMesh* meshRef;
+#include "Material.hpp"
 
 class Entity {
 public:
@@ -20,9 +19,11 @@ public:
     void render();
 
     void setMesh(meshRef _mesh);
+    void setMaterial(materialRef _mat);
 
 private:
     meshRef m_mesh;
+    materialRef m_material;
 };
 
 #endif

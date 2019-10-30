@@ -23,3 +23,7 @@ void Entity::render() {
 void Entity::setMesh(meshRef _mesh) {
     m_mesh = _mesh;
 }
+
+void Entity::setMaterial(materialRef _mat) {
+    m_material = _mat;  
+}

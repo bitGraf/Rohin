@@ -26,7 +26,7 @@
     "materials" : [
         {
             "doubleSided" : true,
-            "name" : "Material",
+            "name" : "material_brick",
             "pbrMetallicRoughness" : {
                 "baseColorTexture" : {
                     "index" : 0,
@@ -39,7 +39,7 @@
     ],
     "meshes" : [
         {
-            "name" : "Cube",
+            "name" : "mesh_cube",
             "primitives" : [
                 {
                     "attributes" : {

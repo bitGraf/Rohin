@@ -70,6 +70,41 @@ void ResourceManager::loadModelFromFile(std::string path) {
             processMesh(&root, meshID);
         }
     }
+
+    /* Read all materials from file */  
+    for (tinygltf::Material currMat : root.materials) {
+        Material myMat;
+
+        // Material name
+        myMat.name = currMat.name;
+        
+        // Extract texture data
+        myMat.EmissiveTexture.index = currMat.emissiveTexture.index;
+        myMat.EmissiveTexture.tex_coord = currMat.emissiveTexture.texCoord;
+        myMat.normalTexture.index = currMat.normalTexture.index;
+        myMat.normalTexture.tex_coord = currMat.normalTexture.texCoord;
+        myMat.normalTexture.value = static_cast<f32>(currMat.normalTexture.scale);
+        myMat.OcclusionTexture.index = currMat.occlusionTexture.index;
+        myMat.OcclusionTexture.tex_coord = currMat.occlusionTexture.texCoord;
+        myMat.OcclusionTexture.value = static_cast<f32>(currMat.occlusionTexture.strength);
+        myMat.baseColorTexture.index = currMat.pbrMetallicRoughness.baseColorTexture.index;
+        myMat.baseColorTexture.tex_coord = currMat.pbrMetallicRoughness.baseColorTexture.texCoord;
+        myMat.metallicRoughnessTexture.index = currMat.pbrMetallicRoughness.metallicRoughnessTexture.index;
+        myMat.metallicRoughnessTexture.tex_coord = currMat.pbrMetallicRoughness.metallicRoughnessTexture.texCoord;
+
+        // Material Factors
+        myMat.emissiveFactor = math::vec3(currMat.emissiveFactor.data());
+        myMat.baseColorFactor = math::vec4(currMat.pbrMetallicRoughness.baseColorFactor.data());
+        myMat.metallicFactor = currMat.pbrMetallicRoughness.metallicFactor;
+        myMat.roughnessFactor = currMat.pbrMetallicRoughness.roughnessFactor;
+        
+        // Other values
+        myMat.alphaCutoff = currMat.alphaCutoff;
+        myMat.alphaMode = currMat.alphaMode;
+        myMat.doubleSided = currMat.doubleSided;
+
+        materials[myMat.name] = myMat;
+    }
 }
 
 void ResourceManager::processMesh(tinygltf::Model* root, int id) {
@@ -114,7 +149,7 @@ void ResourceManager::processMesh(tinygltf::Model* root, int id) {
         initializeTriangleMesh(&myMesh);
 
         /* Push to stack */
-        meshes.push_back(myMesh);
+        meshes[name] = myMesh;
     }
 }
 
@@ -245,4 +280,21 @@ void* ResourceManager::readImage(tinygltf::Model* root, int imageID) {
     void* out_data = malloc(byteLength);
     memcpy(out_data, data.data() + byteOffset, byteLength);
     return out_data;
+}
+
+meshRef ResourceManager::getMesh(std::string id) {
+    if (meshes.find(id) == meshes.end()) {
+        return nullptr;
+    } else {
+        return &meshes[id]; //TODO: This might not be safe.
+    }
+}
+
+materialRef ResourceManager::getMaterial(std::string id) {
+    if (materials.find(id) == materials.end()) {
+        return nullptr;
+    }
+    else {
+        return &materials[id]; //TODO: This might not be safe.
+    }
 }

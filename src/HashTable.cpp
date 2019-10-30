@@ -12,7 +12,11 @@ u32 hash_djb2(unsigned char* str) {
 }
 
 stringID operator"" _sid(const char *input, size_t s) {
-    unsigned char* k = (unsigned char*)malloc(s);
+    /*unsigned char* k = (unsigned char*)malloc(s);
     strcpy((char*)k, input);
-    return hash_djb2(k);
+    stringID id = hash_djb2(k);
+    //free(k);
+    return id;*/
+
+    return hash_djb2((unsigned char*)input);
 }

@@ -7,6 +7,7 @@
 #include "Console.hpp"
 
 #include "MemoryManager.hpp"
+#include "SceneManager.hpp"
 
 ConfigurationManager g_ConfigManager;
 MessageBus g_MessageBus;
@@ -16,6 +17,7 @@ Window g_MainWindow;
 Console g_Console;
 FileSystem g_FileSystem;
 ResourceManager g_ResourceManager;
+SceneManager g_SceneManager;
 
 u32 offset(void* value, void* ref) {
     u8* p1 = static_cast<u8*>(value);
@@ -40,7 +42,8 @@ int main(int argc, char* argv[]) {
         &g_MainWindow,
         &g_Console,
         &g_FileSystem,
-        &g_ResourceManager);
+        &g_ResourceManager,
+        &g_SceneManager);
 
     g_MessageBus.create(&g_ConfigManager);
 
@@ -49,6 +52,7 @@ int main(int argc, char* argv[]) {
 
     /* TESTING START */
     g_ResourceManager.loadModelFromFile("Data/Models/cube.gltf");
+    g_SceneManager.loadScenes(&g_ResourceManager); // Load dummy scene to test
     /*  TESTING END  */
 
     // Create console thread that listens for commands

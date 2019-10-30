@@ -16,6 +16,11 @@ math::vec2::vec2(f32 a, f32 b) {
     y = b;
 }
 
+math::vec2::vec2(double* data) {
+    x = data[0];
+    y = data[1];
+}
+
 math::vec3::vec3() {
     x = 0;
     y = 0;
@@ -32,6 +37,40 @@ math::vec3::vec3(f32 a, f32 b, f32 c) {
     x = a;
     y = b;
     z = c;
+}
+
+math::vec3::vec3(double* data) {
+    x = data[0];
+    y = data[1];
+    z = data[2];
+}
+
+math::vec4::vec4() {
+    x = 0;
+    y = 0;
+    z = 0;
+    w = 0;
+}
+
+math::vec4::vec4(f32 v) {
+    x = v;
+    y = v;
+    z = v;
+    w = v;
+}
+
+math::vec4::vec4(f32 a, f32 b, f32 c, f32 d) {
+    x = a;
+    y = b;
+    z = c;
+    w = d;
+}
+
+math::vec4::vec4(double* data) {
+    x = data[0];
+    y = data[1];
+    z = data[2];
+    w = data[3];
 }
 
 math::mat3::mat3() {
@@ -100,6 +139,13 @@ std::ostream & math::operator<<(std::ostream & os, const vec3 & v)
 {
     // TODO: float formatting
     os << "(" << v.x << ", " << v.y << ", " << v.z << ") ";
+    return os;
+}
+
+std::ostream & math::operator<<(std::ostream & os, const vec4 & v)
+{
+    // TODO: float formatting
+    os << "(" << v.w << ", " << v.x << ", " << v.y << ", " << v.z << ") ";
     return os;
 }
 

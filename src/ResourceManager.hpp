@@ -2,11 +2,13 @@
 #define RESOURCE_MANAGER_H
 
 #include <cassert>
+#include <unordered_map>
 
 #include "CoreSystem.hpp"
 #include "FileSystem.hpp"
 #include "MemoryManager.hpp"
 #include "Models.hpp"
+#include "Material.hpp"
 
 #include "tiny_gltf.h"
 
@@ -27,6 +29,9 @@ public:
 
     void loadModelFromFile(std::string path);
 
+    meshRef getMesh(std::string);
+    materialRef getMaterial(std::string);
+
 private:
     FileSystem*     m_FileSystem;
     //MemoryManager*  m_memoryManager;
@@ -37,7 +42,9 @@ private:
     void* readAccessor(tinygltf::Model* root, int accessorID);
     void* readImage(tinygltf::Model* root, int imageID);
 
-    std::vector<TriangleMesh> meshes;
+    std::unordered_map<std::string, TriangleMesh> meshes;
+    std::unordered_map<std::string, Material> materials;
+
     void processMesh(tinygltf::Model* root, int id);
 
     template<typename T>
