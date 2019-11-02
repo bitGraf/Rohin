@@ -69,29 +69,94 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#friends">Friends</a> &#124;
+<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="classmath_1_1mat3-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">math::mat3 Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>3x3 Matrix  
+ <a href="classmath_1_1mat3.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="_game_math_8hpp_source.html">GameMath.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a4ffc63ddda3592b8bd187034660ba2f9"><td class="memItemLeft" align="right" valign="top"><a id="a4ffc63ddda3592b8bd187034660ba2f9"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>mat3</b> (f32 v)</td></tr>
-<tr class="separator:a4ffc63ddda3592b8bd187034660ba2f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab981aebe7c87c9612b8dbc0bf5e80e2a"><td class="memItemLeft" align="right" valign="top"><a id="ab981aebe7c87c9612b8dbc0bf5e80e2a"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1mat3.html#ab981aebe7c87c9612b8dbc0bf5e80e2a">mat3</a> ()</td></tr>
+<tr class="memdesc:ab981aebe7c87c9612b8dbc0bf5e80e2a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Identity constructor. <br /></td></tr>
+<tr class="separator:ab981aebe7c87c9612b8dbc0bf5e80e2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96180126c70843da9121627f73542345"><td class="memItemLeft" align="right" valign="top"><a id="a96180126c70843da9121627f73542345"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1mat3.html#a96180126c70843da9121627f73542345">mat3</a> (scalar v)</td></tr>
+<tr class="memdesc:a96180126c70843da9121627f73542345"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same-Value constructor. <br /></td></tr>
+<tr class="separator:a96180126c70843da9121627f73542345"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abe76907cfa633e452885940c72262214"><td class="memItemLeft" align="right" valign="top"><a id="abe76907cfa633e452885940c72262214"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>mat3</b> (<a class="el" href="classmath_1_1vec3.html">vec3</a> v1, <a class="el" href="classmath_1_1vec3.html">vec3</a> v2, <a class="el" href="classmath_1_1vec3.html">vec3</a> v3)</td></tr>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1mat3.html#abe76907cfa633e452885940c72262214">mat3</a> (<a class="el" href="classmath_1_1vec3.html">vec3</a> v1, <a class="el" href="classmath_1_1vec3.html">vec3</a> v2, <a class="el" href="classmath_1_1vec3.html">vec3</a> v3)</td></tr>
+<tr class="memdesc:abe76907cfa633e452885940c72262214"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize by column vectors. <br /></td></tr>
 <tr class="separator:abe76907cfa633e452885940c72262214"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ace6fe6b1ddfcc92f15302db0f40a1c"><td class="memItemLeft" align="right" valign="top"><a id="a8ace6fe6b1ddfcc92f15302db0f40a1c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1mat3.html#a8ace6fe6b1ddfcc92f15302db0f40a1c">mat3</a> (scalar c11, scalar c22, scalar c33)</td></tr>
+<tr class="memdesc:a8ace6fe6b1ddfcc92f15302db0f40a1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize by diagonal values. <br /></td></tr>
+<tr class="separator:a8ace6fe6b1ddfcc92f15302db0f40a1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9127913978214762722a221cc42fc36a"><td class="memItemLeft" align="right" valign="top"><a id="a9127913978214762722a221cc42fc36a"></a>
+<a class="el" href="classmath_1_1vec3.html">vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1mat3.html#a9127913978214762722a221cc42fc36a">row1</a> () const</td></tr>
+<tr class="memdesc:a9127913978214762722a221cc42fc36a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get row 1. <br /></td></tr>
+<tr class="separator:a9127913978214762722a221cc42fc36a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2a8db1782cac09c54d312aa3fcf05d4"><td class="memItemLeft" align="right" valign="top"><a id="ab2a8db1782cac09c54d312aa3fcf05d4"></a>
+<a class="el" href="classmath_1_1vec3.html">vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1mat3.html#ab2a8db1782cac09c54d312aa3fcf05d4">row2</a> () const</td></tr>
+<tr class="memdesc:ab2a8db1782cac09c54d312aa3fcf05d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get row 2. <br /></td></tr>
+<tr class="separator:ab2a8db1782cac09c54d312aa3fcf05d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ff5b6c6c0e14f57ad0b8e5f0967c19a"><td class="memItemLeft" align="right" valign="top"><a id="a5ff5b6c6c0e14f57ad0b8e5f0967c19a"></a>
+<a class="el" href="classmath_1_1vec3.html">vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1mat3.html#a5ff5b6c6c0e14f57ad0b8e5f0967c19a">row3</a> () const</td></tr>
+<tr class="memdesc:a5ff5b6c6c0e14f57ad0b8e5f0967c19a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get row 3. <br /></td></tr>
+<tr class="separator:a5ff5b6c6c0e14f57ad0b8e5f0967c19a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af490c8dae0dc43be947691b1c7589a0a"><td class="memItemLeft" align="right" valign="top"><a id="af490c8dae0dc43be947691b1c7589a0a"></a>
+<a class="el" href="classmath_1_1vec3.html">vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1mat3.html#af490c8dae0dc43be947691b1c7589a0a">col1</a> () const</td></tr>
+<tr class="memdesc:af490c8dae0dc43be947691b1c7589a0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get column 1. <br /></td></tr>
+<tr class="separator:af490c8dae0dc43be947691b1c7589a0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af834449a57c2b33c8838a6098dfccebb"><td class="memItemLeft" align="right" valign="top"><a id="af834449a57c2b33c8838a6098dfccebb"></a>
+<a class="el" href="classmath_1_1vec3.html">vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1mat3.html#af834449a57c2b33c8838a6098dfccebb">col2</a> () const</td></tr>
+<tr class="memdesc:af834449a57c2b33c8838a6098dfccebb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get column 2. <br /></td></tr>
+<tr class="separator:af834449a57c2b33c8838a6098dfccebb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae73f47f21cc64d4b1dbd58fca0d1fe29"><td class="memItemLeft" align="right" valign="top"><a id="ae73f47f21cc64d4b1dbd58fca0d1fe29"></a>
+<a class="el" href="classmath_1_1vec3.html">vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1mat3.html#ae73f47f21cc64d4b1dbd58fca0d1fe29">col3</a> () const</td></tr>
+<tr class="memdesc:ae73f47f21cc64d4b1dbd58fca0d1fe29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get column 3. <br /></td></tr>
+<tr class="separator:ae73f47f21cc64d4b1dbd58fca0d1fe29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
-Friends</h2></td></tr>
-<tr class="memitem:a85d71885cc6797f2553701eb01c52851"><td class="memItemLeft" align="right" valign="top"><a id="a85d71885cc6797f2553701eb01c52851"></a>
-std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (std::ostream &amp;os, const <a class="el" href="classmath_1_1mat3.html">mat3</a> &amp;m)</td></tr>
-<tr class="separator:a85d71885cc6797f2553701eb01c52851"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a897ed33b155e435aa238ba506bb75a45"><td class="memItemLeft" align="right" valign="top"><a id="a897ed33b155e435aa238ba506bb75a45"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>_11</b></td></tr>
+<tr class="separator:a897ed33b155e435aa238ba506bb75a45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d4dc2749b2962f1fb92ba1327f15c69"><td class="memItemLeft" align="right" valign="top"><a id="a0d4dc2749b2962f1fb92ba1327f15c69"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>_21</b></td></tr>
+<tr class="separator:a0d4dc2749b2962f1fb92ba1327f15c69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e3cc466c476bf95d711f4d9fff283de"><td class="memItemLeft" align="right" valign="top"><a id="a2e3cc466c476bf95d711f4d9fff283de"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>_31</b></td></tr>
+<tr class="separator:a2e3cc466c476bf95d711f4d9fff283de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a212ef5c98401d56401afc9a4e48ad0"><td class="memItemLeft" align="right" valign="top"><a id="a3a212ef5c98401d56401afc9a4e48ad0"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>_12</b></td></tr>
+<tr class="separator:a3a212ef5c98401d56401afc9a4e48ad0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ff6a982158980cc64896f44cbb13f8c"><td class="memItemLeft" align="right" valign="top"><a id="a5ff6a982158980cc64896f44cbb13f8c"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>_22</b></td></tr>
+<tr class="separator:a5ff6a982158980cc64896f44cbb13f8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5548e3c5ccf86ba73892c6460cef6dcd"><td class="memItemLeft" align="right" valign="top"><a id="a5548e3c5ccf86ba73892c6460cef6dcd"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>_32</b></td></tr>
+<tr class="separator:a5548e3c5ccf86ba73892c6460cef6dcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3fddffff9a4b1cc8f4cc9dd6556394b"><td class="memItemLeft" align="right" valign="top"><a id="ac3fddffff9a4b1cc8f4cc9dd6556394b"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>_13</b></td></tr>
+<tr class="separator:ac3fddffff9a4b1cc8f4cc9dd6556394b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abab5b212091c4f16d441081a4dbbfec8"><td class="memItemLeft" align="right" valign="top"><a id="abab5b212091c4f16d441081a4dbbfec8"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>_23</b></td></tr>
+<tr class="separator:abab5b212091c4f16d441081a4dbbfec8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a79aceb9beb242b942e32df9838030c5a"><td class="memItemLeft" align="right" valign="top"><a id="a79aceb9beb242b942e32df9838030c5a"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>_33</b></td></tr>
+<tr class="separator:a79aceb9beb242b942e32df9838030c5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this class was generated from the following files:<ul>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>3x3 Matrix </p>
+</div><hr/>The documentation for this class was generated from the following files:<ul>
 <li>D:/GameDev/Big-Disc-Mk-II/src/<a class="el" href="_game_math_8hpp_source.html">GameMath.hpp</a></li>
 <li>D:/GameDev/Big-Disc-Mk-II/src/GameMath.cpp</li>
 </ul>

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['returnblock',['returnBlock',['../class_pool_allocator.html#a8c784374703d5d557dbaad7d1964c765',1,'PoolAllocator']]],
-  ['returnblock_5fraw',['returnBlock_raw',['../class_pool_allocator.html#a53f48522b7f0a1bb67b26719a1982335',1,'PoolAllocator']]]
+  ['normalize',['normalize',['../classmath_1_1vec2.html#a89ff3a99aa1624aae0d1397127477a58',1,'math::vec2::normalize()'],['../classmath_1_1vec3.html#a7948bc452bebf055441da7cc50c94857',1,'math::vec3::normalize()'],['../classmath_1_1vec4.html#a0e2a707c0ec05d857161821ce44e3e88',1,'math::vec4::normalize()']]]
 ];

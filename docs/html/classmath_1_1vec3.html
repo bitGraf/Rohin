@@ -76,35 +76,81 @@ $(function() {
 <div class="title">math::vec3 Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>3 Vector  
+ <a href="classmath_1_1vec3.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="_game_math_8hpp_source.html">GameMath.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a3e91103833a7bfbb5e78e0fe14ee7868"><td class="memItemLeft" align="right" valign="top"><a id="a3e91103833a7bfbb5e78e0fe14ee7868"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>vec3</b> (f32 v)</td></tr>
-<tr class="separator:a3e91103833a7bfbb5e78e0fe14ee7868"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3da3a314c9602527656db3bd00f00cf1"><td class="memItemLeft" align="right" valign="top"><a id="a3da3a314c9602527656db3bd00f00cf1"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>vec3</b> (f32 a, f32 b, f32 c)</td></tr>
-<tr class="separator:a3da3a314c9602527656db3bd00f00cf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c7c6df94835c81e59a8b2532baac72b"><td class="memItemLeft" align="right" valign="top"><a id="a0c7c6df94835c81e59a8b2532baac72b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#a0c7c6df94835c81e59a8b2532baac72b">vec3</a> ()</td></tr>
+<tr class="memdesc:a0c7c6df94835c81e59a8b2532baac72b"><td class="mdescLeft">&#160;</td><td class="mdescRight">All-zero constructor. <br /></td></tr>
+<tr class="separator:a0c7c6df94835c81e59a8b2532baac72b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73de5124fe341e2232b0720abba4676e"><td class="memItemLeft" align="right" valign="top"><a id="a73de5124fe341e2232b0720abba4676e"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#a73de5124fe341e2232b0720abba4676e">vec3</a> (scalar v)</td></tr>
+<tr class="memdesc:a73de5124fe341e2232b0720abba4676e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same-value constructor. <br /></td></tr>
+<tr class="separator:a73de5124fe341e2232b0720abba4676e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a04daabfb5a3463951d7d0056b893f04d"><td class="memItemLeft" align="right" valign="top"><a id="a04daabfb5a3463951d7d0056b893f04d"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#a04daabfb5a3463951d7d0056b893f04d">vec3</a> (scalar a, scalar b, scalar c)</td></tr>
+<tr class="memdesc:a04daabfb5a3463951d7d0056b893f04d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specific-value constructor. <br /></td></tr>
+<tr class="separator:a04daabfb5a3463951d7d0056b893f04d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a6af7b44b5fbdc1a3086e07c66ae652"><td class="memItemLeft" align="right" valign="top"><a id="a4a6af7b44b5fbdc1a3086e07c66ae652"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#a4a6af7b44b5fbdc1a3086e07c66ae652">vec3</a> (double *data)</td></tr>
+<tr class="memdesc:a4a6af7b44b5fbdc1a3086e07c66ae652"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize by array. <br /></td></tr>
+<tr class="separator:a4a6af7b44b5fbdc1a3086e07c66ae652"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aafb7ba66270b6ac6e08154145c15c65b"><td class="memItemLeft" align="right" valign="top"><a id="aafb7ba66270b6ac6e08154145c15c65b"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#aafb7ba66270b6ac6e08154145c15c65b">vec3</a> (<a class="el" href="classmath_1_1vec2.html">vec2</a> v, scalar c)</td></tr>
+<tr class="memdesc:aafb7ba66270b6ac6e08154145c15c65b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize from smaller vector. <br /></td></tr>
+<tr class="separator:aafb7ba66270b6ac6e08154145c15c65b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8f2bf974faadd2308b4e64b6e801058"><td class="memItemLeft" align="right" valign="top"><a id="ab8f2bf974faadd2308b4e64b6e801058"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#ab8f2bf974faadd2308b4e64b6e801058">length</a> ()</td></tr>
+<tr class="memdesc:ab8f2bf974faadd2308b4e64b6e801058"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find magnitude of vector. <br /></td></tr>
+<tr class="separator:ab8f2bf974faadd2308b4e64b6e801058"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3099025b67f485d744289f3632904906"><td class="memItemLeft" align="right" valign="top"><a id="a3099025b67f485d744289f3632904906"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#a3099025b67f485d744289f3632904906">length_2</a> ()</td></tr>
+<tr class="memdesc:a3099025b67f485d744289f3632904906"><td class="mdescLeft">&#160;</td><td class="mdescRight">Find squared magnitude of vector. <br /></td></tr>
+<tr class="separator:a3099025b67f485d744289f3632904906"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e1dd45939145ca1d5bca12e9ca72f3b"><td class="memItemLeft" align="right" valign="top"><a id="a8e1dd45939145ca1d5bca12e9ca72f3b"></a>
+<a class="el" href="classmath_1_1vec3.html">vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#a8e1dd45939145ca1d5bca12e9ca72f3b">get_unit</a> ()</td></tr>
+<tr class="memdesc:a8e1dd45939145ca1d5bca12e9ca72f3b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get unit vector (doesn't modify) <br /></td></tr>
+<tr class="separator:a8e1dd45939145ca1d5bca12e9ca72f3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7948bc452bebf055441da7cc50c94857"><td class="memItemLeft" align="right" valign="top"><a id="a7948bc452bebf055441da7cc50c94857"></a>
+<a class="el" href="classmath_1_1vec3.html">vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#a7948bc452bebf055441da7cc50c94857">normalize</a> ()</td></tr>
+<tr class="memdesc:a7948bc452bebf055441da7cc50c94857"><td class="mdescLeft">&#160;</td><td class="mdescRight">Normalize vector and return. <br /></td></tr>
+<tr class="separator:a7948bc452bebf055441da7cc50c94857"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12b96b08eb4bf33bf0ccb009c5776cde"><td class="memItemLeft" align="right" valign="top"><a id="a12b96b08eb4bf33bf0ccb009c5776cde"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#a12b96b08eb4bf33bf0ccb009c5776cde">dot</a> (<a class="el" href="classmath_1_1vec3.html">vec3</a> v)</td></tr>
+<tr class="memdesc:a12b96b08eb4bf33bf0ccb009c5776cde"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dot product with another <a class="el" href="classmath_1_1vec2.html" title="2 Vector">vec2</a>. <br /></td></tr>
+<tr class="separator:a12b96b08eb4bf33bf0ccb009c5776cde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9dfec20614c65582228c72724ba11ad"><td class="memItemLeft" align="right" valign="top"><a id="ad9dfec20614c65582228c72724ba11ad"></a>
+<a class="el" href="classmath_1_1vec3.html">vec3</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#ad9dfec20614c65582228c72724ba11ad">cross</a> (<a class="el" href="classmath_1_1vec3.html">vec3</a> v)</td></tr>
+<tr class="memdesc:ad9dfec20614c65582228c72724ba11ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Cross product with another <a class="el" href="classmath_1_1vec2.html" title="2 Vector">vec2</a>. <br /></td></tr>
+<tr class="separator:ad9dfec20614c65582228c72724ba11ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:afb9b1f39c82252688dc89c4f02240206"><td class="memItemLeft" align="right" valign="top"><a id="afb9b1f39c82252688dc89c4f02240206"></a>
-f32&#160;</td><td class="memItemRight" valign="bottom"><b>x</b></td></tr>
-<tr class="separator:afb9b1f39c82252688dc89c4f02240206"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94d8c063660438a00ff02f5088dd804f"><td class="memItemLeft" align="right" valign="top"><a id="a94d8c063660438a00ff02f5088dd804f"></a>
-f32&#160;</td><td class="memItemRight" valign="bottom"><b>y</b></td></tr>
-<tr class="separator:a94d8c063660438a00ff02f5088dd804f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad1fa9fa819f6d719317017c8b24dea69"><td class="memItemLeft" align="right" valign="top"><a id="ad1fa9fa819f6d719317017c8b24dea69"></a>
-f32&#160;</td><td class="memItemRight" valign="bottom"><b>z</b></td></tr>
-<tr class="separator:ad1fa9fa819f6d719317017c8b24dea69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a288861edd554c4839ad397b4bf795eee"><td class="memItemLeft" align="right" valign="top"><a id="a288861edd554c4839ad397b4bf795eee"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>x</b></td></tr>
+<tr class="separator:a288861edd554c4839ad397b4bf795eee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8c47ea3c85fcba05c98bae99b7e5e73"><td class="memItemLeft" align="right" valign="top"><a id="ac8c47ea3c85fcba05c98bae99b7e5e73"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>y</b></td></tr>
+<tr class="separator:ac8c47ea3c85fcba05c98bae99b7e5e73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba4fbdfd7d612c3411879e82b72f4a33"><td class="memItemLeft" align="right" valign="top"><a id="aba4fbdfd7d612c3411879e82b72f4a33"></a>
+scalar&#160;</td><td class="memItemRight" valign="bottom"><b>z</b></td></tr>
+<tr class="separator:aba4fbdfd7d612c3411879e82b72f4a33"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
 <tr class="memitem:a3e8f4856b29a4320f185f9a9cf0f94bc"><td class="memItemLeft" align="right" valign="top"><a id="a3e8f4856b29a4320f185f9a9cf0f94bc"></a>
-std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator&lt;&lt;</b> (std::ostream &amp;os, const <a class="el" href="classmath_1_1vec3.html">vec3</a> &amp;v)</td></tr>
+std::ostream &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmath_1_1vec3.html#a3e8f4856b29a4320f185f9a9cf0f94bc">operator&lt;&lt;</a> (std::ostream &amp;os, const <a class="el" href="classmath_1_1vec3.html">vec3</a> &amp;v)</td></tr>
+<tr class="memdesc:a3e8f4856b29a4320f185f9a9cf0f94bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stream operator overload. <br /></td></tr>
 <tr class="separator:a3e8f4856b29a4320f185f9a9cf0f94bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this class was generated from the following files:<ul>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>3 Vector </p>
+</div><hr/>The documentation for this class was generated from the following files:<ul>
 <li>D:/GameDev/Big-Disc-Mk-II/src/<a class="el" href="_game_math_8hpp_source.html">GameMath.hpp</a></li>
 <li>D:/GameDev/Big-Disc-Mk-II/src/GameMath.cpp</li>
 </ul>
