@@ -39,14 +39,16 @@ void RenderManager::renderScene(Scene* scene) {
     setCamera(&scene->camera);
     for (auto ent : scene->m_entities) {
         // Render entity ent
-        setCurrentMesh(ent.m_mesh);
-        if (ent.m_material != nullptr) {
-            setCurrentMaterial(ent.m_material);
+        if (ent.m_mesh != nullptr) {
+            setCurrentMesh(ent.m_mesh);
+            if (ent.m_material != nullptr) {
+                setCurrentMaterial(ent.m_material);
+            }
+
+            setTransforms(&ent.position, &ent.orientation, &ent.scale);
+
+            renderPrimitive(ent.m_mesh);
         }
-
-        setTransforms(&ent.position, &ent.orientation, &ent.scale);
-
-        renderPrimitive(ent.m_mesh);
     }
 }
 

@@ -3,7 +3,7 @@
 #ifdef _WIN32
 //define something for Windows (32-bit and 64-bit, this part is common)
 
-void getDirectory(char* _curDirectory) {
+int getDirectory(char* _curDirectory) {
     int length = GetModuleFileName(NULL, _curDirectory, MAX_PATH);
 
     int i = 0;
@@ -13,6 +13,8 @@ void getDirectory(char* _curDirectory) {
     _curDirectory[i + 1] = '\0';
 
     //printf("Executable location is '%s'\n", _curDirectory);
+
+    return i+1;
 }
 
 void setDirectory(char* _newDirectory) {

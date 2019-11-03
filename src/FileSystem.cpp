@@ -23,8 +23,8 @@ void FileSystem::destroy() {
 void FileSystem::sys_create(ConfigurationManager* configMgr) {
     // TODO: Make this not poopoo
 
-    getDirectory(rootDirectory);
-    strcpy(rootDirectory, "D:\\GameDev\\Big-Disc-Mk-II\\run_tree");
+    int pos = getDirectory(rootDirectory);
+    strcpy(rootDirectory+pos, "..\\..\\run_tree\0");
     setDirectory(rootDirectory);
 }
 

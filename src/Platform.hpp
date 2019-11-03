@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include "DataTypes.hpp"
 
-void getDirectory(char* _curDirectory);
+int getDirectory(char* _curDirectory);
 void setDirectory(char* _newDirectory);
 
 #endif //ifndef PLATFORM_H
