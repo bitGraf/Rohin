@@ -12,7 +12,9 @@ public:
         inputEvent,
         windowEvent,
         gameEvent,
-        renderEvent
+        renderEvent,
+        startFrame,
+        endFrame
     };
 
     Message();

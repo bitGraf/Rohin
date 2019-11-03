@@ -1,18 +1,24 @@
 #include "MemoryManager.hpp"
 
 // Explicit instantiation for various types
+template void PoolAllocator::returnBlock(DataBlock<u8>&);
 template void PoolAllocator::returnBlock(DataBlock<f32>&);
 template void PoolAllocator::returnBlock(DataBlock<f64>&);
 template void PoolAllocator::returnBlock(DataBlock<math::vec3>&);
+template void PoolAllocator::returnBlock(DataBlock<math::vec4>&);
 
 // Explicit instantiation for various types
+template DataBlock<u8> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<f32> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<f64> PoolAllocator::allocBlock(u32, bool);
+template DataBlock<math::vec4> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<math::vec3> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<math::vec2> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<index_t> PoolAllocator::allocBlock(u32, bool);
 
 // Explicit instantiation for various types
+template DataBlock<u8>& DataBlock<u8>::operator=(const DataBlock<u8>& db);
+template DataBlock<math::vec4>& DataBlock<math::vec4>::operator=(const DataBlock<math::vec4>& db);
 template DataBlock<math::vec3>& DataBlock<math::vec3>::operator=(const DataBlock<math::vec3>& db);
 template DataBlock<math::vec2>& DataBlock<math::vec2>::operator=(const DataBlock<math::vec2>& db);
 template DataBlock<index_t>& DataBlock<index_t>::operator=(const DataBlock<index_t>& db);

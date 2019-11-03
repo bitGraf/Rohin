@@ -50,6 +50,7 @@ private:
     template<typename T>
     DataBlock<T> processAccessor(tinygltf::Model* root, int id);
     void initializeTriangleMesh(TriangleMesh* mesh);
+    void initializeTexture(tinygltf::Model* root, Material_Texture* mTex);
 };
 
 

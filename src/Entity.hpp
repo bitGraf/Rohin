@@ -21,7 +21,7 @@ public:
     void setMesh(meshRef _mesh);
     void setMaterial(materialRef _mat);
 
-private:
+//private:
     meshRef m_mesh;
     materialRef m_material;
 };

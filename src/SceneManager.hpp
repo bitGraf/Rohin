@@ -6,6 +6,7 @@
 #include "CoreSystem.hpp"
 #include "Entity.hpp"
 #include "ResourceManager.hpp"
+#include "Camera.hpp"
 
 class Scene {
 public:
@@ -13,8 +14,11 @@ public:
 
     void testCreate(ResourceManager* resource);
 
-private:
+//private:
     std::vector<Entity> m_entities;
+    Camera camera;
+
+    f32 yaw;
 };
 
 
@@ -29,6 +33,8 @@ public:
     virtual void sys_create(ConfigurationManager * configMgr) override;
 
     void loadScenes(ResourceManager* resource);
+
+    Scene* getCurrentScene();
 
 private:
     Scene* m_currentScene;

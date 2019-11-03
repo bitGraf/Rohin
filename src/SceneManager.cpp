@@ -5,11 +5,11 @@ SceneManager::SceneManager() {
 }
 
 void SceneManager::update(double dt) {
-
+    m_currentScene->yaw += 5 * dt;
+    m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw, m_currentScene->yaw, m_currentScene->yaw);
 }
 
 void SceneManager::handleMessage(Message msg) {
-
 }
 
 void SceneManager::destroy() {
@@ -20,32 +20,28 @@ void SceneManager::sys_create(ConfigurationManager * configMgr) {
 }
 
 Scene::Scene() {
-
+    yaw = 0;
 }
 
 void Scene::testCreate(ResourceManager* resource) {
     using namespace math;
 
     Entity ent1;
-    ent1.position = vec3(1, 2, 3);
-    ent1.orientation = mat3(
-        vec3(1, 0, 0),
-        vec3(0, 1, 0),
-        vec3(0, 0, 1));
-    ent1.scale = vec3(1);
+    ent1.position = vec3(0,1,0);
+    ent1.orientation.toYawPitchRoll(45, 45, 45);
+    ent1.scale = vec3(2);
 
-    meshRef meshR = resource->getMesh("mesh_cube");
-    materialRef matR = resource->getMaterial("material_brick");
+    meshRef meshR = resource->getMesh("Cube");
+    materialRef matR = resource->getMaterial("Material");
 
     if (meshR == nullptr) {
-        printf("Mesh [%s] not loaded.\n", "mesh_cube");
+        printf("Mesh [%s] not loaded.\n", "Cube");
     }
     if (matR == nullptr) {
-        printf("Material [%s] not loaded.\n", "material_brick");
+        printf("Material [%s] not loaded.\n", "Material");
     }
     ent1.setMesh(meshR);
     ent1.setMaterial(matR);
-
 
 
     Entity ent2;
@@ -71,7 +67,7 @@ void Scene::testCreate(ResourceManager* resource) {
 
 
     m_entities.push_back(ent1);
-    m_entities.push_back(ent2);
+    //m_entities.push_back(ent2);
 }
 
 void SceneManager::loadScenes(ResourceManager* resource) {
@@ -83,4 +79,8 @@ void SceneManager::loadScenes(ResourceManager* resource) {
 
     // TODO: Not safe. Pointers change when vector grows
     m_currentScene = &scenes[0];
+}
+
+Scene* SceneManager::getCurrentScene() {
+    return m_currentScene;
 }

@@ -5,6 +5,7 @@
 #include "GameMath.hpp"
 #include "MemoryManager.hpp"
 
+typedef DataBlock<math::vec4>   vec4Array;
 typedef DataBlock<math::vec3>   vec3Array;
 typedef DataBlock<math::vec2>   vec2Array;
 typedef DataBlock<index_t>      indexArray;
@@ -25,7 +26,7 @@ public:
     vec3Array vertPositions;
     vec3Array vertNormals;
     vec2Array vertTexCoords;
-    vec3Array vertTangents;
+    vec4Array vertTangents;
     vec3Array vertBitangents;
 
     // Face Data

@@ -10,6 +10,12 @@ struct Material_Texture {
     int index;
     int tex_coord;
     f32 value;
+
+    GLuint glTexID;
+    int width, height, nrChannels, channelBits;
+
+    GLint internalFormat;
+    GLenum format;
 };
 
 class Material {
@@ -20,11 +26,11 @@ public:
     std::string name;
 
     // Material Textures
-    Material_Texture normalTexture;
-    Material_Texture OcclusionTexture;
-    Material_Texture EmissiveTexture;
     Material_Texture baseColorTexture;
+    Material_Texture normalTexture;
+    Material_Texture occlusionTexture;
     Material_Texture metallicRoughnessTexture;
+    Material_Texture emissiveTexture;
 
     // Material Factors
     math::vec3 emissiveFactor;

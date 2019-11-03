@@ -5,6 +5,7 @@
 
 #include "CoreSystem.hpp"
 #include "Shader.hpp"
+#include "SceneManager.hpp"
 
 namespace ShaderList {
     const stringID mainShader   = "mainShader"_sid;
@@ -25,9 +26,16 @@ public:
         
     /* System Unique functions */
     void setShader(stringID id);
+    void renderScene(Scene* scene);
 
 private:
-    std::unordered_map<stringID, Shader> shaders;
+    Shader m_shader;
+
+    void setCamera(Camera* camera);
+    void setCurrentMesh(const TriangleMesh* mesh);
+    void setCurrentMaterial(const Material* material);
+    void setTransforms(const math::vec3* pos, const math::mat3* orientation, const math::vec3* scale);
+    void renderPrimitive(const TriangleMesh* mesh);
 };
 
 #endif

@@ -1,7 +1,7 @@
 #include "ResourceManager.hpp"
 
 ResourceManager::ResourceManager() :
-    m_pool(MEGABYTE)
+    m_pool(4 * MEGABYTE)
 {
     m_FileSystem = nullptr;
 }
@@ -79,18 +79,27 @@ void ResourceManager::loadModelFromFile(std::string path) {
         myMat.name = currMat.name;
         
         // Extract texture data
-        myMat.EmissiveTexture.index = currMat.emissiveTexture.index;
-        myMat.EmissiveTexture.tex_coord = currMat.emissiveTexture.texCoord;
+        myMat.emissiveTexture.index = currMat.emissiveTexture.index;
+        myMat.emissiveTexture.tex_coord = currMat.emissiveTexture.texCoord;
+        initializeTexture(&root, &myMat.emissiveTexture);
+
         myMat.normalTexture.index = currMat.normalTexture.index;
         myMat.normalTexture.tex_coord = currMat.normalTexture.texCoord;
         myMat.normalTexture.value = static_cast<f32>(currMat.normalTexture.scale);
-        myMat.OcclusionTexture.index = currMat.occlusionTexture.index;
-        myMat.OcclusionTexture.tex_coord = currMat.occlusionTexture.texCoord;
-        myMat.OcclusionTexture.value = static_cast<f32>(currMat.occlusionTexture.strength);
+        initializeTexture(&root, &myMat.normalTexture);
+
+        myMat.occlusionTexture.index = currMat.occlusionTexture.index;
+        myMat.occlusionTexture.tex_coord = currMat.occlusionTexture.texCoord;
+        myMat.occlusionTexture.value = static_cast<f32>(currMat.occlusionTexture.strength);
+        initializeTexture(&root, &myMat.occlusionTexture);
+
         myMat.baseColorTexture.index = currMat.pbrMetallicRoughness.baseColorTexture.index;
         myMat.baseColorTexture.tex_coord = currMat.pbrMetallicRoughness.baseColorTexture.texCoord;
+        initializeTexture(&root, &myMat.baseColorTexture);
+
         myMat.metallicRoughnessTexture.index = currMat.pbrMetallicRoughness.metallicRoughnessTexture.index;
         myMat.metallicRoughnessTexture.tex_coord = currMat.pbrMetallicRoughness.metallicRoughnessTexture.texCoord;
+        initializeTexture(&root, &myMat.metallicRoughnessTexture);
 
         // Material Factors
         myMat.emissiveFactor = math::vec3(currMat.emissiveFactor.data());
@@ -133,8 +142,8 @@ void ResourceManager::processMesh(tinygltf::Model* root, int id) {
         /* Fill out TriMesh struct */
         myMesh.vertPositions = processAccessor<math::vec3>(root, attr_posID);
         myMesh.vertNormals = processAccessor<math::vec3>(root, attr_normID);
-        myMesh.vertTexCoords = processAccessor<math::vec2>(root, attr_tanID);
-        myMesh.vertTangents = processAccessor<math::vec3>(root, attr_texID);
+        myMesh.vertTexCoords = processAccessor<math::vec2>(root, attr_texID);
+        myMesh.vertTangents = processAccessor<math::vec4>(root, attr_tanID);
         myMesh.vertBitangents = processAccessor<math::vec3>(root, attr_bitanID);
 
         myMesh.indices = processAccessor<index_t>(root, attr_indexID);
@@ -202,21 +211,113 @@ void ResourceManager::initializeTriangleMesh(TriangleMesh* mesh) {
     glBindVertexArray(0);
 }
 
+void ResourceManager::initializeTexture(tinygltf::Model* root, Material_Texture* mTex) {
+    if (mTex->index >= 0) {
+        tinygltf::Texture tex = root->textures[mTex->index];
+        std::string texName = tex.name;
+
+        /* Check for sampler info */
+        int texSampler = tex.sampler;
+        if (texSampler >= 0) {
+
+        }
+
+        int texSource = tex.source;
+        if (texSource >= 0) {
+            tinygltf::Image image = root->images[texSource];
+
+            std::string imageName = image.name;
+            std::string imageMimeType = image.mimeType;
+            int bufferViewID = image.bufferView;
+
+            tinygltf::BufferView bv = root->bufferViews[bufferViewID];
+
+            tinygltf::Buffer buffer = root->buffers[bv.buffer];
+            size_t byteLength = bv.byteLength;
+            size_t byteOffset = bv.byteOffset;
+
+            //DataBlock<u8> block = m_pool.allocBlock<u8>(byteLength, true);
+            //memcpy(block.data, buffer.data.data() + byteOffset, byteLength);
+
+            /* now have the texture data in block */
+            mTex->width = image.width;
+            mTex->height = image.height;
+            mTex->channelBits = image.bits;
+            mTex->nrChannels = image.component;
+
+            GLint internalFormat = -1;
+            GLenum format = -1;
+
+            switch (image.component) {
+            case 1: {
+                switch (image.bits) {
+                case 8:  {internalFormat = GL_R8;  } break;
+                case 16: {internalFormat = GL_R16; } break;
+                }
+                format = GL_RED;
+            } break;
+            case 2: {
+                switch (image.bits) {
+                case 8: {internalFormat = GL_RG8;  } break;
+                case 16: {internalFormat = GL_RG16; } break;
+                }
+                format = GL_RG;
+            } break;
+            case 3: {
+                switch (image.bits) {
+                case 8: {internalFormat = GL_RGB8;  } break;
+                case 16: {internalFormat = GL_RGB16; } break;
+                }
+                format = GL_RGB;
+            } break;
+            case 4: {
+                switch (image.bits) {
+                case 8: {internalFormat = GL_RGBA8;  } break;
+                case 16: {internalFormat = GL_RGBA16; } break;
+                }
+                format = GL_RGBA;
+            } break;
+            }
+
+            if (format < 0 || internalFormat < 0) {
+                printf("Failed to decipher pixel format\n");
+                assert(false);
+            }
+
+            mTex->format = format;
+            mTex->internalFormat = internalFormat;
+
+            glGenTextures(1, &mTex->glTexID);
+            glBindTexture(GL_TEXTURE_2D, mTex->glTexID);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, mTex->width, mTex->height, 0, format, GL_UNSIGNED_BYTE, image.image.data());
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        }
+    }
+}
+
+
+
 template<typename T>
 DataBlock<T> ResourceManager::processAccessor(tinygltf::Model* root, int id) {
     int bufferViewID = root->accessors[id].bufferView;
-    //int compType = root->accessors[id].componentType;
+    int compType = root->accessors[id].componentType;
     size_t count = root->accessors[id].count;
     //std::vector<double> max = root->accessors[id].maxValues;
     //std::vector<double> min = root->accessors[id].minValues;
-    //int type = root->accessors[id].type;
+    int type = root->accessors[id].type;
 
     // read buffer view
     tinygltf::BufferView buffView = root->bufferViews[bufferViewID];
 
     int buffID = buffView.buffer;
     size_t byteLength = buffView.byteLength;
-    //size_t byteOffset = buffView.byteOffset;
+    size_t byteOffset = buffView.byteOffset;
 
     /* read buffer */
     tinygltf::Buffer buffer = root->buffers[buffID];
@@ -225,7 +326,7 @@ DataBlock<T> ResourceManager::processAccessor(tinygltf::Model* root, int id) {
     std::vector<u8> data = buffer.data;
 
     DataBlock<T> block = m_pool.allocBlock<T>(count, true);
-    memcpy(block.data, data.data(), byteLength);
+    memcpy(block.data, data.data()+byteOffset, byteLength);
 
     return block;
 }

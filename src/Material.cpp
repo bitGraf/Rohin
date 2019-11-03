@@ -4,6 +4,8 @@ Material_Texture::Material_Texture() {
     index = -1;
     tex_coord = -1;
     value = 0;
+
+    glTexID = 0;
 }
 
 

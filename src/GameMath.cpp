@@ -514,10 +514,84 @@ math::mat4& math::operator/= (mat4& M, scalar s) {
     return M;
 }
 
+math::vec2 math::operator- (const vec2& V) {
+    return vec2(-V.x, -V.y);
+}
+math::vec3 math::operator- (const vec3& V) {
+    return vec3(-V.x, -V.y, -V.z);
+}
+math::vec4 math::operator- (const vec4& V) {
+    return vec4(-V.x, -V.y, -V.z, -V.w);
+}
+
+math::mat2 math::operator- (const mat2& M) {
+    return mat2(-M.col1(), -M.col2());
+}
+math::mat3 math::operator- (const mat3& M) {
+    return mat3(-M.col1(), -M.col2(), -M.col3());
+}
+math::mat4 math::operator- (const mat4& M) {
+    return mat4(-M.col1(), -M.col2(), -M.col3(), -M.col4());
+}
 
 
 
+math::mat3& math::mat3::toYawPitchRoll(scalar yaw, scalar pitch, scalar roll) {
+    /* 2-3-1 Body-Fixed Euler-Rotation */
+    scalar C2 = cos(yaw*d2r);
+    scalar S2 = sin(yaw*d2r);
+    scalar C3 = cos(pitch*d2r);
+    scalar S3 = sin(pitch*d2r);
+    scalar C1 = cos(roll*d2r);
+    scalar S1 = sin(roll*d2r);
+    
 
+    _11 =  C2 * C3;
+    _21 =  S3;
+    _31 = -S2 * C3;
+
+    _12 = -C1*C2*S3 + S1*S2;
+    _22 =  C1*C3;
+    _32 =  C1*S2*S3 + S1*C2;
+
+    _13 =  S1*C2*S3 + C1*S2;
+    _23 = -S1*C3;
+    _33 = -S1*S2*S3 + C1*C2;
+
+    return *this;
+}
+
+math::scalar math::mat3::yaw() {
+    return -atan2(_11, _31)*r2d;
+}
+
+math::scalar math::mat3::pitch() {
+    return asin(_21)*r2d;
+}
+
+math::scalar math::mat3::roll() {
+    return -atan2(_23, _22)*r2d;
+}
+
+math::mat3 math::mat3::getTranspose() {
+    return mat3(row1(), row2(), row3());
+}
+
+
+math::mat3 math::createYawPitchRollMatrix(scalar yaw, scalar pitch, scalar roll) {
+    /* 2-3-1 Body-Fixed Euler-Rotation */
+    scalar C2 = cos(yaw*d2r);
+    scalar S2 = sin(yaw*d2r);
+    scalar C3 = cos(pitch*d2r);
+    scalar S3 = sin(pitch*d2r);
+    scalar C1 = cos(roll*d2r);
+    scalar S1 = sin(roll*d2r);
+
+    return mat3(
+        vec3( C2*C3,             S3,    -S2*C3),
+        vec3(-C1*C2*S3 + S1*S2,  C1*C3,  C1*S2*S3 + S1*C2),
+        vec3( S1*C2*S3 + C1*S2, -S1*C3, -S1*S2*S3 + C1*C2));
+}
 
 
 /* ostream function overloads */

@@ -2,12 +2,16 @@
 #define GAME_MATH_H
 
 #include <iostream>
+#include <cmath>
 
 #include "DataTypes.hpp"
 
 namespace math {
-
     typedef f32 scalar;
+
+    const scalar pi  = 3.14159265358979323846;
+    const scalar d2r = pi/180.0;
+    const scalar r2d = 180.0/pi;
 
     /// 2 Vector
     class vec2 {
@@ -101,6 +105,14 @@ namespace math {
         vec3 col1() const;  ///< Get column 1
         vec3 col2() const;  ///< Get column 2
         vec3 col3() const;  ///< Get column 3
+
+        /* Make this a 2-3-1 Body-Fixed Euler Rotation Matrix (Degrees) */
+        mat3& toYawPitchRoll(scalar yaw, scalar pitch, scalar roll);
+        scalar yaw();
+        scalar pitch();
+        scalar roll();
+
+        mat3 getTranspose();
 
         scalar _11, _21, _31, _12, _22, _32, _13, _23, _33;
     };
@@ -211,6 +223,16 @@ namespace math {
     mat2& operator/= (mat2& M, scalar s);           ///< Matrix2 /= Scalar
     mat3& operator/= (mat3& M, scalar s);           ///< Matrix3 /= Scalar
     mat4& operator/= (mat4& M, scalar s);           ///< Matrix4 /= Scalar
+
+    vec2 operator- (const vec2& V);                 ///< -Vector2
+    vec3 operator- (const vec3& V);                 ///< -Vector3
+    vec4 operator- (const vec4& V);                 ///< -Vector4
+
+    mat2 operator- (const mat2& M);                 ///< -Matrix2
+    mat3 operator- (const mat3& M);                 ///< -Matrix3
+    mat4 operator- (const mat4& M);                 ///< -Matrix4
+
+    mat3 createYawPitchRollMatrix(scalar yaw, scalar pitch, scalar roll);
 }
 
 #endif
