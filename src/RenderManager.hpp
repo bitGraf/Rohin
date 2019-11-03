@@ -29,13 +29,14 @@ public:
     void renderScene(Scene* scene);
 
 private:
-    Shader m_shader;
+    Shader m_mainShader, m_lineShader;
 
-    void setCamera(Camera* camera);
+    void setCamera(Shader* shader, Camera* camera);
     void setCurrentMesh(const TriangleMesh* mesh);
-    void setCurrentMaterial(const Material* material);
-    void setTransforms(const math::vec3* pos, const math::mat3* orientation, const math::vec3* scale);
+    void setCurrentMaterial(Shader* shader, const Material* material);
+    void setTransforms(Shader* shader, const math::vec3* pos, const math::mat3* orientation, const math::vec3* scale);
     void renderPrimitive(const TriangleMesh* mesh);
+    void renderGrid(Shader* shader, GLuint vao, GLuint numVerts);
 };
 
 #endif

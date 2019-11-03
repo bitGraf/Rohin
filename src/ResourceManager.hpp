@@ -32,6 +32,10 @@ public:
     meshRef getMesh(std::string);
     materialRef getMaterial(std::string);
 
+    void createGrid(f32 lineSep, u32 numLines, f32 gridSize);
+    GLuint gridVAO;
+    GLuint numGridVerts;
+
 private:
     FileSystem*     m_FileSystem;
     //MemoryManager*  m_memoryManager;

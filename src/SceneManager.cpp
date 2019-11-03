@@ -29,7 +29,7 @@ void Scene::testCreate(ResourceManager* resource) {
     Entity ent1;
     ent1.position = vec3(0,1,0);
     ent1.orientation.toYawPitchRoll(45, 45, 45);
-    ent1.scale = vec3(2);
+    ent1.scale = vec3(.75);
 
     meshRef meshR = resource->getMesh("Cube");
     materialRef matR = resource->getMaterial("Material");
@@ -68,6 +68,9 @@ void Scene::testCreate(ResourceManager* resource) {
 
     m_entities.push_back(ent1);
     //m_entities.push_back(ent2);
+
+    gridVAO = &resource->gridVAO;
+    numVerts = &resource->numGridVerts;
 }
 
 void SceneManager::loadScenes(ResourceManager* resource) {

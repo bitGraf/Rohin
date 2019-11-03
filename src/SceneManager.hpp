@@ -19,6 +19,8 @@ public:
     Camera camera;
 
     f32 yaw;
+    GLuint* gridVAO;
+    GLuint* numVerts;
 };
 
 

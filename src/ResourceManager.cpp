@@ -399,3 +399,43 @@ materialRef ResourceManager::getMaterial(std::string id) {
         return &materials[id]; //TODO: This might not be safe.
     }
 }
+
+
+
+void ResourceManager::createGrid(f32 lineSep, u32 numLines, f32 gridSize) {
+    using namespace math;
+
+    f32 height = 0;
+
+    std::vector<vec3> verts;
+
+    s32 range = (numLines-1) / 2;
+    for (s32 n = -range; n <= range; n++) {
+        vec3 v1(-gridSize,  height,  n*lineSep);
+        vec3 v2( gridSize,  height,  n*lineSep);
+        vec3 v3( n*lineSep, height, -gridSize);
+        vec3 v4( n*lineSep, height,  gridSize);
+
+        verts.push_back(v1);
+        verts.push_back(v2);
+        verts.push_back(v3);
+        verts.push_back(v4);
+    }
+
+    numGridVerts = verts.size();
+
+    /* Perform openGL initialization of mesh */
+    gridVAO = 0;
+    GLuint gridVBO;
+    glGenVertexArrays(1, &gridVAO);
+    glBindVertexArray(gridVAO);
+
+    //buffer Vertex position data;
+    glGenBuffers(1, &gridVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+    glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(vec3), verts.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vec3), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+}

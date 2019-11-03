@@ -56,6 +56,7 @@ int main(int argc, char* argv[]) {
     /* TESTING START */
     g_ResourceManager.loadModelFromFile("Data/Models/cube.gltf");
     g_SceneManager.loadScenes(&g_ResourceManager); // Load dummy scene to test
+    g_ResourceManager.createGrid(.5, 21, 5);
     /*  TESTING END  */
 
     for (int n = 0; n < 5; n++) {
