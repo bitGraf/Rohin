@@ -1,17 +1,14 @@
 #include <stdio.h>
 
-#include "CoreSystem.hpp"
+#include "System/CoreSystem.hpp"
 
-#include "Window.hpp"
-#include "ResourceManager.hpp"
-#include "Console.hpp"
+#include "System/Window.hpp"
+#include "System/ResourceManager.hpp"
+#include "System/Console.hpp"
 
 #include "MemoryManager.hpp"
-#include "SceneManager.hpp"
-#include "RenderManager.hpp"
-
-ConfigurationManager g_ConfigManager;
-MessageBus g_MessageBus;
+#include "System/SceneManager.hpp"
+#include "System/RenderManager.hpp"
 
 /* Core Systems */
 Window g_MainWindow;
@@ -20,14 +17,6 @@ FileSystem g_FileSystem;
 ResourceManager g_ResourceManager;
 SceneManager g_SceneManager;
 RenderManager g_RenderManager;
-
-u32 offset(void* value, void* ref) {
-    u8* p1 = static_cast<u8*>(value);
-    u8* p2 = static_cast<u8*>(ref);
-
-    return (p1 - p2);
-}
-
 
 
 int main(int argc, char* argv[]) {
@@ -40,30 +29,27 @@ int main(int argc, char* argv[]) {
     printf("\n");
 
     // Create core systems
-    g_ConfigManager.create(6,
-        &g_MainWindow,
-        &g_Console,
-        &g_FileSystem,
-        &g_ResourceManager,
-        &g_SceneManager,
-        &g_RenderManager);
+    Configuration::create();
+    MessageBus::create();
 
-    g_MessageBus.create(&g_ConfigManager);
+    MessageBus::registerSystem(g_MainWindow.create());
+    MessageBus::registerSystem(g_Console.create());
+    MessageBus::registerSystem(g_FileSystem.create());
+    MessageBus::registerSystem(g_ResourceManager.create());
+    MessageBus::registerSystem(g_SceneManager.create());
+    MessageBus::registerSystem(g_RenderManager.create());
+
+    Configuration::listMessageTypes();
 
     // Other sets
     g_ResourceManager.setFileSystem(&g_FileSystem);
 
     /* TESTING START */
-    g_ResourceManager.loadModelFromFile("Data/Models/cube.gltf");
+    //g_ResourceManager.loadModelFromFile("Data/Models/cube.gltf", false);
+    g_ResourceManager.loadModelFromFile("Data/Models/Corset.glb", true);
     g_SceneManager.loadScenes(&g_ResourceManager); // Load dummy scene to test
     g_ResourceManager.createGrid(.5, 21, 5);
     /*  TESTING END  */
-
-    for (int n = 0; n < 5; n++) {
-        printf(".");
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    }
-    printf("\n");
 
     // Create console thread that listens for commands
     auto console_thread = std::thread(&Console::startListening, &g_Console);
@@ -89,7 +75,7 @@ int main(int argc, char* argv[]) {
             break;
         }
 
-        g_MessageBus.processEntireQueue();
+        MessageBus::processEntireQueue();
 
         g_SceneManager.update(.005);
 
@@ -110,7 +96,7 @@ int main(int argc, char* argv[]) {
     g_FileSystem.destroy();
     g_Console.destroy();
     g_MainWindow.destroy();
-    g_ConfigManager.destroy();
+    //g_ConfigManager.destroy();
 
     // End threads
     console_thread.join();

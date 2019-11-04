@@ -2,8 +2,8 @@
 #define ENTITY_H
 
 #include "GameMath.hpp"
-#include "Models.hpp"
-#include "Material.hpp"
+#include "Render/Models.hpp"
+#include "Render/Material.hpp"
 
 class Entity {
 public:

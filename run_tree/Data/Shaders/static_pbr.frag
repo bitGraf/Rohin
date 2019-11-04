@@ -5,6 +5,7 @@ in vec3 pass_normal;
 in vec3 pass_fragPos;
 in vec2 pass_tex;
 in mat3 pass_TBN;
+in vec3 pass_tangent;
 
 struct PointLight {
     vec3 position;
@@ -77,12 +78,12 @@ void main()
 {
     //Read all texture information
     vec3 albedo = vec3(texture(material.baseColorTexture, pass_tex) * material.baseColorFactor);
-    vec3 normal = pass_TBN * vec3(texture(material.normalTexture, pass_tex));
+    vec3 normal2 = pass_TBN * vec3(texture(material.normalTexture, pass_tex));
     float ao = vec3(texture(material.occlusionTexture, pass_tex)).r;
-    float metallic = material.metallicFactor * texture(material.metallicRoughnessTexture, pass_tex).r;
+    float metallic = material.metallicFactor * texture(material.metallicRoughnessTexture, pass_tex).b;
     float roughness = material.roughnessFactor * texture(material.metallicRoughnessTexture, pass_tex).g;
 
-	normal = pass_normal;
+	vec3 normal = normal2;
     
     //Calcualte tangent space normal
     vec3 N = normal;
@@ -101,7 +102,7 @@ void main()
     FragColor = vec4(color, 1.0);
 	//FragColor = vec4(1,0,0,1);
 	//FragColor = vec4(N, 1);
-    //FragColor = vec4(albedo, 1);
+    FragColor = vec4(color, 1);
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0, float roughness) {
