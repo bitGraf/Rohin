@@ -15,13 +15,77 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 # Find all source files
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
-file(GLOB SOURCES ${SRC_DIR}/*.cpp)
-file(GLOB HEADERS ${SRC_DIR}/*.hpp)
+#file(GLOB source_list ${SRC_DIR}/*)
+#file(GLOB HEADERS ${SRC_DIR}/*.hpp)
+set (
+    source_list_unused
+    "${SRC_DIR}/main.cpp"
+
+    "${SRC_DIR}/Core Systems/CoreSystem.hpp"
+    "${SRC_DIR}/Core Systems/CoreSystem.cpp"
+    "${SRC_DIR}/Core Systems/Console.hpp"
+    "${SRC_DIR}/Core Systems/Console.cpp"
+    "${SRC_DIR}/Core Systems/FileSystem.hpp"
+    "${SRC_DIR}/Core Systems/FileSystem.cpp"
+    "${SRC_DIR}/Core Systems/RenderManager.hpp"
+    "${SRC_DIR}/Core Systems/RenderManager.cpp"
+    "${SRC_DIR}/Core Systems/ResourceManager.hpp"
+    "${SRC_DIR}/Core Systems/ResourceManager.cpp"
+    "${SRC_DIR}/Core Systems/SceneManager.hpp"
+    "${SRC_DIR}/Core Systems/SceneManager.cpp"
+    "${SRC_DIR}/Core Systems/Window.hpp"
+    "${SRC_DIR}/Core Systems/Window.cpp"
+
+    "${SRC_DIR}/Message Architechture/Message.hpp"
+    "${SRC_DIR}/Message Architechture/Message.cpp"
+    "${SRC_DIR}/Message Architechture/MessageBus.hpp"
+    "${SRC_DIR}/Message Architechture/MessageBus.cpp"
+    "${SRC_DIR}/Message Architechture/Configuration.hpp"
+    "${SRC_DIR}/Message Architechture/Configuration.cpp"
+
+    "${SRC_DIR}/Render/Camera.hpp"
+    "${SRC_DIR}/Render/Camera.cpp"
+    "${SRC_DIR}/Render/Material.hpp"
+    "${SRC_DIR}/Render/Material.cpp"
+    "${SRC_DIR}/Render/Shader.hpp"
+    "${SRC_DIR}/Render/Shader.cpp"
+    "${SRC_DIR}/Render/Models.hpp"
+    "${SRC_DIR}/Render/tinygltf.cpp"
+
+    "${SRC_DIR}/DataTypes.hpp"
+    "${SRC_DIR}/Entity.hpp"
+    "${SRC_DIR}/Entity.cpp"
+    "${SRC_DIR}/GameMath.hpp"
+    "${SRC_DIR}/GameMath.cpp"
+    "${SRC_DIR}/HashTable.hpp"
+    "${SRC_DIR}/HashTable.cpp"
+    "${SRC_DIR}/MemoryManager.hpp"
+    "${SRC_DIR}/MemoryManager.cpp"
+    "${SRC_DIR}/Platform.hpp"
+    "${SRC_DIR}/Platform.cpp"
+)
+
+file(GLOB_RECURSE  source_list "src/*.?pp")
+
+function(assign_source_group)
+    foreach(_source IN ITEMS ${ARGN})
+        if (IS_ABSOLUTE "${_source}")
+            file(RELATIVE_PATH _source_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${_source}")
+        else()
+            set(_source_rel "${_source}")
+        endif()
+        get_filename_component(_source_path "${_source_rel}" PATH)
+        string(REPLACE "/" "\\" _source_path_msvc "${_source_path}")
+        source_group("${_source_path_msvc}" FILES "${_source}")
+    endforeach()
+endfunction(assign_source_group)
 
 # Executable definition
-add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+#add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME} "${source_list}")
 target_include_directories(${PROJECT_NAME} PRIVATE ${SRC_DIR})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)
+assign_source_group(${source_list})
 
 # GLFW
 set(GLFW_DIR ${LIB_DIR}/glfw)
@@ -56,7 +120,7 @@ set(TINYGLTF_FILES
     ${TINYGLTF_DIR}/stb_image_write.h
     ${TINYGLTF_DIR}/json.hpp
     ${TINYGLTF_DIR}/tiny_gltf.h
-    ${SRC_DIR}/tinygltf.cpp)
+    ${SRC_DIR}/Render/tinygltf.cpp)
 add_library(tinygltf STATIC ${TINYGLTF_FILES})
 set_target_properties(tinygltf PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(${PROJECT_NAME} PRIVATE ${TINYGLTF_DIR}/)
