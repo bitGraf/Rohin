@@ -4,19 +4,15 @@ FileSystem::FileSystem() {
 }
 
 FileSystem::~FileSystem() {
-
 }
 
 void FileSystem::update(double dt) {
-
 }
 
 void FileSystem::handleMessage(Message msg) {
-
 }
 
 void FileSystem::destroy() {
-
 }
 
 CoreSystem* FileSystem::create() {

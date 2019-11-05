@@ -14,7 +14,6 @@ void SceneManager::handleMessage(Message msg) {
 }
 
 void SceneManager::destroy() {
-
 }
 
 CoreSystem* SceneManager::create() {
@@ -67,7 +66,6 @@ void Scene::testCreate(ResourceManager* resource) {
     ent2.setMesh(meshR);
     ent2.setMaterial(matR);
 
-
     m_entities.push_back(ent1);
     //m_entities.push_back(ent2);
 
@@ -76,7 +74,7 @@ void Scene::testCreate(ResourceManager* resource) {
 
     /* Setup Lights */
     sun.direction = vec3(-.1, -.1, -1);
-    sun.color = vec4(0.012, 0.192, 0.886, 1);
+    sun.color = vec4(0.412, 0.592, 0.886, 1);
     sun.strength = 5;
 }
 

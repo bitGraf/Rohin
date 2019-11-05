@@ -12,7 +12,7 @@ float clampRamp(float val, float xmin, float xmax, float ymin, float ymax);
 void main()
 {
     float distance = length(pass_fragPos - camPos);
-    float strength = clampRamp(distance, 2, 10, .1, 1);
+    float strength = clampRamp(distance, 1, 3, .4, 1);
 
     FragColor = color * strength;
 

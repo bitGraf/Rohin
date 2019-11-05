@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
     //g_ResourceManager.loadModelFromFile("Data/Models/cube.gltf", false);
     g_ResourceManager.loadModelFromFile("Data/Models/Corset.glb", true);
     g_SceneManager.loadScenes(&g_ResourceManager); // Load dummy scene to test
-    g_ResourceManager.createGrid(.5, 21, 5);
+    g_ResourceManager.createGrid(.5, 41, 10);
     /*  TESTING END  */
 
     // Create console thread that listens for commands
@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
 
     glfwTerminate();
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     // Destroy all subsystems
     g_ResourceManager.destroy();
