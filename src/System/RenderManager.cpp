@@ -42,7 +42,11 @@ void RenderManager::renderScene(Scene* scene) {
 
     /* Render Poly Entities */
     m_mainShader.use();
-    m_mainShader.setLights(); // TODO: remove this
+    m_mainShader.setLights(
+        &scene->sun,
+        scene->pointLights,
+        scene->spotLights
+    ); // TODO: remove this
     setCamera(&m_mainShader, &scene->camera);
 
     /* Render Entities */

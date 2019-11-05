@@ -1,9 +1,9 @@
-OUTPUT_DIRECTORY       = D:/GameDev/Big-Disc-Mk-II/build/../docs
-INPUT                  = D:/GameDev/Big-Disc-Mk-II/src/ D:/GameDev/Big-Disc-Mk-II/docs D:/GameDev/Big-Disc-Mk-II/src/doc_mainpage.h D:/GameDev/Big-Disc-Mk-II/docs/mainpage.md
+OUTPUT_DIRECTORY       = G:/build/../docs
+INPUT                  = G://src/ G://docs G://src/doc_mainpage.h G://docs/mainpage.md
 PROJECT_NAME           = "Epic Project Time"
 PROJECT_BRIEF          = "A second attempt at a game using lessons learned from big-time-disc-tomorrow"
-PROJECT_LOGO           = D:/GameDev/Big-Disc-Mk-II/docs/logo.png
+PROJECT_LOGO           = G://docs/logo.png
 OUTPUT_LANGUAGE        = English
 GENERATE_LATEX         = NO
 
-USE_MDFILE_AS_MAINPAGE = D:/GameDev/Big-Disc-Mk-II/docs/mainpage.md
+USE_MDFILE_AS_MAINPAGE = G://docs/mainpage.md

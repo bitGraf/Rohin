@@ -7,6 +7,7 @@
 #include "Entity.hpp"
 #include "ResourceManager.hpp"
 #include "Render/Camera.hpp"
+#include "Render/Lights.hpp"
 
 class Scene {
 public:
@@ -19,6 +20,13 @@ public:
     Camera camera;
 
     f32 yaw;
+
+    static const int NUM_POINTLIGHTS = 4;
+    static const int NUM_SPOTLIGHTS = 4;
+    DirLight sun;
+    PointLight pointLights[NUM_POINTLIGHTS];
+    SpotLight spotLights[NUM_SPOTLIGHTS];
+
     GLuint* gridVAO;
     GLuint* numVerts;
 };

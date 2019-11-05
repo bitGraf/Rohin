@@ -6,7 +6,8 @@ SceneManager::SceneManager() {
 
 void SceneManager::update(double dt) {
     m_currentScene->yaw += 2 * dt;
-    m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw, m_currentScene->yaw, m_currentScene->yaw);
+    //m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw, m_currentScene->yaw, m_currentScene->yaw);
+    m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw, 0, 0);
 }
 
 void SceneManager::handleMessage(Message msg) {
@@ -28,9 +29,9 @@ void Scene::testCreate(ResourceManager* resource) {
     using namespace math;
 
     Entity ent1;
-    ent1.position = vec3(0,1,0);
+    ent1.position = vec3(0,0,0);
     ent1.orientation.toYawPitchRoll(45, 45, 45);
-    ent1.scale = vec3(100);
+    ent1.scale = vec3(50);
 
     meshRef meshR = resource->getMesh("pCube49");
     materialRef matR = resource->getMaterial("Corset_O");
@@ -72,6 +73,11 @@ void Scene::testCreate(ResourceManager* resource) {
 
     gridVAO = &resource->gridVAO;
     numVerts = &resource->numGridVerts;
+
+    /* Setup Lights */
+    sun.direction = vec3(-.1, -.1, -1);
+    sun.color = vec4(0.012, 0.192, 0.886, 1);
+    sun.strength = 5;
 }
 
 void SceneManager::loadScenes(ResourceManager* resource) {

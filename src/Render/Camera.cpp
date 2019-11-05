@@ -9,12 +9,12 @@ Camera::Camera() :
 
 void Camera::updateViewMatrix() {
     yaw = 45;
-    pitch = 0;
+    pitch = -15;
     roll = 0;
 
-    position = vec3(5, 1, 5);
+    position = vec3(2, 2, 2);
 
-    viewMatrix = mat4(createYawPitchRollMatrix(yaw, pitch, roll).getTranspose()) *
+    viewMatrix = mat4(createYawPitchRollMatrix(yaw, roll, pitch).getTranspose()) *
         mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(-position,1));
 }
 

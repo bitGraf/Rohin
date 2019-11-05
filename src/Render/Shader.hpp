@@ -3,11 +3,14 @@
 
 #include "glad\glad.h"
 
-#include "Material.hpp"
 #include <stdio.h>
 #include <string>
 #include <iostream>
 #include <chrono>
+
+#include "Material.hpp"
+#include "Render/Lights.hpp"
+#include "System/SceneManager.hpp"
 
 const std::string ShaderResourcePath = "Data/shaders/";
 
@@ -33,7 +36,8 @@ public:
     void setMat4(const std::string &name, math::mat4 value) const;
 
     void setMaterial(const std::string &name, const Material* mat) const;
-    void setLights() const;
+    void setLights(const DirLight* sun, 
+        PointLight* pointLights, SpotLight* spotLights) const;
 
     void use();
 

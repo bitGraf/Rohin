@@ -24,7 +24,8 @@ struct SpotLight {
 	vec3 direction;
 	vec4 color;
 	float strength;
-	float cutoff;
+	float inner_cutoff;
+	float outer_cutoff;
 };
 
 struct PBRMaterial {
@@ -41,9 +42,11 @@ struct PBRMaterial {
 };
 
 const int NUMPOINTLIGHTS = 4;
-uniform PointLight pointLights[NUMPOINTLIGHTS];
+const int NUMSPOTLIGHTS = 4;
+
 uniform DirectionalLight sun;
-uniform SpotLight spotLight;
+uniform PointLight pointLights[NUMPOINTLIGHTS];
+uniform SpotLight spotLights[NUMSPOTLIGHTS];
 
 uniform PBRMaterial material;
 uniform vec3 camPos;
@@ -53,7 +56,6 @@ uniform vec3 camPos;
 //uniform sampler2D   brdfLUT;
 
 const float PI = 3.14159265359;
-const float outerCutoff = cos(40*PI/180);
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
@@ -154,7 +156,9 @@ vec3 calcTotalLightContribution(PointLight pointLights[NUMPOINTLIGHTS], Directio
     }
 
 	//Spot lights
-	Lo += addSpotLight(spotLight, normal, fragPos, viewDir, F0, roughness, metallic, albedo);
+	for (int i = 0; i < NUMSPOTLIGHTS; i++) {
+		Lo += addSpotLight(spotLights[i], normal, fragPos, viewDir, F0, roughness, metallic, albedo);
+    }
 
 	return Lo;
 }
@@ -220,8 +224,8 @@ vec3 addSpotLight(SpotLight light, vec3 normal, vec3 fragPos,
     vec3 H = normalize(viewDir + L);
 
 	float theta = dot(L, normalize(-light.direction));
-	float epsilon = light.cutoff - outerCutoff;
-	float intensity = clamp((theta -  outerCutoff) / epsilon, 0.0, 1.0);
+	float epsilon = light.inner_cutoff - light.outer_cutoff;
+	float intensity = clamp((theta -  light.outer_cutoff) / epsilon, 0.0, 1.0);
         
     float distance = length(light.position - pass_fragPos);
     float attenuation = 1 / (distance * distance);
