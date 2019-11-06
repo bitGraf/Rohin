@@ -31,6 +31,66 @@ CoreSystem* RenderManager::create() {
     m_mainShader.create("static_pbr.vert", "static_pbr.frag", "mainShader");
     m_lineShader.create("line.vert", "line.frag", "lineShader");
     m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
+    m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
+
+    const float fullscreenVerts[] = {
+        -1, -1,
+        -1,  1,
+         1, -1,
+
+         1, -1,
+        -1,  1,
+         1,  1
+    };
+
+    GLuint fullscreenVBO;
+    glGenVertexArrays(1, &fullscreenVAO);
+    glGenBuffers(1, &fullscreenVBO);
+    glBindVertexArray(fullscreenVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, fullscreenVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(fullscreenVerts),
+        &fullscreenVerts, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(f32), (void*)0);
+
+    glBindVertexArray(0);
+
+
+
+    stbi_set_flip_vertically_on_load(true);
+    int height, width, nrChannels;
+
+    //Generate OpenGL Texture
+    glGenTextures(1, &fullscreenTexture);
+    glBindTexture(GL_TEXTURE_2D, fullscreenTexture);
+    // set the texture wrapping/filtering options
+
+    //Load image data
+    unsigned char *data = stbi_load("Data/Images/GiantToad.png",
+        &width, &height, &nrChannels, 0);
+
+    if (data) {
+        GLenum format;
+        if (nrChannels == 1)
+            format = GL_RED;
+        else if (nrChannels == 3)
+            format = GL_RGB;
+        else if (nrChannels == 4)
+            format = GL_RGBA;
+
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    else {
+        std::cout << "Failed to load texture []" << std::endl;
+    }
+
+    stbi_image_free(data);
 
     return this;
 }
@@ -67,6 +127,17 @@ void RenderManager::renderScene(Scene* scene) {
     /* Render skybox */
     m_skyboxShader.use();
     renderSkybox(&m_skyboxShader, &scene->camera, &scene->skybox);
+
+    /* Render fullscreen quad */
+    m_fullscreenShader.use();
+
+    m_fullscreenShader.setInt("tex", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, scene->envMap.hdrEquirect);
+
+    glBindVertexArray(fullscreenVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glBindVertexArray(0);
 }
 
 

@@ -80,6 +80,9 @@ void Scene::testCreate(ResourceManager* resource) {
 
     /* Load skybox */
     skybox.loadFromImages("iceflow", ".tga");
+
+    /* environment map */
+    envMap.loadHDRi("carpentry_shop_02_4k.hdr");
 }
 
 void SceneManager::loadScenes(ResourceManager* resource) {

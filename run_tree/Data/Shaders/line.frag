@@ -14,7 +14,8 @@ void main()
     float distance = length(pass_fragPos - camPos);
     float strength = clampRamp(distance, 1, 3, .4, 1);
 
-    FragColor = color * strength;
+    //FragColor = color * strength;
+    FragColor = color;
 
     //FragColor = vec4(vec3(strength), 1);
 }

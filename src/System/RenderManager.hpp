@@ -22,7 +22,11 @@ public:
     void renderScene(Scene* scene);
 
 private:
-    Shader m_mainShader, m_lineShader, m_skyboxShader;
+    Shader m_mainShader, m_lineShader, 
+        m_skyboxShader, m_fullscreenShader;
+
+    GLuint fullscreenVAO;
+    GLuint fullscreenTexture;
 
     void setCamera(Shader* shader, Camera* camera);
     void setCurrentMesh(const TriangleMesh* mesh);

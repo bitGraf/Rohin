@@ -38,6 +38,8 @@ void ResourceManager::loadModelFromFile(std::string path, bool binary) {
     std::string err;
     std::string warn;
 
+    stbi_set_flip_vertically_on_load(false);
+
     bool ret;
     if (binary) {
         ret = loader.LoadBinaryFromFile(&root, &err, &warn, path);

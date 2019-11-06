@@ -10,6 +10,8 @@
 #include "Render/Lights.hpp"
 #include "Render\SkyBox.hpp"
 
+#include "Render\EnvironmentMap.hpp"
+
 class Scene {
 public:
     Scene();
@@ -32,6 +34,8 @@ public:
     GLuint* numVerts;
 
     SkyBox skybox;
+
+    EnvironmentMap envMap;
 };
 
 

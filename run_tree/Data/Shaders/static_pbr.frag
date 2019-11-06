@@ -104,7 +104,7 @@ void main()
     FragColor = vec4(color, 1.0);
 	//FragColor = vec4(1,0,0,1);
 	//FragColor = vec4(N, 1);
-    FragColor = vec4(color, 1);
+    //FragColor = vec4(albedo, 1);
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0, float roughness) {

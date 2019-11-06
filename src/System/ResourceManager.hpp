@@ -11,6 +11,7 @@
 #include "Render/Material.hpp"
 
 #include "tiny_gltf.h"
+#include "stb_image.h"
 
 const u32 KILOBYTE = 1024;              // 1 KB worth of bytes
 const u32 MEGABYTE = 1024 * KILOBYTE;   // 1 MB worth of bytes

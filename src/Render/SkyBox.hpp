@@ -6,10 +6,9 @@
 
 #include "glad\glad.h"
 #include "stb_image.h"
+#include "Texture.hpp"
 
 #include "GameMath.hpp"
-
-const std::string TextureResourcePath = "Data/Images/";
 
 class SkyBox {
 public:
@@ -22,8 +21,7 @@ public:
     static void InitVAO();
 
     static GLuint skyboxVAO;
-    GLuint skyboxTexture;
-    int width, height, nrChannels;
+    Texture skyboxTex;
 };
 
 #endif
