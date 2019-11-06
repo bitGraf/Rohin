@@ -5,13 +5,12 @@ Camera::Camera() :
     m_zNear(.1),
     m_zFar(100)
 {
+    yaw = 0;
+    pitch = 0;
+    roll = 0;
 }
 
 void Camera::updateViewMatrix() {
-    yaw = 45;
-    pitch = -15;
-    roll = 0;
-
     position = vec3(2, 2, 2);
 
     viewMatrix = mat4(createYawPitchRollMatrix(yaw, roll, pitch).getTranspose()) *

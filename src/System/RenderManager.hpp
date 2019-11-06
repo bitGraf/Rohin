@@ -22,7 +22,7 @@ public:
     void renderScene(Scene* scene);
 
 private:
-    Shader m_mainShader, m_lineShader;
+    Shader m_mainShader, m_lineShader, m_skyboxShader;
 
     void setCamera(Shader* shader, Camera* camera);
     void setCurrentMesh(const TriangleMesh* mesh);
@@ -30,6 +30,7 @@ private:
     void setTransforms(Shader* shader, const math::vec3* pos, const math::mat3* orientation, const math::vec3* scale);
     void renderPrimitive(const TriangleMesh* mesh);
     void renderGrid(Shader* shader, GLuint vao, GLuint numVerts);
+    void renderSkybox(Shader* shader, Camera* camera, SkyBox* skybox);
 };
 
 #endif

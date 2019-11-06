@@ -8,6 +8,7 @@ void SceneManager::update(double dt) {
     m_currentScene->yaw += 2 * dt;
     //m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw, m_currentScene->yaw, m_currentScene->yaw);
     m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw, 0, 0);
+    m_currentScene->camera.yaw += 2 * dt;
 }
 
 void SceneManager::handleMessage(Message msg) {
@@ -76,6 +77,9 @@ void Scene::testCreate(ResourceManager* resource) {
     sun.direction = vec3(-.1, -.1, -1);
     sun.color = vec4(0.412, 0.592, 0.886, 1);
     sun.strength = 5;
+
+    /* Load skybox */
+    skybox.loadFromImages("iceflow", ".tga");
 }
 
 void SceneManager::loadScenes(ResourceManager* resource) {

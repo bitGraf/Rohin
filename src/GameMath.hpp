@@ -92,12 +92,14 @@ namespace math {
     };
 
     /// 3x3 Matrix
+    class mat4;
     class mat3 {
     public:
         mat3(); ///< Identity constructor
         mat3(scalar v); ///< Same-Value constructor
         mat3(vec3 v1, vec3 v2, vec3 v3); ///< Initialize by column vectors
         mat3(scalar c11, scalar c22, scalar c33); ///< Initialize by diagonal values
+        mat3(mat4 m);
 
         vec3 row1() const;  ///< Get row 1
         vec3 row2() const;  ///< Get row 2

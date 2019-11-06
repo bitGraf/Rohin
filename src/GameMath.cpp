@@ -104,6 +104,13 @@ math::mat3::mat3(math::scalar c11, math::scalar c22, math::scalar c33) :
 {
 }
 
+math::mat3::mat3(mat4 m) :
+    _11(m._11), _12(m._12), _13(m._13),
+    _21(m._21), _22(m._22), _23(m._23),
+    _31(m._31), _32(m._32), _33(m._33)
+{
+}
+
 /* mat4 constructors */
 math::mat4::mat4() :
     _11(1), _12(0), _13(0), _14(0),

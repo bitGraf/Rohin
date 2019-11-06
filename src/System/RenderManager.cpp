@@ -30,6 +30,7 @@ void RenderManager::setShader(stringID id) {
 CoreSystem* RenderManager::create() {
     m_mainShader.create("static_pbr.vert", "static_pbr.frag", "mainShader");
     m_lineShader.create("line.vert", "line.frag", "lineShader");
+    m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
 
     return this;
 }
@@ -62,6 +63,10 @@ void RenderManager::renderScene(Scene* scene) {
             renderPrimitive(ent.m_mesh);
         }
     }
+
+    /* Render skybox */
+    m_skyboxShader.use();
+    renderSkybox(&m_skyboxShader, &scene->camera, &scene->skybox);
 }
 
 
@@ -119,4 +124,20 @@ void RenderManager::renderGrid(Shader* shader, GLuint vao, GLuint numVerts) {
     shader->setVec4("color", vec4(0,1,0,1));
     glBindVertexArray(vao);
     glDrawArrays(GL_LINES, 0, numVerts);
+}
+
+void RenderManager::renderSkybox(Shader* shader, Camera* camera, SkyBox* skybox) {
+    camera->updateProjectionMatrix();
+    camera->updateViewMatrix();
+
+    shader->setMat4("viewMatrix", mat4(mat3(camera->viewMatrix)));
+    shader->setMat4("projectionMatrix", camera->projectionMatrix);
+
+    shader->setInt("skybox", 0);
+    skybox->bind(GL_TEXTURE0);
+
+    glDepthFunc(GL_LEQUAL);
+    glBindVertexArray(SkyBox::skyboxVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDepthFunc(GL_LESS);
 }

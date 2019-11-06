@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
     g_ResourceManager.setFileSystem(&g_FileSystem);
 
     /* TESTING START */
+    SkyBox::InitVAO();
     //g_ResourceManager.loadModelFromFile("Data/Models/cube.gltf", false);
     g_ResourceManager.loadModelFromFile("Data/Models/Corset.glb", true);
     g_SceneManager.loadScenes(&g_ResourceManager); // Load dummy scene to test

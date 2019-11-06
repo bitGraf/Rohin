@@ -8,6 +8,7 @@
 #include "ResourceManager.hpp"
 #include "Render/Camera.hpp"
 #include "Render/Lights.hpp"
+#include "Render\SkyBox.hpp"
 
 class Scene {
 public:
@@ -29,6 +30,8 @@ public:
 
     GLuint* gridVAO;
     GLuint* numVerts;
+
+    SkyBox skybox;
 };
 
 
