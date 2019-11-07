@@ -1,9 +1,0 @@
-OUTPUT_DIRECTORY       = D:/Desktop/New Layout/Gamedev/Rohin/build/../docs
-INPUT                  = D:/Desktop/New Layout/Gamedev/Rohin/src/ D:/Desktop/New Layout/Gamedev/Rohin/docs D:/Desktop/New Layout/Gamedev/Rohin/src/doc_mainpage.h D:/Desktop/New Layout/Gamedev/Rohin/docs/mainpage.md
-PROJECT_NAME           = "Epic Project Time"
-PROJECT_BRIEF          = "A second attempt at a game using lessons learned from big-time-disc-tomorrow"
-PROJECT_LOGO           = D:/Desktop/New Layout/Gamedev/Rohin/docs/logo.png
-OUTPUT_LANGUAGE        = English
-GENERATE_LATEX         = NO
-
-USE_MDFILE_AS_MAINPAGE = D:/Desktop/New Layout/Gamedev/Rohin/docs/mainpage.md
