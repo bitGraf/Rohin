@@ -1,6 +1,8 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
+#include <string>
+
 #include "GameMath.hpp"
 #include "Render/Models.hpp"
 #include "Render/Material.hpp"
@@ -24,6 +26,8 @@ public:
 //private:
     meshRef m_mesh;
     materialRef m_material;
+
+    std::string name;
 };
 
 #endif

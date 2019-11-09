@@ -1,0 +1,7 @@
+SCENE "Test Scene"
+SETTING "setting1" "value1"
+RESOURCE "Data/Models/Corset.glb"
+
+ENTITY "ent1" "pCube49" "Corset_O" "0 0.5 0"
+
+SKYBOX HDR "carpentry_shop_02_4k.hdr"

@@ -59,30 +59,7 @@ void Scene::testCreate(ResourceManager* resource) {
     ent1.setMesh(meshR);
     ent1.setMaterial(matR);
 
-
-    Entity ent2;
-    ent2.position = vec3(3, 2, 1);
-    ent2.orientation = mat3(
-        vec3(1, 0, 0),
-        vec3(0, 1, 0),
-        vec3(0, 0, 1));
-    ent2.scale = vec3(1);
-
-    meshR = resource->getMesh("mesh_cube");
-    matR = resource->getMaterial("material_marble");
-
-    if (meshR == nullptr) {
-        printf("Mesh [%s] not loaded.\n", "mesh_cube");
-    }
-    if (matR == nullptr) {
-        printf("Material [%s] not loaded.\n", "material_marble");
-    }
-
-    ent2.setMesh(meshR);
-    ent2.setMaterial(matR);
-
     m_entities.push_back(ent1);
-    //m_entities.push_back(ent2);
 
     gridVAO = &resource->gridVAO;
     numVerts = &resource->numGridVerts;
@@ -104,13 +81,133 @@ void SceneManager::loadScenes(ResourceManager* resource) {
     Scene s;
 
     s.testCreate(resource);
-
     scenes.push_back(s);
 
+    Scene sTest;
+    sTest.loadFromFile(resource, "");
+    scenes.push_back(sTest);
+
     // TODO: Not safe. Pointers change when vector grows
-    m_currentScene = &scenes[0];
+    m_currentScene = &scenes[1];
 }
 
 Scene* SceneManager::getCurrentScene() {
     return m_currentScene;
+}
+
+void Scene::loadFromFile(ResourceManager* resource, std::string path) {
+    std::ifstream infile("Data/test.scene");
+
+    std::string line;
+    while (std::getline(infile, line))
+    {
+        if (line.empty()) { continue; }
+        //std::cout << "Line [" << line << "]" << std::endl;
+        std::istringstream iss(line);
+        
+        std::string type;
+        if (!(iss >> type)) { assert(false); break; } // error
+
+        //std::cout << "  Type: [" << type << "]" << std::endl;
+        if (type.compare("SCENE") == 0) {
+            //std::cout << "    parsing scene\n";
+
+            std::string sceneName;
+            std::getline(iss, sceneName, '"');
+            std::getline(iss, sceneName, '"');
+
+            std::cout << "  sceneName: [" << sceneName << "]\n";
+
+            name = sceneName;
+
+        } else if (type.compare("SETTING") == 0) {
+            //std::cout << "    parsing setting\n";
+
+            std::string settingName;
+            std::getline(iss, settingName, '"');
+            std::getline(iss, settingName, '"');
+
+            std::cout << "  setting: [" << settingName << "]";
+
+            std::string settingValue;
+            std::getline(iss, settingValue, '"');
+            std::getline(iss, settingValue, '"');
+
+            std::cout << ":[" << settingValue << "]\n";
+
+        } else if (type.compare("RESOURCE") == 0) {
+            //std::cout << "    parsing resource\n";
+            std::string resourceFilename;
+            std::getline(iss, resourceFilename, '"');
+            std::getline(iss, resourceFilename, '"');
+
+            std::cout << "  resourceFile: [" << resourceFilename << "]\n";
+
+            resource->loadModelFromFile(resourceFilename, true);
+        } else if (type.compare("ENTITY") == 0) {
+            //std::cout << "    parsing entity\n";
+
+            std::string entityName;
+            std::getline(iss, entityName, '"');
+            std::getline(iss, entityName, '"');
+
+            std::cout << "  entity: [" << entityName << "]";
+
+            std::string entityMesh;
+            std::getline(iss, entityMesh, '"');
+            std::getline(iss, entityMesh, '"');
+
+            std::cout << ":[" << entityMesh << "]";
+
+            std::string entityMat;
+            std::getline(iss, entityMat, '"');
+            std::getline(iss, entityMat, '"');
+
+            std::cout << ":[" << entityMat << "]";
+
+            std::string entityPosition;
+            std::getline(iss, entityPosition, '"');
+            
+            math::vec3 v;
+            iss >> v.x >> v.y >> v.z;
+            std::cout << ":" << v << std::endl;
+
+            Entity ent;
+            ent.name = entityName;
+            ent.setMesh(resource->getMesh(entityMesh));
+            ent.setMaterial(resource->getMaterial(entityMat));
+            ent.position = v;
+            ent.scale = vec3(50);
+
+            m_entities.push_back(ent);
+
+        } else if (type.compare("SKYBOX") == 0) {
+            //std::cout << "  parsing skybox\n";
+
+            std::string skyboxType;
+            if (!(iss >> skyboxType)) { assert(false); break; } // error
+
+            if (skyboxType.compare("STANDARD") == 0) {
+                std::string skyboxFilePath;
+                std::getline(iss, skyboxFilePath, '"');
+                std::getline(iss, skyboxFilePath, '"');
+
+                std::cout << "  filepath Skybox: [" << skyboxFilePath << "]";
+            } else if (skyboxType.compare("HDR") == 0) {
+                std::string hdrFilePath;
+                std::getline(iss, hdrFilePath, '"');
+                std::getline(iss, hdrFilePath, '"');
+
+                std::cout << "  filepath HDR: [" << hdrFilePath << "]";
+
+                /* environment map */
+                envMap.loadHDRi(hdrFilePath);
+                envMap.preCompute();
+            }
+        }
+    }
+    infile.close();
+
+    gridVAO = &resource->gridVAO;
+    numVerts = &resource->numGridVerts;
 }

@@ -2,6 +2,9 @@
 #define SCENE_MANAGER_H
 
 #include <vector>
+#include <fstream>
+#include <sstream>
+#include <string>
 
 #include "CoreSystem.hpp"
 #include "Entity.hpp"
@@ -17,6 +20,8 @@ public:
     Scene();
 
     void testCreate(ResourceManager* resource);
+
+    void loadFromFile(ResourceManager* resource, std::string path);
 
 //private:
     std::vector<Entity> m_entities;
@@ -34,8 +39,9 @@ public:
     GLuint* numVerts;
 
     SkyBox skybox;
-
     EnvironmentMap envMap;
+
+    std::string name;
 };
 
 
