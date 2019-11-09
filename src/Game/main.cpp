@@ -1,14 +1,14 @@
 #include <stdio.h>
 
-#include "System/CoreSystem.hpp"
+#include "CoreSystem.hpp"
 
-#include "System/Window.hpp"
-#include "System/ResourceManager.hpp"
-#include "System/Console.hpp"
+#include "Window.hpp"
+#include "ResourceManager.hpp"
+#include "Console.hpp"
 
 #include "MemoryManager.hpp"
-#include "System/SceneManager.hpp"
-#include "System/RenderManager.hpp"
+#include "SceneManager.hpp"
+#include "RenderManager.hpp"
 
 /* Core Systems */
 Window g_MainWindow;
@@ -17,7 +17,6 @@ FileSystem g_FileSystem;
 ResourceManager g_ResourceManager;
 SceneManager g_SceneManager;
 RenderManager g_RenderManager;
-
 
 int main(int argc, char* argv[]) {
     EnsureDataTypeSize();

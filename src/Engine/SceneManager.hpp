@@ -9,11 +9,11 @@
 #include "CoreSystem.hpp"
 #include "Entity.hpp"
 #include "ResourceManager.hpp"
-#include "Render/Camera.hpp"
-#include "Render/Lights.hpp"
-#include "Render/SkyBox.hpp"
+#include "Camera.hpp"
+#include "Lights.hpp"
+#include "SkyBox.hpp"
 
-#include "Render/EnvironmentMap.hpp"
+#include "EnvironmentMap.hpp"
 
 class Scene {
 public:

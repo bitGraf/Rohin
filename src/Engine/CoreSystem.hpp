@@ -7,10 +7,10 @@ class CoreSystem;
 #include <stdlib.h>
 #include <cstdarg>
 
-#include "Message/Configuration.hpp"
+#include "Configuration.hpp"
 #include "HashTable.hpp"
 
-#include "Message/MessageBus.hpp"
+#include "MessageBus.hpp"
 
 /**
  * @brief Comon interface for core engine systems.

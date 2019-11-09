@@ -4,9 +4,9 @@
 #include <unordered_map>
 
 #include "CoreSystem.hpp"
-#include "Render/Shader.hpp"
+#include "Shader.hpp"
 #include "SceneManager.hpp"
-#include "Render/Framebuffer.hpp"
+#include "Framebuffer.hpp"
 #include "Window.hpp"
 
 class RenderManager : public CoreSystem {

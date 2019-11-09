@@ -7,8 +7,8 @@
 #include "CoreSystem.hpp"
 #include "FileSystem.hpp"
 #include "MemoryManager.hpp"
-#include "Render/Models.hpp"
-#include "Render/Material.hpp"
+#include "Models.hpp"
+#include "Material.hpp"
 
 #include "tiny_gltf.h"
 #include "stb_image.h"

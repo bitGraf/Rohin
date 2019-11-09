@@ -4,8 +4,8 @@
 #include <string>
 
 #include "GameMath.hpp"
-#include "Render/Models.hpp"
-#include "Render/Material.hpp"
+#include "Models.hpp"
+#include "Material.hpp"
 
 class Entity {
 public:

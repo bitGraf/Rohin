@@ -7,7 +7,7 @@ class MessageBus;
 #include <vector>
 
 #include "Message.hpp"
-#include "System/CoreSystem.hpp"
+#include "CoreSystem.hpp"
 
 class MessageBus {
 public:

@@ -9,7 +9,7 @@
 #include <chrono>
 
 #include "Material.hpp"
-#include "Render/Lights.hpp"
+#include "Lights.hpp"
 //#include "System/SceneManager.hpp"
 
 const std::string ShaderResourcePath = "Data/shaders/";
