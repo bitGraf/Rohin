@@ -62,15 +62,16 @@ CoreSystem* RenderManager::create() {
 }
 
 void RenderManager::renderScene(Window* window, Scene* scene) {
+    //window->makeCurrent();
     // Update camera once
     scene->camera.updateProjectionMatrix(window->m_width, window->m_height);
     scene->camera.updateViewMatrix();
 
     // Update framebuffer
     fb.resize(window->m_width, window->m_height);
-
+    fb.bind(); 
+    
     // First, render to framebuffer
-    fb.bind();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 

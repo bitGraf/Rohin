@@ -81,7 +81,6 @@ int main(int argc, char* argv[]) {
         g_SceneManager.update(.005);
 
         g_RenderManager.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
-
         g_MainWindow.swapAndPoll();
     }
     g_Console.logMessage("Game loop done, quitting...");

@@ -97,11 +97,16 @@ void EnvironmentMap::preCompute() {
 
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
+    auto startTime = std::chrono::system_clock::now();
     initShaders();
     convertToCubeMap();
     calculateIrradiance();
     prefilter();
     computeBRDF();
+    auto duration = std::chrono::system_clock::now() - startTime;
+
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() <<
+        " Milliseconds to precompute environment." << std::endl;
 }
 
 GLuint EnvironmentMap::getTexture() {

@@ -107,11 +107,15 @@ void Window::create_window(const char* title, int width, int height) {
 
 void Window::makeCurrent() {
     glfwMakeContextCurrent(m_glfwWindow);
-    sendMessage("WindowContext");
+    //sendMessage("WindowContext");
 }
 
 void Window::setPosition(int x, int y) {
     glfwSetWindowPos(m_glfwWindow, x, y);
+}
+
+void Window::resize(int width, int height) {
+    glfwSetWindowSize(m_glfwWindow, width, height);
 }
 
 

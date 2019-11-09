@@ -27,6 +27,7 @@ public:
     void swapAndPoll();
     void makeCurrent();
     void setPosition(int x, int y);
+    void resize(int width, int height);
     
     /* Callback responses */
     void WindowPositionUpdate(int xpos, int ypos);
