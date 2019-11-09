@@ -13,7 +13,7 @@ class Console;
 
 #include "Platform.hpp"
 
-#include "CoreSystem.hpp"
+#include "Message/CoreSystem.hpp"
 
 const int TARGET_RATE = 10; // Hz
 const int MILLS_PER_UPDATE = 1000 / TARGET_RATE;

@@ -5,7 +5,7 @@ class ConfigurationManager;
 
 #include <unordered_map>
 
-#include "MessageBus.hpp"
+#include "Message/MessageBus.hpp"
 
 class Configuration {
 public:

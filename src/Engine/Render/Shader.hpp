@@ -8,8 +8,8 @@
 #include <iostream>
 #include <chrono>
 
-#include "Material.hpp"
-#include "Lights.hpp"
+#include "Scene/Material.hpp"
+#include "Scene/Lights.hpp"
 //#include "System/SceneManager.hpp"
 
 const std::string ShaderResourcePath = "Data/shaders/";

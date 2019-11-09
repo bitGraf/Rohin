@@ -6,9 +6,9 @@
 #include <sstream>
 #include <string>
 
-#include "CoreSystem.hpp"
+#include "Message/CoreSystem.hpp"
 #include "Entity.hpp"
-#include "ResourceManager.hpp"
+#include "Resource/ResourceManager.hpp"
 #include "Camera.hpp"
 #include "Lights.hpp"
 #include "SkyBox.hpp"

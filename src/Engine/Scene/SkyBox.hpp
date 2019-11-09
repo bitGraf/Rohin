@@ -6,7 +6,7 @@
 
 #include "glad\glad.h"
 #include "stb_image.h"
-#include "Texture.hpp"
+#include "Resource/Texture.hpp"
 
 #include "GameMath.hpp"
 

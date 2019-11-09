@@ -8,7 +8,7 @@
 #include "glad\glad.h"
 #include "stb_image.h"
 
-#include "Shader.hpp"
+#include "Render/Shader.hpp"
 #include "SkyBox.hpp"
 #include "Camera.hpp"
 

@@ -3,11 +3,11 @@
 
 #include <unordered_map>
 
-#include "CoreSystem.hpp"
+#include "Message/CoreSystem.hpp"
 #include "Shader.hpp"
-#include "SceneManager.hpp"
-#include "Framebuffer.hpp"
-#include "Window.hpp"
+#include "Scene/SceneManager.hpp"
+#include "Window/Framebuffer.hpp"
+#include "Window/Window.hpp"
 
 class RenderManager : public CoreSystem {
 public:

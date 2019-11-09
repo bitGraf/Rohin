@@ -4,11 +4,11 @@
 #include <cassert>
 #include <unordered_map>
 
-#include "CoreSystem.hpp"
+#include "Message/CoreSystem.hpp"
 #include "FileSystem.hpp"
 #include "MemoryManager.hpp"
-#include "Models.hpp"
-#include "Material.hpp"
+#include "Scene/Models.hpp"
+#include "Scene/Material.hpp"
 
 #include "tiny_gltf.h"
 #include "stb_image.h"

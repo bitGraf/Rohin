@@ -4,7 +4,7 @@
 #include <GLFW\glfw3.h>
 #include <glad\glad.h>
 
-#include "CoreSystem.hpp"
+#include "Message/CoreSystem.hpp"
 
 #define WINDOW_DEFAULT_HEIGHT   600
 #define WINDOW_DEFAULT_WIDTH    800

@@ -3,7 +3,7 @@
 
 #include "glad\glad.h"
 #include "GameMath.hpp"
-#include "MemoryManager.hpp"
+#include "Resource/MemoryManager.hpp"
 
 typedef DataBlock<math::vec4>   vec4Array;
 typedef DataBlock<math::vec3>   vec3Array;

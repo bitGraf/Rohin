@@ -1,14 +1,14 @@
 #include <stdio.h>
 
-#include "CoreSystem.hpp"
+#include "Message/CoreSystem.hpp"
 
-#include "Window.hpp"
-#include "ResourceManager.hpp"
+#include "Window/Window.hpp"
+#include "Resource/ResourceManager.hpp"
 #include "Console.hpp"
 
-#include "MemoryManager.hpp"
-#include "SceneManager.hpp"
-#include "RenderManager.hpp"
+#include "Resource/MemoryManager.hpp"
+#include "Scene/SceneManager.hpp"
+#include "Render/RenderManager.hpp"
 
 /* Core Systems */
 Window g_MainWindow;
