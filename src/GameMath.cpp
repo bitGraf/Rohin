@@ -634,6 +634,6 @@ std::ostream & math::operator<<(std::ostream & os, const vec3 & v)
 std::ostream & math::operator<<(std::ostream & os, const vec4 & v)
 {
     // TODO: float formatting
-    os << "(" << v.w << ", " << v.x << ", " << v.y << ", " << v.z << ") ";
+    os << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ") ";
     return os;
 }

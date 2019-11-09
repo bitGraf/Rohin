@@ -42,6 +42,12 @@ public:
     EnvironmentMap envMap;
 
     std::string name;
+
+    std::string getNextString(std::istringstream& iss);
+    math::scalar getNextFloat(std::istringstream& iss);
+    math::vec2 getNextVec2(std::istringstream& iss);
+    math::vec3 getNextVec3(std::istringstream& iss);
+    math::vec4 getNextVec4(std::istringstream& iss);
 };
 
 

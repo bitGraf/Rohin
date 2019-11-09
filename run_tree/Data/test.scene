@@ -2,6 +2,10 @@ SCENE "Test Scene"
 SETTING "setting1" "value1"
 RESOURCE "Data/Models/Corset.glb"
 
-ENTITY "ent1" "pCube49" "Corset_O" "0 0.5 0"
+ENTITY "ent1" "pCube49" "Corset_O" "0 0 0"
 
 SKYBOX HDR "carpentry_shop_02_4k.hdr"
+
+LIGHT DIR "5" "0.412 0.592 0.886 1" "-.1 -1 -.1"
+LIGHT POINT "4" "0.812 0.112 0.234 1" "1 2 3"
+LIGHT SPOT "3" ".123 0.411 0.999 1" "3 5 1" "0 -1 0" "20 30"

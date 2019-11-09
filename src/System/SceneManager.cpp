@@ -65,9 +65,9 @@ void Scene::testCreate(ResourceManager* resource) {
     numVerts = &resource->numGridVerts;
 
     /* Setup Lights */
-    sun.direction = vec3(-.1, -.1, -1);
+    sun.direction = vec3(-.1, -1, -.1);
     sun.color = vec4(0.412, 0.592, 0.886, 1);
-    sun.strength = 0;
+    sun.strength = 10;
 
     /* Load skybox */
     skybox.loadFromImages("iceflow", ".tga");
@@ -78,17 +78,17 @@ void Scene::testCreate(ResourceManager* resource) {
 }
 
 void SceneManager::loadScenes(ResourceManager* resource) {
-    Scene s;
+    //Scene s;
 
-    s.testCreate(resource);
-    scenes.push_back(s);
+    //s.testCreate(resource);
+    //scenes.push_back(s);
 
     Scene sTest;
     sTest.loadFromFile(resource, "");
     scenes.push_back(sTest);
 
     // TODO: Not safe. Pointers change when vector grows
-    m_currentScene = &scenes[1];
+    m_currentScene = &scenes[0];
 }
 
 Scene* SceneManager::getCurrentScene() {
@@ -98,111 +98,118 @@ Scene* SceneManager::getCurrentScene() {
 void Scene::loadFromFile(ResourceManager* resource, std::string path) {
     std::ifstream infile("Data/test.scene");
 
+    u32 numSpotLightsLoaded = 0;
+    u32 numPointLightsLoaded = 0;
+
     std::string line;
     while (std::getline(infile, line))
     {
         if (line.empty()) { continue; }
-        //std::cout << "Line [" << line << "]" << std::endl;
         std::istringstream iss(line);
-        
+
         std::string type;
         if (!(iss >> type)) { assert(false); break; } // error
 
-        //std::cout << "  Type: [" << type << "]" << std::endl;
         if (type.compare("SCENE") == 0) {
-            //std::cout << "    parsing scene\n";
+            std::string sceneName = getNextString(iss);
 
-            std::string sceneName;
-            std::getline(iss, sceneName, '"');
-            std::getline(iss, sceneName, '"');
-
-            std::cout << "  sceneName: [" << sceneName << "]\n";
-
+            // set scene name
             name = sceneName;
+        } 
+        else if (type.compare("SETTING") == 0) {
+            std::string settingName = getNextString(iss);
+            std::string settingValue = getNextString(iss);
 
-        } else if (type.compare("SETTING") == 0) {
-            //std::cout << "    parsing setting\n";
+            // operate on setting
 
-            std::string settingName;
-            std::getline(iss, settingName, '"');
-            std::getline(iss, settingName, '"');
+        } 
+        else if (type.compare("RESOURCE") == 0) {
+            std::string resourceFilename = getNextString(iss);
 
-            std::cout << "  setting: [" << settingName << "]";
-
-            std::string settingValue;
-            std::getline(iss, settingValue, '"');
-            std::getline(iss, settingValue, '"');
-
-            std::cout << ":[" << settingValue << "]\n";
-
-        } else if (type.compare("RESOURCE") == 0) {
-            //std::cout << "    parsing resource\n";
-            std::string resourceFilename;
-            std::getline(iss, resourceFilename, '"');
-            std::getline(iss, resourceFilename, '"');
-
-            std::cout << "  resourceFile: [" << resourceFilename << "]\n";
-
+            // load resource pack
             resource->loadModelFromFile(resourceFilename, true);
-        } else if (type.compare("ENTITY") == 0) {
-            //std::cout << "    parsing entity\n";
-
-            std::string entityName;
-            std::getline(iss, entityName, '"');
-            std::getline(iss, entityName, '"');
-
-            std::cout << "  entity: [" << entityName << "]";
-
-            std::string entityMesh;
-            std::getline(iss, entityMesh, '"');
-            std::getline(iss, entityMesh, '"');
-
-            std::cout << ":[" << entityMesh << "]";
-
-            std::string entityMat;
-            std::getline(iss, entityMat, '"');
-            std::getline(iss, entityMat, '"');
-
-            std::cout << ":[" << entityMat << "]";
-
-            std::string entityPosition;
-            std::getline(iss, entityPosition, '"');
+        } 
+        else if (type.compare("ENTITY") == 0) {
+            std::string entityName = getNextString(iss);
+            std::string entityMesh = getNextString(iss);
+            std::string entityMat  = getNextString(iss);
+            math::vec3 entityPos   = getNextVec3(iss);
             
-            math::vec3 v;
-            iss >> v.x >> v.y >> v.z;
-            std::cout << ":" << v << std::endl;
-
+            // Create entity
             Entity ent;
             ent.name = entityName;
             ent.setMesh(resource->getMesh(entityMesh));
             ent.setMaterial(resource->getMaterial(entityMat));
-            ent.position = v;
+            ent.position = entityPos;
             ent.scale = vec3(50);
 
             m_entities.push_back(ent);
-
-        } else if (type.compare("SKYBOX") == 0) {
+        } 
+        else if (type.compare("SKYBOX") == 0) {
             //std::cout << "  parsing skybox\n";
 
             std::string skyboxType;
             if (!(iss >> skyboxType)) { assert(false); break; } // error
 
             if (skyboxType.compare("STANDARD") == 0) {
-                std::string skyboxFilePath;
-                std::getline(iss, skyboxFilePath, '"');
-                std::getline(iss, skyboxFilePath, '"');
+                std::string skyboxFilePath = getNextString(iss);
 
-                std::cout << "  filepath Skybox: [" << skyboxFilePath << "]";
+                /* load skybox */
+
             } else if (skyboxType.compare("HDR") == 0) {
-                std::string hdrFilePath;
-                std::getline(iss, hdrFilePath, '"');
-                std::getline(iss, hdrFilePath, '"');
-
-                std::cout << "  filepath HDR: [" << hdrFilePath << "]";
+                std::string hdrFilePath = getNextString(iss);
 
                 /* environment map */
                 envMap.loadHDRi(hdrFilePath);
                 envMap.preCompute();
+            }
+        } 
+        else if (type.compare("LIGHT") == 0) {
+            //std::cout << "  parsing skybox\n";
+
+            std::string lightType;
+            if (!(iss >> lightType)) { assert(false); break; } // error
+
+            if (lightType.compare("DIR") == 0) {
+                math::scalar strength = getNextFloat(iss);
+                math::vec4 color = getNextVec4(iss);
+                math::vec3 dir = getNextVec3(iss);
+
+                // create light
+                sun.strength = strength;
+                sun.color = color;
+                sun.direction = dir;
+
+            } else if (lightType.compare("POINT") == 0) {
+                math::scalar strength = getNextFloat(iss);
+                math::vec4 color = getNextVec4(iss);
+                math::vec3 pos = getNextVec3(iss);
+
+                // create light
+                if (numPointLightsLoaded == NUM_POINTLIGHTS) continue;
+
+                pointLights[numPointLightsLoaded].strength = strength;
+                pointLights[numPointLightsLoaded].color = color;
+                pointLights[numPointLightsLoaded].position = pos;
+                numPointLightsLoaded++;
+
+            } else if (lightType.compare("SPOT") == 0) {
+                math::scalar strength = getNextFloat(iss);
+                math::vec4 color = getNextVec4(iss);
+                math::vec3 pos = getNextVec3(iss);
+                math::vec3 dir = getNextVec3(iss);
+                math::vec2 cutoff = getNextVec2(iss);
+
+                // create light
+                if (numSpotLightsLoaded == NUM_SPOTLIGHTS) continue;
+
+                spotLights[numSpotLightsLoaded].strength = strength;
+                spotLights[numSpotLightsLoaded].color = color;
+                spotLights[numSpotLightsLoaded].position = pos;
+                spotLights[numSpotLightsLoaded].direction = dir;
+                spotLights[numSpotLightsLoaded].inner_cutoff = cutoff.x;
+                spotLights[numSpotLightsLoaded].outer_cutoff = cutoff.y;
+                numSpotLightsLoaded++;
             }
         }
     }
@@ -210,4 +217,52 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path) {
 
     gridVAO = &resource->gridVAO;
     numVerts = &resource->numGridVerts;
+}
+
+std::string Scene::getNextString(std::istringstream& iss) {
+    std::string str;
+    std::getline(iss, str, '"');
+    std::getline(iss, str, '"');
+
+    return str;
+}
+
+math::scalar Scene::getNextFloat(std::istringstream& iss) {
+    math::scalar v;
+    std::string garb;
+    std::getline(iss, garb, '"');
+    iss >> v;    
+    std::getline(iss, garb, '"');
+
+    return v;
+}
+
+math::vec2 Scene::getNextVec2(std::istringstream& iss) {
+    math::vec2 v;
+    std::string garb;
+    std::getline(iss, garb, '"');
+    iss >> v.x >> v.y;
+    std::getline(iss, garb, '"');
+
+    return v;
+}
+
+math::vec3 Scene::getNextVec3(std::istringstream& iss) {
+    math::vec3 v;
+    std::string garb;
+    std::getline(iss, garb, '"');
+    iss >> v.x >> v.y >> v.z;
+    std::getline(iss, garb, '"');
+
+    return v;
+}
+
+math::vec4 Scene::getNextVec4(std::istringstream& iss) {
+    math::vec4 v;
+    std::string garb;
+    std::getline(iss, garb, '"');
+    iss >> v.x >> v.y >> v.z >> v.w;
+    std::getline(iss, garb, '"');
+
+    return v;
 }
