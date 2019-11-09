@@ -18,11 +18,11 @@ void SceneManager::update(double dt) {
 
     //yaw = 0;
     m_currentScene->camera.position = vec3(
-        5*cos(yaw*d2r),
-        sin(yaw*d2r*5)+1,
-        -5*sin(yaw*d2r)
+        4*cos(yaw*d2r),
+        sin(yaw*d2r*4)+1.5,
+        -4*sin(yaw*d2r)
     );
-    m_currentScene->camera.lookAt(vec3(0, 0, 0));
+    m_currentScene->camera.lookAt(vec3(0, 1, 0));
 }
 
 void SceneManager::handleMessage(Message msg) {
@@ -90,7 +90,7 @@ void Scene::testCreate(ResourceManager* resource) {
     /* Setup Lights */
     sun.direction = vec3(-.1, -.1, -1);
     sun.color = vec4(0.412, 0.592, 0.886, 1);
-    sun.strength = 5;
+    sun.strength = 0;
 
     /* Load skybox */
     skybox.loadFromImages("iceflow", ".tga");

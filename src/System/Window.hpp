@@ -6,8 +6,8 @@
 
 #include "CoreSystem.hpp"
 
-#define WINDOW_DEFAULT_HEIGHT   720
-#define WINDOW_DEFAULT_WIDTH    1280
+#define WINDOW_DEFAULT_HEIGHT   600
+#define WINDOW_DEFAULT_WIDTH    800
 
 /// acting as WindowManager for now
 class Window : public CoreSystem {

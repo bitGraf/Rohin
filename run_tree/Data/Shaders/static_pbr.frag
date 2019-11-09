@@ -51,7 +51,7 @@ uniform SpotLight spotLights[NUMSPOTLIGHTS];
 uniform PBRMaterial material;
 uniform vec3 camPos;
 
-//uniform samplerCube irradianceMap;
+uniform samplerCube irradianceMap;
 //uniform samplerCube prefilterMap;
 //uniform sampler2D   brdfLUT;
 
@@ -98,8 +98,14 @@ void main()
     //Direct Lighting
     vec3 Lo = calcTotalLightContribution(pointLights, sun, 
 		  N, pass_fragPos, V, F0, roughness, metallic, albedo);
+
+    vec3 kS = fresnelSchlick(max(dot(N, V), 0.0), F0, roughness);
+    vec3 kD = 1.0 - kS;
+    vec3 irradiance = texture(irradianceMap, N).rgb;
+    vec3 diffuse    = irradiance * albedo;
+    vec3 ambient    = (kD * diffuse) * ao;
     
-    vec3 color = vec3(.025) * albedo * ao + Lo;
+    vec3 color = ambient + Lo;
     
     FragColor = vec4(color, 1.0);
 	//FragColor = vec4(1,0,0,1);

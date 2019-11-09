@@ -87,6 +87,8 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
         scene->spotLights
     ); // TODO: remove this
     setCamera(&m_mainShader, &scene->camera);
+    m_mainShader.setInt("irradianceMap", 5);
+    scene->envMap.bindIrradiance(GL_TEXTURE5);
 
     /* Render Entities */
     for (auto ent : scene->m_entities) {
@@ -184,7 +186,7 @@ void RenderManager::renderSkybox(Shader* shader, Camera* camera, SkyBox* skybox,
 
     shader->setInt("skybox", 0);
     //skybox->bind(GL_TEXTURE0);
-    scene->envMap.bind(GL_TEXTURE0);
+    scene->envMap.bindSkybox(GL_TEXTURE0);
 
     glDepthFunc(GL_LEQUAL);
     glBindVertexArray(SkyBox::skyboxVAO);

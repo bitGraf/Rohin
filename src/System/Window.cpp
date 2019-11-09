@@ -3,8 +3,8 @@
 Window::Window() {
     m_glfwWindow = nullptr;
 
-    m_height = 600;
-    m_width = 800;
+    m_height = WINDOW_DEFAULT_HEIGHT;
+    m_width = WINDOW_DEFAULT_WIDTH;
 }
 
 void Window::update(double dt) {

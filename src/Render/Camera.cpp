@@ -30,7 +30,12 @@ void Camera::updateProjectionMatrix(f32 width, f32 height) {
 
 Camera& Camera::lookAt(vec3 target, bool UpdateMatrix) {
     vec3 forward = (target - position).get_unit();  // +X
-    vec3 right = forward.cross(vec3(0, 1, 0));      // +Z
+    vec3 right;
+    if (abs(forward.dot(vec3(0, 1, 0))) > 0.99) {
+        right = forward.cross(vec3(0, 0, 1));      // +Z
+    } else {
+        right = forward.cross(vec3(0, 1, 0));      // +Z
+    }
     vec3 up = right.cross(forward);                 // +Y
 
     /*pitch = asin(-up.y) * r2d;

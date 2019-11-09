@@ -18,7 +18,8 @@ public:
     EnvironmentMap();
 
     void loadHDRi(std::string filename);
-    void bind(GLenum tex_unit);
+    void bindSkybox(GLenum tex_unit);
+    void bindIrradiance(GLenum tex_unit);
 
     void preCompute();
 
@@ -36,6 +37,7 @@ private:
     /* openGL Texture Handles */
     GLuint hdrEquirect; // raw HDRi
     GLuint envCubeMap;  // HDRi mapped to a cube
+    GLuint irradianceMap; // Irradiance cubemap
 
     /* Framebuffer */
     GLuint captureFBO;

@@ -25,14 +25,19 @@ void EnvironmentMap::loadHDRi(std::string filename) {
     }
 }
 
-void EnvironmentMap::bind(GLenum tex_unit) {
+void EnvironmentMap::bindSkybox(GLenum tex_unit) {
     glActiveTexture(tex_unit);
-    //glBindTexture(GL_TEXTURE_2D, hdrEquirect);
     glBindTexture(GL_TEXTURE_CUBE_MAP, envCubeMap);
+}
+
+void EnvironmentMap::bindIrradiance(GLenum tex_unit) {
+    glActiveTexture(tex_unit);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
 }
 
 void EnvironmentMap::initShaders() {
     cubemapConverter.create("cubemapConvert.vert", "cubemapConvert.frag", "cubemapConverter");
+    irradianceShader.create("cubemapConvert.vert", "irradianceCalc.frag", "irradianceShader");
 
     captureCam.m_fov = 90;
     captureCam.m_zFar = 10;
@@ -43,8 +48,8 @@ void EnvironmentMap::initShaders() {
     captureCam.position = vec3(0.0);
     captureViews[0] = captureCam.lookAt(vec3(0, 0,  1), true).viewMatrix;
     captureViews[1] = captureCam.lookAt(vec3(0, 0, -1), true).viewMatrix;
-    captureViews[2] = captureCam.lookAt(vec3(0,  1, 0), true).viewMatrix;
-    captureViews[3] = captureCam.lookAt(vec3(0, -1, 0), true).viewMatrix;
+    captureViews[2] = captureCam.lookAt(vec3(0, -1, 0), true).viewMatrix;
+    captureViews[3] = captureCam.lookAt(vec3(0,  1, 0), true).viewMatrix;
     captureViews[4] = captureCam.lookAt(vec3( 1, 0, 0), true).viewMatrix;
     captureViews[5] = captureCam.lookAt(vec3(-1, 0, 0), true).viewMatrix;
 
@@ -58,12 +63,12 @@ void EnvironmentMap::preCompute() {
     prefilterRes = 128;
     brdfLUTRes = 512;
 
-    viewportWidth = 1280;
-    viewportHeight = 720;
+    viewportWidth = 800;
+    viewportHeight = 600;
 
     initShaders();
     convertToCubeMap();
-    //calculateIrradiance();
+    calculateIrradiance();
     //prefilter();
 }
 
@@ -116,7 +121,47 @@ void EnvironmentMap::convertToCubeMap() {
 }
 
 void EnvironmentMap::calculateIrradiance() {
+    //Generate Texture
+    glGenTextures(1, &irradianceMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0,
+            GL_RGB, GL_FLOAT, nullptr);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    //Render to Texture
+    irradianceShader.use();
+    irradianceShader.setInt("environmentMap", 0);
+    irradianceShader.setMat4("projectionMatrix", captureCam.projectionMatrix);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, irradianceRes, irradianceRes);
+
+    glViewport(0, 0, irradianceRes, irradianceRes);
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glBindVertexArray(SkyBox::skyboxVAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubeMap);
+
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        irradianceShader.setMat4("viewMatrix", captureViews[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+    glBindVertexArray(0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, viewportWidth, viewportHeight);
 }
 
 void EnvironmentMap::prefilter() {
