@@ -148,7 +148,9 @@ void Window::WindowMaximizeUpdate(int maximize) {
 }
 
 void Window::WindowFramebufferUpdate(int w, int h) {
-    glViewport(0, 0, w, h);
+    m_width = w;
+    m_height = h;
+    glViewport(0, 0, m_width, m_height);
 
     sendMessage("WindowResize");
 }

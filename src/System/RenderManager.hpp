@@ -6,6 +6,8 @@
 #include "CoreSystem.hpp"
 #include "Render/Shader.hpp"
 #include "SceneManager.hpp"
+#include "Render/Framebuffer.hpp"
+#include "Window.hpp"
 
 class RenderManager : public CoreSystem {
 public:
@@ -19,14 +21,15 @@ public:
         
     /* System Unique functions */
     void setShader(stringID id);
-    void renderScene(Scene* scene);
+    void renderScene(Window* window, Scene* scene);
 
 private:
     Shader m_mainShader, m_lineShader, 
         m_skyboxShader, m_fullscreenShader;
 
+    Framebuffer fb;
+
     GLuint fullscreenVAO;
-    GLuint fullscreenTexture;
 
     void setCamera(Shader* shader, Camera* camera);
     void setCurrentMesh(const TriangleMesh* mesh);
@@ -34,7 +37,7 @@ private:
     void setTransforms(Shader* shader, const math::vec3* pos, const math::mat3* orientation, const math::vec3* scale);
     void renderPrimitive(const TriangleMesh* mesh);
     void renderGrid(Shader* shader, GLuint vao, GLuint numVerts);
-    void renderSkybox(Shader* shader, Camera* camera, SkyBox* skybox);
+    void renderSkybox(Shader* shader, Camera* camera, SkyBox* skybox, Scene* scene);
 };
 
 #endif

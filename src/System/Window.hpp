@@ -6,8 +6,8 @@
 
 #include "CoreSystem.hpp"
 
-#define WINDOW_DEFAULT_HEIGHT   600
-#define WINDOW_DEFAULT_WIDTH    800
+#define WINDOW_DEFAULT_HEIGHT   720
+#define WINDOW_DEFAULT_WIDTH    1280
 
 /// acting as WindowManager for now
 class Window : public CoreSystem {
@@ -48,12 +48,12 @@ public:
     void InputScroll(double xoffset, double yoffset);
     void InputDrop(int count, const char** paths);
 
-private:
-    GLFWwindow*     m_glfwWindow;
-
     // Window properties
     int m_height;
     int m_width;
+
+private:
+    GLFWwindow*     m_glfwWindow;
 
     /* Error Callback */
     inline static void ErrorCallback(

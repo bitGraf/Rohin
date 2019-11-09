@@ -586,18 +586,33 @@ math::mat3 math::mat3::getTranspose() {
 
 
 math::mat3 math::createYawPitchRollMatrix(scalar yaw, scalar pitch, scalar roll) {
-    /* 2-3-1 Body-Fixed Euler-Rotation */
-    scalar C2 = cos(yaw*d2r);
-    scalar S2 = sin(yaw*d2r);
-    scalar C3 = cos(pitch*d2r);
-    scalar S3 = sin(pitch*d2r);
-    scalar C1 = cos(roll*d2r);
-    scalar S1 = sin(roll*d2r);
+    /*
+    // 2-1-3 Body-Fixed Euler-Rotation
+    scalar C1 = cos(yaw*d2r);
+    scalar S1 = sin(yaw*d2r);
+    scalar C2 = cos(pitch*d2r);
+    scalar S2 = sin(pitch*d2r);
+    scalar C3 = cos(roll*d2r);
+    scalar S3 = sin(roll*d2r);
 
     return mat3(
-        vec3( C2*C3,             S3,    -S2*C3),
-        vec3(-C1*C2*S3 + S1*S2,  C1*C3,  C1*S2*S3 + S1*C2),
-        vec3( S1*C2*S3 + C1*S2, -S1*C3, -S1*S2*S3 + C1*C2));
+        vec3(C1*C3 + S1*S2*S3, C2*S3, -S1*C3 + C1*S2*S3),
+        vec3(-C1*S3 + S1*S2*C3, C2*C3, S1*S3 + C1*S2*C3),
+        vec3(S1*C2, -S2, C1*C2));
+        */
+
+    // 2-3-1 Body-Fixed Euler-Rotation
+    scalar C1 = cos(yaw*d2r);
+    scalar S1 = sin(yaw*d2r);
+    scalar C2 = cos(pitch*d2r);
+    scalar S2 = sin(pitch*d2r);
+    scalar C3 = cos(roll*d2r);
+    scalar S3 = sin(roll*d2r);
+
+    return mat3(
+        vec3( C1*C2,             S2,    -S1*C2),
+        vec3(-C1*S2*C3 + S1*S3,  C2*C3,  S1*S2*C3 + C1*S3),
+        vec3( C1*S2*S3 + C3*S1, -C2*S3, -S1*S2*S3 + C1*C3));
 }
 
 

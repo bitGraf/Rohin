@@ -80,9 +80,7 @@ int main(int argc, char* argv[]) {
 
         g_SceneManager.update(.005);
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        g_RenderManager.renderScene(g_SceneManager.getCurrentScene());
+        g_RenderManager.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
 
         g_MainWindow.swapAndPoll();
     }

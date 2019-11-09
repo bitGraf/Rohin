@@ -55,47 +55,25 @@ CoreSystem* RenderManager::create() {
 
     glBindVertexArray(0);
 
-
-
-    stbi_set_flip_vertically_on_load(true);
-    int height, width, nrChannels;
-
-    //Generate OpenGL Texture
-    glGenTextures(1, &fullscreenTexture);
-    glBindTexture(GL_TEXTURE_2D, fullscreenTexture);
-    // set the texture wrapping/filtering options
-
-    //Load image data
-    unsigned char *data = stbi_load("Data/Images/GiantToad.png",
-        &width, &height, &nrChannels, 0);
-
-    if (data) {
-        GLenum format;
-        if (nrChannels == 1)
-            format = GL_RED;
-        else if (nrChannels == 3)
-            format = GL_RGB;
-        else if (nrChannels == 4)
-            format = GL_RGBA;
-
-        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    }
-    else {
-        std::cout << "Failed to load texture []" << std::endl;
-    }
-
-    stbi_image_free(data);
+    // Init framebuffer
+    fb.create(1280, 720);
 
     return this;
 }
 
-void RenderManager::renderScene(Scene* scene) {
+void RenderManager::renderScene(Window* window, Scene* scene) {
+    // Update camera once
+    scene->camera.updateProjectionMatrix(window->m_width, window->m_height);
+    scene->camera.updateViewMatrix();
+
+    // Update framebuffer
+    fb.resize(window->m_width, window->m_height);
+
+    // First, render to framebuffer
+    fb.bind();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+
     /* Render Line Entities */
     m_lineShader.use();
     setCamera(&m_lineShader, &scene->camera);
@@ -126,25 +104,28 @@ void RenderManager::renderScene(Scene* scene) {
 
     /* Render skybox */
     m_skyboxShader.use();
-    renderSkybox(&m_skyboxShader, &scene->camera, &scene->skybox);
+    renderSkybox(&m_skyboxShader, &scene->camera, &scene->skybox, scene);
+
+    fb.unbind();
 
     /* Render fullscreen quad */
-    m_fullscreenShader.use();
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 
+    m_fullscreenShader.use();
     m_fullscreenShader.setInt("tex", 0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, scene->envMap.hdrEquirect);
+    glBindTexture(GL_TEXTURE_2D, fb.getTexture());
 
     glBindVertexArray(fullscreenVAO);
+    glDisable(GL_DEPTH_TEST);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
+    glEnable(GL_DEPTH_TEST);
 }
 
 
 void RenderManager::setCamera(Shader* shader, Camera* camera) {
-    camera->updateProjectionMatrix();
-    camera->updateViewMatrix();
-
     shader->setMat4("viewMatrix", camera->viewMatrix);
     shader->setMat4("projectionMatrix", camera->projectionMatrix);
     shader->setVec3("cam_pos", camera->position);
@@ -197,15 +178,13 @@ void RenderManager::renderGrid(Shader* shader, GLuint vao, GLuint numVerts) {
     glDrawArrays(GL_LINES, 0, numVerts);
 }
 
-void RenderManager::renderSkybox(Shader* shader, Camera* camera, SkyBox* skybox) {
-    camera->updateProjectionMatrix();
-    camera->updateViewMatrix();
-
+void RenderManager::renderSkybox(Shader* shader, Camera* camera, SkyBox* skybox, Scene* scene) {
     shader->setMat4("viewMatrix", mat4(mat3(camera->viewMatrix)));
     shader->setMat4("projectionMatrix", camera->projectionMatrix);
 
     shader->setInt("skybox", 0);
-    skybox->bind(GL_TEXTURE0);
+    //skybox->bind(GL_TEXTURE0);
+    scene->envMap.bind(GL_TEXTURE0);
 
     glDepthFunc(GL_LEQUAL);
     glBindVertexArray(SkyBox::skyboxVAO);

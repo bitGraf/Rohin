@@ -164,7 +164,7 @@ void Shader::setLights(
     setFloat("sun.strength", sun->strength);
 
     /* Point Lights */
-    for (int n = 0; n < Scene::NUM_POINTLIGHTS; n++) {
+    for (int n = 0; n < 4; n++) {
         setVec3("pointLights[" + std::to_string(n) + 
             "].position", pointLights[n].position);
         setVec4("pointLights[" + std::to_string(n) +
@@ -174,7 +174,7 @@ void Shader::setLights(
     }
 
     /* Spot Lights */
-    for (int n = 0; n < Scene::NUM_POINTLIGHTS; n++) {
+    for (int n = 0; n < 4; n++) {
         setVec3("spotLights[" + std::to_string(n) +
             "].position", spotLights[n].position);
         setVec3("spotLights[" + std::to_string(n) +

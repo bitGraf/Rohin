@@ -7,8 +7,22 @@ SceneManager::SceneManager() {
 void SceneManager::update(double dt) {
     m_currentScene->yaw += 2 * dt;
     //m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw, m_currentScene->yaw, m_currentScene->yaw);
-    m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw, 0, 0);
-    m_currentScene->camera.yaw += 2 * dt;
+    m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw-90, 0, 0);
+    //m_currentScene->camera.yaw += 2 * dt;
+
+    if (m_currentScene->yaw > 60) {
+        bool k = true;
+    }
+
+    f32 yaw = m_currentScene->yaw;
+
+    //yaw = 0;
+    m_currentScene->camera.position = vec3(
+        5*cos(yaw*d2r),
+        sin(yaw*d2r*5)+1,
+        -5*sin(yaw*d2r)
+    );
+    m_currentScene->camera.lookAt(vec3(0, 0, 0));
 }
 
 void SceneManager::handleMessage(Message msg) {
@@ -83,6 +97,7 @@ void Scene::testCreate(ResourceManager* resource) {
 
     /* environment map */
     envMap.loadHDRi("carpentry_shop_02_4k.hdr");
+    envMap.preCompute();
 }
 
 void SceneManager::loadScenes(ResourceManager* resource) {

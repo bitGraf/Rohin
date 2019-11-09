@@ -13,7 +13,9 @@ public:
     scalar yaw, pitch, roll;
 
     void updateViewMatrix();
-    void updateProjectionMatrix();
+    void updateProjectionMatrix(f32 width, f32 height);
+
+    Camera& lookAt(vec3 target, bool UpdateMatrix = false);
 
 //private:
     mat4 viewMatrix;
@@ -22,6 +24,7 @@ public:
     f32 m_fov;
     f32 m_zNear;
     f32 m_zFar;
+    f32 m_aspectRatio;
 };
 
 #endif
