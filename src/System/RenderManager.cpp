@@ -87,8 +87,12 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
         scene->spotLights
     ); // TODO: remove this
     setCamera(&m_mainShader, &scene->camera);
+
     m_mainShader.setInt("irradianceMap", 5);
-    scene->envMap.bindIrradiance(GL_TEXTURE5);
+    m_mainShader.setInt("prefilterMap", 6);
+    m_mainShader.setInt("brdfLUT", 7);
+
+    scene->envMap.bindPBR(GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7);
 
     /* Render Entities */
     for (auto ent : scene->m_entities) {
@@ -121,7 +125,7 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
 
     glBindVertexArray(fullscreenVAO);
     glDisable(GL_DEPTH_TEST);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
 }

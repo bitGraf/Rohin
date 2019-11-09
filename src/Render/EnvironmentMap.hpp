@@ -19,10 +19,9 @@ public:
 
     void loadHDRi(std::string filename);
     void bindSkybox(GLenum tex_unit);
-    void bindIrradiance(GLenum tex_unit);
+    void bindPBR(GLenum tex_unit1, GLenum tex_unit2, GLenum tex_unit3);
 
     void preCompute();
-
     GLuint getTexture();
 
 private:
@@ -33,11 +32,15 @@ private:
     void calculateIrradiance();
     //Prefilter HDR
     void prefilter();
+    //Compute BRDF
+    void computeBRDF();
 
     /* openGL Texture Handles */
     GLuint hdrEquirect; // raw HDRi
     GLuint envCubeMap;  // HDRi mapped to a cube
     GLuint irradianceMap; // Irradiance cubemap
+    GLuint prefilterMap;  // Prefilterd specular
+    GLuint brdfLUT;     // Precomputed BRDF integral
 
     /* Framebuffer */
     GLuint captureFBO;
@@ -59,6 +62,9 @@ private:
     Shader cubemapConverter;
     Shader irradianceShader;
     Shader prefilterShader;
+    Shader brdfComputeShader;
+
+    GLuint quadVAO;
 };
 
 #endif
