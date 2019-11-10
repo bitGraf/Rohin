@@ -1,9 +1,20 @@
 #include "Console.hpp"
 
-Console::Console() {
-}
+HANDLE Console::hConsole;
+CONSOLE_SCREEN_BUFFER_INFO Console::csbi;
+COORD Console::cursorPos;
 
-Console::~Console() {
+std::vector<std::string> Console::textBuffer;
+int Console::bufferPos;
+
+Console::eConsoleStatus Console::status;
+bool Console::forceKill;
+
+std::mutex Console::status_lock;
+std::thread Console::myThread;
+bool Console::threaded;
+
+Console::Console() {
 }
 
 
@@ -44,7 +55,7 @@ void Console::update(double dt) {
         std::cin >> input;
 
         input.insert((size_t)0, "Command entered: ", (size_t)17);
-        logMessage(input.c_str());
+        logMessage(input);
 
         status = eConsoleStatus::update;
     } break;
@@ -62,25 +73,29 @@ void Console::handleMessage(Message msg) {
     std::ostringstream stringStream;
 
     stringStream <<
-        Configuration::getNameFromMessageType(msg.type);
-    if (!msg.text.empty()) {
-        stringStream << ": ["
-            << msg.text << "]";
+        Message::getNameFromMessageType(msg.type);
+    for (u8 n = 0; n < msg.numArgs; n++) {
+        stringStream << ", " << std::to_string(msg.data[n]);
     }
-    if (msg.type > 0) {
+    /*if (msg.type > 0) {
         if (msg.type == Configuration::getMessageType("WindowMove")) {
             int xpos, ypos;
             Configuration::decodeData(msg, xpos, ypos);
             stringStream << ": xpos=" << xpos << ", ypos=" << ypos;
         }
-    }
+    }*/
     std::string copyOfStr = stringStream.str();
 
-    textBuffer.push_back(copyOfStr);
+    if (threaded) {
+        textBuffer.push_back(copyOfStr);
 
-    status_lock.lock();
-    status = eConsoleStatus::update;
-    status_lock.unlock();
+        status_lock.lock();
+        status = eConsoleStatus::update;
+        status_lock.unlock();
+    }
+    else {
+        logMessage(copyOfStr);
+    }
 }
 
 void Console::destroy() {
@@ -90,10 +105,7 @@ void Console::destroy() {
     status_lock.unlock();
 }
 
-CoreSystem* Console::create() {
-    // TODO: decouple this from the main console:
-    //       each console should have its own window
-    //       and input/output buffer
+void Console::create() {
     hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
     bufferPos = 0;
@@ -101,8 +113,7 @@ CoreSystem* Console::create() {
     logMessage("Console created");
     forceKill = false;
     update(0);
-
-    return this;
+    threaded = false;
 }
 
 
@@ -114,21 +125,42 @@ void Console::prompt() {
     status_lock.unlock();
 }
 
-void Console::startListening() {
-    update(0);
+void Console::startListening(bool separateThread) {
+    threaded = separateThread;
 
-    auto nowTime = std::chrono::system_clock::now();
+    if (threaded) {
+        myThread = std::thread(&Console::startThread);
+    }
+}
 
-    int num = 0;
-    while (status != eConsoleStatus::kill) {
-        nowTime = std::chrono::system_clock::now();
+void Console::startThread() {
+    if (threaded) {
         update(0);
 
-        //limit this loop to the update rate set
-        nowTime += std::chrono::milliseconds(MILLS_PER_UPDATE);
-        std::this_thread::sleep_until(nowTime);
+        auto nowTime = std::chrono::system_clock::now();
+
+        int num = 0;
+        while (status != eConsoleStatus::kill) {
+            nowTime = std::chrono::system_clock::now();
+            update(0);
+
+            //limit this loop to the update rate set
+            nowTime += std::chrono::milliseconds(MILLS_PER_UPDATE);
+            std::this_thread::sleep_until(nowTime);
+        }
+        update(0);
     }
-    update(0);
+}
+
+void Console::rejoin() {
+    if (threaded) {
+        myThread.join();
+        threaded = false;
+    }
+}
+
+void Console::logMessage(std::string text) {
+    std::cout << "< " << text << std::endl;
 }
 
 

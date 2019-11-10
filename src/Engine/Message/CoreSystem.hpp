@@ -7,7 +7,7 @@ class CoreSystem;
 #include <stdlib.h>
 #include <cstdarg>
 
-#include "Configuration.hpp"
+//#include "Configuration.hpp"
 #include "HashTable.hpp"
 
 #include "MessageBus.hpp"
@@ -35,30 +35,6 @@ public:
      * @param msg The Message to send.
      */
     void sendMessage(Message msg);
-
-    /**
-     * @brief Send a Message to the MessageBus by type and data.
-     * 
-     * @param _type Type of Message to send.
-     * @param data String of data to send.
-     */
-    void sendMessage(Message::Type _type, std::string data);
-
-    void sendMessage(std::string);
-    /**
-     * @brief Send a Log Message with the specified text.
-     * 
-     * @param text The text
-     */
-    void logMessage(const char* text);
-    /**
-     * @brief Send a Log Message with the specified text, along with some ints.
-     * 
-     * @param text The text
-     * @param count How many ints
-     * @param ... The ints
-     */
-    void logMessage(const char* text, int count, ...); // ONLY ALLOWS INTS
     
     /**
      * @brief Update CoreSystem state.

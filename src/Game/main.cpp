@@ -12,11 +12,13 @@
 
 /* Core Systems */
 Window g_MainWindow;
-Console g_Console;
+//Console g_Console; //REMOVE
 FileSystem g_FileSystem;
 ResourceManager g_ResourceManager;
 SceneManager g_SceneManager;
 RenderManager g_RenderManager;
+
+u8 mode = 0;
 
 int main(int argc, char* argv[]) {
     EnsureDataTypeSize();
@@ -32,13 +34,13 @@ int main(int argc, char* argv[]) {
     MessageBus::create();
 
     MessageBus::registerSystem(g_MainWindow.create());
-    MessageBus::registerSystem(g_Console.create());
+    //MessageBus::registerSystem(g_Console.create());
     MessageBus::registerSystem(g_FileSystem.create());
     MessageBus::registerSystem(g_ResourceManager.create());
     MessageBus::registerSystem(g_SceneManager.create());
     MessageBus::registerSystem(g_RenderManager.create());
 
-    Configuration::listMessageTypes();
+    Message::listMessageTypes();
 
     // Other sets
     g_ResourceManager.setFileSystem(&g_FileSystem);
@@ -52,7 +54,8 @@ int main(int argc, char* argv[]) {
     /*  TESTING END  */
 
     // Create console thread that listens for commands
-    auto console_thread = std::thread(&Console::startListening, &g_Console);
+    //g_Console.startListening(false);
+    Console::startListening(false);
 
     g_MainWindow.makeCurrent();
 
@@ -67,7 +70,7 @@ int main(int argc, char* argv[]) {
     //glClearColor(255.0f/255.0f, 248.0f/255.0f, 231.0f/255.0f, 1.0f);//Cosmic Latte, too bright :(
     glClearColor(0, 0, 0, 1);
 
-    g_Console.logMessage("Starting message loop.");
+    Console::logMessage("Starting message loop.");
     bool done = false;
     while (!done) {
         if (g_MainWindow.shouldClose()) {
@@ -82,7 +85,7 @@ int main(int argc, char* argv[]) {
         g_RenderManager.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
         g_MainWindow.swapAndPoll();
     }
-    g_Console.logMessage("Game loop done, quitting...");
+    Console::logMessage("Game loop done, quitting...");
 
     glfwTerminate();
 
@@ -91,12 +94,12 @@ int main(int argc, char* argv[]) {
     // Destroy all subsystems
     g_ResourceManager.destroy();
     g_FileSystem.destroy();
-    g_Console.destroy();
+    Console::destroy();
     g_MainWindow.destroy();
     //g_ConfigManager.destroy();
 
     // End threads
-    console_thread.join();
+    Console::rejoin();
 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 

@@ -58,6 +58,7 @@ void MessageBus::registerSystem(CoreSystem* sys) {
 }
 
 void MessageBus::processMessage(Message msg) {
+    Console::handleMessage(msg);
     for (auto system : m_systems) {
         system->handleMessage(msg);
     }

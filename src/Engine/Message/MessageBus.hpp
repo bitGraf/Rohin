@@ -8,6 +8,7 @@ class MessageBus;
 
 #include "Message.hpp"
 #include "CoreSystem.hpp"
+#include "Console.hpp"
 
 class MessageBus {
 public:

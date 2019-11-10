@@ -20,7 +20,6 @@ public:
     CoreSystem* create();
         
     /* System Unique functions */
-    void setShader(stringID id);
     void renderScene(Window* window, Scene* scene);
 
 private:

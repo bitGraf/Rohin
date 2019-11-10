@@ -20,13 +20,6 @@ void RenderManager::destroy() {
 
 }
 
-void RenderManager::setShader(stringID id) {
-    Message msg;
-    //msg.type = Message::Type::renderEvent;
-    msg.text = std::to_string(id);
-    sendMessage(msg);
-}
-
 CoreSystem* RenderManager::create() {
     m_mainShader.create("static_pbr.vert", "static_pbr.frag", "mainShader");
     m_lineShader.create("line.vert", "line.frag", "lineShader");

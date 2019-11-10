@@ -12,29 +12,31 @@ class Console;
 #include <mutex>
 
 #include "Platform.hpp"
-
-#include "Message/CoreSystem.hpp"
+#include "Message\Message.hpp"
+#include "Configuration.hpp"
 
 const int TARGET_RATE = 10; // Hz
 const int MILLS_PER_UPDATE = 1000 / TARGET_RATE;
 
 #define CONSOLE_MAX_MESSAGES 30
 
-class Console : public CoreSystem
+class Console
 {
 public:
-    Console();
-    ~Console();
+    static void create();
+    static void update(double dt);
+    static void handleMessage(Message msg);
+    static void destroy();
 
-    void update(double dt);
-    void handleMessage(Message msg);
-    void destroy();
-    CoreSystem* create();
+    static void logMessage(std::string text);
 
-    void prompt();
-    void startListening();
+    static void prompt();
+    static void startListening(bool separateThread);
+    static void rejoin();
 
 private:
+    Console();
+
     enum class eConsoleStatus {
         sleep,
         update,
@@ -42,21 +44,24 @@ private:
         kill
     };
 
-    bool clear();
-    void  setCursorPos(COORD newPos);
-    COORD getCursorPos();
+    static bool clear();
+    static void  setCursorPos(COORD newPos);
+    static COORD getCursorPos();
 
-    HANDLE hConsole;
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    COORD cursorPos;
+    static HANDLE hConsole;
+    static CONSOLE_SCREEN_BUFFER_INFO csbi;
+    static COORD cursorPos;
 
-    std::vector<std::string> textBuffer;
-    int bufferPos;
+    static std::vector<std::string> textBuffer;
+    static int bufferPos;
 
-    eConsoleStatus status;
-    bool forceKill;
+    static eConsoleStatus status;
+    static bool forceKill;
 
-    std::mutex status_lock;
+    static std::mutex status_lock;
+    static std::thread myThread;
+    static bool threaded;
+    static void startThread();
 };
 
 #endif

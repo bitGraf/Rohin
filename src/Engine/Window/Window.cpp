@@ -21,20 +21,20 @@ void Window::destroy() {
 }
 
 CoreSystem* Window::create() {
-    Configuration::registerMessageType("WindowCreate");
-    Configuration::registerMessageType("WindowMove");
-    Configuration::registerMessageType("WindowFocus");
-    Configuration::registerMessageType("WindowResize");
-    Configuration::registerMessageType("WindowContext");
-    Configuration::registerMessageType("WindowClose");
+    Message::registerMessageType("WindowCreate");
+    Message::registerMessageType("WindowMove");
+    Message::registerMessageType("WindowFocus");
+    Message::registerMessageType("WindowResize");
+    Message::registerMessageType("WindowContext");
+    Message::registerMessageType("WindowClose");
 
-    Configuration::registerMessageType("InputKey");
-    Configuration::registerMessageType("InputMouseButton");
-    Configuration::registerMessageType("InputMouseMove");
-    Configuration::registerMessageType("InputCursorEnter");
-    Configuration::registerMessageType("InputScroll");
+    Message::registerMessageType("InputKey");
+    Message::registerMessageType("InputMouseButton");
+    Message::registerMessageType("InputMouseMove");
+    Message::registerMessageType("InputCursorEnter");
+    Message::registerMessageType("InputScroll");
 
-    Configuration::registerMessageType("FileDrop");
+    Message::registerMessageType("FileDrop");
 
     create_window();
 
@@ -60,7 +60,7 @@ void Window::create_window(const char* title, int width, int height) {
     m_glfwWindow = glfwCreateWindow(m_width, m_height, title, NULL, NULL);
 
     if (m_glfwWindow == NULL) {
-        logMessage("Failed to create GLFW window. ");
+        Console::logMessage("Failed to create GLFW window. ");
 
         //m_console->logMessage("Failed to create GLFW window. ");
         glfwTerminate();
@@ -70,11 +70,11 @@ void Window::create_window(const char* title, int width, int height) {
     makeCurrent();
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        logMessage("Failed to initialize GLAD");
+        Console::logMessage("Failed to initialize GLAD");
         return;
     }
 
-    sendMessage("WindowCreate");
+    sendMessage(Message("WindowCreate"));
 
     // Set window position
     const GLFWvidmode* mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -127,7 +127,7 @@ void Window::WindowPositionUpdate(int xpos, int ypos) {
     //sendMessage(msg);
 
 
-    sendMessage("WindowMove");
+    sendMessage(Message("WindowMove"));
 }
 
 void Window::WindowSizeUpdate(int w, int h) {
@@ -135,14 +135,14 @@ void Window::WindowSizeUpdate(int w, int h) {
 
 void Window::WindowQuit() {
     //destroy();
-    sendMessage("WindowClose");
+    sendMessage(Message("WindowClose"));
 }
 
 void Window::WindowRefresh() {
 }
 
 void Window::WindowFocusUpdate(int focused) {
-    sendMessage("WindowFocus");
+    sendMessage(Message("WindowFocus"));
 }
 
 void Window::WindowIconifyUpdate(int iconify) {
@@ -156,7 +156,7 @@ void Window::WindowFramebufferUpdate(int w, int h) {
     m_height = h;
     glViewport(0, 0, m_width, m_height);
 
-    sendMessage("WindowResize");
+    sendMessage(Message("WindowResize"));
 }
 
 void Window::WindowScaleUpdate(float xscale, float yscale) {
@@ -164,14 +164,14 @@ void Window::WindowScaleUpdate(float xscale, float yscale) {
 
 /* Input Callback Function */
 void Window::InputKey(int key, int scancode, int action, int mods) {
-    sendMessage("InputKey");
+    sendMessage(Message("InputKey"));
 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        logMessage("Spacebar pressed");
+        Console::logMessage("Spacebar pressed");
     }
 
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-        logMessage("P pressed");
+        Console::logMessage("P pressed");
     }
 }
 
@@ -182,7 +182,7 @@ void Window::InputCharMod(unsigned int codepoint, int mods) {
 }
 
 void Window::InputMouseButton(int button, int action, int mods) {
-    sendMessage("InputMouseButton");
+    sendMessage(Message("InputMouseButton"));
 }
 
 void Window::InputCursorPos(double xpos, double ypos) {
@@ -190,7 +190,7 @@ void Window::InputCursorPos(double xpos, double ypos) {
 }
 
 void Window::InputCursorEnter(int entered) {
-    sendMessage("InputCursorEnter");
+    sendMessage(Message("InputCursorEnter"));
 }
 
 void Window::InputScroll(double xoffset, double yoffset) {
@@ -199,7 +199,7 @@ void Window::InputScroll(double xoffset, double yoffset) {
 void Window::InputDrop(int count, const char** paths) {
     //logMessage("Window::InputDrop: ", 1, count);
     //logMessage(paths[0]);
-    sendMessage("FileDrop");
+    sendMessage(Message("FileDrop"));
 }
 
 
