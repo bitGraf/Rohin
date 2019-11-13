@@ -40,7 +40,6 @@ target_include_directories(Game PRIVATE ${SRC_DIR}/Game/)
 set_property(TARGET Game PROPERTY CXX_STANDARD 11)
 assign_source_group(${source_list_game})
 
-set(OPTICK_DIR ${LIB_DIR}/optick)
 set(GLFW_DIR ${LIB_DIR}/glfw)
 set(GLAD_DIR ${LIB_DIR}/glad)
 set(TINYGLTF_DIR ${LIB_DIR}/tinygltf)
@@ -106,6 +105,6 @@ else (DOXYGEN_FOUND)
 endif (DOXYGEN_FOUND)
 
 
-set_target_properties(tinygltf optick glad glfw PROPERTIES FOLDER Libraries)
+set_target_properties(tinygltf glad glfw PROPERTIES FOLDER Libraries)
 set_target_properties(Game engine doc_dox PROPERTIES FOLDER Rohin)
 set(VS_STARTUP_PROJECT Game)
