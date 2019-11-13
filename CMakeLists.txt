@@ -18,53 +18,6 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 #file(GLOB source_list ${SRC_DIR}/*)
 #file(GLOB HEADERS ${SRC_DIR}/*.hpp)
-set (
-    source_list_unused
-    "${SRC_DIR}/main.cpp"
-
-    "${SRC_DIR}/Core Systems/CoreSystem.hpp"
-    "${SRC_DIR}/Core Systems/CoreSystem.cpp"
-    "${SRC_DIR}/Core Systems/Console.hpp"
-    "${SRC_DIR}/Core Systems/Console.cpp"
-    "${SRC_DIR}/Core Systems/FileSystem.hpp"
-    "${SRC_DIR}/Core Systems/FileSystem.cpp"
-    "${SRC_DIR}/Core Systems/RenderManager.hpp"
-    "${SRC_DIR}/Core Systems/RenderManager.cpp"
-    "${SRC_DIR}/Core Systems/ResourceManager.hpp"
-    "${SRC_DIR}/Core Systems/ResourceManager.cpp"
-    "${SRC_DIR}/Core Systems/SceneManager.hpp"
-    "${SRC_DIR}/Core Systems/SceneManager.cpp"
-    "${SRC_DIR}/Core Systems/Window.hpp"
-    "${SRC_DIR}/Core Systems/Window.cpp"
-
-    "${SRC_DIR}/Message Architechture/Message.hpp"
-    "${SRC_DIR}/Message Architechture/Message.cpp"
-    "${SRC_DIR}/Message Architechture/MessageBus.hpp"
-    "${SRC_DIR}/Message Architechture/MessageBus.cpp"
-    "${SRC_DIR}/Message Architechture/Configuration.hpp"
-    "${SRC_DIR}/Message Architechture/Configuration.cpp"
-
-    "${SRC_DIR}/Render/Camera.hpp"
-    "${SRC_DIR}/Render/Camera.cpp"
-    "${SRC_DIR}/Render/Material.hpp"
-    "${SRC_DIR}/Render/Material.cpp"
-    "${SRC_DIR}/Render/Shader.hpp"
-    "${SRC_DIR}/Render/Shader.cpp"
-    "${SRC_DIR}/Render/Models.hpp"
-    "${SRC_DIR}/Render/tinygltf.cpp"
-
-    "${SRC_DIR}/DataTypes.hpp"
-    "${SRC_DIR}/Entity.hpp"
-    "${SRC_DIR}/Entity.cpp"
-    "${SRC_DIR}/GameMath.hpp"
-    "${SRC_DIR}/GameMath.cpp"
-    "${SRC_DIR}/HashTable.hpp"
-    "${SRC_DIR}/HashTable.cpp"
-    "${SRC_DIR}/MemoryManager.hpp"
-    "${SRC_DIR}/MemoryManager.cpp"
-    "${SRC_DIR}/Platform.hpp"
-    "${SRC_DIR}/Platform.cpp"
-)
 
 file(GLOB_RECURSE  source_list_game "src/Game/*.?pp")
 
@@ -113,13 +66,6 @@ add_library(glad ${GLAD_DIR}/src/glad.c)
 target_include_directories(glad PRIVATE ${GLAD_DIR}/include/)
 target_include_directories(Game PRIVATE ${GLAD_DIR}/include/)
 target_link_libraries(Game glad ${CMAKE_DL_LIBS})
-
-# optick
-file(GLOB OPTICK_FILES ${OPTICK_DIR}/src/*.*)
-add_library(optick STATIC ${OPTICK_FILES})
-set_target_properties(optick PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(Game PRIVATE ${OPTICK_DIR}/src/)
-target_link_libraries(Game optick ${CMAKE_DL_LIBS})
 
 # tinyglTF
 set(TINYGLTF_FILES

@@ -37,5 +37,4 @@ target_compile_definitions(engine PRIVATE "GLFW_INCLUDE_NONE")
 
 target_include_directories(engine PRIVATE ${GLAD_DIR}/include/)
 target_include_directories(engine PRIVATE ${GLFW_DIR}/include/)
-target_include_directories(engine PRIVATE ${OPTICK_DIR}/src/)
 target_include_directories(engine PRIVATE ${TINYGLTF_DIR}/)
