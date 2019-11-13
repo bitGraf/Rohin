@@ -9,16 +9,17 @@
 #include "Resource/MemoryManager.hpp"
 #include "Scene/SceneManager.hpp"
 #include "Render/RenderManager.hpp"
+#include "Input.hpp"
 
 /* Core Systems */
 Window g_MainWindow;
-//Console g_Console; //REMOVE
 FileSystem g_FileSystem;
 ResourceManager g_ResourceManager;
 SceneManager g_SceneManager;
 RenderManager g_RenderManager;
 
-u8 mode = 0;
+void globalHandleMessage(Message msg);
+u8 gameState = 1;
 
 int main(int argc, char* argv[]) {
     EnsureDataTypeSize();
@@ -32,9 +33,9 @@ int main(int argc, char* argv[]) {
     // Create core systems
     Configuration::create();
     MessageBus::create();
+    MessageBus::setGlobalMessageHandleCallback(globalHandleMessage);
 
     MessageBus::registerSystem(g_MainWindow.create());
-    //MessageBus::registerSystem(g_Console.create());
     MessageBus::registerSystem(g_FileSystem.create());
     MessageBus::registerSystem(g_ResourceManager.create());
     MessageBus::registerSystem(g_SceneManager.create());
@@ -47,8 +48,8 @@ int main(int argc, char* argv[]) {
 
     /* TESTING START */
     SkyBox::InitVAO();
-    //g_ResourceManager.loadModelFromFile("Data/Models/cube.gltf", false);
-    g_ResourceManager.loadModelFromFile("Data/Models/Corset.glb", true);
+    //g_ResourceManager.loadModelFromFile("../../run_tree/Data/Models/cube.gltf", false);
+    g_ResourceManager.loadModelFromFile("../../run_tree/Data/Models/Corset.glb", true);
     g_SceneManager.loadScenes(&g_ResourceManager); // Load dummy scene to test
     g_ResourceManager.createGrid(.5, 41, 10);
     /*  TESTING END  */
@@ -80,9 +81,14 @@ int main(int argc, char* argv[]) {
 
         MessageBus::processEntireQueue();
 
-        g_SceneManager.update(.005);
+        if (gameState) {
+            g_SceneManager.update(.005);
+            g_RenderManager.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
+        }
+        else {
+            g_RenderManager.renderEditor(&g_MainWindow, g_SceneManager.getCurrentScene());
+        }
 
-        g_RenderManager.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
         g_MainWindow.swapAndPoll();
     }
     Console::logMessage("Game loop done, quitting...");
@@ -104,4 +110,21 @@ int main(int argc, char* argv[]) {
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     return 0;
+}
+
+void globalHandleMessage(Message msg) {
+    if (msg.isType("InputKey")) {
+        using dt = Message::Datatype;
+        dt key = msg.data[0];
+        dt scancode = msg.data[1];
+        dt action = msg.data[2];
+        dt mods = msg.data[3];
+        
+
+        if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
+            Console::logMessage("Switching game context");
+
+            gameState = gameState ? 0 : 1;
+        }
+    }
 }

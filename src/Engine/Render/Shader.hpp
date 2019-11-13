@@ -12,7 +12,7 @@
 #include "Scene/Lights.hpp"
 //#include "System/SceneManager.hpp"
 
-const std::string ShaderResourcePath = "Data/shaders/";
+const std::string ShaderResourcePath = "../../run_tree/Data/shaders/";
 
 class Shader {
 public:

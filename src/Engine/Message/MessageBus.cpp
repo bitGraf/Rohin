@@ -3,6 +3,7 @@
 std::queue<Message> MessageBus::mq;
 bool MessageBus::hasMessages = true;
 std::vector<CoreSystem*> MessageBus::m_systems;
+MessageBus::handleMessageFnc MessageBus::globalFunc;
 
 MessageBus::MessageBus() {
 }
@@ -62,4 +63,9 @@ void MessageBus::processMessage(Message msg) {
     for (auto system : m_systems) {
         system->handleMessage(msg);
     }
+    globalFunc(msg);
+}
+
+void MessageBus::setGlobalMessageHandleCallback(handleMessageFnc f) {
+    globalFunc = f;
 }

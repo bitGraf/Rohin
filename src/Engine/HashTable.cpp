@@ -1,5 +1,7 @@
 #include "HashTable.hpp"
 
+#include "Render/stb_truetype.hpp"
+
 u32 hash_djb2(unsigned char* str) {
     u32 hash = 5381;
     int c;

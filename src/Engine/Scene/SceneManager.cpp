@@ -84,7 +84,8 @@ void SceneManager::loadScenes(ResourceManager* resource) {
     //scenes.push_back(s);
 
     Scene sTest;
-    sTest.loadFromFile(resource, "");
+    sTest.testCreate(resource);
+    //sTest.loadFromFile(resource, "");
     scenes.push_back(sTest);
 
     // TODO: Not safe. Pointers change when vector grows

@@ -1,8 +1,8 @@
 #include "Console.hpp"
 
-HANDLE Console::hConsole;
-CONSOLE_SCREEN_BUFFER_INFO Console::csbi;
-COORD Console::cursorPos;
+//HANDLE Console::hConsole;
+//CONSOLE_SCREEN_BUFFER_INFO Console::csbi;
+//COORD Console::cursorPos;
 
 std::vector<std::string> Console::textBuffer;
 int Console::bufferPos;
@@ -29,12 +29,12 @@ void Console::update(double dt) {
 
         status = eConsoleStatus::sleep;
 
-        clear();
+        //clear();
 
         int numMessages = textBuffer.size();
 
-        cursorPos = { 0, 0 };
-        setCursorPos(cursorPos);
+        //cursorPos = { 0, 0 };
+        //setCursorPos(cursorPos);
 
         if (numMessages > CONSOLE_MAX_MESSAGES) {
             bufferPos = numMessages - CONSOLE_MAX_MESSAGES;
@@ -43,7 +43,7 @@ void Console::update(double dt) {
         for (int n = bufferPos; n < numMessages; n++) {
             printf(textBuffer[n].c_str());
             printf("\n");
-            cursorPos.Y++;
+            //cursorPos.Y++;
         }
     } break;
     case eConsoleStatus::prompt: {
@@ -106,7 +106,7 @@ void Console::destroy() {
 }
 
 void Console::create() {
-    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    //hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
     bufferPos = 0;
     status = eConsoleStatus::update;
@@ -165,7 +165,7 @@ void Console::logMessage(std::string text) {
 
 
 
-
+/*
 bool Console::clear() {
     cursorPos = { 0, 0 };
     DWORD cCharsWritten;
@@ -217,3 +217,4 @@ COORD Console::getCursorPos() {
 
     return csbi.dwCursorPosition;
 }
+*/

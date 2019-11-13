@@ -20,7 +20,7 @@ Message::Message(Type msg_type, u8 num_args, ...) :
 
         va_start(args, num_args);
         for (u8 n = 0; n < num_args; n++) {
-            data[n] = va_arg(args, u8);
+            data[n] = va_arg(args, Datatype);
         }
         va_end(args);
     }
@@ -38,12 +38,15 @@ Message::Message(std::string msg_type_str, u8 num_args, ...) :
 
         va_start(args, num_args);
         for (u8 n = 0; n < num_args; n++) {
-            data[n] = va_arg(args, u8);
+            data[n] = va_arg(args, Datatype);
         }
         va_end(args);
     }
 }
 
+bool Message::isType(std::string typeName) {
+    return (type == getMessageType(typeName));
+}
 
 
 void Message::registerMessageType(std::string msgType) {

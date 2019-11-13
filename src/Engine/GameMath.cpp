@@ -188,6 +188,22 @@ math::vec4 math::mat4::col3() const { return vec4(_13, _23, _33, _43); }
 math::vec4 math::mat4::col4() const { return vec4(_14, _24, _34, _44); }
 
 
+// Look at
+void math::mat4::lookAt(vec3 pos, vec3 targ, vec3 Up) {
+    vec3 forward = (targ - pos).get_unit();  // +X
+    vec3 right;
+    if (abs(forward.dot(Up)) > 0.99) {
+        right = forward.cross(vec3(0, 0, 1));      // +Z
+    }
+    else {
+        right = forward.cross(Up);      // +Z
+    }
+    vec3 up = right.cross(forward);                 // +Y
+
+    *this = mat4(vec4(forward,0), vec4(up,0), vec4(right,0), vec4(0,0,0,1));
+}
+
+
 
 /* Define mathematical operations */
 math::vec2 math::operator+ (const vec2& A, const vec2& B) {

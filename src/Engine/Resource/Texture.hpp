@@ -7,7 +7,7 @@
 #include "glad\glad.h"
 #include "stb_image.h"
 
-const std::string TextureResourcePath = "Data/Images/";
+const std::string TextureResourcePath = "../../run_tree/Data/Images/";
 
 class Texture {
 public:

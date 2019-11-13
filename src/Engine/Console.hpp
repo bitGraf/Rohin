@@ -44,13 +44,13 @@ private:
         kill
     };
 
-    static bool clear();
-    static void  setCursorPos(COORD newPos);
-    static COORD getCursorPos();
+    //static bool clear();
+    //static void  setCursorPos(COORD newPos);
+    //static COORD getCursorPos();
 
-    static HANDLE hConsole;
-    static CONSOLE_SCREEN_BUFFER_INFO csbi;
-    static COORD cursorPos;
+    //static HANDLE hConsole;
+    //static CONSOLE_SCREEN_BUFFER_INFO csbi;
+    //static COORD cursorPos;
 
     static std::vector<std::string> textBuffer;
     static int bufferPos;

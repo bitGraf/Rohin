@@ -20,13 +20,16 @@ public:
 
     static void registerSystem(CoreSystem* sys);
 
+    typedef void(*handleMessageFnc)(Message);
+    static void setGlobalMessageHandleCallback(handleMessageFnc f);
+
 private:
     static std::queue<Message> mq;
     static std::vector<CoreSystem*> m_systems;
     static bool hasMessages;
 
     static void processMessage(Message msg);
-
+    static handleMessageFnc globalFunc;
 
     MessageBus();
 };

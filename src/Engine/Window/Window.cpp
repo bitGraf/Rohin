@@ -127,7 +127,7 @@ void Window::WindowPositionUpdate(int xpos, int ypos) {
     //sendMessage(msg);
 
 
-    sendMessage(Message("WindowMove"));
+    sendMessage(Message("WindowMove", 2, xpos, ypos));
 }
 
 void Window::WindowSizeUpdate(int w, int h) {
@@ -142,7 +142,7 @@ void Window::WindowRefresh() {
 }
 
 void Window::WindowFocusUpdate(int focused) {
-    sendMessage(Message("WindowFocus"));
+    sendMessage(Message("WindowFocus", 1, focused));
 }
 
 void Window::WindowIconifyUpdate(int iconify) {
@@ -156,7 +156,7 @@ void Window::WindowFramebufferUpdate(int w, int h) {
     m_height = h;
     glViewport(0, 0, m_width, m_height);
 
-    sendMessage(Message("WindowResize"));
+    sendMessage(Message("WindowResize", 2, w, h));
 }
 
 void Window::WindowScaleUpdate(float xscale, float yscale) {
@@ -164,7 +164,7 @@ void Window::WindowScaleUpdate(float xscale, float yscale) {
 
 /* Input Callback Function */
 void Window::InputKey(int key, int scancode, int action, int mods) {
-    sendMessage(Message("InputKey"));
+    sendMessage(Message("InputKey", 4, key, scancode, action, mods));
 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
         Console::logMessage("Spacebar pressed");
@@ -182,7 +182,12 @@ void Window::InputCharMod(unsigned int codepoint, int mods) {
 }
 
 void Window::InputMouseButton(int button, int action, int mods) {
-    sendMessage(Message("InputMouseButton"));
+    double x, y;
+    glfwGetCursorPos(m_glfwWindow, &x, &y);
+    using dt = Message::Datatype;
+    dt xpos = static_cast<dt>(floor(x));
+    dt ypos = static_cast<dt>(floor(y));
+    sendMessage(Message("InputMouseButton", 5, button, action, mods, xpos, ypos));
 }
 
 void Window::InputCursorPos(double xpos, double ypos) {

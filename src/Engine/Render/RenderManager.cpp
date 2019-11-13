@@ -13,7 +13,21 @@ void RenderManager::update(double dt) {
 }
 
 void RenderManager::handleMessage(Message msg) {
+    if (msg.isType("InputMouseButton")) {
+        // int button, int action, int mods
+        using dt = Message::Datatype;
+        dt button   = msg.data[0];
+        dt action   = msg.data[1];
+        dt mods     = msg.data[2];
+        dt xPos     = msg.data[3];
+        dt yPos     = msg.data[4];
 
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+            Console::logMessage("Clicked: " + std::to_string(xPos) + ", " + std::to_string(yPos));
+
+            //vec3 worldPos = camera->getWorldPos(xPos, yPos);
+        }
+    }
 }
 
 void RenderManager::destroy() {
@@ -21,7 +35,8 @@ void RenderManager::destroy() {
 }
 
 CoreSystem* RenderManager::create() {
-    m_mainShader.create("static_pbr.vert", "static_pbr.frag", "mainShader");
+    //m_mainShader.create("static_pbr.vert", "static_pbr.frag", "mainShader");
+    m_mainShader.create("static_pbr_withShadow.vert", "static_pbr_withShadow.frag", "mainShader_withShadows");
     m_lineShader.create("line.vert", "line.frag", "lineShader");
     m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
     m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
@@ -49,7 +64,13 @@ CoreSystem* RenderManager::create() {
     glBindVertexArray(0);
 
     // Init framebuffer
-    fb.create(1280, 720);
+    fb.create(800, 600);
+
+    Shadowmap::initShadows();
+    sm.create(1024, 1024);
+
+    DynamicFont::InitTextRendering(800, 600);
+    font.create("UbuntuMono-Regular.ttf", 20);
 
     return this;
 }
@@ -63,8 +84,21 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     // Update framebuffer
     fb.resize(window->m_width, window->m_height);
     fb.bind(); 
+
+    // First, render to depth map
+    /*glViewport(0, 0, 1024, 1024);
+    glBindFramebuffer(GL_FRAMEBUFFER, sm.depthMapFBO);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        
+        mat4 lightView;
+        lightView.lookAt(vec3(), -scene->sun.direction*10, vec3(0,1,0));
+
+
+        //renderscene
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, 800, 600);*/
     
-    // First, render to framebuffer
+    // Then, render to framebuffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
 
@@ -85,8 +119,10 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     m_mainShader.setInt("irradianceMap", 5);
     m_mainShader.setInt("prefilterMap", 6);
     m_mainShader.setInt("brdfLUT", 7);
+    m_mainShader.setInt("shadowMap", 8);
 
     scene->envMap.bindPBR(GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7);
+    sm.bind(GL_TEXTURE8);
 
     /* Render Entities */
     for (auto ent : scene->m_entities) {
@@ -122,6 +158,28 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
+}
+
+void RenderManager::renderEditor(Window* window, Scene* scene) {
+    /* Render fullscreen quad */
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    m_fullscreenShader.use();
+    m_fullscreenShader.setInt("tex", 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, fb.getTexture());
+
+    glBindVertexArray(fullscreenVAO);
+    glDisable(GL_DEPTH_TEST);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(0);
+    glEnable(GL_DEPTH_TEST);
+
+    vec4 white(1, 1, 1, 1);
+    font.drawText(0, 0, white, "Editor");
+    font.drawText(0, 600, white, "Current Scene: Scene Test", ALIGN_BOT_LEFT);
+    font.drawText(800, 600, white, "Selected: NONE", ALIGN_BOT_RIGHT);
 }
 
 

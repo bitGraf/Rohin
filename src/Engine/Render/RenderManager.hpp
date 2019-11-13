@@ -8,6 +8,11 @@
 #include "Scene/SceneManager.hpp"
 #include "Window/Framebuffer.hpp"
 #include "Window/Window.hpp"
+#include "DynamicFont.hpp"
+#include "Shadowmap.hpp"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 class RenderManager : public CoreSystem {
 public:
@@ -21,14 +26,18 @@ public:
         
     /* System Unique functions */
     void renderScene(Window* window, Scene* scene);
+    void renderEditor(Window* window, Scene* scene);
 
 private:
     Shader m_mainShader, m_lineShader, 
         m_skyboxShader, m_fullscreenShader;
 
     Framebuffer fb;
+    Shadowmap sm;
 
     GLuint fullscreenVAO;
+
+    DynamicFont font;
 
     void setCamera(Shader* shader, Camera* camera);
     void setCurrentMesh(const TriangleMesh* mesh);
