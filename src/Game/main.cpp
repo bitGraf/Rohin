@@ -20,6 +20,8 @@ RenderManager g_RenderManager;
 
 void globalHandleMessage(Message msg);
 u8 gameState = 1;
+u8 framerateLimit = 0;
+u8 frameCount = 0;
 
 int main(int argc, char* argv[]) {
     EnsureDataTypeSize();
@@ -49,7 +51,7 @@ int main(int argc, char* argv[]) {
     /* TESTING START */
     SkyBox::InitVAO();
     //g_ResourceManager.loadModelFromFile("../../run_tree/Data/Models/cube.gltf", false);
-    g_ResourceManager.loadModelFromFile("../../run_tree/Data/Models/Corset.glb", true);
+    g_ResourceManager.loadModelFromFile("Data/Models/Corset.glb", true);
     g_SceneManager.loadScenes(&g_ResourceManager); // Load dummy scene to test
     g_ResourceManager.createGrid(.5, 41, 10);
     /*  TESTING END  */
@@ -71,9 +73,17 @@ int main(int argc, char* argv[]) {
     //glClearColor(255.0f/255.0f, 248.0f/255.0f, 231.0f/255.0f, 1.0f);//Cosmic Latte, too bright :(
     glClearColor(0, 0, 0, 1);
 
+    auto nextFrameStart = std::chrono::system_clock::now();
+    auto frameStart = nextFrameStart;
+    auto frameEnd = frameStart + std::chrono::microseconds(1);
+    f32 dt = 0;
+
     Console::logMessage("Starting message loop.");
     bool done = false;
     while (!done) {
+        frameStart = frameEnd;
+        nextFrameStart = frameStart + std::chrono::microseconds(16666);
+
         if (g_MainWindow.shouldClose()) {
             done = true;
             break;
@@ -82,14 +92,22 @@ int main(int argc, char* argv[]) {
         MessageBus::processEntireQueue();
 
         if (gameState) {
-            g_SceneManager.update(.005);
+            g_SceneManager.update(dt);
             g_RenderManager.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
-        }
-        else {
+        } else {
             g_RenderManager.renderEditor(&g_MainWindow, g_SceneManager.getCurrentScene());
         }
 
         g_MainWindow.swapAndPoll();
+
+        frameEnd = std::chrono::system_clock::now();
+        long long k = std::chrono::duration_cast<std::chrono::microseconds>(frameEnd - frameStart).count();
+        dt = static_cast<f32>(k) / 1000000.0;
+        g_RenderManager.lastFrameTime(k);
+
+        if (framerateLimit) {
+            std::this_thread::sleep_until(nextFrameStart);
+        }
     }
     Console::logMessage("Game loop done, quitting...");
 
@@ -125,6 +143,12 @@ void globalHandleMessage(Message msg) {
             Console::logMessage("Switching game context");
 
             gameState = gameState ? 0 : 1;
+        }
+
+        if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+            Console::logMessage("Toggling framerate limiting");
+
+            framerateLimit = framerateLimit ? 0 : 1;
         }
     }
 }

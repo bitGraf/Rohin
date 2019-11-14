@@ -6,8 +6,9 @@
 #include "GameMath.hpp"
 #include "Models.hpp"
 #include "Material.hpp"
+#include "Editor\Pickable.hpp"
 
-class Entity {
+class Entity : public Pickable {
 public:
     Entity();
     ~Entity();

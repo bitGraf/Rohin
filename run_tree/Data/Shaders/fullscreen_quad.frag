@@ -13,4 +13,7 @@ void main() {
     mapped = pow(mapped, vec3(1.0/gamma));
 
     FragColor = vec4(mapped, 1);
+
+    //float depthValue = texture(tex, tex_coord).r;
+    //FragColor = vec4(vec3(depthValue), 1.0);
 }

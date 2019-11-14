@@ -18,9 +18,9 @@ void SceneManager::update(double dt) {
 
     //yaw = 0;
     m_currentScene->camera.position = vec3(
-        4*cos(yaw*d2r),
+        2*cos(yaw*d2r),
         sin(yaw*d2r*4)+1.5,
-        -4*sin(yaw*d2r)
+        -2*sin(yaw*d2r)
     );
     m_currentScene->camera.lookAt(vec3(0, 1, 0));
 }
@@ -84,8 +84,8 @@ void SceneManager::loadScenes(ResourceManager* resource) {
     //scenes.push_back(s);
 
     Scene sTest;
-    sTest.testCreate(resource);
-    //sTest.loadFromFile(resource, "");
+    //sTest.testCreate(resource);
+    sTest.loadFromFile(resource, "");
     scenes.push_back(sTest);
 
     // TODO: Not safe. Pointers change when vector grows
@@ -135,6 +135,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path) {
             std::string entityMesh = getNextString(iss);
             std::string entityMat  = getNextString(iss);
             math::vec3 entityPos   = getNextVec3(iss);
+            scalar entityScale     = getNextFloat(iss);
             
             // Create entity
             Entity ent;
@@ -142,7 +143,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path) {
             ent.setMesh(resource->getMesh(entityMesh));
             ent.setMaterial(resource->getMaterial(entityMat));
             ent.position = entityPos;
-            ent.scale = vec3(50);
+            ent.scale = vec3(entityScale);
 
             m_entities.push_back(ent);
         } 
@@ -218,6 +219,10 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path) {
 
     gridVAO = &resource->gridVAO;
     numVerts = &resource->numGridVerts;
+
+    for (int n = 0; n < m_entities.size(); n++) {
+        m_picks.push_back(&m_entities[n]);
+    }
 }
 
 std::string Scene::getNextString(std::istringstream& iss) {

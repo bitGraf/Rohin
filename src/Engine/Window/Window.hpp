@@ -5,6 +5,7 @@
 #include <glad\glad.h>
 
 #include "Message/CoreSystem.hpp"
+#include "GameMath.hpp"
 
 #define WINDOW_DEFAULT_HEIGHT   600
 #define WINDOW_DEFAULT_WIDTH    800
@@ -52,6 +53,7 @@ public:
     // Window properties
     int m_height;
     int m_width;
+    math::vec2 getCursorPos();
 
 private:
     GLFWwindow*     m_glfwWindow;

@@ -25,6 +25,7 @@ public:
 
 //private:
     std::vector<Entity> m_entities;
+    std::vector<Pickable*> m_picks;
     Camera camera;
 
     f32 yaw;

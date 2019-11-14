@@ -216,3 +216,9 @@ void Window::swapAndPoll() {
     glfwSwapBuffers(m_glfwWindow);
     glfwPollEvents();
 }
+
+math::vec2 Window::getCursorPos() {
+    double x, y;
+    glfwGetCursorPos(m_glfwWindow, &x, &y);
+    return math::vec2(x, y);
+}

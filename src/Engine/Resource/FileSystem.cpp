@@ -18,9 +18,12 @@ void FileSystem::destroy() {
 CoreSystem* FileSystem::create() {
     // TODO: Make this less poopoo
 
-    //int pos = getDirectory(rootDirectory);
-    //strcpy(rootDirectory+pos, "..\\..\\run_tree\0");
-    //setDirectory(rootDirectory);
+    int pos = getDirectory(rootDirectory);
+    //Console::logMessage("-----");
+    //Console::logMessage(rootDirectory);
+    strcpy(rootDirectory+pos, "..\\..\\run_tree\\\0");
+    setDirectory(rootDirectory);
+    //Console::logMessage("-----");
 
     return this;
 }

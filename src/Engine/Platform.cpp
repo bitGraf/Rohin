@@ -19,7 +19,9 @@ int getDirectory(char* _curDirectory) {
 
 void setDirectory(char* _newDirectory) {
     //printf("Setting working directory to '%s'.\n", _newDirectory);
+    //Console::logMessage(_newDirectory);
     if (!SetCurrentDirectory(_newDirectory)) {
+        //Console::logMessage("Failed to set directory: ");
         //printf("SetCurrentDirectory failed (%d)\n", GetLastError());
     }
 }

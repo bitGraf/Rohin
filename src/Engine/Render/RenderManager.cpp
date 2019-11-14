@@ -1,7 +1,7 @@
 #include "RenderManager.hpp"
 
 RenderManager::RenderManager() {
-
+    fps = 0;
 }
 
 RenderManager::~RenderManager() {
@@ -40,6 +40,7 @@ CoreSystem* RenderManager::create() {
     m_lineShader.create("line.vert", "line.frag", "lineShader");
     m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
     m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
+    m_shadowShader.create("shadow.vert", "shadow.frag", "shadowShader");
 
     const float fullscreenVerts[] = {
         -1, -1,
@@ -81,22 +82,32 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     scene->camera.updateProjectionMatrix(window->m_width, window->m_height);
     scene->camera.updateViewMatrix();
 
-    // Update framebuffer
-    fb.resize(window->m_width, window->m_height);
-    fb.bind(); 
-
     // First, render to depth map
-    /*glViewport(0, 0, 1024, 1024);
+    m_shadowShader.use();
+    glViewport(0, 0, 1024, 1024);
     glBindFramebuffer(GL_FRAMEBUFFER, sm.depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
         
         mat4 lightView;
-        lightView.lookAt(vec3(), -scene->sun.direction*10, vec3(0,1,0));
+        lightView.lookAt(-scene->sun.direction.get_unit()*5, vec3(), vec3(0,1,0));
+        m_shadowShader.setMat4("viewMatrix", lightView);
+        m_shadowShader.setMat4("projectionMatrix", Shadowmap::lightProjection);
+        for (auto ent : scene->m_entities) {
+            // Render entity ent
+            if (ent.m_mesh != nullptr) {
+                setCurrentMesh(ent.m_mesh);
+                setTransforms(&m_shadowShader, &ent.position, &ent.orientation, &ent.scale);
+                renderPrimitive(ent.m_mesh);
+            }
+        }
 
-
-        //renderscene
+    //renderscene
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, 800, 600);*/
+    glViewport(0, 0, window->m_width, window->m_height);
+
+    // Update framebuffer
+    fb.resize(window->m_width, window->m_height);
+    fb.bind();
     
     // Then, render to framebuffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -105,7 +116,7 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     /* Render Line Entities */
     m_lineShader.use();
     setCamera(&m_lineShader, &scene->camera);
-    renderGrid(&m_lineShader, *scene->gridVAO, *scene->numVerts);
+    //renderGrid(&m_lineShader, *scene->gridVAO, *scene->numVerts);
 
     /* Render Poly Entities */
     m_mainShader.use();
@@ -120,6 +131,9 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     m_mainShader.setInt("prefilterMap", 6);
     m_mainShader.setInt("brdfLUT", 7);
     m_mainShader.setInt("shadowMap", 8);
+
+    m_mainShader.setMat4("lightProjectionMatrix", Shadowmap::lightProjection);
+    m_mainShader.setMat4("lightViewMatrix", lightView);
 
     scene->envMap.bindPBR(GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7);
     sm.bind(GL_TEXTURE8);
@@ -145,19 +159,25 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     fb.unbind();
 
     /* Render fullscreen quad */
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_fullscreenShader.use();
     m_fullscreenShader.setInt("tex", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, fb.getTexture());
+    //glBindTexture(GL_TEXTURE_2D, sm.depthMap);
 
     glBindVertexArray(fullscreenVAO);
     glDisable(GL_DEPTH_TEST);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
+
+    vec4 white(1, 1, 1, 1);
+    char fpsText[64];
+    sprintf(fpsText, "FPS: %.1f", fps);
+    font.drawText(window->m_width, 0, white, fpsText, ALIGN_TOP_RIGHT);
 }
 
 void RenderManager::renderEditor(Window* window, Scene* scene) {
@@ -176,17 +196,47 @@ void RenderManager::renderEditor(Window* window, Scene* scene) {
     glBindVertexArray(0);
     glEnable(GL_DEPTH_TEST);
 
+    char selectName[128] = "Selected: ";
+
+    vec2 cursorPos = window->getCursorPos();
+    int n = 0;
+    for (auto pick : scene->m_entities) {
+        mat4 modelMatrix = (
+            mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(pick.position, 1)) *
+            mat4(pick.orientation) *
+            mat4(pick.scale.x, pick.scale.y, pick.scale.z, 1));
+
+        pick.calcScreenSpace(
+            scene->camera.projectionMatrix,
+            scene->camera.viewMatrix,
+            modelMatrix,
+            vec3(),
+            window->m_width, window->m_height);
+
+        vec2 screenPos = vec2(pick.screenPos.x, pick.screenPos.y);
+
+        f32 dist = (screenPos - cursorPos).length();
+        if (dist < pick.pickRadius) {
+            sprintf(selectName, "%s[%s]", selectName, pick.name.c_str());
+        }
+    }
+
     vec4 white(1, 1, 1, 1);
-    font.drawText(0, 0, white, "Editor");
-    font.drawText(0, 600, white, "Current Scene: Scene Test", ALIGN_BOT_LEFT);
-    font.drawText(800, 600, white, "Selected: NONE", ALIGN_BOT_RIGHT);
+    font.drawText(5, 5, white, "Editor");
+    char text[128];
+    sprintf(text, "Cursor pos: %.0f, %.0f", cursorPos.x, cursorPos.y);
+    font.drawText(5, 595, white, text, ALIGN_BOT_LEFT);
+    font.drawText(795, 595, white, selectName, ALIGN_BOT_RIGHT);
+    char fpsText[64];
+    sprintf(fpsText, "FPS: %.1f", fps);
+    font.drawText(window->m_width-5, 5, white, fpsText, ALIGN_TOP_RIGHT);
 }
 
 
 void RenderManager::setCamera(Shader* shader, Camera* camera) {
     shader->setMat4("viewMatrix", camera->viewMatrix);
     shader->setMat4("projectionMatrix", camera->projectionMatrix);
-    shader->setVec3("cam_pos", camera->position);
+    shader->setVec3("camPos", camera->position);
 }
 
 void RenderManager::setCurrentMesh(const TriangleMesh* mesh) {
@@ -248,4 +298,8 @@ void RenderManager::renderSkybox(Shader* shader, Camera* camera, SkyBox* skybox,
     glBindVertexArray(SkyBox::skyboxVAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glDepthFunc(GL_LESS);
+}
+
+void RenderManager::lastFrameTime(long long k) {
+    fps = 1000000.0 / static_cast<f32>(k);
 }

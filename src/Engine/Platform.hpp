@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include "DataTypes.hpp"
 
+#include "Console.hpp"
+
 int getDirectory(char* _curDirectory);
 void setDirectory(char* _newDirectory);
 

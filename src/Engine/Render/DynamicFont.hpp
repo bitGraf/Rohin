@@ -21,7 +21,7 @@ enum TextAlignment {
     ALIGN_BOT_RIGHT
 };
 
-const std::string fontPath = "../../run_tree/Data/Fonts/";
+const std::string fontPath = "Data/Fonts/";
 
 using namespace math;
 class DynamicFont {

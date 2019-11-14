@@ -192,7 +192,7 @@ math::vec4 math::mat4::col4() const { return vec4(_14, _24, _34, _44); }
 void math::mat4::lookAt(vec3 pos, vec3 targ, vec3 Up) {
     vec3 forward = (targ - pos).get_unit();  // +X
     vec3 right;
-    if (abs(forward.dot(Up)) > 0.99) {
+    if (abs(forward.dot(Up)) > 0.9999) {
         right = forward.cross(vec3(0, 0, 1));      // +Z
     }
     else {
@@ -200,7 +200,39 @@ void math::mat4::lookAt(vec3 pos, vec3 targ, vec3 Up) {
     }
     vec3 up = right.cross(forward);                 // +Y
 
-    *this = mat4(vec4(forward,0), vec4(up,0), vec4(right,0), vec4(0,0,0,1));
+    mat3 rot = mat3(forward, up, right);
+
+    mat4 m = mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1)) * 
+        (mat4(rot.getTranspose()) *
+        mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(-pos, 1)));
+    //mat4 m = (mat4(rot.getTranspose()) *
+    //    mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(-pos, 1)));
+
+    *this = m;
+}
+
+void math::mat4::orthoProjection(scalar left, scalar right, scalar bottom, scalar top, scalar znear, scalar zfar) {
+
+    *this = mat4(
+        vec4(   2.0/(right-left),
+                0,
+                0,
+                0), 
+
+        vec4(   0, 
+                2.0/(top-bottom),
+                0,
+                0), 
+
+        vec4(   0,
+                0, 
+               -2.0/(zfar-znear),
+                0), 
+
+        vec4(  -(right+left) / (right-left),
+               -(top+bottom) / (top-bottom),
+               -(zfar+znear) / (zfar-znear),
+                1.0));
 }
 
 
@@ -651,5 +683,15 @@ std::ostream & math::operator<<(std::ostream & os, const vec4 & v)
 {
     // TODO: float formatting
     os << "(" << v.x << ", " << v.y << ", " << v.z << ", " << v.w << ") ";
+    return os;
+}
+
+std::ostream & math::operator<<(std::ostream & os, const mat4 & m)
+{
+    // TODO: float formatting
+    os << m._11 << " " << m._12 << " " << m._13 << " " << m._14 << " " << std::endl;
+    os << m._21 << " " << m._22 << " " << m._23 << " " << m._24 << " " << std::endl;
+    os << m._31 << " " << m._32 << " " << m._33 << " " << m._34 << " " << std::endl;
+    os << m._41 << " " << m._42 << " " << m._43 << " " << m._44 << " " << std::endl;
     return os;
 }

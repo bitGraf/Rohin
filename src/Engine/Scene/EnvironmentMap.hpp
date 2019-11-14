@@ -12,7 +12,7 @@
 #include "SkyBox.hpp"
 #include "Camera.hpp"
 
-const std::string HdrResourcePath = "../../run_tree/Data/Images/";
+const std::string HdrResourcePath = "Data/Images/";
 
 class EnvironmentMap {
 public:

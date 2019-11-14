@@ -6,6 +6,7 @@ in vec3 pass_fragPos;
 in vec2 pass_tex;
 in mat3 pass_TBN;
 in vec3 pass_tangent;
+in vec4 pass_fragPosLightSpace;
 
 struct PointLight {
     vec3 position;
@@ -76,15 +77,16 @@ vec3 addDirLight(DirectionalLight light, vec3 normal, vec3 fragPos,
 vec3 addSpotLight(SpotLight light, vec3 normal, vec3 fragPos, 
 				   vec3 viewDir, vec3 F0, float roughness, 
 				   float metallic, vec3 albedo);
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
 
 void main()
 {
     //Read all texture information
     vec3 albedo = vec3(texture(material.baseColorTexture, pass_tex) * material.baseColorFactor);
     vec3 normal2 = pass_TBN * vec3(texture(material.normalTexture, pass_tex));
-    float ao = vec3(texture(material.occlusionTexture, pass_tex)).r;
+    float ao = vec3(texture(material.occlusionTexture, pass_tex)).g;
     float metallic = material.metallicFactor * texture(material.metallicRoughnessTexture, pass_tex).b;
-    float roughness = material.roughnessFactor * texture(material.metallicRoughnessTexture, pass_tex).g;
+    float roughness = material.roughnessFactor * texture(material.metallicRoughnessTexture, pass_tex).r;
 
 	vec3 normal = normal2;
     
@@ -118,10 +120,9 @@ void main()
     
     vec3 color = ambient + Lo;
     
-    FragColor = vec4(color, 1.0);
 	//FragColor = vec4(1,0,0,1);
 	//FragColor = vec4(N, 1);
-    //FragColor = vec4(albedo, 1);
+    FragColor = vec4(color, 1);
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0, float roughness) {
@@ -166,6 +167,7 @@ vec3 calcTotalLightContribution(PointLight pointLights[NUMPOINTLIGHTS], Directio
 
 	//Direction Lights
     Lo += addDirLight(dirLight, normal, fragPos, viewDir, F0, roughness, metallic, albedo);
+    Lo *= (1 - ShadowCalculation(pass_fragPosLightSpace, normal, dirLight.direction));
 
 	//Point lights
     for (int i = 0; i < NUMPOINTLIGHTS; i++) {
@@ -264,4 +266,28 @@ vec3 addSpotLight(SpotLight light, vec3 normal, vec3 fragPos,
     vec3 Lo = (kD*albedo / PI + specular) * radiance * NdotL;
 
 	return Lo;
+}
+
+float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir) {
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+
+    float currentDepth = projCoords.z;
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x,y)*texelSize).r;
+            shadow += currentDepth-bias > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
+
+    if (projCoords.z > 1.0) {
+        shadow = 0.0;
+    }
+
+    return shadow;
 }

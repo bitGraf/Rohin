@@ -7,24 +7,9 @@ Shadowmap::Shadowmap() {
 }
 
 void Shadowmap::initShadows() {
-    f32 zNear = 1.0, zFar = 7.5;
-
-    /*
-    m->a11 = 0.1;
-    m->a22 = 0.1;
-    m->a33 = -2/(zfar-znear);
-    m->a44 = 1;
-
-    m->a34 = -(zfar + znear) / (zfar-znear);
-    */
-
     using namespace math;
-    lightProjection = mat4(
-        vec4(0.1,0,0,0),
-        vec4(0,0.1,0,0),
-        vec4(0,0,-2/(zFar-zNear),0),
-        vec4(0,0,-(zFar+zNear)/(zFar-zNear),1)
-    );
+    lightProjection.orthoProjection(-2, 2, -2, 2, 1, 7);
+    //lightProjection *= mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1));
 }
 
 void Shadowmap::create(u32 width, u32 height) {
@@ -36,8 +21,10 @@ void Shadowmap::create(u32 width, u32 height) {
         width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     // attach texture to FBO
     glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);

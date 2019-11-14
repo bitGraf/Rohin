@@ -139,6 +139,9 @@ namespace math {
         vec4 col4() const;  ///< Get column 4
 
         void lookAt(vec3 pos, vec3 targ, vec3 Up);
+        void orthoProjection(scalar left, scalar right, scalar bottom, scalar top, scalar znear, scalar zfar);
+
+        friend std::ostream& operator<<(std::ostream& os, const mat4& m); ///< Stream operator overload
 
         scalar _11, _21, _31, _41, _12, _22, _32, _42, _13, _23, _33, _43, _14, _24, _34, _44;
     };

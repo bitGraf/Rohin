@@ -27,10 +27,12 @@ public:
     /* System Unique functions */
     void renderScene(Window* window, Scene* scene);
     void renderEditor(Window* window, Scene* scene);
+    void lastFrameTime(long long micro);
 
 private:
-    Shader m_mainShader, m_lineShader, 
-        m_skyboxShader, m_fullscreenShader;
+    Shader m_mainShader, m_lineShader,
+        m_skyboxShader, m_fullscreenShader, 
+        m_shadowShader;
 
     Framebuffer fb;
     Shadowmap sm;
@@ -38,6 +40,7 @@ private:
     GLuint fullscreenVAO;
 
     DynamicFont font;
+    f32 fps;
 
     void setCamera(Shader* shader, Camera* camera);
     void setCurrentMesh(const TriangleMesh* mesh);
