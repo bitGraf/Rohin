@@ -11,7 +11,7 @@
 #include "Resource/ResourceManager.hpp"
 #include "Camera.hpp"
 #include "Lights.hpp"
-#include "SkyBox.hpp"
+#include "GLFW\glfw3.h"
 
 #include "EnvironmentMap.hpp"
 
@@ -39,7 +39,6 @@ public:
     GLuint* gridVAO;
     GLuint* numVerts;
 
-    SkyBox skybox;
     EnvironmentMap envMap;
 
     std::string name;

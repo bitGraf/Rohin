@@ -49,6 +49,7 @@ private:
 
     std::unordered_map<std::string, TriangleMesh> meshes;
     std::unordered_map<std::string, Material> materials;
+    std::vector<std::string> loadedResourceFiles;
 
     void processMesh(tinygltf::Model* root, int id);
 
@@ -57,6 +58,8 @@ private:
     void initializeTriangleMesh(TriangleMesh* mesh);
     void initializeTexture(tinygltf::Model* root, Material_Texture* mTex);
 };
+
+extern ResourceManager g_ResourceManager;
 
 
 

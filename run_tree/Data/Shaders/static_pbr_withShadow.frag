@@ -84,11 +84,13 @@ void main()
     //Read all texture information
     vec3 albedo = vec3(texture(material.baseColorTexture, pass_tex) * material.baseColorFactor);
     vec3 normal2 = pass_TBN * vec3(texture(material.normalTexture, pass_tex));
-    float ao = vec3(texture(material.occlusionTexture, pass_tex)).g;
+    float ao = vec3(texture(material.occlusionTexture, pass_tex)).r;
     float metallic = material.metallicFactor * texture(material.metallicRoughnessTexture, pass_tex).b;
-    float roughness = material.roughnessFactor * texture(material.metallicRoughnessTexture, pass_tex).r;
+    float roughness = material.roughnessFactor * texture(material.metallicRoughnessTexture, pass_tex).g;
 
-	vec3 normal = normal2;
+    normal2 = normalize(normal2 * 2.0 - 1.0);
+
+    vec3 normal = normal2;
     
     //Calcualte tangent space normal
     vec3 N = normal;
@@ -120,8 +122,6 @@ void main()
     
     vec3 color = ambient + Lo;
     
-	//FragColor = vec4(1,0,0,1);
-	//FragColor = vec4(N, 1);
     FragColor = vec4(color, 1);
 }
 

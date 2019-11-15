@@ -1,7 +1,7 @@
 #include "Shader.hpp"
 
 Shader::Shader() {
-
+    glShaderID = 0;
 }
 
 Shader::~Shader() {
@@ -12,6 +12,12 @@ void Shader::create(
     std::string vShaderPath, 
     std::string fShaderPath,
     std::string ShaderName) {
+
+    if (glShaderID) {
+        // shader already exists, recreate it
+
+        glDeleteShader(glShaderID);
+    }
 
     auto startTime = std::chrono::system_clock::now();
 
@@ -142,8 +148,8 @@ void Shader::setMat4(const std::string &name, math::mat4 value) const {
 void Shader::setMaterial(const std::string &name, const Material* mat) const {
     setInt(name + ".baseColorTexture", 0);
     setInt(name + ".normalTexture", 1);
-    setInt(name + ".occlusionTexture", 2);
-    setInt(name + ".metallicRoughnessTexture", 3);
+    setInt(name + ".metallicRoughnessTexture", 2);
+    setInt(name + ".occlusionTexture", 3);
     setInt(name + ".emissiveTexture", 4);
 
     setVec3(name + ".emissiveFactor", mat->emissiveFactor);

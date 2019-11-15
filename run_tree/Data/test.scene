@@ -7,6 +7,7 @@ ENTITY "ent1" "pCube49" "Corset_O" "0 0 0" "15"
 ENTITY "ent2" "pCube49" "Corset_O" "1 .75 1" "15"
 ENTITY "floor" "Plane" "Plane" "0 0 0" "1"
 
+#SKYBOX STANDARD "iceflow" ".tga"
 SKYBOX HDR "carpentry_shop_02_4k.hdr"
 
 LIGHT DIR "5" "0.412 0.592 0.886 1" "-1 -1 -1"

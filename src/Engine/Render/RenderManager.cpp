@@ -28,6 +28,25 @@ void RenderManager::handleMessage(Message msg) {
             //vec3 worldPos = camera->getWorldPos(xPos, yPos);
         }
     }
+
+    if (msg.isType("InputKey")) {
+        // int button, int action, int mods
+        using dt = Message::Datatype;
+        dt key = msg.data[0];
+        dt scancode = msg.data[1];
+        dt action = msg.data[2];
+        dt mods = msg.data[3];
+
+        if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS) {
+            Console::logMessage("Reloading Shaders");
+
+            m_mainShader.create("static_pbr_withShadow.vert", "static_pbr_withShadow.frag", "mainShader_withShadows");
+            m_lineShader.create("line.vert", "line.frag", "lineShader");
+            m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
+            m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
+            m_shadowShader.create("shadow.vert", "shadow.frag", "shadowShader");
+        }
+    }
 }
 
 void RenderManager::destroy() {
@@ -41,6 +60,10 @@ CoreSystem* RenderManager::create() {
     m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
     m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
     m_shadowShader.create("shadow.vert", "shadow.frag", "shadowShader");
+
+    blackTex.loadImage("black.png");
+    whiteTex.loadImage("white.png");
+    normalTex.loadImage("normal.png");
 
     const float fullscreenVerts[] = {
         -1, -1,
@@ -154,7 +177,7 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
 
     /* Render skybox */
     m_skyboxShader.use();
-    renderSkybox(&m_skyboxShader, &scene->camera, &scene->skybox, scene);
+    renderSkybox(&m_skyboxShader, &scene->camera, &scene->envMap);
 
     fb.unbind();
 
@@ -245,19 +268,19 @@ void RenderManager::setCurrentMesh(const TriangleMesh* mesh) {
 
 void RenderManager::setCurrentMaterial(Shader* shader, const Material* material) {
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, material->baseColorTexture.glTexID);
+    glBindTexture(GL_TEXTURE_2D, material->baseColorTexture.glTexID == 0 ? blackTex.glTextureID : material->baseColorTexture.glTexID);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, material->normalTexture.glTexID);
+    glBindTexture(GL_TEXTURE_2D, material->normalTexture.glTexID == 0 ? normalTex.glTextureID : material->normalTexture.glTexID);
 
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, material->metallicRoughnessTexture.glTexID);
+    glBindTexture(GL_TEXTURE_2D, material->metallicRoughnessTexture.glTexID == 0 ? blackTex.glTextureID : material->metallicRoughnessTexture.glTexID);
 
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, material->occlusionTexture.glTexID);
+    glBindTexture(GL_TEXTURE_2D, material->occlusionTexture.glTexID == 0 ? whiteTex.glTextureID : material->occlusionTexture.glTexID);
 
     glActiveTexture(GL_TEXTURE4);
-    glBindTexture(GL_TEXTURE_2D, material->emissiveTexture.glTexID);
+    glBindTexture(GL_TEXTURE_2D, material->emissiveTexture.glTexID == 0 ? blackTex.glTextureID : material->emissiveTexture.glTexID);
 
     shader->setMaterial("material", material);
 }
@@ -286,16 +309,16 @@ void RenderManager::renderGrid(Shader* shader, GLuint vao, GLuint numVerts) {
     glDrawArrays(GL_LINES, 0, numVerts);
 }
 
-void RenderManager::renderSkybox(Shader* shader, Camera* camera, SkyBox* skybox, Scene* scene) {
+void RenderManager::renderSkybox(Shader* shader, Camera* camera, EnvironmentMap* skybox) {
     shader->setMat4("viewMatrix", mat4(mat3(camera->viewMatrix)));
     shader->setMat4("projectionMatrix", camera->projectionMatrix);
 
     shader->setInt("skybox", 0);
     //skybox->bind(GL_TEXTURE0);
-    scene->envMap.bindSkybox(GL_TEXTURE0);
+    skybox->bindSkybox(GL_TEXTURE0);
 
     glDepthFunc(GL_LEQUAL);
-    glBindVertexArray(SkyBox::skyboxVAO);
+    glBindVertexArray(skybox->skyboxVAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     glDepthFunc(GL_LESS);
 }

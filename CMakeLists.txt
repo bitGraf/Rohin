@@ -39,6 +39,7 @@ add_executable(Game ${source_list_game})
 target_include_directories(Game PRIVATE ${SRC_DIR}/Game/)
 set_property(TARGET Game PROPERTY CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 assign_source_group(${source_list_game})
 
 set(GLFW_DIR ${LIB_DIR}/glfw)

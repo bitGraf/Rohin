@@ -29,7 +29,7 @@ void main() {
     vec3 N = normalize(vec3(modelMatrix*vec4(vertNorm, 0.0)));
 	vec3 B = cross(N, T);
     pass_TBN = mat3(T, B, N);
-    pass_normal = mat3(transpose(inverse(modelMatrix))) * vertNorm;
+    pass_normal = N;
 
     pass_tex = vertTex;
 	pass_tangent = T;

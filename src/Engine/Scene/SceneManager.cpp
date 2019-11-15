@@ -26,6 +26,20 @@ void SceneManager::update(double dt) {
 }
 
 void SceneManager::handleMessage(Message msg) {
+    if (msg.isType("InputKey")) {
+        // int button, int action, int mods
+        using dt = Message::Datatype;
+        dt key = msg.data[0];
+        dt scancode = msg.data[1];
+        dt action = msg.data[2];
+        dt mods = msg.data[3];
+
+        if (key == GLFW_KEY_BACKSLASH && action == GLFW_PRESS) {
+            Console::logMessage("Reloading level");
+
+            m_currentScene->loadFromFile(&g_ResourceManager, "");
+        }
+    }
 }
 
 void SceneManager::destroy() {
@@ -37,44 +51,6 @@ CoreSystem* SceneManager::create() {
 
 Scene::Scene() {
     yaw = 0;
-}
-
-void Scene::testCreate(ResourceManager* resource) {
-    using namespace math;
-
-    Entity ent1;
-    ent1.position = vec3(0,0,0);
-    ent1.orientation.toYawPitchRoll(45, 45, 45);
-    ent1.scale = vec3(50);
-
-    meshRef meshR = resource->getMesh("pCube49");
-    materialRef matR = resource->getMaterial("Corset_O");
-
-    if (meshR == nullptr) {
-        printf("Mesh [%s] not loaded.\n", "Cube");
-    }
-    if (matR == nullptr) {
-        printf("Material [%s] not loaded.\n", "Material");
-    }
-    ent1.setMesh(meshR);
-    ent1.setMaterial(matR);
-
-    m_entities.push_back(ent1);
-
-    gridVAO = &resource->gridVAO;
-    numVerts = &resource->numGridVerts;
-
-    /* Setup Lights */
-    sun.direction = vec3(-.1, -1, -.1);
-    sun.color = vec4(0.412, 0.592, 0.886, 1);
-    sun.strength = 10;
-
-    /* Load skybox */
-    skybox.loadFromImages("iceflow", ".tga");
-
-    /* environment map */
-    envMap.loadHDRi("carpentry_shop_02_4k.hdr");
-    envMap.preCompute();
 }
 
 void SceneManager::loadScenes(ResourceManager* resource) {
@@ -101,6 +77,9 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path) {
 
     u32 numSpotLightsLoaded = 0;
     u32 numPointLightsLoaded = 0;
+
+    m_entities.clear();
+    m_picks.clear();
 
     std::string line;
     while (std::getline(infile, line))
@@ -155,8 +134,11 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path) {
 
             if (skyboxType.compare("STANDARD") == 0) {
                 std::string skyboxFilePath = getNextString(iss);
+                std::string skyboxFileType = getNextString(iss);
 
                 /* load skybox */
+                envMap.loadSkybox(skyboxFilePath, skyboxFileType);
+                envMap.preCompute();
 
             } else if (skyboxType.compare("HDR") == 0) {
                 std::string hdrFilePath = getNextString(iss);

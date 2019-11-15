@@ -14,13 +14,13 @@
 /* Core Systems */
 Window g_MainWindow;
 FileSystem g_FileSystem;
-ResourceManager g_ResourceManager;
+//ResourceManager g_ResourceManager;
 SceneManager g_SceneManager;
 RenderManager g_RenderManager;
 
 void globalHandleMessage(Message msg);
 u8 gameState = 1;
-u8 framerateLimit = 0;
+u8 framerateLimit = 1;
 u8 frameCount = 0;
 
 int main(int argc, char* argv[]) {
@@ -49,15 +49,12 @@ int main(int argc, char* argv[]) {
     g_ResourceManager.setFileSystem(&g_FileSystem);
 
     /* TESTING START */
-    SkyBox::InitVAO();
-    //g_ResourceManager.loadModelFromFile("../../run_tree/Data/Models/cube.gltf", false);
-    g_ResourceManager.loadModelFromFile("Data/Models/Corset.glb", true);
+    EnvironmentMap::InitVAO();
     g_SceneManager.loadScenes(&g_ResourceManager); // Load dummy scene to test
     g_ResourceManager.createGrid(.5, 41, 10);
     /*  TESTING END  */
 
     // Create console thread that listens for commands
-    //g_Console.startListening(false);
     Console::startListening(false);
 
     g_MainWindow.makeCurrent();
@@ -149,6 +146,11 @@ void globalHandleMessage(Message msg) {
             Console::logMessage("Toggling framerate limiting");
 
             framerateLimit = framerateLimit ? 0 : 1;
+        }
+
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+            Console::logMessage("Quitting");
+            g_MainWindow.close();
         }
     }
 }

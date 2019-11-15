@@ -19,9 +19,10 @@ public:
 
     bool trueIfCubemap;
 
+    GLuint glTextureID;
+
 private:
     int width, height, nrChannels;
-    GLuint glTextureID;
 };
 
 #endif

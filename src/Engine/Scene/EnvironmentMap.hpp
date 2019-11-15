@@ -9,21 +9,27 @@
 #include "stb_image.h"
 
 #include "Render/Shader.hpp"
-#include "SkyBox.hpp"
 #include "Camera.hpp"
 
+const std::string SkyboxResourcePath = "Data/Images/";
 const std::string HdrResourcePath = "Data/Images/";
 
 class EnvironmentMap {
 public:
     EnvironmentMap();
 
+    bool alreadyCubemap;
+
+    void loadSkybox(std::string filename, std::string filetype);
     void loadHDRi(std::string filename);
     void bindSkybox(GLenum tex_unit);
     void bindPBR(GLenum tex_unit1, GLenum tex_unit2, GLenum tex_unit3);
 
     void preCompute();
     GLuint getTexture();
+
+    static void InitVAO();
+    static GLuint skyboxVAO;
 
 private:
     void initShaders();
@@ -65,7 +71,7 @@ private:
     Shader prefilterShader;
     Shader brdfComputeShader;
 
-    GLuint quadVAO;
+    GLuint quadVAO;    
 };
 
 #endif

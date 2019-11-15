@@ -10,6 +10,7 @@
 #include "Window/Window.hpp"
 #include "DynamicFont.hpp"
 #include "Shadowmap.hpp"
+#include "Resource\Texture.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,6 +37,7 @@ private:
 
     Framebuffer fb;
     Shadowmap sm;
+    Texture blackTex, whiteTex, normalTex;
 
     GLuint fullscreenVAO;
 
@@ -48,7 +50,7 @@ private:
     void setTransforms(Shader* shader, const math::vec3* pos, const math::mat3* orientation, const math::vec3* scale);
     void renderPrimitive(const TriangleMesh* mesh);
     void renderGrid(Shader* shader, GLuint vao, GLuint numVerts);
-    void renderSkybox(Shader* shader, Camera* camera, SkyBox* skybox, Scene* scene);
+    void renderSkybox(Shader* shader, Camera* camera, EnvironmentMap* skybox);
 };
 
 #endif

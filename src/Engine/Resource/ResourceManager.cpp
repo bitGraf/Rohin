@@ -1,12 +1,15 @@
 #include "ResourceManager.hpp"
 
+ResourceManager g_ResourceManager;
+
 ResourceManager::ResourceManager() :
     m_pool(4 * MEGABYTE)
 {
     m_FileSystem = nullptr;
 }
 
-ResourceManager::~ResourceManager() {
+ResourceManager::~ResourceManager()
+{
 }
 
 void ResourceManager::update(double dt) {
@@ -21,19 +24,25 @@ void ResourceManager::destroy() {
     m_pool.destroy();
 }
 
+void ResourceManager::setFileSystem(FileSystem* _filesys) {
+    m_FileSystem = _filesys;
+}
+
 CoreSystem* ResourceManager::create() {
-
-
     m_pool.create();
 
     return this;
 }
 
-void ResourceManager::setFileSystem(FileSystem* _filesys) {
-    m_FileSystem = _filesys;
-}
-
 void ResourceManager::loadModelFromFile(std::string path, bool binary) {
+
+    for (auto str : loadedResourceFiles) {
+        if (str == path) {
+            // already loaded
+            return;
+        }
+    }
+
     tinygltf::Model root;
     std::string err;
     std::string warn;
@@ -53,11 +62,15 @@ void ResourceManager::loadModelFromFile(std::string path, bool binary) {
 
     if (!err.empty()) {
         printf("Err: %s\n", err.c_str());
+        return;
     }
 
     if (!ret) {
         printf("Failed to parse glTF\n");
+        return;
     }
+
+    loadedResourceFiles.push_back(path);
 
     /* Start parsing file */
     int defaultScene = root.defaultScene;

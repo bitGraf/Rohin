@@ -25,6 +25,7 @@ public:
 
     /* Window functions */
     bool shouldClose();
+    void close();
     void swapAndPoll();
     void makeCurrent();
     void setPosition(int x, int y);
