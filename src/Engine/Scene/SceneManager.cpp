@@ -5,24 +5,7 @@ SceneManager::SceneManager() {
 }
 
 void SceneManager::update(double dt) {
-    m_currentScene->yaw += 2 * dt;
-    //m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw, m_currentScene->yaw, m_currentScene->yaw);
-    m_currentScene->m_entities[0].orientation.toYawPitchRoll(m_currentScene->yaw-90, 0, 0);
-    //m_currentScene->camera.yaw += 2 * dt;
-
-    if (m_currentScene->yaw > 60) {
-        bool k = true;
-    }
-
-    f32 yaw = m_currentScene->yaw;
-
-    //yaw = 0;
-    m_currentScene->camera.position = vec3(
-        2*cos(yaw*d2r),
-        sin(yaw*d2r*4)+1.5,
-        -2*sin(yaw*d2r)
-    );
-    m_currentScene->camera.lookAt(vec3(0, 1, 0));
+    m_currentScene->update(dt);
 }
 
 void SceneManager::handleMessage(Message msg) {
@@ -39,6 +22,12 @@ void SceneManager::handleMessage(Message msg) {
 
             m_currentScene->loadFromFile(&g_ResourceManager, "");
         }
+
+        if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+            Console::logMessage("Camera Toggle");
+
+            m_currentScene->cameraMode = m_currentScene->cameraMode == 0 ? 1 : 0;
+        }
     }
 }
 
@@ -50,7 +39,9 @@ CoreSystem* SceneManager::create() {
 }
 
 Scene::Scene() {
-    yaw = 0;
+    camYaw = 0;
+    objYaw = 0;
+    cameraMode = 1;
 }
 
 void SceneManager::loadScenes(ResourceManager* resource) {
@@ -253,4 +244,21 @@ math::vec4 Scene::getNextVec4(std::istringstream& iss) {
     std::getline(iss, garb, '"');
 
     return v;
+}
+
+
+void Scene::update(double dt) {
+    objYaw += 12 * dt;
+    m_entities[0].orientation.toYawPitchRoll(objYaw - 90, 0, 0);
+
+    if (cameraMode) {
+        camYaw -= 12 * dt;
+
+        camera.position = vec3(
+            2 * cos(camYaw*d2r),
+            sin(camYaw*d2r * 4) + 1.5,
+            -2 * sin(camYaw*d2r)
+        );
+        camera.lookAt(vec3(0, 1, 0));
+    }
 }

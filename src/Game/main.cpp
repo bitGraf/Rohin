@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
             g_SceneManager.update(dt);
             g_RenderManager.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
         } else {
-            g_RenderManager.renderEditor(&g_MainWindow, g_SceneManager.getCurrentScene());
+            g_RenderManager.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
         }
 
         g_MainWindow.swapAndPoll();

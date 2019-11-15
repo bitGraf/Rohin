@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.6)
 #cmake_policy(SET CMP0048 NEW)
 
 project(Rohin 
@@ -109,4 +109,5 @@ endif (DOXYGEN_FOUND)
 
 set_target_properties(tinygltf glad glfw PROPERTIES FOLDER Libraries)
 set_target_properties(Game engine doc_dox PROPERTIES FOLDER Rohin)
-set(VS_STARTUP_PROJECT Game)
+#set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Game)
+set(VS_STARTUP_PROJECT Rohin/Game)

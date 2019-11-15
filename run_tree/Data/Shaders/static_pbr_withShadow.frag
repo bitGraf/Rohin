@@ -58,6 +58,7 @@ uniform sampler2D   brdfLUT;
 uniform sampler2D   shadowMap;
 
 const float PI = 3.14159265359;
+const int ShadowSamples = 3; //NEEDS TO BE ODD
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
@@ -87,10 +88,11 @@ void main()
     float ao = vec3(texture(material.occlusionTexture, pass_tex)).r;
     float metallic = material.metallicFactor * texture(material.metallicRoughnessTexture, pass_tex).b;
     float roughness = material.roughnessFactor * texture(material.metallicRoughnessTexture, pass_tex).g;
+    vec3 emission = material.emissiveFactor * texture(material.emissiveTexture, pass_tex).rgb;
 
     normal2 = normalize(normal2 * 2.0 - 1.0);
 
-    vec3 normal = normal2;
+    vec3 normal = pass_normal;
     
     //Calcualte tangent space normal
     vec3 N = normal;
@@ -120,7 +122,7 @@ void main()
 
     vec3 ambient    = (kD * diffuse + specular) * ao;
     
-    vec3 color = ambient + Lo;
+    vec3 color = ambient + Lo + emission;
     
     FragColor = vec4(color, 1);
 }
@@ -171,12 +173,12 @@ vec3 calcTotalLightContribution(PointLight pointLights[NUMPOINTLIGHTS], Directio
 
 	//Point lights
     for (int i = 0; i < NUMPOINTLIGHTS; i++) {
-        Lo += addPointLight(pointLights[i], normal, fragPos, viewDir, F0, roughness, metallic, albedo);
+        //Lo += addPointLight(pointLights[i], normal, fragPos, viewDir, F0, roughness, metallic, albedo);
     }
 
 	//Spot lights
 	for (int i = 0; i < NUMSPOTLIGHTS; i++) {
-		Lo += addSpotLight(spotLights[i], normal, fragPos, viewDir, F0, roughness, metallic, albedo);
+		//Lo += addSpotLight(spotLights[i], normal, fragPos, viewDir, F0, roughness, metallic, albedo);
     }
 
 	return Lo;
@@ -277,13 +279,13 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir) {
 
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-    for (int x = -1; x <= 1; ++x) {
-        for (int y = -1; y <= 1; ++y) {
+    for (int x = -(ShadowSamples/2); x <= ShadowSamples/2; ++x) {
+        for (int y = -(ShadowSamples/2); y <= ShadowSamples/2; ++y) {
             float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x,y)*texelSize).r;
             shadow += currentDepth-bias > pcfDepth ? 1.0 : 0.0;
         }
     }
-    shadow /= 9.0;
+    shadow /= (ShadowSamples*ShadowSamples);
 
     if (projCoords.z > 1.0) {
         shadow = 0.0;

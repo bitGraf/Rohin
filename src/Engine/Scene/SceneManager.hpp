@@ -19,16 +19,16 @@ class Scene {
 public:
     Scene();
 
-    void testCreate(ResourceManager* resource);
-
     void loadFromFile(ResourceManager* resource, std::string path);
+    void update(double dt);
 
 //private:
     std::vector<Entity> m_entities;
     std::vector<Pickable*> m_picks;
     Camera camera;
+    u8 cameraMode;
 
-    f32 yaw;
+    f32 objYaw, camYaw;
 
     static const int NUM_POINTLIGHTS = 4;
     static const int NUM_SPOTLIGHTS = 4;

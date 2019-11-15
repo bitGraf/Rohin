@@ -134,6 +134,7 @@ void ResourceManager::loadModelFromFile(std::string path, bool binary) {
         myMat.doubleSided = currMat.doubleSided;
 
         materials[myMat.name] = myMat;
+        Console::logMessage("Material loaded: " + myMat.name);
     }
 }
 
@@ -180,6 +181,7 @@ void ResourceManager::processMesh(tinygltf::Model* root, int id) {
 
         /* Push to stack */
         meshes[name] = myMesh;
+        Console::logMessage("Mesh loaded: " + name);
     }
 }
 

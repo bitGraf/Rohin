@@ -1,5 +1,5 @@
-
-set(ENGINE_LIB_NAME "EngineName")
+cmake_minimum_required(VERSION 3.6)
+set(ENGINE_LIB_NAME "Engine")
 
 function(assign_source_group)
     foreach(_source IN ITEMS ${ARGN})

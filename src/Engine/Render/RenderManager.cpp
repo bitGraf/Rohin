@@ -91,7 +91,7 @@ CoreSystem* RenderManager::create() {
     fb.create(800, 600);
 
     Shadowmap::initShadows();
-    sm.create(1024, 1024);
+    sm.create(2048, 2048); // resolution of shadow map
 
     DynamicFont::InitTextRendering(800, 600);
     font.create("UbuntuMono-Regular.ttf", 20);
@@ -200,7 +200,7 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     vec4 white(1, 1, 1, 1);
     char fpsText[64];
     sprintf(fpsText, "FPS: %.1f", fps);
-    font.drawText(window->m_width, 0, white, fpsText, ALIGN_TOP_RIGHT);
+    font.drawText(window->m_width-5, 5, white, fpsText, ALIGN_TOP_RIGHT);
 }
 
 void RenderManager::renderEditor(Window* window, Scene* scene) {
