@@ -33,7 +33,7 @@ public:
 private:
     Shader m_mainShader, m_lineShader,
         m_skyboxShader, m_fullscreenShader, 
-        m_shadowShader, m_volumeShader;
+        m_shadowShader;
 
     Framebuffer fb;
     Shadowmap sm;

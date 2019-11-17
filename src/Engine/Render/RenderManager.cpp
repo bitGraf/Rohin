@@ -45,7 +45,6 @@ void RenderManager::handleMessage(Message msg) {
             m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
             m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
             m_shadowShader.create("shadow.vert", "shadow.frag", "shadowShader");
-            m_volumeShader.create("volume.vert", "volume.frag", "volumeShader");
         }
     }
 }
@@ -61,7 +60,6 @@ CoreSystem* RenderManager::create() {
     m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
     m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
     m_shadowShader.create("shadow.vert", "shadow.frag", "shadowShader");
-    m_volumeShader.create("volume.vert", "volume.frag", "volumeShader");
 
     blackTex.loadImage("black.png");
     whiteTex.loadImage("white.png");
@@ -188,18 +186,6 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     /* Render skybox */
     m_skyboxShader.use();
     renderSkybox(&m_skyboxShader, &scene->camera, &scene->envMap);
-
-    /* Render light volumes */
-    m_volumeShader.use();
-    setCamera(&m_volumeShader, &scene->camera);
-    m_volumeShader.setMat4("lightProjectionMatrix", Shadowmap::lightProjection);
-    m_volumeShader.setMat4("lightViewMatrix", lightView);
-    m_volumeShader.setInt("shadowMap", 0);
-    m_volumeShader.setVec3("sun.direction", scene->sun.direction);
-    m_volumeShader.setVec4("sun.color", scene->sun.color);
-    m_volumeShader.setFloat("sun.strength", scene->sun.strength);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sm.depthMap);
 
     fb.unbind();
 
