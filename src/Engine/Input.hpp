@@ -6,7 +6,7 @@
 
 #include <GLFW\glfw3.h>
 
-#include "DataTypes.hpp"
+#include "GameMath.hpp"
 
 class Input {
 public:
@@ -17,6 +17,9 @@ public:
 
     static std::unordered_map<std::string, bool> m_keyStates;
     static std::unordered_map<std::string, int> m_watchedKeys;
+    static math::vec2 m_mouseMove;
+
+    static math::vec2 m_mouseAcc;
 
 private:
     Input();

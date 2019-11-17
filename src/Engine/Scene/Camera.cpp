@@ -41,6 +41,9 @@ void Camera::update(double dt) {
         f32 pitchRate = 60;
         f32 rollRate = 60;
 
+        f32 horizSens = 0.1;
+        f32 vertSens = 0.1;
+
         vec3 forward = vec3(viewMatrix.row1()).get_unit();
         vec3 up = vec3(viewMatrix.row2()).get_unit();
         vec3 right = vec3(viewMatrix.row3()).get_unit();
@@ -64,18 +67,8 @@ void Camera::update(double dt) {
             vel -= up;
         }
 
-        if (Input::getKeyState("key_up")) {
-            pitchChange += 1;
-        }
-        if (Input::getKeyState("key_down")) {
-            pitchChange -= 1;
-        }
-        if (Input::getKeyState("key_left")) {
-            yawChange += 1;
-        }
-        if (Input::getKeyState("key_right")) {
-            yawChange -= 1;
-        }
+        yawChange = -Input::m_mouseMove.x * horizSens;
+        pitchChange = -Input::m_mouseMove.y * vertSens;
         if (Input::getKeyState("key_numpad0")) {
             rollChange += 1;
         }

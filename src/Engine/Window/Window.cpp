@@ -5,6 +5,7 @@ Window::Window() {
 
     m_height = WINDOW_DEFAULT_HEIGHT;
     m_width = WINDOW_DEFAULT_WIDTH;
+    cursorMode = false;
 }
 
 void Window::update(double dt) {
@@ -12,7 +13,19 @@ void Window::update(double dt) {
 }
 
 void Window::handleMessage(Message msg) {
+    if (msg.isType("InputKey")) {
+        // int button, int action, int mods
+        using dt = Message::Datatype;
+        dt key = msg.data[0];
+        dt scancode = msg.data[1];
+        dt action = msg.data[2];
+        dt mods = msg.data[3];
 
+        if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+            cursorMode = !cursorMode;
+            glfwSetInputMode(m_glfwWindow, GLFW_CURSOR, cursorMode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+        }
+    }
 }
 
 void Window::destroy() {
@@ -37,6 +50,8 @@ CoreSystem* Window::create() {
     Message::registerMessageType("FileDrop");
 
     create_window();
+
+    glfwSetInputMode(m_glfwWindow, GLFW_CURSOR, cursorMode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 
     return this;
 }
@@ -192,6 +207,9 @@ void Window::InputMouseButton(int button, int action, int mods) {
 
 void Window::InputCursorPos(double xpos, double ypos) {
     //sendMessage("InputMouseMove");
+    math::vec2 delta = math::vec2(xpos, ypos) - m_cursorPos;
+    Input::m_mouseAcc += delta;
+    m_cursorPos = math::vec2(xpos, ypos);
 }
 
 void Window::InputCursorEnter(int entered) {

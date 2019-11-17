@@ -6,6 +6,7 @@
 
 #include "Message/CoreSystem.hpp"
 #include "GameMath.hpp"
+#include "Input.hpp"
 
 #define WINDOW_DEFAULT_HEIGHT   600
 #define WINDOW_DEFAULT_WIDTH    800
@@ -58,6 +59,8 @@ public:
     GLFWwindow*     m_glfwWindow;
 
 private:
+    math::vec2 m_cursorPos;
+    bool cursorMode;
 
     /* Error Callback */
     inline static void ErrorCallback(
