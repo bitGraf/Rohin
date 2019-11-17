@@ -20,6 +20,7 @@ set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 #file(GLOB HEADERS ${SRC_DIR}/*.hpp)
 
 file(GLOB_RECURSE  source_list_game "src/Game/*.?pp")
+file(GLOB_RECURSE  source_list_test "src/Testing/*.?pp")
 
 function(assign_source_group)
     foreach(_source IN ITEMS ${ARGN})
@@ -34,14 +35,6 @@ function(assign_source_group)
     endforeach()
 endfunction(assign_source_group)
 
-# Executable definition for Game
-add_executable(Game ${source_list_game})
-target_include_directories(Game PRIVATE ${SRC_DIR}/Game/)
-set_property(TARGET Game PROPERTY CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-assign_source_group(${source_list_game})
-
 set(GLFW_DIR ${LIB_DIR}/glfw)
 set(GLAD_DIR ${LIB_DIR}/glad)
 set(TINYGLTF_DIR ${LIB_DIR}/tinygltf)
@@ -49,8 +42,6 @@ set(TINYGLTF_DIR ${LIB_DIR}/tinygltf)
 # Engine
 set(ENGINE_DIR ${SRC_DIR}/Engine)
 add_subdirectory(${ENGINE_DIR})
-target_include_directories(Game PRIVATE ${ENGINE_DIR})
-target_link_libraries(Game engine ${CMAKE_DL_LIBS})
 
 # GLFW
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
@@ -58,15 +49,10 @@ set(GLFW_BUILD_TESTS OFF CACHE INTERNAL "Build the GLFW test programs")
 set(GLFW_BUILD_DOCS OFF CACHE INTERNAL "Build the GLFW documentation")
 set(GLFW_INSTALL OFF CACHE INTERNAL "Generate installation target")
 add_subdirectory(${GLFW_DIR})
-target_link_libraries(Game glfw ${GLFW_LIBRARIES})
-target_include_directories(Game PRIVATE ${GLFW_DIR}/include)
-target_compile_definitions(Game PRIVATE "GLFW_INCLUDE_NONE")
 
 # glad
 add_library(glad ${GLAD_DIR}/src/glad.c)
 target_include_directories(glad PRIVATE ${GLAD_DIR}/include/)
-target_include_directories(Game PRIVATE ${GLAD_DIR}/include/)
-target_link_libraries(Game glad ${CMAKE_DL_LIBS})
 
 # tinyglTF
 set(TINYGLTF_FILES
@@ -77,9 +63,7 @@ set(TINYGLTF_FILES
     ${SRC_DIR}/Engine/tinygltf.cpp)
 add_library(tinygltf STATIC ${TINYGLTF_FILES})
 set_target_properties(tinygltf PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(Game PRIVATE ${TINYGLTF_DIR}/)
 target_include_directories(tinygltf PRIVATE ${TINYGLTF_DIR}/)
-target_link_libraries(Game tinygltf ${CMAKE_DL_LIBS})
 
 # Doxygen
 option(BUILD_DOC "Build documentation" ON)
@@ -106,8 +90,56 @@ else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
 
+# Executable definition for Game
+add_executable(Game ${source_list_game})
+target_include_directories(Game PRIVATE ${SRC_DIR}/Game/)
+set_property(TARGET Game PROPERTY CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+assign_source_group(${source_list_game})
 
+# Point to Headers
+target_include_directories(Game PRIVATE ${ENGINE_DIR})  # Engine library includes
+target_include_directories(Game PRIVATE ${GLFW_DIR}/include) #GLFW includes
+target_compile_definitions(Game PRIVATE "GLFW_INCLUDE_NONE") # don't have glfw include openGL bindings, use GLAD instead
+target_include_directories(Game PRIVATE ${GLAD_DIR}/include/) # openGL bindings
+target_include_directories(Game PRIVATE ${TINYGLTF_DIR}/) # tinyGLTF headers
+
+# Link libraries
+target_link_libraries(Game engine ${CMAKE_DL_LIBS})
+target_link_libraries(Game glfw ${GLFW_LIBRARIES})
+target_link_libraries(Game glad ${CMAKE_DL_LIBS})
+target_link_libraries(Game tinygltf ${CMAKE_DL_LIBS})
+
+
+
+# Executable definition for Testing Zone
+add_executable(TestGame ${source_list_test})
+target_include_directories(TestGame PRIVATE ${SRC_DIR}/Testing/)
+set_property(TARGET TestGame PROPERTY CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+assign_source_group(${source_list_test})
+
+# Point to Headers
+target_include_directories(TestGame PRIVATE ${ENGINE_DIR})  # Engine library includes
+target_include_directories(TestGame PRIVATE ${GLFW_DIR}/include) #GLFW includes
+target_compile_definitions(TestGame PRIVATE "GLFW_INCLUDE_NONE") # don't have glfw include openGL bindings, use GLAD instead
+target_include_directories(TestGame PRIVATE ${GLAD_DIR}/include/) # openGL bindings
+target_include_directories(TestGame PRIVATE ${TINYGLTF_DIR}/) # tinyGLTF headers
+
+# Link libraries
+target_link_libraries(TestGame engine ${CMAKE_DL_LIBS})
+target_link_libraries(TestGame glfw ${GLFW_LIBRARIES})
+target_link_libraries(TestGame glad ${CMAKE_DL_LIBS})
+target_link_libraries(TestGame tinygltf ${CMAKE_DL_LIBS})
+
+
+
+
+
+# Assign Visual Studio folders
 set_target_properties(tinygltf glad glfw PROPERTIES FOLDER Libraries)
-set_target_properties(Game engine doc_dox PROPERTIES FOLDER Rohin)
+set_target_properties(Game TestGame engine doc_dox PROPERTIES FOLDER Rohin)
 #set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Game)
 set(VS_STARTUP_PROJECT Rohin/Game)

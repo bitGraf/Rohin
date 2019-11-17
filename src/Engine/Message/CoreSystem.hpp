@@ -7,7 +7,7 @@ class CoreSystem;
 #include <stdlib.h>
 #include <cstdarg>
 
-//#include "Configuration.hpp"
+#include "Configuration.hpp"
 #include "HashTable.hpp"
 
 #include "MessageBus.hpp"

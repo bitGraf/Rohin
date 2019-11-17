@@ -86,8 +86,8 @@ void main()
     vec3 albedo = vec3(texture(material.baseColorTexture, pass_tex) * material.baseColorFactor);
     vec3 normal2 = pass_TBN * vec3(texture(material.normalTexture, pass_tex));
     float ao = vec3(texture(material.occlusionTexture, pass_tex)).r;
-    float metallic = material.metallicFactor * texture(material.metallicRoughnessTexture, pass_tex).b;
     float roughness = material.roughnessFactor * texture(material.metallicRoughnessTexture, pass_tex).g;
+    float metallic = material.metallicFactor * texture(material.metallicRoughnessTexture, pass_tex).b;
     vec3 emission = material.emissiveFactor * texture(material.emissiveTexture, pass_tex).rgb;
 
     normal2 = normalize(normal2 * 2.0 - 1.0);

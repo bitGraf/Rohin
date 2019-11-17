@@ -103,7 +103,7 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     //window->makeCurrent();
     // Update camera once
     scene->camera.updateProjectionMatrix(window->m_width, window->m_height);
-    scene->camera.updateViewMatrix();
+    //scene->camera.updateViewMatrix();
 
     // First, render to depth map
     m_shadowShader.use();

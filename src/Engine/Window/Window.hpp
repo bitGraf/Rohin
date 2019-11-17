@@ -55,9 +55,9 @@ public:
     int m_height;
     int m_width;
     math::vec2 getCursorPos();
+    GLFWwindow*     m_glfwWindow;
 
 private:
-    GLFWwindow*     m_glfwWindow;
 
     /* Error Callback */
     inline static void ErrorCallback(

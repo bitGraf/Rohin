@@ -20,7 +20,7 @@ void SceneManager::handleMessage(Message msg) {
         if (key == GLFW_KEY_BACKSLASH && action == GLFW_PRESS) {
             Console::logMessage("Reloading level");
 
-            m_currentScene->loadFromFile(&g_ResourceManager, "");
+            m_currentScene->loadFromFile(&g_ResourceManager, "", false);
         }
 
         if (key == GLFW_KEY_C && action == GLFW_PRESS) {
@@ -35,6 +35,8 @@ void SceneManager::destroy() {
 }
 
 CoreSystem* SceneManager::create() {
+    Camera::init();
+
     return this;
 }
 
@@ -44,7 +46,7 @@ Scene::Scene() {
     cameraMode = 1;
 }
 
-void SceneManager::loadScenes(ResourceManager* resource) {
+void SceneManager::loadScenes(ResourceManager* resource, bool testing) {
     //Scene s;
 
     //s.testCreate(resource);
@@ -52,7 +54,7 @@ void SceneManager::loadScenes(ResourceManager* resource) {
 
     Scene sTest;
     //sTest.testCreate(resource);
-    sTest.loadFromFile(resource, "");
+    sTest.loadFromFile(resource, "", testing);
     scenes.push_back(sTest);
 
     // TODO: Not safe. Pointers change when vector grows
@@ -63,7 +65,7 @@ Scene* SceneManager::getCurrentScene() {
     return m_currentScene;
 }
 
-void Scene::loadFromFile(ResourceManager* resource, std::string path) {
+void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLLoad) {
     std::ifstream infile("Data/test.scene");
 
     u32 numSpotLightsLoaded = 0;
@@ -98,24 +100,28 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path) {
             std::string resourceFilename = getNextString(iss);
 
             // load resource pack
-            resource->loadModelFromFile(resourceFilename, true);
+            if (!noGLLoad)
+                resource->loadModelFromFile(resourceFilename, true);
         } 
-        else if (type.compare("ENTITY") == 0) {
-            std::string entityName = getNextString(iss);
-            std::string entityMesh = getNextString(iss);
-            std::string entityMat  = getNextString(iss);
-            math::vec3 entityPos   = getNextVec3(iss);
-            scalar entityScale     = getNextFloat(iss);
-            
-            // Create entity
-            Entity ent;
-            ent.name = entityName;
-            ent.setMesh(resource->getMesh(entityMesh));
-            ent.setMaterial(resource->getMaterial(entityMat));
-            ent.position = entityPos;
-            ent.scale = vec3(entityScale);
+        else if (type.compare("ENTITY") == 0) {      
+            std::string entType;
+            iss >> entType;
 
-            m_entities.push_back(ent);
+            if (entType.compare("DEFAULT") == 0) {
+                // Create entity
+                Entity ent;
+                ent.parseLevelData(iss);
+
+                m_entities.push_back(ent);
+                recognizeCustomEntity(entType);
+            }
+            else if (recognizeCustomEntity(entType)) {
+                processCustomEntityLoad(entType, iss);
+            }
+            else {
+                Console::logMessage("Don't recognize entity type: [" 
+                    + entType + "]");
+            }
         } 
         else if (type.compare("SKYBOX") == 0) {
             //std::cout << "  parsing skybox\n";
@@ -128,15 +134,19 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path) {
                 std::string skyboxFileType = getNextString(iss);
 
                 /* load skybox */
-                envMap.loadSkybox(skyboxFilePath, skyboxFileType);
-                envMap.preCompute();
+                if (!noGLLoad) {
+                    envMap.loadSkybox(skyboxFilePath, skyboxFileType);
+                    envMap.preCompute();
+                }
 
             } else if (skyboxType.compare("HDR") == 0) {
                 std::string hdrFilePath = getNextString(iss);
 
                 /* environment map */
-                envMap.loadHDRi(hdrFilePath);
-                envMap.preCompute();
+                if (!noGLLoad) {
+                    envMap.loadHDRi(hdrFilePath);
+                    envMap.preCompute();
+                }
             }
         } 
         else if (type.compare("LIGHT") == 0) {
@@ -198,58 +208,12 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path) {
     }
 }
 
-std::string Scene::getNextString(std::istringstream& iss) {
-    std::string str;
-    std::getline(iss, str, '"');
-    std::getline(iss, str, '"');
-
-    return str;
-}
-
-math::scalar Scene::getNextFloat(std::istringstream& iss) {
-    math::scalar v;
-    std::string garb;
-    std::getline(iss, garb, '"');
-    iss >> v;    
-    std::getline(iss, garb, '"');
-
-    return v;
-}
-
-math::vec2 Scene::getNextVec2(std::istringstream& iss) {
-    math::vec2 v;
-    std::string garb;
-    std::getline(iss, garb, '"');
-    iss >> v.x >> v.y;
-    std::getline(iss, garb, '"');
-
-    return v;
-}
-
-math::vec3 Scene::getNextVec3(std::istringstream& iss) {
-    math::vec3 v;
-    std::string garb;
-    std::getline(iss, garb, '"');
-    iss >> v.x >> v.y >> v.z;
-    std::getline(iss, garb, '"');
-
-    return v;
-}
-
-math::vec4 Scene::getNextVec4(std::istringstream& iss) {
-    math::vec4 v;
-    std::string garb;
-    std::getline(iss, garb, '"');
-    iss >> v.x >> v.y >> v.z >> v.w;
-    std::getline(iss, garb, '"');
-
-    return v;
-}
-
 
 void Scene::update(double dt) {
     objYaw += 12 * dt;
     m_entities[0].orientation.toYawPitchRoll(objYaw - 90, 0, 0);
+
+    camera.updateViewMatrix();
 
     if (cameraMode) {
         camYaw -= 12 * dt;
@@ -261,4 +225,19 @@ void Scene::update(double dt) {
         );
         camera.lookAt(vec3(0, 1, 0));
     }
+
+    camera.playerControlled = cameraMode == 1 ? 0 : 1;
+    camera.update(dt);
 }
+
+#ifndef CUSTOM_ENTITIES
+
+bool Scene::recognizeCustomEntity(std::string entType) {
+    Console::logMessage("No entities defined");
+    return false;
+}
+void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss) {
+
+}
+
+#endif

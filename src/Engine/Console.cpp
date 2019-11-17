@@ -160,7 +160,7 @@ void Console::rejoin() {
 }
 
 void Console::logMessage(std::string text) {
-    std::cout << "< " << text << std::endl;
+    std::cout << "> " << text << std::endl;
 }
 
 

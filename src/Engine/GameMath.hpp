@@ -33,6 +33,7 @@ namespace math {
         scalar x, y;
     };
 
+    class vec4;
     /// 3 Vector
     class vec3 {
     public:
@@ -41,6 +42,7 @@ namespace math {
         vec3(scalar a, scalar b, scalar c); ///< Specific-value constructor
         vec3(double* data); ///< Initialize by array
         vec3(vec2 v, scalar c); ///< Initialize from smaller vector
+        vec3(vec4 v); ///< Initialize from larger vector
 
         scalar length(); ///< Find magnitude of vector
         scalar length_2(); ///< Find squared magnitude of vector

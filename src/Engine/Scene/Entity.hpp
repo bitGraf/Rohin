@@ -3,10 +3,14 @@
 
 #include <string>
 
+#include "Configuration.hpp"
+
 #include "GameMath.hpp"
 #include "Models.hpp"
 #include "Material.hpp"
 #include "Editor\Pickable.hpp"
+#include "Utils.hpp"
+#include "Resource\ResourceManager.hpp"
 
 class Entity : public Pickable {
 public:
@@ -20,6 +24,8 @@ public:
     void create();
     void update(double dt);
     void render();
+
+    virtual void parseLevelData(std::istringstream &iss);
 
     void setMesh(meshRef _mesh);
     void setMaterial(materialRef _mat);

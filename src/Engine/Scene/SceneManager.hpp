@@ -14,13 +14,17 @@
 #include "GLFW\glfw3.h"
 
 #include "EnvironmentMap.hpp"
+#include "Utils.hpp"
 
 class Scene {
 public:
     Scene();
 
-    void loadFromFile(ResourceManager* resource, std::string path);
+    void loadFromFile(ResourceManager* resource, std::string path, bool noGLLoad);
     void update(double dt);
+
+    virtual bool recognizeCustomEntity(std::string entType);
+    virtual void processCustomEntityLoad(std::string entType, std::istringstream &iss);
 
 //private:
     std::vector<Entity> m_entities;
@@ -42,12 +46,6 @@ public:
     EnvironmentMap envMap;
 
     std::string name;
-
-    std::string getNextString(std::istringstream& iss);
-    math::scalar getNextFloat(std::istringstream& iss);
-    math::vec2 getNextVec2(std::istringstream& iss);
-    math::vec3 getNextVec3(std::istringstream& iss);
-    math::vec4 getNextVec4(std::istringstream& iss);
 };
 
 
@@ -61,7 +59,7 @@ public:
     void destroy();
     CoreSystem* create();
 
-    void loadScenes(ResourceManager* resource);
+    void loadScenes(ResourceManager* resource, bool testing = false);
 
     Scene* getCurrentScene();
 

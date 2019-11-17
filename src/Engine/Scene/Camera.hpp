@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include "GameMath.hpp"
+#include "Input.hpp"
 
 using namespace math;
 
@@ -12,6 +13,8 @@ public:
     vec3 position;
     scalar yaw, pitch, roll;
 
+    static void init();
+    void update(double dt);
     void updateViewMatrix();
     void updateProjectionMatrix(f32 width, f32 height);
 
@@ -25,6 +28,8 @@ public:
     f32 m_zNear;
     f32 m_zFar;
     f32 m_aspectRatio;
+
+    bool playerControlled;
 };
 
 #endif

@@ -34,6 +34,12 @@ target_include_directories(engine PRIVATE
 target_compile_definitions(engine PRIVATE _CRT_SECURE_NO_WARNINGS)
 target_compile_definitions(engine PRIVATE "GLFW_INCLUDE_NONE")
 
+option(ENGINE_CUSTOM_ENTITIES "ayo" ON)
+if(ENGINE_CUSTOM_ENTITIES)
+    target_compile_definitions(engine PRIVATE "CUSTOM_ENTITIES")
+else()
+endif(ENGINE_CUSTOM_ENTITIES)
+
 
 target_include_directories(engine PRIVATE ${GLAD_DIR}/include/)
 target_include_directories(engine PRIVATE ${GLFW_DIR}/include/)

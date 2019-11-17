@@ -33,7 +33,6 @@ int main(int argc, char* argv[]) {
     printf("\n");
 
     // Create core systems
-    Configuration::create();
     MessageBus::create();
     MessageBus::setGlobalMessageHandleCallback(globalHandleMessage);
 
@@ -87,6 +86,7 @@ int main(int argc, char* argv[]) {
         }
 
         MessageBus::processEntireQueue();
+        Input::pollKeys(g_MainWindow.m_glfwWindow);
 
         if (gameState) {
             g_SceneManager.update(dt);
@@ -153,4 +153,12 @@ void globalHandleMessage(Message msg) {
             g_MainWindow.close();
         }
     }
+}
+
+bool Scene::recognizeCustomEntity(std::string entType) {
+    return false;
+}
+
+void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss) {
+    return;
 }

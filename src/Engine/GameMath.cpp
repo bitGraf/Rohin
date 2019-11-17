@@ -12,6 +12,7 @@ math::vec3::vec3(math::scalar v) : x(v), y(v), z(v) {}
 math::vec3::vec3(math::scalar a, math::scalar b, math::scalar c) : x(a), y(b), z(c) {}
 math::vec3::vec3(double* data) : x(data[0]), y(data[1]), z(data[2]) {}
 math::vec3::vec3(math::vec2 v, math::scalar c) : x(v.x), y(v.y), z(c) {}
+math::vec3::vec3(math::vec4 v) : x(v.x), y(v.y), z(v.z) {}
 
 /* vec4 constructors */
 math::vec4::vec4() : x(0), y(0), z(0), w(0) {}
