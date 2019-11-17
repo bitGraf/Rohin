@@ -1,5 +1,6 @@
 #version 330 core
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec3 gPosition;
 
 in vec3 pass_normal;
 in vec3 pass_fragPos;
@@ -82,13 +83,18 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir);
 
 void main()
 {
+    //store world position in FBO
+    gPosition = pass_fragPos;
+
     //Read all texture information
-    vec3 albedo = vec3(texture(material.baseColorTexture, pass_tex) * material.baseColorFactor);
-    vec3 normal2 = pass_TBN * vec3(texture(material.normalTexture, pass_tex));
-    float ao = vec3(texture(material.occlusionTexture, pass_tex)).r;
+    vec3 albedo     = vec3(texture(material.baseColorTexture, pass_tex) * material.baseColorFactor);
+    vec3 normal2    = pass_TBN * vec3(texture(material.normalTexture, pass_tex));
+    float ao        = vec3(texture(material.occlusionTexture, pass_tex)).r;
     float roughness = material.roughnessFactor * texture(material.metallicRoughnessTexture, pass_tex).g;
-    float metallic = material.metallicFactor * texture(material.metallicRoughnessTexture, pass_tex).b;
-    vec3 emission = material.emissiveFactor * texture(material.emissiveTexture, pass_tex).rgb;
+    float metallic  = material.metallicFactor * texture(material.metallicRoughnessTexture, pass_tex).b;
+    vec3 emission   = material.emissiveFactor * texture(material.emissiveTexture, pass_tex).rgb;
+
+    roughness = 1;
 
     normal2 = normalize(normal2 * 2.0 - 1.0);
 
@@ -173,12 +179,12 @@ vec3 calcTotalLightContribution(PointLight pointLights[NUMPOINTLIGHTS], Directio
 
 	//Point lights
     for (int i = 0; i < NUMPOINTLIGHTS; i++) {
-        //Lo += addPointLight(pointLights[i], normal, fragPos, viewDir, F0, roughness, metallic, albedo);
+        Lo += addPointLight(pointLights[i], normal, fragPos, viewDir, F0, roughness, metallic, albedo);
     }
 
 	//Spot lights
 	for (int i = 0; i < NUMSPOTLIGHTS; i++) {
-		//Lo += addSpotLight(spotLights[i], normal, fragPos, viewDir, F0, roughness, metallic, albedo);
+		Lo += addSpotLight(spotLights[i], normal, fragPos, viewDir, F0, roughness, metallic, albedo);
     }
 
 	return Lo;
@@ -276,6 +282,7 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir) {
 
     float currentDepth = projCoords.z;
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    bias = 0.005;
 
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);

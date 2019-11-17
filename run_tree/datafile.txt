@@ -1,4 +1,0 @@
-Text line 1
-Text line 2
-1.234
-END

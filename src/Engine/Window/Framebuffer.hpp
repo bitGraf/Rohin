@@ -15,11 +15,13 @@ public:
     void unbind();
 
     GLuint getTexture() { return texture; }
+    GLuint getPositionTex() { return gPosition; }
 
 private:
     GLuint fbo;
     GLuint rbo;
     GLuint texture;
+    GLuint gPosition;
 
     u32 m_width, m_height;
 };

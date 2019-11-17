@@ -205,6 +205,16 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 numSpotLightsLoaded++;
             }
         }
+        else if (type.compare("CAMERA") == 0) {
+            //std::cout << "  parsing volume\n";
+            vec3 pos = getNextVec3(iss);
+            vec3 rpy = getNextVec3(iss);
+
+            camera.position = pos;
+            camera.roll = rpy.x;
+            camera.pitch = rpy.y;
+            camera.yaw = rpy.z;
+        }
     }
     infile.close();
 
@@ -224,14 +234,14 @@ void Scene::update(double dt) {
     camera.updateViewMatrix();
 
     if (cameraMode) {
-        camYaw -= 12 * dt;
+        //camYaw -= 12 * dt;
 
-        camera.position = vec3(
-            2 * cos(camYaw*d2r),
-            sin(camYaw*d2r * 4) + 1.5,
-            -2 * sin(camYaw*d2r)
-        );
-        camera.lookAt(vec3(0, 1, 0));
+        //camera.position = vec3(
+        //    2 * cos(camYaw*d2r),
+        //    sin(camYaw*d2r * 4) + 1.5,
+        //    -2 * sin(camYaw*d2r)
+        //);
+        //camera.lookAt(vec3(0, 1, 0));
     }
 
     camera.playerControlled = cameraMode == 1 ? 0 : 1;

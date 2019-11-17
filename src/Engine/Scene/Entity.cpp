@@ -36,10 +36,12 @@ void Entity::parseLevelData(std::istringstream &iss) {
     std::string entityMat = getNextString(iss);
     math::vec3 entityPos = getNextVec3(iss);
     scalar entityScale = getNextFloat(iss);
+    scalar entityYaw = getNextFloat(iss);
 
     name = entityName;
     setMesh(g_ResourceManager.getMesh(entityMesh));
     setMaterial(g_ResourceManager.getMaterial(entityMat));
     position = entityPos;
     scale = vec3(entityScale);
+    orientation = math::createYawPitchRollMatrix(entityYaw, 0, 0);
 }

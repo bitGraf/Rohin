@@ -45,6 +45,7 @@ void RenderManager::handleMessage(Message msg) {
             m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
             m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
             m_shadowShader.create("shadow.vert", "shadow.frag", "shadowShader");
+            m_volumeShader.create("volume.vert", "volume.frag", "volumeShader");
         }
     }
 }
@@ -60,6 +61,7 @@ CoreSystem* RenderManager::create() {
     m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
     m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
     m_shadowShader.create("shadow.vert", "shadow.frag", "shadowShader");
+    m_volumeShader.create("volume.vert", "volume.frag", "volumeShader");
 
     blackTex.loadImage("black.png");
     whiteTex.loadImage("white.png");
@@ -107,12 +109,12 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
 
     // First, render to depth map
     m_shadowShader.use();
-    glViewport(0, 0, 1024, 1024);
+    glViewport(0, 0, 2048, 2048);
     glBindFramebuffer(GL_FRAMEBUFFER, sm.depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
         
         mat4 lightView;
-        lightView.lookAt(-scene->sun.direction.get_unit()*5, vec3(), vec3(0,1,0));
+        lightView.lookAt(-scene->sun.direction.get_unit()*50, vec3(), vec3(0,1,0));
         m_shadowShader.setMat4("viewMatrix", lightView);
         m_shadowShader.setMat4("projectionMatrix", Shadowmap::lightProjection);
         for (auto ent : scene->m_entities) {
@@ -133,7 +135,12 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     fb.bind();
     
     // Then, render to framebuffer
+    //glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    static const float black[] = { 0, 0, 0, 1 };
+    static const float red[] = { -100, 0, -100, 1 };
+    glClearBufferfv(GL_COLOR, 0, black);
+    glClearBufferfv(GL_COLOR, 1, red);
     glEnable(GL_DEPTH_TEST);
 
     /* Render Line Entities */
@@ -149,6 +156,9 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
         scene->spotLights
     ); // TODO: remove this
     setCamera(&m_mainShader, &scene->camera);
+    //m_mainShader.setMat4("viewMatrix", lightView);
+    //m_mainShader.setMat4("projectionMatrix", Shadowmap::lightProjection);
+    //m_mainShader.setVec3("camPos", scene->sun.direction * 5);
 
     m_mainShader.setInt("irradianceMap", 5);
     m_mainShader.setInt("prefilterMap", 6);
@@ -179,6 +189,18 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     m_skyboxShader.use();
     renderSkybox(&m_skyboxShader, &scene->camera, &scene->envMap);
 
+    /* Render light volumes */
+    m_volumeShader.use();
+    setCamera(&m_volumeShader, &scene->camera);
+    m_volumeShader.setMat4("lightProjectionMatrix", Shadowmap::lightProjection);
+    m_volumeShader.setMat4("lightViewMatrix", lightView);
+    m_volumeShader.setInt("shadowMap", 0);
+    m_volumeShader.setVec3("sun.direction", scene->sun.direction);
+    m_volumeShader.setVec4("sun.color", scene->sun.color);
+    m_volumeShader.setFloat("sun.strength", scene->sun.strength);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sm.depthMap);
+
     fb.unbind();
 
     /* Render fullscreen quad */
@@ -187,14 +209,29 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
 
     m_fullscreenShader.use();
     m_fullscreenShader.setInt("tex", 0);
+    m_fullscreenShader.setInt("gPosition", 1);
+    m_fullscreenShader.setInt("shadowMap", 2);
+    m_fullscreenShader.setVec3("camPos", scene->camera.position);
+    m_fullscreenShader.setVec3("sun.direction", scene->sun.direction);
+    m_fullscreenShader.setVec4("sun.color", scene->sun.color);
+    m_fullscreenShader.setFloat("sun.strength", scene->sun.strength);
+    m_fullscreenShader.setMat4("lightProjectionMatrix", Shadowmap::lightProjection);
+    m_fullscreenShader.setMat4("lightViewMatrix", lightView);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, fb.getTexture());
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, fb.getPositionTex());
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, sm.depthMap);
+
     //glBindTexture(GL_TEXTURE_2D, sm.depthMap);
 
-    glBindVertexArray(fullscreenVAO);
     glDisable(GL_DEPTH_TEST);
+    glBindVertexArray(fullscreenVAO);
+    glDisable(GL_CULL_FACE);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
+    glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
     vec4 white(1, 1, 1, 1);
