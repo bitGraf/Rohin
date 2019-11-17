@@ -122,10 +122,6 @@ Camera& Camera::lookAt(vec3 target, bool UpdateMatrix) {
     }
     vec3 up = right.cross(forward);                 // +Y
 
-    /*pitch = asin(-up.y) * r2d;
-    roll = atan2(right.y, up.y) * r2d;
-    yaw = atan2(forward.x, forward.z) * r2d;*/
-
     pitch = asin(forward.y) * r2d;
     yaw = -atan2(forward.z, forward.x) * r2d;
     roll = -atan2(right.y, up.y) * r2d;

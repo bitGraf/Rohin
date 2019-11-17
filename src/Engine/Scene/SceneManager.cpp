@@ -28,6 +28,14 @@ void SceneManager::handleMessage(Message msg) {
 
             m_currentScene->cameraMode = m_currentScene->cameraMode == 0 ? 1 : 0;
         }
+
+        if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+            Console::logMessage("Camera Reset");
+
+            m_currentScene->camera.yaw = 0;
+            m_currentScene->camera.pitch = 0;
+            m_currentScene->camera.roll = 0;
+        }
     }
 }
 

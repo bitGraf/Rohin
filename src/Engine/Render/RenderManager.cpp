@@ -201,6 +201,17 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     char fpsText[64];
     sprintf(fpsText, "FPS: %.1f", fps);
     font.drawText(window->m_width-5, 5, white, fpsText, ALIGN_TOP_RIGHT);
+
+    char rpyText[64];
+    sprintf(rpyText, "Roll:  %.3f deg", scene->camera.roll);
+    font.drawText(window->m_width - 5, 55, white, rpyText, ALIGN_TOP_RIGHT);
+    sprintf(rpyText, "Pitch: %.3f deg", scene->camera.pitch);
+    font.drawText(window->m_width - 5, 75, white, rpyText, ALIGN_TOP_RIGHT);
+    sprintf(rpyText, "Yaw:   %.3f deg", scene->camera.yaw);
+    font.drawText(window->m_width - 5, 95, white, rpyText, ALIGN_TOP_RIGHT);
+
+    sprintf(rpyText, "Pos:   (%.2f,%.2f,%.2f)", scene->camera.position.x, scene->camera.position.y, scene->camera.position.z);
+    font.drawText(window->m_width - 5, 115, white, rpyText, ALIGN_TOP_RIGHT);
 }
 
 void RenderManager::renderEditor(Window* window, Scene* scene) {
