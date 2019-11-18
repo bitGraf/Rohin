@@ -18,7 +18,14 @@ uniform DirectionalLight sun;
 
 uniform vec3 camPos;
 
-const int ShadowSamples = 1;
+const int ShadowSamples = 3;
+const int NUM_STEPS = 100;
+
+const mat4 ditherPattern = mat4(
+    vec4( 0.0f, 0.5f, 0.125f, 0.625f),
+    vec4( 0.75f, 0.22f, 0.875f, 0.375f),
+    vec4( 0.1875f, 0.6875f, 0.0625f, 0.5625),
+    vec4( 0.9375f, 0.4375f, 0.8125f, 0.3125));
 
 float ShadowCalculation(vec4 fragPosLightSpace);
 float ComputeScattering(float lightDotView);
@@ -36,29 +43,32 @@ void main() {
     float rayLength = length(rayVector);
     vec3 rayDirection = normalize(rayVector);
 
-    const int NUM_STEPS = 100;
-
-    float stepLength = rayLength / NUM_STEPS; // 100 steps
+    float stepLength = rayLength / NUM_STEPS;
     vec3 step = rayDirection*stepLength;
 
     vec3 currentPosition = startPosition;
     vec3 accumFog = vec3(0,0,0);
 
+    int screenX = int(tex_coord.x * 800.0);
+    int screenY = int(tex_coord.y * 600.0);
+
+    float ditherValue = ditherPattern[screenX % 4][screenY % 4];
+
     for (int i = 0; i < NUM_STEPS; i++) {
         vec4 lightSpacePos = lightSpaceMatrix * vec4(currentPosition,1);
         float shadow = 1-ShadowCalculation(lightSpacePos);
 
-        //if (shadow < 0.5) {
-            accumFog += shadow*ComputeScattering(dot(rayDirection, sun.direction)).xxx * sun.color.rgb * sun.strength;
-        //}
+        float scatter = ComputeScattering(dot(rayDirection, sun.direction));
+        accumFog += shadow*vec3(scatter) * sun.color.rgb * sun.strength;
 
+        //currentPosition += step * ditherValue;
         currentPosition += step;
     }
     accumFog /= NUM_STEPS;
     vec4 lightSpacePos = lightSpaceMatrix * vec4(worldPos,1);
     float shadow = 1-ShadowCalculation(lightSpacePos);
 
-    accumFog *= (0.5);
+    accumFog *= (1);
 
     vec3 colAndFog = hdrColor + accumFog;
 

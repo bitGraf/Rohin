@@ -12,7 +12,10 @@ void Shadowmap::initShadows() {
     //lightProjection *= mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1));
 }
 
-void Shadowmap::create(u32 width, u32 height) {
+void Shadowmap::create(u32 _width, u32 _height) {
+    width = _width;
+    height = _height;
+
     glGenFramebuffers(1, &depthMapFBO);
 
     glGenTextures(1, &depthMap);

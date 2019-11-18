@@ -3,6 +3,7 @@ layout (location = 0) in vec2 vertPos;
 
 out vec2 tex_coord;
 out mat4 lightSpaceMatrix;
+//out vec2 screenSpacePos;
 
 uniform mat4 lightViewMatrix;
 uniform mat4 lightProjectionMatrix;

@@ -8,11 +8,11 @@ RESOURCE "Data/Models/Wall.glb"
 
 CAMERA "-2.6 1.96 0.04" "0 -17.877 -2.410"
 
+ENTITY DEFAULT "wall" "Room" "Wall" "0 0 0" "0.5" "45"
 ENTITY DEFAULT "ent1" "pCube49" "Corset_O" "0 0 0" "15" "0"
 ENTITY DEFAULT "ent2" "pCube49" "Corset_O" "1 .75 1" "15" "0"
 ENTITY STATIC  "floor" "Plane" "Plane" "0 0 0" "1" "0"
 ENTITY STATIC "helmet" "mesh_helmet_LP_13930damagedHelmet" "Material_MR" "0 1.5 0" "0.7" "0"
-ENTITY DEFAULT "wall" "Room" "Wall" "0 0 0" "0.5" "45"
 
 VOLUME "Vol1" "Cube.001" "0 0 0" ".2 .6 .4"
 

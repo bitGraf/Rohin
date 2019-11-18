@@ -59,7 +59,12 @@ uniform sampler2D   brdfLUT;
 uniform sampler2D   shadowMap;
 
 const float PI = 3.14159265359;
-const int ShadowSamples = 3; //NEEDS TO BE ODD
+const int ShadowSamples = 5; //NEEDS TO BE ODD
+const mat4 ditherPattern = mat4(
+    vec4( 0.0f, 0.5f, 0.125f, 0.625f),
+    vec4( 0.75f, 0.22f, 0.875f, 0.375f),
+    vec4( 0.1875f, 0.6875f, 0.0625f, 0.5625),
+    vec4( 0.9375f, 0.4375f, 0.8125f, 0.3125));
 
 float DistributionGGX(vec3 N, vec3 H, float roughness);
 float GeometrySchlickGGX(float NdotV, float roughness);
@@ -175,7 +180,7 @@ vec3 calcTotalLightContribution(PointLight pointLights[NUMPOINTLIGHTS], Directio
 
 	//Direction Lights
     Lo += addDirLight(dirLight, normal, fragPos, viewDir, F0, roughness, metallic, albedo);
-    Lo *= (1 - ShadowCalculation(pass_fragPosLightSpace, normal, dirLight.direction));
+    Lo *= (ShadowCalculation(pass_fragPosLightSpace, normal, dirLight.direction));
 
 	//Point lights
     for (int i = 0; i < NUMPOINTLIGHTS; i++) {
@@ -281,21 +286,21 @@ float ShadowCalculation(vec4 fragPosLightSpace, vec3 normal, vec3 lightDir) {
     projCoords = projCoords * 0.5 + 0.5;
 
     float currentDepth = projCoords.z;
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    bias = 0.005;
+    float bias = max(0.05 * (1.0 - dot(normal, -lightDir)), 0.005);
+    //bias = 0.005;
 
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
     for (int x = -(ShadowSamples/2); x <= ShadowSamples/2; ++x) {
         for (int y = -(ShadowSamples/2); y <= ShadowSamples/2; ++y) {
             float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x,y)*texelSize).r;
-            shadow += currentDepth-bias > pcfDepth ? 1.0 : 0.0;
+            shadow += currentDepth-bias > pcfDepth ? 0.0 : 1.0;
         }
     }
     shadow /= (ShadowSamples*ShadowSamples);
 
     if (projCoords.z > 1.0) {
-        shadow = 0.0;
+        shadow = 1;
     }
 
     return shadow;

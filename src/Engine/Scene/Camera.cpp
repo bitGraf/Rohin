@@ -86,6 +86,9 @@ void Camera::update(double dt) {
         pitch += pitchChange * dt;
         roll += rollChange * dt;
     }
+
+    yaw = fmod(yaw, 360);
+    pitch = fmod(pitch, 360);
 }
 
 void Camera::updateViewMatrix() {

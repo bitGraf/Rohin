@@ -107,7 +107,7 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
 
     // First, render to depth map
     m_shadowShader.use();
-    glViewport(0, 0, 2048, 2048);
+    glViewport(0, 0, sm.width, sm.height);
     glBindFramebuffer(GL_FRAMEBUFFER, sm.depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
         
@@ -185,7 +185,7 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
 
     /* Render skybox */
     m_skyboxShader.use();
-    renderSkybox(&m_skyboxShader, &scene->camera, &scene->envMap);
+    //renderSkybox(&m_skyboxShader, &scene->camera, &scene->envMap);
 
     fb.unbind();
 
