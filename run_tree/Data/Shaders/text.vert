@@ -15,7 +15,5 @@ void main() {
     vec4 pos = projectionMatrix * vec4(newPos.x, newPos.y, -1.0, 1.0);
 
     gl_Position = pos;
-    //gl_Position = pos.xyww;
-    //gl_Position.z = 0.5;
     pass_uv = newUV;
 }

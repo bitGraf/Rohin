@@ -10,6 +10,7 @@
 #include "Scene/SceneManager.hpp"
 #include "Render/RenderManager.hpp"
 #include "Input.hpp"
+#include "UI/UIRenderer.hpp"
 
 /* Core Systems */
 Window g_MainWindow;
@@ -17,6 +18,7 @@ FileSystem g_FileSystem;
 //ResourceManager g_ResourceManager;
 SceneManager g_SceneManager;
 RenderManager g_RenderManager;
+UIRenderer g_UIRenderer;
 
 void globalHandleMessage(Message msg);
 u8 gameState = 1;
@@ -41,6 +43,7 @@ int main(int argc, char* argv[]) {
     MessageBus::registerSystem(g_ResourceManager.create());
     MessageBus::registerSystem(g_SceneManager.create());
     MessageBus::registerSystem(g_RenderManager.create());
+    MessageBus::registerSystem(g_UIRenderer.create());
 
     Message::listMessageTypes();
 
@@ -95,6 +98,12 @@ int main(int argc, char* argv[]) {
             g_RenderManager.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
         }
 
+        glDisable(GL_DEPTH_TEST);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+        g_UIRenderer.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_DEPTH_TEST);
+
         g_MainWindow.swapAndPoll();
 
         frameEnd = std::chrono::system_clock::now();
@@ -117,6 +126,8 @@ int main(int argc, char* argv[]) {
     g_FileSystem.destroy();
     Console::destroy();
     g_MainWindow.destroy();
+    g_RenderManager.destroy();
+    g_UIRenderer.destroy();
     //g_ConfigManager.destroy();
 
     // End threads

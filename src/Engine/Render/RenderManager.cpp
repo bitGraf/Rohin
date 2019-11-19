@@ -64,6 +64,7 @@ CoreSystem* RenderManager::create() {
     blackTex.loadImage("black.png");
     whiteTex.loadImage("white.png");
     normalTex.loadImage("normal.png");
+    greenTex.loadImage("green.png");
 
     const float fullscreenVerts[] = {
         -1, -1,
@@ -185,7 +186,7 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
 
     /* Render skybox */
     m_skyboxShader.use();
-    //renderSkybox(&m_skyboxShader, &scene->camera, &scene->envMap);
+    renderSkybox(&m_skyboxShader, &scene->camera, &scene->envMap);
 
     fb.unbind();
 
@@ -195,7 +196,7 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
 
     m_fullscreenShader.use();
     m_fullscreenShader.setInt("tex", 0);
-    m_fullscreenShader.setInt("gPosition", 1);
+    m_fullscreenShader.setInt("positionMap", 1);
     m_fullscreenShader.setInt("shadowMap", 2);
     m_fullscreenShader.setVec3("camPos", scene->camera.position);
     m_fullscreenShader.setVec3("sun.direction", scene->sun.direction);
@@ -308,10 +309,10 @@ void RenderManager::setCurrentMaterial(Shader* shader, const Material* material)
     glBindTexture(GL_TEXTURE_2D, material->normalTexture.glTexID == 0 ? normalTex.glTextureID : material->normalTexture.glTexID);
 
     glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, material->metallicRoughnessTexture.glTexID == 0 ? blackTex.glTextureID : material->metallicRoughnessTexture.glTexID);
+    glBindTexture(GL_TEXTURE_2D, material->metallicRoughnessTexture.glTexID == 0 ? greenTex.glTextureID : material->metallicRoughnessTexture.glTexID);
 
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, material->occlusionTexture.glTexID == 0 ? whiteTex.glTextureID : material->occlusionTexture.glTexID);
+    glBindTexture(GL_TEXTURE_2D, material->occlusionTexture.glTexID == 0 ? greenTex.glTextureID : material->occlusionTexture.glTexID);
 
     glActiveTexture(GL_TEXTURE4);
     glBindTexture(GL_TEXTURE_2D, material->emissiveTexture.glTexID == 0 ? blackTex.glTextureID : material->emissiveTexture.glTexID);

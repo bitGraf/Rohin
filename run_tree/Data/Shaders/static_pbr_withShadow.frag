@@ -99,8 +99,6 @@ void main()
     float metallic  = material.metallicFactor * texture(material.metallicRoughnessTexture, pass_tex).b;
     vec3 emission   = material.emissiveFactor * texture(material.emissiveTexture, pass_tex).rgb;
 
-    roughness = 1;
-
     normal2 = normalize(normal2 * 2.0 - 1.0);
 
     vec3 normal = pass_normal;

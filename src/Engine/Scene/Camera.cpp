@@ -4,7 +4,7 @@ Camera::Camera() :
     m_fov(75),
     m_zNear(.1),
     m_zFar(100),
-    m_aspectRatio(1280.0/720.0)
+    m_aspectRatio(800/600)
 {
     yaw = 0;
     pitch = 0;

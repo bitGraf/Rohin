@@ -7,7 +7,6 @@
 #include "Scene\SceneManager.hpp"
 
 SceneManager g_SceneManager;
-
 FileSystem g_FileSystem;
 
 int main(int argc, char* argv[]) {

@@ -11,7 +11,7 @@ struct DirectionalLight {
 };
 
 uniform sampler2D tex;
-uniform sampler2D gPosition;
+uniform sampler2D positionMap;
 uniform sampler2D shadowMap;
 
 uniform DirectionalLight sun;
@@ -29,14 +29,14 @@ const mat4 ditherPattern = mat4(
 
 float ShadowCalculation(vec4 fragPosLightSpace);
 float ComputeScattering(float lightDotView);
-const float G_SCATTERING = 0.1;
+const float G_SCATTERING = 0.0;
 const float PI = 3.14159265359;
 
 void main() {
     const float gamma = 2.2;
     vec3 hdrColor = texture(tex, tex_coord).rgb;
 
-    vec3 worldPos = texture(gPosition, tex_coord).rgb;
+    vec3 worldPos = texture(positionMap, tex_coord).rgb;
     vec3 startPosition = worldPos;
 
     vec3 rayVector = camPos - startPosition;

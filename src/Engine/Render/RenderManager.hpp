@@ -37,7 +37,7 @@ private:
 
     Framebuffer fb;
     Shadowmap sm;
-    Texture blackTex, whiteTex, normalTex;
+    Texture blackTex, whiteTex, normalTex, greenTex;
 
     GLuint fullscreenVAO;
 
