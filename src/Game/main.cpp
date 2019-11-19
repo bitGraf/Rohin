@@ -98,11 +98,7 @@ int main(int argc, char* argv[]) {
             g_RenderManager.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
         }
 
-        glDisable(GL_DEPTH_TEST);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         g_UIRenderer.renderScene(&g_MainWindow, g_SceneManager.getCurrentScene());
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_DEPTH_TEST);
 
         g_MainWindow.swapAndPoll();
 

@@ -23,6 +23,8 @@ public:
     Texture lensFlares[10];
 
 private:
+    void drawLensFlare(Scene* scene);
+
     Shader m_UIShader;
     GLuint UIElementVAO;
 };

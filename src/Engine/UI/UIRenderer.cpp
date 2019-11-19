@@ -68,18 +68,57 @@ CoreSystem* UIRenderer::create() {
     glBindVertexArray(0);
 
     // Create UI elements
-    UIElement ui1;
-    ui1.create();
-    ui1.screenPos = vec2(0, 0);
-    ui1.scale = vec2(0.1, 0.1);
+    UIElement ui;
+    ui.create();
 
-    UIElement ui2;
-    ui2.create();
-    ui2.screenPos = vec2(.5, .5);
-    ui2.scale = vec2(0.5, 0.5);
+    // Test Alignment system
+    ui.position = vec2(0, 0);
+    ui.scale = vec2(0.1, 0.1);
+    ui.align = UIAlignment::ALIGN_TOP_LEFT;
+    m_uiElements.push_back(ui);
 
-    //m_uiElements.push_back(ui1);
-    //m_uiElements.push_back(ui2);
+    ui.position = vec2(0, 0.5);
+    ui.scale = vec2(0.1, 0.2);
+    ui.align = UIAlignment::ALIGN_MID_LEFT;
+    m_uiElements.push_back(ui);
+
+    ui.position = vec2(0, 1);
+    ui.scale = vec2(0.1, 0.1);
+    ui.align = UIAlignment::ALIGN_BOT_LEFT;
+    m_uiElements.push_back(ui);
+
+
+    ui.position = vec2(0.5, 0);
+    ui.scale = vec2(0.2, 0.1);
+    ui.align = UIAlignment::ALIGN_TOP_MID;
+    m_uiElements.push_back(ui);
+
+    ui.position = vec2(0.5, 0.5);
+    ui.scale = vec2(0.1, 0.1);
+    ui.align = UIAlignment::ALIGN_MID_MID;
+    m_uiElements.push_back(ui);
+
+    ui.position = vec2(0.5, 1);
+    ui.scale = vec2(0.2, 0.1);
+    ui.align = UIAlignment::ALIGN_BOT_MID;
+    m_uiElements.push_back(ui);
+
+
+    ui.position = vec2(1, 0);
+    ui.scale = vec2(0.1, 0.1);
+    ui.align = UIAlignment::ALIGN_TOP_RIGHT;
+    m_uiElements.push_back(ui);
+
+    ui.position = vec2(1, 0.5);
+    ui.scale = vec2(0.1, 0.2);
+    ui.align = UIAlignment::ALIGN_MID_RIGHT;
+    m_uiElements.push_back(ui);
+
+    ui.position = vec2(1, 1);
+    ui.scale = vec2(0.1, 0.1);
+    ui.align = UIAlignment::ALIGN_BOT_RIGHT;
+    m_uiElements.push_back(ui);
+
 
     lensFlares[0].loadImage("LensFlare/sun.png");
     for (int n = 1; n < 10; n++) {
@@ -90,25 +129,19 @@ CoreSystem* UIRenderer::create() {
 }
 
 void UIRenderer::renderScene(Window* window, Scene* scene) {
+    glDisable(GL_DEPTH_TEST);
     m_UIShader.use();
-
-    auto cam = &scene->camera;
-
-    vec3 sunPosWorld = -scene->sun.direction.get_unit() * 50;
-    vec4 sunScreenPos = cam->projectionMatrix * cam->viewMatrix * vec4(sunPosWorld, 1);
-    vec2 screenPos = (vec2(sunScreenPos.x/ sunScreenPos.w, sunScreenPos.y/sunScreenPos.w)/2) + vec2(.5);
-    screenPos = vec2(screenPos.x, 1 - screenPos.y);
-    vec2 sun2center = vec2(.5, .5) - screenPos;
-    scalar dist = (sun2center).length();
-    float brightness = 1 - (dist / .6);
 
     glBindVertexArray(UIElementVAO);
     m_UIShader.setInt("tex", 0);
-    m_UIShader.setFloat("factor", 1);
 
+    // Draw all UI elements
     for (auto ui : m_uiElements) {
-        m_UIShader.setVec2("pos", ui.screenPos);
+        vec2 offset = getAlignmentOffset(ui.align, ui.scale);
+        m_UIShader.setVec2("pos", ui.position);
+        m_UIShader.setVec2("offset", offset);
         m_UIShader.setVec2("scale", ui.scale);
+        m_UIShader.setFloat("factor", 1 - ui.transparency);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, ui.tex.glTextureID);
@@ -116,8 +149,29 @@ void UIRenderer::renderScene(Window* window, Scene* scene) {
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
+    drawLensFlare(scene);
+
+    glEnable(GL_DEPTH_TEST);
+}
+
+void UIRenderer::drawLensFlare(Scene* scene) {
+    auto cam = &scene->camera;
+
+    vec3 sunPosWorld = -scene->sun.direction.get_unit() * 50;
+    vec4 sunScreenPos = cam->projectionMatrix * cam->viewMatrix * vec4(sunPosWorld, 1);
+    vec2 screenPos = (vec2(sunScreenPos.x / sunScreenPos.w, sunScreenPos.y / sunScreenPos.w) / 2) + vec2(.5);
+    screenPos = vec2(screenPos.x, 1 - screenPos.y);
+    vec2 sun2center = vec2(.5, .5) - screenPos;
+    scalar dist = (sun2center).length();
+    float brightness = 1 - (dist / .6);
+    vec2 scale = vec2(.25);
+    vec2 alignOff = getAlignmentOffset(UIAlignment::ALIGN_MID_MID, scale);
+
+    // Draw lens flare system
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     m_UIShader.setFloat("factor", brightness);
-    m_UIShader.setVec2("scale", vec2(.25));
+    m_UIShader.setVec2("scale", scale);
+    m_UIShader.setVec2("offset", alignOff);
 
     if (sunScreenPos.w > 0 && brightness > 0) {
         // draw the lens flare
@@ -125,7 +179,7 @@ void UIRenderer::renderScene(Window* window, Scene* scene) {
         scalar spacing = .4;
         vec2 offset = sun2center * spacing;
         for (int n = 0; n < 10; n++) {
-            vec2 pos = screenPos + offset*((scalar)n);
+            vec2 pos = screenPos + offset * ((scalar)n);
 
             m_UIShader.setVec2("pos", pos);
             //m_UIShader.setVec2("scale", vec2(.1) * (7-n)/7);
@@ -142,4 +196,6 @@ void UIRenderer::renderScene(Window* window, Scene* scene) {
     }
 
     glBindVertexArray(0);
+
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
