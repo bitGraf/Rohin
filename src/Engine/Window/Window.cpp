@@ -49,6 +49,8 @@ CoreSystem* Window::create() {
 
     Message::registerMessageType("FileDrop");
 
+    InitGLFW();
+
     create_window();
 
     glfwSetInputMode(m_glfwWindow, GLFW_CURSOR, cursorMode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
@@ -56,16 +58,19 @@ CoreSystem* Window::create() {
     return this;
 }
 
-void Window::create_window(const char* title, int width, int height) {
-    // Set window size
-    m_width = width;
-    m_height = height;
-
+void Window::InitGLFW() {
     // Register GLFW error callback first
     glfwSetErrorCallback(ErrorCallback);
 
     // intialize glfw
     glfwInit();
+}
+
+void Window::create_window(const char* title, int width, int height) {
+    // Set window size
+    m_width = width;
+    m_height = height;
+    cursorOver = false;
 
     // Create window
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -82,7 +87,7 @@ void Window::create_window(const char* title, int width, int height) {
         return;
     }
 
-    makeCurrent();
+    glfwMakeContextCurrent(m_glfwWindow);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         Console::logMessage("Failed to initialize GLAD");
@@ -123,6 +128,7 @@ void Window::create_window(const char* title, int width, int height) {
 void Window::makeCurrent() {
     glfwMakeContextCurrent(m_glfwWindow);
     //sendMessage("WindowContext");
+    glViewport(0, 0, m_width, m_height);
 }
 
 void Window::setPosition(int x, int y) {
@@ -214,6 +220,8 @@ void Window::InputCursorPos(double xpos, double ypos) {
 
 void Window::InputCursorEnter(int entered) {
     sendMessage(Message("InputCursorEnter"));
+
+    cursorOver = (entered == 1);
 }
 
 void Window::InputScroll(double xoffset, double yoffset) {

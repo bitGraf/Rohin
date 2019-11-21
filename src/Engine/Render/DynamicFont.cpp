@@ -1,29 +1,19 @@
 #include "DynamicFont.hpp"
 
-GLuint DynamicFont::textRectVAO = 0;
-Shader DynamicFont::textShader;
-mat4 DynamicFont::orthoMat;
+//GLuint DynamicFont::textRectVAO = 0;
+//Shader DynamicFont::textShader;
+//mat4 DynamicFont::orthoMat;
 
 DynamicFont::DynamicFont() {
 
 }
 
-void DynamicFont::InitTextRendering(u32 width, u32 height) {
+void DynamicFont::InitTextRendering() {
     Console::logMessage("\nInitializing Text Rendering...\n");
-
-    f32 w = static_cast<f32>(width);
-    f32 h = static_cast<f32>(height);
-
-    orthoMat = mat4(
-        vec4(2/w,0,0,0), 
-        vec4(0,-2/h,0,0), 
-        vec4(0,0,-2/99.99,0), 
-        vec4(-1, 1, -100.01/99.99,1));
 
     textShader.create("text.vert", "text.frag", "textShader");
     textShader.use();
     textShader.setInt("fontTex", 0);
-    textShader.setMat4("projectionMatrix", orthoMat);
     
     Console::logMessage("Initializing text rendering VAO\n");
     GLuint vbo;
@@ -53,8 +43,11 @@ void DynamicFont::InitTextRendering(u32 width, u32 height) {
     glBindVertexArray(0);
 }
 
-void DynamicFont::create(std::string filename, float fontSize, int res) {
+void DynamicFont::create(std::string filename, float fontSize,
+        u32 width, u32 height, int res) {
     initialized = false;
+
+    orthoMat.orthoProjection(0, width, height, 0, -1, 1);
 
     //printf("Loading font: \"%s\"\n", filename);
     unsigned char *temp_bitmap = (unsigned char*)malloc(res*res * sizeof(unsigned char));
@@ -168,6 +161,7 @@ void DynamicFont::drawText(float startX, float startY, math::vec4 color, char *t
         textShader.use();
 
         textShader.setVec4("textColor", color);
+        textShader.setMat4("projectionMatrix", orthoMat);
 
         while (*text) {
             if (*text == '\n') {
@@ -180,14 +174,6 @@ void DynamicFont::drawText(float startX, float startY, math::vec4 color, char *t
                 stbtt_aligned_quad q;
                 char c = *text - 32;
                 stbtt_GetBakedQuad(cdata, m_bitmapRes, m_bitmapRes, *text - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
-
-                if (p) {
-                    printf("Draw quad at: (%f, %f) (%f, %f)\n",
-                        q.x0, q.y0, q.x1, q.y1);
-                    printf("UV coords:    (%f, %f) (%f, %f)\n\n",
-                        q.s0, q.t0, q.s1, q.t1);
-                    p = false;
-                }
 
                 float scaleX = q.x1 - q.x0;
                 float scaleY = q.y1 - q.y0;

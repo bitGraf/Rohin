@@ -23,9 +23,6 @@ void RenderManager::handleMessage(Message msg) {
         dt yPos     = msg.data[4];
 
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-            Console::logMessage("Clicked: " + std::to_string(xPos) + ", " + std::to_string(yPos));
-
-            //vec3 worldPos = camera->getWorldPos(xPos, yPos);
         }
     }
 
@@ -94,8 +91,8 @@ CoreSystem* RenderManager::create() {
     Shadowmap::initShadows();
     sm.create(2048, 2048); // resolution of shadow map
 
-    DynamicFont::InitTextRendering(800, 600);
-    font.create("UbuntuMono-Regular.ttf", 20);
+    font.InitTextRendering();
+    font.create("UbuntuMono-Regular.ttf", 20, 800, 600);
 
     return this;
 }
@@ -170,23 +167,27 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     scene->envMap.bindPBR(GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7);
     sm.bind(GL_TEXTURE8);
 
-    /* Render Entities */
-    for (auto ent : scene->m_entities) {
-        // Render entity ent
-        if (ent.m_mesh != nullptr) {
-            setCurrentMesh(ent.m_mesh);
-            if (ent.m_material != nullptr) {
-                setCurrentMaterial(&m_mainShader, ent.m_material);
-            }
+    if (g_options.drawStaticEntities) {
+        /* Render Entities */
+        for (auto ent : scene->m_entities) {
+            // Render entity ent
+            if (ent.m_mesh != nullptr) {
+                setCurrentMesh(ent.m_mesh);
+                if (ent.m_material != nullptr) {
+                    setCurrentMaterial(&m_mainShader, ent.m_material);
+                }
 
-            setTransforms(&m_mainShader, &ent.position, &ent.orientation, &ent.scale);
-            renderPrimitive(ent.m_mesh);
+                setTransforms(&m_mainShader, &ent.position, &ent.orientation, &ent.scale);
+                renderPrimitive(ent.m_mesh);
+            }
         }
     }
 
     /* Render skybox */
     m_skyboxShader.use();
-    renderSkybox(&m_skyboxShader, &scene->camera, &scene->envMap);
+    if (g_options.drawSkybox) {
+        renderSkybox(&m_skyboxShader, &scene->camera, &scene->envMap);
+    }
 
     fb.unbind();
 
@@ -222,9 +223,11 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     glEnable(GL_DEPTH_TEST);
 
     vec4 white(1, 1, 1, 1);
-    char fpsText[64];
-    sprintf(fpsText, "FPS: %.1f", fps);
-    font.drawText(window->m_width-5, 5, white, fpsText, ALIGN_TOP_RIGHT);
+    if (g_options.drawFps) {
+        char fpsText[64];
+        sprintf(fpsText, "FPS: %.1f", fps);
+        font.drawText(window->m_width - 5, 5, white, fpsText, ALIGN_TOP_RIGHT);
+    }
 
     char rpyText[64];
     sprintf(rpyText, "Roll:  %.3f deg", scene->camera.roll);

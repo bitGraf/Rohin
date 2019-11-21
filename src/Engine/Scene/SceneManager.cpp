@@ -144,7 +144,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 /* load skybox */
                 if (!noGLLoad) {
                     envMap.loadSkybox(skyboxFilePath, skyboxFileType);
-                    envMap.preCompute();
+                    //envMap.preCompute();
                 }
 
             } else if (skyboxType.compare("HDR") == 0) {
@@ -153,7 +153,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 /* environment map */
                 if (!noGLLoad) {
                     envMap.loadHDRi(hdrFilePath);
-                    envMap.preCompute();
+                    //envMap.preCompute();
                 }
             }
         } 

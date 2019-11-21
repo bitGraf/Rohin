@@ -22,6 +22,7 @@ public:
     void destroy();
     CoreSystem* create();
 
+    void InitGLFW();
     void create_window(const char* title = "Window", int width = WINDOW_DEFAULT_WIDTH, int height = WINDOW_DEFAULT_HEIGHT);
 
     /* Window functions */
@@ -57,6 +58,7 @@ public:
     int m_width;
     math::vec2 getCursorPos();
     GLFWwindow*     m_glfwWindow;
+    bool cursorOver;
 
 private:
     math::vec2 m_cursorPos;

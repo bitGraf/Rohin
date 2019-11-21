@@ -38,17 +38,16 @@ public:
     GLuint m_bitmapRes;
 
     bool initialized = false;
-    bool p = true;
 
-    void create(std::string filename, float fontSize, int res = 512);
+    void create(std::string filename, float fontSize, 
+        u32 width, u32 height, int res = 512);
 
 
+    GLuint textRectVAO;
+    Shader textShader;
+    mat4 orthoMat;
 
-    static GLuint textRectVAO;
-    static Shader textShader;
-    static mat4 orthoMat;
-
-    static void InitTextRendering(u32 width, u32 height);
+    void InitTextRendering();
 
     void printFontData();
     float getLength(char* text);

@@ -11,9 +11,11 @@
 #include "Render/RenderManager.hpp"
 #include "Input.hpp"
 #include "UI/UIRenderer.hpp"
+#include "OptionsPane.hpp"
 
 /* Core Systems */
 Window g_MainWindow;
+OptionsPane g_OptionWindow;
 FileSystem g_FileSystem;
 //ResourceManager g_ResourceManager;
 SceneManager g_SceneManager;
@@ -44,6 +46,8 @@ int main(int argc, char* argv[]) {
     MessageBus::registerSystem(g_SceneManager.create());
     MessageBus::registerSystem(g_RenderManager.create());
     MessageBus::registerSystem(g_UIRenderer.create());
+    g_OptionWindow.create(&g_MainWindow, true);
+    g_OptionWindow.redraw();
 
     Message::listMessageTypes();
 
@@ -158,6 +162,23 @@ void globalHandleMessage(Message msg) {
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             Console::logMessage("Quitting");
             g_MainWindow.close();
+        }
+    }
+
+    if (msg.isType("InputMouseButton")) {
+        // int button, int action, int mods
+        using dt = Message::Datatype;
+        dt button = msg.data[0];
+        dt action = msg.data[1];
+        dt mods = msg.data[2];
+        dt xPos = msg.data[3];
+        dt yPos = msg.data[4];
+
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+            //Console::logMessage("Clicked: " + std::to_string(xPos) + ", " + std::to_string(yPos));
+            g_OptionWindow.click(xPos, yPos);
+
+            //vec3 worldPos = camera->getWorldPos(xPos, yPos);
         }
     }
 }

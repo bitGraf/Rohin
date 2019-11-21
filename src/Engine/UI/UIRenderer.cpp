@@ -146,7 +146,7 @@ void UIRenderer::renderScene(Window* window, Scene* scene) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, ui.tex.glTextureID);
 
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        //glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
     drawLensFlare(scene);
@@ -170,8 +170,8 @@ void UIRenderer::drawLensFlare(Scene* scene) {
     // Draw lens flare system
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     m_UIShader.setFloat("factor", brightness);
-    m_UIShader.setVec2("scale", scale);
     m_UIShader.setVec2("offset", alignOff);
+    m_UIShader.setVec2("scale", scale);
 
     if (sunScreenPos.w > 0 && brightness > 0) {
         // draw the lens flare
@@ -182,7 +182,6 @@ void UIRenderer::drawLensFlare(Scene* scene) {
             vec2 pos = screenPos + offset * ((scalar)n);
 
             m_UIShader.setVec2("pos", pos);
-            //m_UIShader.setVec2("scale", vec2(.1) * (7-n)/7);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, lensFlares[n].glTextureID);
             glDrawArrays(GL_TRIANGLES, 0, 6);
