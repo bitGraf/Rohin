@@ -94,7 +94,7 @@ void EnvironmentMap::initShaders() {
     captureCam.m_zFar = 10;
     captureCam.m_zNear = .1;
     captureCam.m_aspectRatio = 1;
-    captureCam.updateProjectionMatrix(100, 100);
+    captureCam.updateViewFrustum(100, 100);
 
     captureCam.position = vec3(0.0);
     captureViews[0] = captureCam.lookAt(vec3(0, 0,  1), true).viewMatrix;

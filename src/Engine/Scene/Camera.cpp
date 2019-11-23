@@ -96,6 +96,7 @@ void Camera::updateViewMatrix() {
         mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(-position,1));
 }
 
+/*
 void Camera::updateProjectionMatrix(f32 width, f32 height) {
     f32 tanHalf = tan(m_fov * d2r / 2);
     m_aspectRatio = width / height;
@@ -106,6 +107,59 @@ void Camera::updateProjectionMatrix(f32 width, f32 height) {
         vec4(0, 0, -(m_zFar+m_zNear) / (m_zFar - m_zNear), -1),
         vec4(0, 0, -(2* m_zFar*m_zNear) / (m_zFar - m_zNear), 0)
     ) * mat4(vec4(0,0,-1,0), vec4(0,1,0,0), vec4(1,0,0,0), vec4(0,0,0,1));
+}
+*/
+
+void Camera::updateViewFrustum(f32 width, f32 height) {
+    updateViewMatrix();
+
+    f32 tanHalf = tan(m_fov * d2r / 2);
+    m_aspectRatio = width / height;
+
+    projectionMatrix = mat4(
+        vec4(1 / (m_aspectRatio*tanHalf), 0, 0, 0),
+        vec4(0, 1 / tanHalf, 0, 0),
+        vec4(0, 0, -(m_zFar + m_zNear) / (m_zFar - m_zNear), -1),
+        vec4(0, 0, -(2 * m_zFar*m_zNear) / (m_zFar - m_zNear), 0)
+    ) * mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1));
+
+    scalar vertFOV = m_fov * d2r; //radians
+    scalar horizFOV = 2 * atan(m_aspectRatio*tanHalf); //radians
+
+    scalar s_h = sin(horizFOV / 2);
+    scalar c_h = cos(horizFOV / 2);
+    scalar s_v = sin(vertFOV / 2);
+    scalar c_v = cos(vertFOV / 2);
+
+    mat4 vv = mat4(viewMatrix.row1(), viewMatrix.row2(), viewMatrix.row3(), viewMatrix.row4());
+
+    frustum.top = vv * vec4(-s_v, c_v, 0, 0);
+    frustum.bottom = vv * vec4(-s_v, -c_v, 0, 0);
+
+    frustum.left = vv * vec4(-s_h, 0, -c_h, 0);
+    frustum.right = vv * vec4(-s_h, 0, c_h, 0);
+
+    frustum.zNear = vv * vec4(-1, 0, 0,  m_zNear);
+    frustum.zFar  = vv * vec4( 1, 0, 0, -m_zFar);
+
+    /*mat4 vp = projectionMatrix * viewMatrix;
+
+    frustum.zNear   = -(vp.col4() - vp.col1());
+    frustum.bottom  = -(vp.col4() + vp.col2());
+    frustum.left    = -(vp.col4() + vp.col3());
+
+    frustum.zFar    = -(vp.col4() + vp.col1());
+    frustum.top     = -(vp.col4() - vp.col2());
+    frustum.right   = -(vp.col4() - vp.col3());
+
+    vec4normalizeXYZ_remap(frustum.zNear);
+    vec4normalizeXYZ_remap(frustum.zFar);
+    vec4normalizeXYZ_remap(frustum.bottom);
+    vec4normalizeXYZ_remap(frustum.top);
+    vec4normalizeXYZ_remap(frustum.left);
+    vec4normalizeXYZ_remap(frustum.right);*/
+
+    bool heckYea = true;
 }
 
 Camera& Camera::lookAt(vec3 target, bool UpdateMatrix) {
@@ -125,4 +179,29 @@ Camera& Camera::lookAt(vec3 target, bool UpdateMatrix) {
     if (UpdateMatrix) updateViewMatrix();
 
     return *this;
+}
+
+bool Camera::withinFrustum(vec3 center, scalar radius) {
+    vec3 nc = center;
+
+    if (nc.dot(frustum.zNear.XYZ()) + frustum.zNear.w - radius > 0) {
+        return false;
+    }
+    if (nc.dot(frustum.zFar.XYZ()) + frustum.zFar.w - radius > 0) {
+        return false;
+    }
+    if (nc.dot(frustum.left.XYZ()) + frustum.left.w - radius > 0) {
+        return false;
+    }
+    if (nc.dot(frustum.right.XYZ()) + frustum.right.w - radius > 0) {
+        return false;
+    }
+    if (nc.dot(frustum.bottom.XYZ()) + frustum.bottom.w - radius > 0) {
+        return false;
+    }
+    if (nc.dot(frustum.top.XYZ()) + frustum.top.w - radius > 0) {
+        return false;
+    }
+
+    return true;
 }

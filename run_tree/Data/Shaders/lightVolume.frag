@@ -29,7 +29,7 @@ const mat4 ditherPattern = mat4(
 
 float ShadowCalculation(vec4 fragPosLightSpace);
 float ComputeScattering(float lightDotView);
-const float G_SCATTERING = 0.0;
+const float G_SCATTERING = 0.5;
 const float PI = 3.14159265359;
 
 void main() {
@@ -70,7 +70,7 @@ void main() {
     vec3 color_in = texture(tex, tex_coord).rgb;
     vec3 color_out = color_in + accumFog;
 
-    FragColor = vec4(color_out, 1);
+    FragColor = vec4(color_in, 1);
 }
 
 float ComputeScattering(float lightDotView) {

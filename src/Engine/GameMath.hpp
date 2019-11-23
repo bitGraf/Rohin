@@ -71,6 +71,8 @@ namespace math {
         vec4 normalize(); ///< Normalize vector and return
         scalar dot(vec4 v); ///< Dot product with another vec2
 
+        vec3 XYZ(); ///< pseudo swizzle
+
         friend std::ostream& operator<<(std::ostream& os, const vec4& v); ///< Stream operator overload
 
         scalar w, x, y, z;
@@ -242,6 +244,8 @@ namespace math {
     mat4 operator- (const mat4& M);                 ///< -Matrix4
 
     mat3 createYawPitchRollMatrix(scalar yaw, scalar pitch, scalar roll);
+
+    void vec4normalizeXYZ_remap(math::vec4 &v);
 }
 
 #endif

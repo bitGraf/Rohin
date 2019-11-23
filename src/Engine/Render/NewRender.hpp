@@ -9,6 +9,7 @@
 #include "BatchRender.hpp"
 #include "Window\Framebuffer.hpp"
 #include "DynamicFont.hpp"
+#include "Utils.hpp"
 
 class BatchRenderer : public CoreSystem {
 public:
@@ -40,6 +41,7 @@ private:
 
     using _dur = long long;
     _dur dur_fullRenderPass;
+    MovingAverage<_dur, 100> avgRenderPass;
     _dur dur_shadowPass;
     _dur dur_staticPass;
     _dur dur_dynamicPass;
@@ -66,7 +68,7 @@ private:
     Shader m_shadowPass;
     Shader m_staticPass;
     //Shader m_dynamicPass;
-    //Shader m_skyboxPass;
+    Shader m_skyboxPass;
     Shader m_lightVolumePass;
 
     Shader m_toneMap;

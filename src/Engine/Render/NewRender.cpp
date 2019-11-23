@@ -21,8 +21,9 @@ void BatchRenderer::handleMessage(Message msg) {
 
             m_shadowPass.create("shadow.vert", "shadow.frag", "shadowPassShader");
             m_staticPass.create("static_pbr_withShadow.vert", "static_pbr_withShadow.frag", "staticPassShader");
-            m_toneMap.create("toneMap.vert", "toneMap.frag", "toneMapShader");
+            m_skyboxPass.create("skybox.vert", "skybox.frag", "skyboxPassShader");
             m_lightVolumePass.create("lightVolume.vert", "lightVolume.frag", "lightVolumeShader");
+            m_toneMap.create("toneMap.vert", "toneMap.frag", "toneMapShader");
             m_gammaCorrect.create("toneMap.vert", "gammaCorrect.frag", "gammaCorrectShader");
         }
     }
@@ -31,8 +32,9 @@ void BatchRenderer::destroy() {}
 CoreSystem* BatchRenderer::create() {
     m_shadowPass.create("shadow.vert", "shadow.frag", "shadowPassShader");
     m_staticPass.create("static_pbr_withShadow.vert", "static_pbr_withShadow.frag", "staticPassShader");
-    m_toneMap.create("toneMap.vert", "toneMap.frag", "toneMapShader");
+    m_skyboxPass.create("skybox.vert", "skybox.frag", "skyboxPassShader");
     m_lightVolumePass.create("lightVolume.vert", "lightVolume.frag", "lightVolumeShader");
+    m_toneMap.create("toneMap.vert", "toneMap.frag", "toneMapShader");
     m_gammaCorrect.create("toneMap.vert", "gammaCorrect.frag", "gammaCorrectShader");
 
     blackTex.loadImage("black.png");
@@ -222,6 +224,19 @@ void BatchRenderer::dynamicPass(BatchDrawCall* batch) {
 }
 
 void BatchRenderer::skyboxPass(BatchDrawCall* batch) {
+    m_skyboxPass.use();
+    mat4 identity;
+    m_skyboxPass.setMat4("viewMatrix", mat4(mat3(batch->cameraView)));
+    m_skyboxPass.setMat4("projectionMatrix", batch->cameraProjection);
+
+    m_skyboxPass.setInt("skybox", 0);
+    //skybox->bind(GL_TEXTURE0);
+    batch->env->bindSkybox(GL_TEXTURE0);
+
+    glDepthFunc(GL_LEQUAL);
+    glBindVertexArray(batch->env->skyboxVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+    glDepthFunc(GL_LESS);
 }
 
 void BatchRenderer::lightVolumePass(BatchDrawCall* batch) {
@@ -298,7 +313,9 @@ void BatchRenderer::renderDebug(BatchDrawCall* batch) {
 
     long long scale = 1LL;
     int y = -13;
-    sprintf(text, "Render - - - %-3lld us", dur_fullRenderPass/ scale);
+    sprintf(text, "Render - - - %-3lld us (%-3lld us avg.)", 
+        dur_fullRenderPass/ scale,
+        static_cast<long long>(avgRenderPass.getCurrentAverage()) / scale);
     debugFont.drawText(5, y+=18, white, text, ALIGN_TOP_LEFT);
     sprintf(text, " Shadow- - - %-3lld us", dur_shadowPass / scale);
     debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
@@ -341,4 +358,5 @@ BatchRenderer::_dur BatchRenderer::profileRenderPass() {
     return duration;
 }
 void BatchRenderer::endProfile() {
+    avgRenderPass.addSample(dur_fullRenderPass);
 }

@@ -21,6 +21,8 @@ struct DrawCall {
 struct BatchDrawCall {
     /* Common to all rendering */
     mat4 cameraViewProjectionMatrix;
+    mat4 cameraView;
+    mat4 cameraProjection;
     vec3 camPos;
 
     mat4 sunViewProjectionMatrix;

@@ -16,9 +16,18 @@ public:
     static void init();
     void update(double dt);
     void updateViewMatrix();
-    void updateProjectionMatrix(f32 width, f32 height);
+    //void updateProjectionMatrix(f32 width, f32 height);
+    void updateViewFrustum(f32 width, f32 height);
+
+    bool withinFrustum(vec3 center, scalar radius);
 
     Camera& lookAt(vec3 target, bool UpdateMatrix = false);
+
+    using Plane = math::vec4;
+    struct Frustum_t {
+        Plane top, bottom, right, left, zNear, zFar;
+    };
+    Frustum_t frustum;
 
 //private:
     mat4 viewMatrix;

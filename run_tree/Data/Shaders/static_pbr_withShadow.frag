@@ -92,7 +92,7 @@ void main()
     gPosition = pass_fragPos;
 
     //Read all texture information
-    vec3 albedo     = vec3(texture(material.baseColorTexture, pass_tex) * material.baseColorFactor);
+    vec3 albedo     = pow(vec3(texture(material.baseColorTexture, pass_tex) * material.baseColorFactor), vec3(2.2));
     vec3 normal2    = pass_TBN * vec3(texture(material.normalTexture, pass_tex));
     float ao        = vec3(texture(material.occlusionTexture, pass_tex)).r;
     float roughness = material.roughnessFactor * texture(material.metallicRoughnessTexture, pass_tex).g;

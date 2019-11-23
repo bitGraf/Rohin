@@ -223,9 +223,6 @@ void Scene::update(double dt) {
     objYaw += 12 * dt;
     m_entities[0].orientation.toYawPitchRoll(objYaw - 90, 0, 0);
 
-    camera.updateViewMatrix();
-    camera.updateProjectionMatrix(800, 600);
-
     if (cameraMode) {
         //camYaw -= 12 * dt;
 
@@ -260,8 +257,11 @@ void SceneManager::getRenderBatch(BatchDrawCall* batch) {
 
     if (m_currentScene) {
         // Set Camera
+        m_currentScene->camera.updateViewFrustum(800, 600);
         batch->cameraViewProjectionMatrix = m_currentScene->camera.projectionMatrix *
             m_currentScene->camera.viewMatrix;
+        batch->cameraView = m_currentScene->camera.viewMatrix;
+        batch->cameraProjection = m_currentScene->camera.projectionMatrix;
         batch->camPos = m_currentScene->camera.position;
 
         mat4 lightView;
@@ -284,7 +284,7 @@ void SceneManager::getRenderBatch(BatchDrawCall* batch) {
         for (int n = 0; n < m_currentScene->m_entities.size(); n++) {
             auto ent = &m_currentScene->m_entities[n];
 
-            if (true) { // Check to see if the entity is in the camera frustum
+            if (m_currentScene->camera.withinFrustum(ent->position, 0.25)) { // Check to see if the entity is in the camera frustum
                 mat4 modelMatrix = (
                     mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(ent->position, 1)) *
                     mat4(ent->orientation) *

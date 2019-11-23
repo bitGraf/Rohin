@@ -669,6 +669,16 @@ math::mat3 math::createYawPitchRollMatrix(scalar yaw, scalar pitch, scalar roll)
     return m;
 }
 
+void math::vec4normalizeXYZ_remap(math::vec4 &v) {
+    scalar f = 1 / vec3(v).length();
+
+    v = f * vec4(-v.z, v.y, v.x, v.w);
+}
+
+math::vec3 math::vec4::XYZ() {
+    return vec3(x, y, z);
+}
+
 
 /* ostream function overloads */
 std::ostream & math::operator<<(std::ostream & os, const vec2 & v)
