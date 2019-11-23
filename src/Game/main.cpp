@@ -16,8 +16,7 @@
 /* Core Systems */
 Window g_MainWindow;
 OptionsPane g_OptionWindow;
-FileSystem g_FileSystem;
-//ResourceManager g_ResourceManager;
+ResourceManager g_ResourceManager;
 SceneManager g_SceneManager;
 RenderManager g_RenderManager;
 UIRenderer g_UIRenderer;
@@ -41,23 +40,20 @@ int main(int argc, char* argv[]) {
     MessageBus::setGlobalMessageHandleCallback(globalHandleMessage);
 
     MessageBus::registerSystem(g_MainWindow.create());
-    MessageBus::registerSystem(g_FileSystem.create());
+    //MessageBus::registerSystem(g_FileSystem.create());
     MessageBus::registerSystem(g_ResourceManager.create());
     MessageBus::registerSystem(g_SceneManager.create());
     MessageBus::registerSystem(g_RenderManager.create());
     MessageBus::registerSystem(g_UIRenderer.create());
+
     g_OptionWindow.create(&g_MainWindow, true);
     g_OptionWindow.redraw();
 
     Message::listMessageTypes();
 
-    // Other sets
-    g_ResourceManager.setFileSystem(&g_FileSystem);
-
     /* TESTING START */
     EnvironmentMap::InitVAO();
     g_SceneManager.loadScenes(&g_ResourceManager); // Load dummy scene to test
-    g_ResourceManager.createGrid(.5, 41, 10);
     /*  TESTING END  */
 
     // Create console thread that listens for commands
@@ -119,16 +115,12 @@ int main(int argc, char* argv[]) {
 
     glfwTerminate();
 
-    //std::this_thread::sleep_for(std::chrono::milliseconds(500));
-
     // Destroy all subsystems
     g_ResourceManager.destroy();
-    g_FileSystem.destroy();
     Console::destroy();
     g_MainWindow.destroy();
     g_RenderManager.destroy();
     g_UIRenderer.destroy();
-    //g_ConfigManager.destroy();
 
     // End threads
     Console::rejoin();

@@ -132,8 +132,12 @@ void main()
     vec3 ambient    = (kD * diffuse + specular) * ao;
     
     vec3 color = ambient + Lo + emission;
+
+    vec3 s = vec3(ShadowCalculation(pass_fragPosLightSpace, N, sun.direction));
     
     FragColor = vec4(color, 1);
+
+    //FragColor = vec4(.2, .6, .5, 1);
 }
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0, float roughness) {

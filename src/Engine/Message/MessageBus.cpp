@@ -11,6 +11,7 @@ MessageBus::MessageBus() {
 void MessageBus::create() {
     printf("MessageBus created\n");
     hasMessages = true;
+    globalFunc = nullptr;
 }
 void MessageBus::processEntireQueue() {
     while (hasMessages) {
@@ -63,7 +64,8 @@ void MessageBus::processMessage(Message msg) {
     for (auto system : m_systems) {
         system->handleMessage(msg);
     }
-    globalFunc(msg);
+    if (globalFunc)
+        globalFunc(msg);
 }
 
 void MessageBus::setGlobalMessageHandleCallback(handleMessageFnc f) {

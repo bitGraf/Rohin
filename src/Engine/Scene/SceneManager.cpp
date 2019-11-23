@@ -20,7 +20,7 @@ void SceneManager::handleMessage(Message msg) {
         if (key == GLFW_KEY_BACKSLASH && action == GLFW_PRESS) {
             Console::logMessage("Reloading level");
 
-            m_currentScene->loadFromFile(&g_ResourceManager, "", false);
+            //m_currentScene->loadFromFile(&g_ResourceManager, "", false);
         }
 
         if (key == GLFW_KEY_C && action == GLFW_PRESS) {
@@ -80,7 +80,6 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
     u32 numPointLightsLoaded = 0;
 
     m_entities.clear();
-    m_picks.clear();
 
     std::string line;
     while (std::getline(infile, line))
@@ -118,7 +117,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
             if (entType.compare("DEFAULT") == 0) {
                 // Create entity
                 Entity ent;
-                ent.parseLevelData(iss);
+                ent.parseLevelData(iss, resource);
 
                 m_entities.push_back(ent);
                 recognizeCustomEntity(entType);
@@ -144,7 +143,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 /* load skybox */
                 if (!noGLLoad) {
                     envMap.loadSkybox(skyboxFilePath, skyboxFileType);
-                    //envMap.preCompute();
+                    envMap.preCompute();
                 }
 
             } else if (skyboxType.compare("HDR") == 0) {
@@ -153,7 +152,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 /* environment map */
                 if (!noGLLoad) {
                     envMap.loadHDRi(hdrFilePath);
-                    //envMap.preCompute();
+                    envMap.preCompute();
                 }
             }
         } 
@@ -200,8 +199,8 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 spotLights[numSpotLightsLoaded].color = color;
                 spotLights[numSpotLightsLoaded].position = pos;
                 spotLights[numSpotLightsLoaded].direction = dir;
-                spotLights[numSpotLightsLoaded].inner_cutoff = cutoff.x;
-                spotLights[numSpotLightsLoaded].outer_cutoff = cutoff.y;
+                spotLights[numSpotLightsLoaded].inner_cutoff = cos(cutoff.x * d2r);
+                spotLights[numSpotLightsLoaded].outer_cutoff = cos(cutoff.y * d2r);
                 numSpotLightsLoaded++;
             }
         }
@@ -217,13 +216,6 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
         }
     }
     infile.close();
-
-    gridVAO = &resource->gridVAO;
-    numVerts = &resource->numGridVerts;
-
-    for (int n = 0; n < m_entities.size(); n++) {
-        m_picks.push_back(&m_entities[n]);
-    }
 }
 
 
@@ -232,6 +224,7 @@ void Scene::update(double dt) {
     m_entities[0].orientation.toYawPitchRoll(objYaw - 90, 0, 0);
 
     camera.updateViewMatrix();
+    camera.updateProjectionMatrix(800, 600);
 
     if (cameraMode) {
         //camYaw -= 12 * dt;
@@ -259,3 +252,50 @@ void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss
 }
 
 #endif
+
+
+void SceneManager::getRenderBatch(BatchDrawCall* batch) {
+    if (batch == nullptr)
+        return;
+
+    if (m_currentScene) {
+        // Set Camera
+        batch->cameraViewProjectionMatrix = m_currentScene->camera.projectionMatrix *
+            m_currentScene->camera.viewMatrix;
+        batch->camPos = m_currentScene->camera.position;
+
+        mat4 lightView;
+        lightView.lookAt(-m_currentScene->sun.direction.get_unit() * 50, vec3(), vec3(0, 1, 0));
+
+        batch->sunViewProjectionMatrix =
+            Shadowmap::lightProjection *
+            lightView;
+
+        // Set lights
+        batch->sun = &m_currentScene->sun;
+        batch->pointLights = &m_currentScene->pointLights;
+        batch->spotLights = &m_currentScene->spotLights;
+
+        // Environment
+        batch->env = &m_currentScene->envMap;
+
+        batch->numCalls = 0;
+        // pull every entity
+        for (int n = 0; n < m_currentScene->m_entities.size(); n++) {
+            auto ent = &m_currentScene->m_entities[n];
+
+            if (true) { // Check to see if the entity is in the camera frustum
+                mat4 modelMatrix = (
+                    mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(ent->position, 1)) *
+                    mat4(ent->orientation) *
+                    mat4(ent->scale.x, ent->scale.y, ent->scale.z, 1));
+
+                batch->calls[batch->numCalls].modelMatrix = modelMatrix;
+                batch->calls[batch->numCalls].numVerts = ent->m_mesh->numFaces * 3;
+                batch->calls[batch->numCalls].VAO = ent->m_mesh->VAO;
+                batch->calls[batch->numCalls].mat = ent->m_material;
+                batch->numCalls++;
+            }
+        }
+    }
+}

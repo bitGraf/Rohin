@@ -28,20 +28,20 @@ void Entity::setMaterial(materialRef _mat) {
     m_material = _mat;  
 }
 
-void Entity::parseLevelData(std::istringstream &iss) {
+void Entity::parseLevelData(std::istringstream &iss, ResourceManager* resource) {
     std::cout << "Default Entity parse" << std::endl;
 
     std::string entityName = getNextString(iss);
     std::string entityMesh = getNextString(iss);
     std::string entityMat = getNextString(iss);
     math::vec3 entityPos = getNextVec3(iss);
-    scalar entityScale = getNextFloat(iss);
-    scalar entityYaw = getNextFloat(iss);
+    math::scalar entityScale = getNextFloat(iss);
+    math::scalar entityYaw = getNextFloat(iss);
 
     name = entityName;
-    setMesh(g_ResourceManager.getMesh(entityMesh));
-    setMaterial(g_ResourceManager.getMaterial(entityMat));
+    setMesh(resource->getMesh(entityMesh));
+    setMaterial(resource->getMaterial(entityMat));
     position = entityPos;
-    scale = vec3(entityScale);
+    scale = math::vec3(entityScale);
     orientation = math::createYawPitchRollMatrix(entityYaw, 0, 0);
 }

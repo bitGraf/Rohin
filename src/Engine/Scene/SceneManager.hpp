@@ -12,6 +12,8 @@
 #include "Camera.hpp"
 #include "Lights.hpp"
 #include "GLFW\glfw3.h"
+#include "Render\BatchRender.hpp"
+#include "Render\Shadowmap.hpp"
 
 #include "EnvironmentMap.hpp"
 #include "Utils.hpp"
@@ -28,7 +30,6 @@ public:
 
 //private:
     std::vector<Entity> m_entities;
-    std::vector<Pickable*> m_picks;
     Camera camera;
     u8 cameraMode;
 
@@ -39,9 +40,6 @@ public:
     DirLight sun;
     PointLight pointLights[NUM_POINTLIGHTS];
     SpotLight spotLights[NUM_SPOTLIGHTS];
-
-    GLuint* gridVAO;
-    GLuint* numVerts;
 
     EnvironmentMap envMap;
 
@@ -60,6 +58,7 @@ public:
     CoreSystem* create();
 
     void loadScenes(ResourceManager* resource, bool testing = false);
+    void getRenderBatch(BatchDrawCall* batch);
 
     Scene* getCurrentScene();
 

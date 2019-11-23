@@ -26,19 +26,13 @@ public:
     void destroy();
     CoreSystem* create();
 
-    void setFileSystem(FileSystem* _filesys);
-
     void loadModelFromFile(std::string path, bool binary);
 
     meshRef getMesh(std::string);
     materialRef getMaterial(std::string);
 
-    void createGrid(f32 lineSep, u32 numLines, f32 gridSize);
-    GLuint gridVAO;
-    GLuint numGridVerts;
-
 private:
-    FileSystem*     m_FileSystem;
+    FileSystem m_FileSystem;
     //MemoryManager*  m_memoryManager;
     PoolAllocator m_pool;
 
@@ -58,8 +52,6 @@ private:
     void initializeTriangleMesh(TriangleMesh* mesh);
     void initializeTexture(tinygltf::Model* root, Material_Texture* mTex);
 };
-
-extern ResourceManager g_ResourceManager;
 
 
 

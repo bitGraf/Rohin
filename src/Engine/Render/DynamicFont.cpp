@@ -3,6 +3,7 @@
 //GLuint DynamicFont::textRectVAO = 0;
 //Shader DynamicFont::textShader;
 //mat4 DynamicFont::orthoMat;
+unsigned char DynamicFont::ttf_buffer[DynamicFont::buffer_size];
 
 DynamicFont::DynamicFont() {
 

@@ -11,6 +11,7 @@
 #include "DynamicFont.hpp"
 #include "Shadowmap.hpp"
 #include "Resource\Texture.hpp"
+//#include "BatchRender.hpp"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,15 +28,16 @@ public:
         
     /* System Unique functions */
     void renderScene(Window* window, Scene* scene);
-    void renderEditor(Window* window, Scene* scene);
     void lastFrameTime(long long micro);
 
+    //void renderBatch(BatchDrawCall* batch);
+
 private:
-    Shader m_mainShader, m_lineShader,
+    Shader m_mainShader,
         m_skyboxShader, m_fullscreenShader, 
         m_shadowShader;
 
-    Framebuffer fb;
+    Framebuffer_color_pos fb;
     Shadowmap sm;
     Texture blackTex, whiteTex, normalTex, greenTex;
 
@@ -49,7 +51,6 @@ private:
     void setCurrentMaterial(Shader* shader, const Material* material);
     void setTransforms(Shader* shader, const math::vec3* pos, const math::mat3* orientation, const math::vec3* scale);
     void renderPrimitive(const TriangleMesh* mesh);
-    void renderGrid(Shader* shader, GLuint vao, GLuint numVerts);
     void renderSkybox(Shader* shader, Camera* camera, EnvironmentMap* skybox);
 };
 

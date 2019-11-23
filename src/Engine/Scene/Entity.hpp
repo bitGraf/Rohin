@@ -8,11 +8,10 @@
 #include "GameMath.hpp"
 #include "Models.hpp"
 #include "Material.hpp"
-#include "Editor\Pickable.hpp"
 #include "Utils.hpp"
 #include "Resource\ResourceManager.hpp"
 
-class Entity : public Pickable {
+class Entity {
 public:
     Entity();
     ~Entity();
@@ -25,7 +24,7 @@ public:
     void update(double dt);
     void render();
 
-    virtual void parseLevelData(std::istringstream &iss);
+    virtual void parseLevelData(std::istringstream &iss, ResourceManager* resource);
 
     void setMesh(meshRef _mesh);
     void setMaterial(materialRef _mat);

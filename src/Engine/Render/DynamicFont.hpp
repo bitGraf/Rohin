@@ -29,7 +29,7 @@ public:
     DynamicFont();
 
     static const int buffer_size = 1 << 20;
-    unsigned char ttf_buffer[buffer_size];//one megabyte?
+    static unsigned char ttf_buffer[buffer_size];//one megabyte?
                                       //unsigned char temp_bitmap[512*512];
 
     stbtt_bakedchar cdata[96]; // ASCII 32..126 is 95 glyphs

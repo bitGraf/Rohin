@@ -14,7 +14,7 @@ public:
     bool updateScene = true;
 
     // Debug
-    bool limitFramerate = false;
+    bool limitFramerate = true;
     bool drawFps = true;
 };
 

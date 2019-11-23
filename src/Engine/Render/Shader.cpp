@@ -159,9 +159,9 @@ void Shader::setMaterial(const std::string &name, const Material* mat) const {
 }
 
 void Shader::setLights(
-    const DirLight* sun, 
-    PointLight* pointLights, 
-    SpotLight* spotLights) const {
+    const DirLight* sun,
+    PointLight(*pointLights)[4],
+    SpotLight(*spotLights)[4]) const {
     using namespace math;
 
     /* Set Directional light */
@@ -172,27 +172,27 @@ void Shader::setLights(
     /* Point Lights */
     for (int n = 0; n < 4; n++) {
         setVec3("pointLights[" + std::to_string(n) + 
-            "].position", pointLights[n].position);
+            "].position", (*pointLights)[n].position);
         setVec4("pointLights[" + std::to_string(n) +
-            "].color", pointLights[n].color);
+            "].color", (*pointLights)[n].color);
         setFloat("pointLights[" + std::to_string(n) +
-            "].strength", pointLights[n].strength);
+            "].strength", (*pointLights)[n].strength);
     }
 
     /* Spot Lights */
     for (int n = 0; n < 4; n++) {
         setVec3("spotLights[" + std::to_string(n) +
-            "].position", spotLights[n].position);
+            "].position", (*spotLights)[n].position);
         setVec3("spotLights[" + std::to_string(n) +
-            "].direction", spotLights[n].direction);
+            "].direction", (*spotLights)[n].direction);
         setVec4("spotLights[" + std::to_string(n) +
-            "].color", spotLights[n].color);
+            "].color", (*spotLights)[n].color);
         setFloat("spotLights[" + std::to_string(n) +
-            "].strength", spotLights[n].strength);
+            "].strength", (*spotLights)[n].strength);
         setFloat("spotLights[" + std::to_string(n) +
-            "].inner_cutoff", spotLights[n].inner_cutoff);
+            "].inner_cutoff", (*spotLights)[n].inner_cutoff);
         setFloat("spotLights[" + std::to_string(n) +
-            "].outer_cutoff", spotLights[n].outer_cutoff);
+            "].outer_cutoff", (*spotLights)[n].outer_cutoff);
     }
 }
 

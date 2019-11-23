@@ -38,7 +38,6 @@ void RenderManager::handleMessage(Message msg) {
             Console::logMessage("Reloading Shaders");
 
             m_mainShader.create("static_pbr_withShadow.vert", "static_pbr_withShadow.frag", "mainShader_withShadows");
-            m_lineShader.create("line.vert", "line.frag", "lineShader");
             m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
             m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
             m_shadowShader.create("shadow.vert", "shadow.frag", "shadowShader");
@@ -53,7 +52,6 @@ void RenderManager::destroy() {
 CoreSystem* RenderManager::create() {
     //m_mainShader.create("static_pbr.vert", "static_pbr.frag", "mainShader");
     m_mainShader.create("static_pbr_withShadow.vert", "static_pbr_withShadow.frag", "mainShader_withShadows");
-    m_lineShader.create("line.vert", "line.frag", "lineShader");
     m_skyboxShader.create("skybox.vert", "skybox.frag", "skyboxShader");
     m_fullscreenShader.create("fullscreen_quad.vert", "fullscreen_quad.frag", "fullscreenShader");
     m_shadowShader.create("shadow.vert", "shadow.frag", "shadowShader");
@@ -139,17 +137,12 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     glClearBufferfv(GL_COLOR, 1, red);
     glEnable(GL_DEPTH_TEST);
 
-    /* Render Line Entities */
-    m_lineShader.use();
-    setCamera(&m_lineShader, &scene->camera);
-    //renderGrid(&m_lineShader, *scene->gridVAO, *scene->numVerts);
-
     /* Render Poly Entities */
     m_mainShader.use();
     m_mainShader.setLights(
         &scene->sun,
-        scene->pointLights,
-        scene->spotLights
+        &scene->pointLights,
+        &scene->spotLights
     ); // TODO: remove this
     setCamera(&m_mainShader, &scene->camera);
     //m_mainShader.setMat4("viewMatrix", lightView);
@@ -241,59 +234,6 @@ void RenderManager::renderScene(Window* window, Scene* scene) {
     font.drawText(window->m_width - 5, 115, white, rpyText, ALIGN_TOP_RIGHT);
 }
 
-void RenderManager::renderEditor(Window* window, Scene* scene) {
-    /* Render fullscreen quad */
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    m_fullscreenShader.use();
-    m_fullscreenShader.setInt("tex", 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, fb.getTexture());
-
-    glBindVertexArray(fullscreenVAO);
-    glDisable(GL_DEPTH_TEST);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
-    glEnable(GL_DEPTH_TEST);
-
-    char selectName[128] = "Selected: ";
-
-    vec2 cursorPos = window->getCursorPos();
-    int n = 0;
-    for (auto pick : scene->m_entities) {
-        mat4 modelMatrix = (
-            mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(pick.position, 1)) *
-            mat4(pick.orientation) *
-            mat4(pick.scale.x, pick.scale.y, pick.scale.z, 1));
-
-        pick.calcScreenSpace(
-            scene->camera.projectionMatrix,
-            scene->camera.viewMatrix,
-            modelMatrix,
-            vec3(),
-            window->m_width, window->m_height);
-
-        vec2 screenPos = vec2(pick.screenPos.x, pick.screenPos.y);
-
-        f32 dist = (screenPos - cursorPos).length();
-        if (dist < pick.pickRadius) {
-            sprintf(selectName, "%s[%s]", selectName, pick.name.c_str());
-        }
-    }
-
-    vec4 white(1, 1, 1, 1);
-    font.drawText(5, 5, white, "Editor");
-    char text[128];
-    sprintf(text, "Cursor pos: %.0f, %.0f", cursorPos.x, cursorPos.y);
-    font.drawText(5, 595, white, text, ALIGN_BOT_LEFT);
-    font.drawText(795, 595, white, selectName, ALIGN_BOT_RIGHT);
-    char fpsText[64];
-    sprintf(fpsText, "FPS: %.1f", fps);
-    font.drawText(window->m_width-5, 5, white, fpsText, ALIGN_TOP_RIGHT);
-}
-
-
 void RenderManager::setCamera(Shader* shader, Camera* camera) {
     shader->setMat4("viewMatrix", camera->viewMatrix);
     shader->setMat4("projectionMatrix", camera->projectionMatrix);
@@ -341,12 +281,6 @@ void RenderManager::renderPrimitive(const TriangleMesh* mesh) {
     glDrawElements(GL_TRIANGLES, mesh->numFaces*3, GL_UNSIGNED_SHORT, 0);
 }
 
-void RenderManager::renderGrid(Shader* shader, GLuint vao, GLuint numVerts) {
-    shader->setVec4("color", vec4(0,1,0,1));
-    glBindVertexArray(vao);
-    glDrawArrays(GL_LINES, 0, numVerts);
-}
-
 void RenderManager::renderSkybox(Shader* shader, Camera* camera, EnvironmentMap* skybox) {
     shader->setMat4("viewMatrix", mat4(mat3(camera->viewMatrix)));
     shader->setMat4("projectionMatrix", camera->projectionMatrix);
@@ -364,3 +298,20 @@ void RenderManager::renderSkybox(Shader* shader, Camera* camera, EnvironmentMap*
 void RenderManager::lastFrameTime(long long k) {
     fps = 1000000.0 / static_cast<f32>(k);
 }
+
+/*void RenderManager::renderBatch(BatchDrawCall* batch) {
+    for (int n = 0; n < batch->numCalls; n++) {
+        DrawCall* call = &batch->calls[n];
+        if (call->VAO) {
+            switch (call->type) {
+            case DrawCall::DRAW_TYPE::Shadow:
+                m_shadowShader.use();
+                m_shadowShader.setMat4("modelMatrix", call->modelMatrix);
+                break;
+            }
+
+            glBindVertexArray(call->VAO);
+            glDrawElements(GL_TRIANGLES, call->numVerts, GL_UNSIGNED_SHORT, 0);
+        }
+    }
+}*/

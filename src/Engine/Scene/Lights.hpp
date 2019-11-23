@@ -8,10 +8,7 @@ using namespace math;
 class Light {
 public:
     vec4 color;
-    scalar strength;
-
-//private:
-    Light() {}
+    scalar strength = 0;
 };
 
 class PointLight : public Light {
@@ -28,8 +25,8 @@ class SpotLight : public Light {
 public:
     vec3 position;
     vec3 direction;
-    f32 inner_cutoff;
-    f32 outer_cutoff;
+    f32 inner_cutoff = 0;
+    f32 outer_cutoff = 0;
 };
 
 #endif

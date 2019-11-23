@@ -36,8 +36,9 @@ public:
     void setMat4(const std::string &name, math::mat4 value) const;
 
     void setMaterial(const std::string &name, const Material* mat) const;
-    void setLights(const DirLight* sun, 
-        PointLight* pointLights, SpotLight* spotLights) const;
+    void setLights(const DirLight* sun,
+        PointLight (*pointLights)[4],
+        SpotLight (*spotLights)[4]) const;
 
     void use();
 
