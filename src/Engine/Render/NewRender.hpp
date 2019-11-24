@@ -22,7 +22,7 @@ public:
     CoreSystem* create();
 
     /* System Unique functions */
-    void renderBatch(BatchDrawCall* batch);
+    void renderBatch(BatchDrawCall* batch, double frameCount, long long lastFrame);
 
     // Render Passes
     void shadowPass(BatchDrawCall* batch);
@@ -32,7 +32,7 @@ public:
     void lightVolumePass(BatchDrawCall* batch);
     void toneMap(BatchDrawCall* batch);
     void gammaCorrect(BatchDrawCall* batch);
-    void renderDebug(BatchDrawCall* batch);
+    void renderDebug(BatchDrawCall* batch, double frameCount, long long lastFrame);
 
 private:
     using _clock = std::chrono::system_clock;

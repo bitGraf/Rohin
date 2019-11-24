@@ -6,6 +6,8 @@
 #include "Render\NewRender.hpp"
 #include "Scene\SceneManager.hpp"
 
+const bool BUSY_LOOP = true;
+
 class Engine {
 public:
     Engine();
@@ -30,8 +32,12 @@ private:
     ResourceManager m_Resource;
 
     /* Frame Timing */
-    using _clock = std::chrono::system_clock;
-    using _time = std::chrono::system_clock::time_point;
+    using engine_clock = std::chrono::steady_clock;
+    using Framerate = std::chrono::duration<engine_clock::rep, std::ratio<1, 50>>;
+    using Framerate_MAX = std::chrono::duration<engine_clock::rep, std::ratio<1, 250>>;
+    MovingAverage<long long, 50> fpsAvg;
+    long long lastFrameTime;
+    double dt;
 };
 
 #endif

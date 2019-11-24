@@ -15,6 +15,7 @@ public:
 
     // Debug
     bool limitFramerate = true;
+    bool highFramerate = false;
     bool drawFps = true;
 };
 

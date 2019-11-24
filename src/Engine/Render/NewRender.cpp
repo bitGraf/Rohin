@@ -77,7 +77,7 @@ CoreSystem* BatchRenderer::create() {
     return this;
 }
 
-void BatchRenderer::renderBatch(BatchDrawCall* batch) {
+void BatchRenderer::renderBatch(BatchDrawCall* batch, double frameCount, long long lastFrame) {
     /* Use list of draw calls to render the scene in multiple passes
     1. Shadow Pass
     2. Static Entity Pass
@@ -132,7 +132,7 @@ void BatchRenderer::renderBatch(BatchDrawCall* batch) {
 
     endProfile();
 
-    renderDebug(batch);
+    renderDebug(batch, frameCount, lastFrame);
 }
 
 void BatchRenderer::shadowPass(BatchDrawCall* batch) {
@@ -305,10 +305,10 @@ void BatchRenderer::gammaCorrect(BatchDrawCall* batch) {
     glEnable(GL_DEPTH_TEST);
 }
 
-void BatchRenderer::renderDebug(BatchDrawCall* batch) {
+void BatchRenderer::renderDebug(BatchDrawCall* batch, double frameCount, long long lastFrame) {
     vec4 white(1, 1, 1, 1);
     char text[128];
-    sprintf(text, "FPS: %.1f", 50.0);
+    sprintf(text, "FPS: %-2.1lf [%lld us]", 1000000.0/static_cast<double>(frameCount), lastFrame);
     debugFont.drawText(800 - 5, 5, white, text, ALIGN_TOP_RIGHT);
 
     long long scale = 1LL;

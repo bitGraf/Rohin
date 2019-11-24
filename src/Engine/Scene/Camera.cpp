@@ -41,8 +41,8 @@ void Camera::update(double dt) {
         f32 pitchRate = 60;
         f32 rollRate = 60;
 
-        f32 horizSens = 0.1;
-        f32 vertSens = 0.1;
+        f32 horizSens = 0.002;
+        f32 vertSens = 0.002;
 
         vec3 forward = vec3(viewMatrix.row1()).get_unit();
         vec3 up = vec3(viewMatrix.row2()).get_unit();
@@ -82,9 +82,9 @@ void Camera::update(double dt) {
         rollChange *= rollRate;
 
         position += vel * dt;
-        yaw += yawChange * dt;
-        pitch += pitchChange * dt;
-        roll += rollChange * dt;
+        yaw += yawChange;
+        pitch += pitchChange;
+        roll += rollChange;
     }
 
     yaw = fmod(yaw, 360);

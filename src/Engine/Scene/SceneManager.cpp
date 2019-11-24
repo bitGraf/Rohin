@@ -36,6 +36,23 @@ void SceneManager::handleMessage(Message msg) {
             m_currentScene->camera.pitch = 0;
             m_currentScene->camera.roll = 0;
         }
+
+        if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
+            Console::logMessage("FPS Limit Toggle");
+
+            if (g_options.limitFramerate) {
+                if (g_options.highFramerate) {
+                    g_options.limitFramerate = false;
+                    g_options.highFramerate = false;
+                }
+                else {
+                    g_options.highFramerate = true;
+                }
+            }
+            else {
+                g_options.limitFramerate = true;
+            }
+        }
     }
 }
 

@@ -8,14 +8,17 @@ Engine::Engine() {
 void Engine::Start() {
     InitEngine();
 
-    double dt = .02;
-
-    _time frameEnd = _clock::now();
-    long long microsPerFrame = 20000; // 50 fps
+    auto frameStart = engine_clock::now();
+    auto frameEnd = frameStart + Framerate{ 1 };
 
     Console::logMessage("Starting message loop.");
     while (!done) {
-        frameEnd = _clock::now() + std::chrono::microseconds(microsPerFrame);
+        frameStart = engine_clock::now();
+
+        lastFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(
+            frameStart - frameEnd).count();
+        fpsAvg.addSample(lastFrameTime);
+        dt = fpsAvg.getCurrentAverage() / 1000000.0;
 
         if (m_MainWindow.shouldClose()) {
             done = true;
@@ -34,8 +37,19 @@ void Engine::Start() {
         m_MainWindow.swapAndPoll();
 
         if (g_options.limitFramerate) {
-            std::this_thread::sleep_until(frameEnd);
+            if (g_options.highFramerate)
+                frameEnd = frameStart + Framerate_MAX{ 1 };
+            else
+                frameEnd = frameStart + Framerate{ 1 };
+
+            // sleep until next loop starts
+            if (BUSY_LOOP) {
+                while (engine_clock::now() < frameEnd) {;}
+            } else {
+                std::this_thread::sleep_until(frameEnd);
+            }
         }
+        frameEnd = frameStart;
     }
 
     Console::logMessage("Game loop done, quitting...");
@@ -85,7 +99,7 @@ void Engine::PreRender() {
 }
 
 void Engine::Render() {
-    m_Renderer.renderBatch(&batch);
+    m_Renderer.renderBatch(&batch, fpsAvg.getCurrentAverage(), lastFrameTime);
 }
 
 void Engine::End() {
