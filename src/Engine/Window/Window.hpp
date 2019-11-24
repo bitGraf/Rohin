@@ -32,6 +32,7 @@ public:
     void makeCurrent();
     void setPosition(int x, int y);
     void resize(int width, int height);
+    void cursorVisible(bool vis);
     
     /* Callback responses */
     void WindowPositionUpdate(int xpos, int ypos);

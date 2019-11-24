@@ -104,44 +104,44 @@ void Shader::create(
 }
 
 void Shader::setBool(const std::string &name, bool value) const {
-    GLuint loc = glGetUniformLocation(glShaderID, name.c_str());
+    GLint loc = glGetUniformLocation(glShaderID, name.c_str());
     glUniform1i(loc, (s32)value);
 }
 
 void Shader::setInt(const std::string &name, s32 value) const {
-    GLuint loc = glGetUniformLocation(glShaderID, name.c_str());
+    GLint loc = glGetUniformLocation(glShaderID, name.c_str());
     glUniform1i(loc, value);
 }
 
 void Shader::setFloat(const std::string &name, f32 value) const {
-    GLuint loc = glGetUniformLocation(glShaderID, name.c_str());
+    GLint loc = glGetUniformLocation(glShaderID, name.c_str());
     glUniform1f(loc, value);
 }
 
 
 void Shader::setVec2(const std::string &name, math::vec2 value) const {
-    GLuint loc = glGetUniformLocation(glShaderID, name.c_str());
+    GLint loc = glGetUniformLocation(glShaderID, name.c_str());
     glUniform2f(loc, value.x, value.y);
 }
 void Shader::setVec3(const std::string &name, math::vec3 value) const {
-    GLuint loc = glGetUniformLocation(glShaderID, name.c_str());
+    GLint loc = glGetUniformLocation(glShaderID, name.c_str());
     glUniform3f(loc, value.x, value.y, value.z);
 }
 void Shader::setVec4(const std::string &name, math::vec4 value) const {
-    GLuint loc = glGetUniformLocation(glShaderID, name.c_str());
+    GLint loc = glGetUniformLocation(glShaderID, name.c_str());
     glUniform4f(loc, value.x, value.y, value.z, value.w);
 }
 
 void Shader::setMat2(const std::string &name, math::mat2 value) const {
-    GLuint loc = glGetUniformLocation(glShaderID, name.c_str());
+    GLint loc = glGetUniformLocation(glShaderID, name.c_str());
     glUniformMatrix2fv(loc, 1, GL_FALSE, &(value._11));
 }
 void Shader::setMat3(const std::string &name, math::mat3 value) const {
-    GLuint loc = glGetUniformLocation(glShaderID, name.c_str());
+    GLint loc = glGetUniformLocation(glShaderID, name.c_str());
     glUniformMatrix3fv(loc, 1, GL_FALSE, &(value._11));
 }
 void Shader::setMat4(const std::string &name, math::mat4 value) const {
-    GLuint loc = glGetUniformLocation(glShaderID, name.c_str());
+    GLint loc = glGetUniformLocation(glShaderID, name.c_str());
     glUniformMatrix4fv(loc, 1, GL_FALSE, &(value._11));
 }
 

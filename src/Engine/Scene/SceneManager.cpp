@@ -240,17 +240,6 @@ void Scene::update(double dt) {
     objYaw += 12 * dt;
     m_entities[0].orientation.toYawPitchRoll(objYaw - 90, 0, 0);
 
-    if (cameraMode) {
-        //camYaw -= 12 * dt;
-
-        //camera.position = vec3(
-        //    2 * cos(camYaw*d2r),
-        //    sin(camYaw*d2r * 4) + 1.5,
-        //    -2 * sin(camYaw*d2r)
-        //);
-        //camera.lookAt(vec3(0, 1, 0));
-    }
-
     camera.playerControlled = cameraMode == 1 ? 0 : 1;
     camera.update(dt);
 }
@@ -280,6 +269,11 @@ void SceneManager::getRenderBatch(BatchDrawCall* batch) {
         batch->cameraView = m_currentScene->camera.viewMatrix;
         batch->cameraProjection = m_currentScene->camera.projectionMatrix;
         batch->camPos = m_currentScene->camera.position;
+        batch->cameraModelMatrix = (
+            mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), 
+                vec4(m_currentScene->camera.position, 1)) *
+                mat4(createYawPitchRollMatrix(m_currentScene->camera.yaw, m_currentScene->camera.pitch, m_currentScene->camera.roll)) *
+                mat4(.5, .5, .5, 1));
 
         mat4 lightView;
         lightView.lookAt(-m_currentScene->sun.direction.get_unit() * 50, vec3(), vec3(0, 1, 0));

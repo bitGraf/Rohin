@@ -22,8 +22,8 @@ void Window::handleMessage(Message msg) {
         dt mods = msg.data[3];
 
         if (key == GLFW_KEY_C && action == GLFW_PRESS) {
-            cursorMode = !cursorMode;
-            glfwSetInputMode(m_glfwWindow, GLFW_CURSOR, cursorMode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+            //cursorMode = !cursorMode;
+            //glfwSetInputMode(m_glfwWindow, GLFW_CURSOR, cursorMode ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
         }
     }
 }
@@ -137,6 +137,13 @@ void Window::setPosition(int x, int y) {
 
 void Window::resize(int width, int height) {
     glfwSetWindowSize(m_glfwWindow, width, height);
+}
+
+void Window::cursorVisible(bool vis) {
+    cursorMode = vis;
+
+    glfwSetInputMode(m_glfwWindow, GLFW_CURSOR, 
+        cursorMode ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
 }
 
 

@@ -25,6 +25,7 @@ void BatchRenderer::handleMessage(Message msg) {
             m_lightVolumePass.create("lightVolume.vert", "lightVolume.frag", "lightVolumeShader");
             m_toneMap.create("toneMap.vert", "toneMap.frag", "toneMapShader");
             m_gammaCorrect.create("toneMap.vert", "gammaCorrect.frag", "gammaCorrectShader");
+            m_debugLineShader.create("DebugLine.vert", "DebugLine.frag", "debugLineShader");
         }
     }
 }
@@ -36,6 +37,8 @@ CoreSystem* BatchRenderer::create() {
     m_lightVolumePass.create("lightVolume.vert", "lightVolume.frag", "lightVolumeShader");
     m_toneMap.create("toneMap.vert", "toneMap.frag", "toneMapShader");
     m_gammaCorrect.create("toneMap.vert", "gammaCorrect.frag", "gammaCorrectShader");
+    m_debugLineShader.create("DebugLine.vert", "DebugLine.frag", "debugLineShader");
+    m_debugMeshShader.create("DebugMesh.vert", "DebugMesh.frag", "debugMeshShader");
 
     blackTex.loadImage("black.png");
     whiteTex.loadImage("white.png");
@@ -71,13 +74,30 @@ CoreSystem* BatchRenderer::create() {
         &fullscreenVerts, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(f32), (void*)0);
+    glBindVertexArray(0);
+
+
+    const f32 debugLineVerts[] = {
+        0, 
+        1
+    };
+
+    GLuint debugLineVBO;
+    glGenVertexArrays(1, &debugLineVAO);
+    glGenBuffers(1, &debugLineVBO);
+    glBindVertexArray(debugLineVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, debugLineVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(debugLineVerts),
+        &debugLineVerts, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(f32), (void*)0);
 
     glBindVertexArray(0);
 
     return this;
 }
 
-void BatchRenderer::renderBatch(BatchDrawCall* batch, double frameCount, long long lastFrame) {
+void BatchRenderer::renderBatch(BatchDrawCall* batch) {
     /* Use list of draw calls to render the scene in multiple passes
     1. Shadow Pass
     2. Static Entity Pass
@@ -131,8 +151,6 @@ void BatchRenderer::renderBatch(BatchDrawCall* batch, double frameCount, long lo
     dur_gammaCorrect = profileRenderPass();
 
     endProfile();
-
-    renderDebug(batch, frameCount, lastFrame);
 }
 
 void BatchRenderer::shadowPass(BatchDrawCall* batch) {
@@ -305,11 +323,19 @@ void BatchRenderer::gammaCorrect(BatchDrawCall* batch) {
     glEnable(GL_DEPTH_TEST);
 }
 
-void BatchRenderer::renderDebug(BatchDrawCall* batch, double frameCount, long long lastFrame) {
+void BatchRenderer::renderDebug(
+    BatchDrawCall* batch, 
+    double frameCount, 
+    long long lastFrame,
+    bool debugMode) {
+
     vec4 white(1, 1, 1, 1);
     char text[128];
     sprintf(text, "FPS: %-2.1lf [%lld us]", 1000000.0/static_cast<double>(frameCount), lastFrame);
     debugFont.drawText(800 - 5, 5, white, text, ALIGN_TOP_RIGHT);
+    sprintf(text, "FPS Lock: %s", 
+        g_options.limitFramerate ? (g_options.highFramerate ? "250" : "50") : "NONE");
+    debugFont.drawText(800 - 5, 23, white, text, ALIGN_TOP_RIGHT);
 
     long long scale = 1LL;
     int y = -13;
@@ -334,6 +360,66 @@ void BatchRenderer::renderDebug(BatchDrawCall* batch, double frameCount, long lo
 
     sprintf(text, "Draw Calls: %-3d", batch->numCalls);
     debugFont.drawText(5, 595, white, text, ALIGN_BOT_LEFT);
+
+
+    if (debugMode) {
+        glDisable(GL_DEPTH_TEST);
+        m_debugMeshShader.use();
+        m_debugMeshShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+        m_debugMeshShader.setMat4("modelMatrix", batch->cameraModelMatrix);
+        m_debugMeshShader.setVec3("sun.direction", batch->sun->direction);
+        m_debugMeshShader.setVec4("sun.color", batch->sun->color);
+        m_debugMeshShader.setFloat("sun.strength", batch->sun->strength);
+        m_debugMeshShader.setVec3("objColor", vec3(1,1,1));
+        m_debugMeshShader.setVec3("camPos", batch->camPos);
+
+        glBindVertexArray(cameraMesh->VAO);
+        glDrawElements(GL_TRIANGLES, cameraMesh->numFaces * 3, GL_UNSIGNED_SHORT, 0);
+        glBindVertexArray(0);
+
+
+        // Draw wireframe things
+        m_debugLineShader.use();
+        m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+
+        vec3 camPos = batch->camPos;
+        vec3 forward = vec3(batch->cameraView.row1());
+        vec3 up = vec3(batch->cameraView.row2());
+        vec3 right = vec3(batch->cameraView.row3());
+
+        drawLine(camPos, camPos + forward, vec3(1, 0, 0), vec3(1, 0, 0));
+        drawLine(camPos, camPos + up, vec3(0, 1, 0), vec3(0, 1, 0));
+        drawLine(camPos, camPos + right, vec3(0, 0, 1), vec3(0, 0, 1));
+        glBindVertexArray(0);
+
+        glEnable(GL_DEPTH_TEST);
+    }
+}
+
+void BatchRenderer::drawLine(vec3 A, vec3 B, vec3 colorA, vec3 colorB) {
+    m_debugLineShader.setVec3("vertexA", A);
+    m_debugLineShader.setVec3("vertexB", B);
+    m_debugLineShader.setVec3("colorA", colorA);
+    m_debugLineShader.setVec3("colorB", colorB);
+
+    glBindVertexArray(debugLineVAO);
+    glDrawArrays(GL_LINES, 0, 2);
+
+    /*
+    uniform mat4 viewMatrix;
+    uniform mat4 projectionMatrix;
+
+    uniform vec3 vertexA;
+    uniform vec3 vertexB;
+    uniform vec3 colorA;
+    uniform vec3 colorB;
+    */
+}
+
+void BatchRenderer::loadResources(ResourceManager* resource) {
+    resource->loadModelFromFile("Data/Models/camera.glb", true);
+
+    cameraMesh = resource->getMesh("Camera");
 }
 
 

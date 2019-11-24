@@ -10,6 +10,7 @@
 #include "Window\Framebuffer.hpp"
 #include "DynamicFont.hpp"
 #include "Utils.hpp"
+#include "Resource/ResourceManager.hpp"
 
 class BatchRenderer : public CoreSystem {
 public:
@@ -22,7 +23,11 @@ public:
     CoreSystem* create();
 
     /* System Unique functions */
-    void renderBatch(BatchDrawCall* batch, double frameCount, long long lastFrame);
+    void renderBatch(BatchDrawCall* batch);
+    void renderDebug(BatchDrawCall* batch, 
+        double frameCount, long long lastFrame,
+        bool debugMode);
+    void loadResources(ResourceManager* resource);
 
     // Render Passes
     void shadowPass(BatchDrawCall* batch);
@@ -32,9 +37,10 @@ public:
     void lightVolumePass(BatchDrawCall* batch);
     void toneMap(BatchDrawCall* batch);
     void gammaCorrect(BatchDrawCall* batch);
-    void renderDebug(BatchDrawCall* batch, double frameCount, long long lastFrame);
 
 private:
+    void drawLine(vec3 A, vec3 B, vec3 colorA, vec3 colorB);
+
     using _clock = std::chrono::system_clock;
     using _time = std::chrono::system_clock::time_point;
     _time profileStart;
@@ -73,6 +79,11 @@ private:
 
     Shader m_toneMap;
     Shader m_gammaCorrect;
+
+    GLuint debugLineVAO;
+    Shader m_debugLineShader;
+    Shader m_debugMeshShader;
+    TriangleMesh* cameraMesh;
 };
 
 #endif

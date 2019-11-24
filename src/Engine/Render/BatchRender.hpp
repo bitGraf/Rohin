@@ -23,6 +23,7 @@ struct BatchDrawCall {
     mat4 cameraViewProjectionMatrix;
     mat4 cameraView;
     mat4 cameraProjection;
+    mat4 cameraModelMatrix;
     vec3 camPos;
 
     mat4 sunViewProjectionMatrix;

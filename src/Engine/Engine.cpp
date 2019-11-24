@@ -4,6 +4,7 @@
 Engine::Engine() {
     done = false;
     userQuit = false;
+    cursorMode = true; //visible cursor
 }
 
 void Engine::Start(handleMessageFnc f) {
@@ -75,6 +76,7 @@ void Engine::InitEngine(handleMessageFnc f) {
 
     EnvironmentMap::InitVAO();
     m_Scenes.loadScenes(&m_Resource);
+    m_Renderer.loadResources(&m_Resource);
 
     Console::startListening(false);
 
@@ -86,21 +88,42 @@ void Engine::InitEngine(handleMessageFnc f) {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPointSize(10);
+
+    m_debugCamera.playerControlled = true;
+    m_MainWindow.cursorVisible(cursorMode);
 }
 
 void Engine::Update(double dt) {
     // Call the SceneManager update function
     // Update the Game State
-    m_Scenes.update(dt);
+    if (debugMode) {
+        m_debugCamera.update(dt);
+    } else {
+        m_Scenes.update(dt);
+    }
 }
 
 void Engine::PreRender() {
     // Interrogate the SceneManager for a list of draw calls to make this frame.
     m_Scenes.getRenderBatch(&batch);
+
+    if (debugMode) {
+        // inject debug camera values
+        m_debugCamera.updateViewFrustum(800, 600);
+        batch.cameraViewProjectionMatrix = m_debugCamera.projectionMatrix *
+            m_debugCamera.viewMatrix;
+        //batch.cameraView = m_debugCamera.viewMatrix;
+        batch.cameraProjection = m_debugCamera.projectionMatrix;
+        //batch.camPos = m_debugCamera.position;
+    }
 }
 
 void Engine::Render() {
-    m_Renderer.renderBatch(&batch, fpsAvg.getCurrentAverage(), lastFrameTime);
+    m_Renderer.renderBatch(&batch);
+
+    m_Renderer.renderDebug(
+        &batch, fpsAvg.getCurrentAverage(), 
+        lastFrameTime, debugMode);
 }
 
 void Engine::End() {
@@ -127,9 +150,20 @@ void Engine::globalHandle(Message msg) {
         dt action = msg.data[2];
         dt mods = msg.data[3];
 
+        if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+            m_debugCamera.playerControlled = cursorMode;
+            cursorMode = !cursorMode;
+            m_MainWindow.cursorVisible(cursorMode);
+        }
 
         if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
-            Console::logMessage("Switching game context");
+            Console::logMessage("Debug mode toggle");
+
+            debugMode = !debugMode;
+
+            if (debugMode) {
+                glfwSetInputMode(m_MainWindow.m_glfwWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            }
         }
 
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
