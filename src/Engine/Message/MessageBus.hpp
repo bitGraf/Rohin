@@ -10,6 +10,8 @@ class MessageBus;
 #include "CoreSystem.hpp"
 #include "Console.hpp"
 
+typedef void(*handleMessageFnc)(Message);
+
 class MessageBus {
 public:
     static void create();
@@ -20,7 +22,6 @@ public:
 
     static void registerSystem(CoreSystem* sys);
 
-    typedef void(*handleMessageFnc)(Message);
     static void setGlobalMessageHandleCallback(handleMessageFnc f);
 
 private:

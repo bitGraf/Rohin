@@ -12,16 +12,18 @@ class Engine {
 public:
     Engine();
 
-    void Start();
+    void Start(handleMessageFnc f);
+    void globalHandle(Message msg);
 
 private:
-    void InitEngine();
+    void InitEngine(handleMessageFnc f);
     void End();
     void Update(double dt);
     void PreRender();
     void Render();
 
     bool done;
+    bool userQuit;
 
     BatchDrawCall batch;
 
@@ -30,6 +32,7 @@ private:
     BatchRenderer m_Renderer;
     SceneManager m_Scenes;
     ResourceManager m_Resource;
+    Camera m_debugCamera;
 
     /* Frame Timing */
     using engine_clock = std::chrono::steady_clock;

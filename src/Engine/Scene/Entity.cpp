@@ -29,7 +29,7 @@ void Entity::setMaterial(materialRef _mat) {
 }
 
 void Entity::parseLevelData(std::istringstream &iss, ResourceManager* resource) {
-    std::cout << "Default Entity parse" << std::endl;
+    Console::logMessage("Default Entity parse");
 
     std::string entityName = getNextString(iss);
     std::string entityMesh = getNextString(iss);

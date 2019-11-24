@@ -16,14 +16,14 @@ void FileSystem::destroy() {
 }
 
 CoreSystem* FileSystem::create() {
-    // TODO: Make this less poopoo
+    std::cout << "CWD: " << cwd(rootDirectory, sizeof rootDirectory) << std::endl;
 
-    int pos = getDirectory(rootDirectory);
-    //Console::logMessage("-----");
-    //Console::logMessage(rootDirectory);
-    strcpy(rootDirectory+pos, "..\\..\\run_tree\\\0");
-    setDirectory(rootDirectory);
-    //Console::logMessage("-----");
+    if (0 == cd("../run_tree/")) {
+        std::cout << "CWD changed to: " << cwd(rootDirectory, sizeof rootDirectory) << std::endl;
+    }
+    else {
+        std::cout << "Error changing directory." << std::endl;
+    }
 
     return this;
 }
@@ -59,5 +59,5 @@ bool FileSystem::syncReadFile(
 
 /* File System Navigation */
 void FileSystem::setRootDirectory(char directory[128]) {
-    setDirectory(directory);
+    //setDirectory(directory);
 }

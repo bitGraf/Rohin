@@ -3,7 +3,7 @@
 std::queue<Message> MessageBus::mq;
 bool MessageBus::hasMessages = true;
 std::vector<CoreSystem*> MessageBus::m_systems;
-MessageBus::handleMessageFnc MessageBus::globalFunc;
+handleMessageFnc MessageBus::globalFunc;
 
 MessageBus::MessageBus() {
 }
@@ -60,6 +60,7 @@ void MessageBus::registerSystem(CoreSystem* sys) {
 }
 
 void MessageBus::processMessage(Message msg) {
+
     Console::handleMessage(msg);
     for (auto system : m_systems) {
         system->handleMessage(msg);

@@ -39,7 +39,8 @@ public:
     void setRootDirectory(char directory[128]);
 
 private:
-    char rootDirectory[MAX_PATH];
+    //char rootDirectory[MAX_PATH];
+    char rootDirectory[1024];
 };
 
 #endif

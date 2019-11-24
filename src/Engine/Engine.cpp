@@ -3,10 +3,11 @@
 
 Engine::Engine() {
     done = false;
+    userQuit = false;
 }
 
-void Engine::Start() {
-    InitEngine();
+void Engine::Start(handleMessageFnc f) {
+    InitEngine(f);
 
     auto frameStart = engine_clock::now();
     auto frameEnd = frameStart + Framerate{ 1 };
@@ -57,13 +58,13 @@ void Engine::Start() {
     End();
 }
 
-void Engine::InitEngine() {
+void Engine::InitEngine(handleMessageFnc f) {
     // Initialie the Game
     // Load ALL resources needed to run the game
     // Load the default scene
 
     MessageBus::create();
-    //MessageBus::setGlobalMessageHandleCallback(Engine::hm);
+    MessageBus::setGlobalMessageHandleCallback(f);
 
     MessageBus::registerSystem(m_Resource.create());
     MessageBus::registerSystem(m_MainWindow.create());
@@ -114,6 +115,40 @@ void Engine::End() {
 
     Console::rejoin();
 
+    if (!userQuit)
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+}
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+void Engine::globalHandle(Message msg) {
+    if (msg.isType("InputKey")) {
+        using dt = Message::Datatype;
+        dt key = msg.data[0];
+        dt scancode = msg.data[1];
+        dt action = msg.data[2];
+        dt mods = msg.data[3];
+
+
+        if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
+            Console::logMessage("Switching game context");
+        }
+
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+            Console::logMessage("Quitting");
+            userQuit = true;
+            m_MainWindow.close();
+        }
+    }
+
+    if (msg.isType("InputMouseButton")) {
+        // int button, int action, int mods
+        using dt = Message::Datatype;
+        dt button = msg.data[0];
+        dt action = msg.data[1];
+        dt mods = msg.data[2];
+        dt xPos = msg.data[3];
+        dt yPos = msg.data[4];
+
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        }
+    }
 }
