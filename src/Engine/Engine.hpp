@@ -3,7 +3,7 @@
 
 #include "Console.hpp"
 #include "Window\Window.hpp"
-#include "Render\NewRender.hpp"
+#include "Render\RenderManager.hpp"
 #include "Scene\SceneManager.hpp"
 
 const bool BUSY_LOOP = true;
