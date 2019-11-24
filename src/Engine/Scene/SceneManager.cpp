@@ -299,6 +299,8 @@ void SceneManager::getRenderBatch(BatchDrawCall* batch) {
         batch->numCalls = 0;
         // pull every entity
         for (int n = 0; n < m_currentScene->m_entities.size(); n++) {
+            if (batch->numCalls >= MAX_CALLS)
+                break;
             auto ent = &m_currentScene->m_entities[n];
 
             if (m_currentScene->camera.withinFrustum(ent->position, 0.25)) { // Check to see if the entity is in the camera frustum

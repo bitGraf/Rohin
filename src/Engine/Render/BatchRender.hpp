@@ -1,7 +1,7 @@
 #ifndef RENDER_UTIL_H
 #define RENDER_UTIL_H
 
-#define MAX_CALLS 100
+#define MAX_CALLS 1000
 
 #include "glad\glad.h"
 #include "GameMath.hpp"
