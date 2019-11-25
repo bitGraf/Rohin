@@ -70,7 +70,7 @@ void main() {
     vec3 color_in = texture(tex, tex_coord).rgb;
     vec3 color_out = color_in + accumFog;
 
-    FragColor = vec4(color_out, 1);
+    FragColor = vec4(color_in, 1);
 }
 
 float ComputeScattering(float lightDotView) {

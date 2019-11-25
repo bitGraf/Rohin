@@ -36,11 +36,11 @@ public:
     bool syncReadFile(const char* filepath, u8* buffer, size_t bufferSize, size_t& rBytesRead);
 
     /* File System Navigation */
-    void setRootDirectory(char directory[128]);
+    void setRootDirectory(char* directory);
 
 private:
     //char rootDirectory[MAX_PATH];
-    char rootDirectory[1024];
+    char exeLoc[1024];
 };
 
 #endif

@@ -8,7 +8,7 @@ void GlobalHandleMessage(Message msg) {
 }
 
 int main(int argc, char* argv[]) {
-    g_engine.Start(GlobalHandleMessage);
+    g_engine.Start(GlobalHandleMessage, argc, argv);
 
     return 0;
 }

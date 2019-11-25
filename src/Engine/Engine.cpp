@@ -7,8 +7,8 @@ Engine::Engine() {
     cursorMode = true; //visible cursor
 }
 
-void Engine::Start(handleMessageFnc f) {
-    InitEngine(f);
+void Engine::Start(handleMessageFnc f, int argc, char* argv[]) {
+    InitEngine(f, argc, argv);
 
     auto frameStart = engine_clock::now();
     auto frameEnd = frameStart + Framerate{ 1 };
@@ -59,7 +59,7 @@ void Engine::Start(handleMessageFnc f) {
     End();
 }
 
-void Engine::InitEngine(handleMessageFnc f) {
+void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     // Initialie the Game
     // Load ALL resources needed to run the game
     // Load the default scene
@@ -67,6 +67,7 @@ void Engine::InitEngine(handleMessageFnc f) {
     MessageBus::create();
     MessageBus::setGlobalMessageHandleCallback(f);
 
+    m_Resource.setRootDirectory(argv[0]);
     MessageBus::registerSystem(m_Resource.create());
     MessageBus::registerSystem(m_MainWindow.create());
     MessageBus::registerSystem(m_Renderer.create());
@@ -112,9 +113,7 @@ void Engine::PreRender() {
         m_debugCamera.updateViewFrustum(800, 600);
         batch.cameraViewProjectionMatrix = m_debugCamera.projectionMatrix *
             m_debugCamera.viewMatrix;
-        //batch.cameraView = m_debugCamera.viewMatrix;
-        batch.cameraProjection = m_debugCamera.projectionMatrix;
-        //batch.camPos = m_debugCamera.position;
+        batch.viewPos = m_debugCamera.position;
     }
 }
 

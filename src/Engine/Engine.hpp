@@ -14,11 +14,11 @@ class Engine {
 public:
     Engine();
 
-    void Start(handleMessageFnc f);
+    void Start(handleMessageFnc f, int argc, char* argv[]);
     void globalHandle(Message msg);
 
 private:
-    void InitEngine(handleMessageFnc f);
+    void InitEngine(handleMessageFnc f, int argc, char* argv[]);
     void End();
     void Update(double dt);
     void PreRender();

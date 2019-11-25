@@ -264,11 +264,12 @@ void SceneManager::getRenderBatch(BatchDrawCall* batch) {
     if (m_currentScene) {
         // Set Camera
         m_currentScene->camera.updateViewFrustum(800, 600);
-        batch->cameraViewProjectionMatrix = m_currentScene->camera.projectionMatrix *
-            m_currentScene->camera.viewMatrix;
         batch->cameraView = m_currentScene->camera.viewMatrix;
         batch->cameraProjection = m_currentScene->camera.projectionMatrix;
+
         batch->camPos = m_currentScene->camera.position;
+        batch->viewPos = m_currentScene->camera.position;
+        batch->cameraViewProjectionMatrix = batch->cameraProjection * batch->cameraView;
         batch->cameraModelMatrix = (
             mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), 
                 vec4(m_currentScene->camera.position, 1)) *

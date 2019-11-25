@@ -16,10 +16,18 @@ void FileSystem::destroy() {
 }
 
 CoreSystem* FileSystem::create() {
-    std::cout << "CWD: " << cwd(rootDirectory, sizeof rootDirectory) << std::endl;
+    char currDir[128];
+    std::cout << "CWD: " << cwd(currDir, sizeof currDir) << std::endl;
 
-    if (0 == cd("../run_tree/")) {
-        std::cout << "CWD changed to: " << cwd(rootDirectory, sizeof rootDirectory) << std::endl;
+    if (0 == cd(exeLoc)) {
+        std::cout << "CWD changed to: " << cwd(currDir, sizeof currDir) << std::endl;
+    }
+    else {
+        std::cout << "Error changing directory." << std::endl;
+    }
+
+    if (0 == cd("../../run_tree/")) {
+        std::cout << "CWD changed to: " << cwd(currDir, sizeof currDir) << std::endl;
     }
     else {
         std::cout << "Error changing directory." << std::endl;
@@ -58,6 +66,13 @@ bool FileSystem::syncReadFile(
 }
 
 /* File System Navigation */
-void FileSystem::setRootDirectory(char directory[128]) {
-    //setDirectory(directory);
+void FileSystem::setRootDirectory(char* directory) {
+    auto L = strlen(directory) - 1;
+    
+    char c = directory[L];
+    while (c != '\\' && c != '/') {
+        c = directory[--L];
+    }
+
+    memcpy(exeLoc, directory, L+1);
 }

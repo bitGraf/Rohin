@@ -34,6 +34,10 @@ CoreSystem* ResourceManager::create() {
     return this;
 }
 
+void ResourceManager::setRootDirectory(char* exeLoc) {
+    m_FileSystem.setRootDirectory(exeLoc);
+}
+
 void ResourceManager::loadModelFromFile(std::string path, bool binary) {
 
     for (auto str : loadedResourceFiles) {

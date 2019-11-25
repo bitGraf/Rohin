@@ -361,9 +361,8 @@ void BatchRenderer::renderDebug(
     sprintf(text, "Draw Calls: %-3d", batch->numCalls);
     debugFont.drawText(5, 595, white, text, ALIGN_BOT_LEFT);
 
-
     if (debugMode) {
-        glDisable(GL_DEPTH_TEST);
+        glClear(GL_DEPTH_BUFFER_BIT);
         m_debugMeshShader.use();
         m_debugMeshShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
         m_debugMeshShader.setMat4("modelMatrix", batch->cameraModelMatrix);
@@ -377,8 +376,8 @@ void BatchRenderer::renderDebug(
         glDrawElements(GL_TRIANGLES, cameraMesh->numFaces * 3, GL_UNSIGNED_SHORT, 0);
         glBindVertexArray(0);
 
-
         // Draw wireframe things
+        glDisable(GL_DEPTH_TEST);
         m_debugLineShader.use();
         m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
 

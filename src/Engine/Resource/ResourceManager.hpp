@@ -25,6 +25,7 @@ public:
     void handleMessage(Message msg);
     void destroy();
     CoreSystem* create();
+    void setRootDirectory(char* exeLoc);
 
     void loadModelFromFile(std::string path, bool binary);
 
