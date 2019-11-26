@@ -6,6 +6,13 @@
 
 using namespace math;
 
+struct Puppeteer {
+public:
+    Puppeteer() {}
+
+    vec3 getCommand() { return vec3(); }
+};
+
 class Puppet : public Entity {
 public: 
     Puppet();
@@ -19,6 +26,8 @@ public:
 
 private:
     vec3 floor;
+
+    Puppeteer* controller;
 };
 
 #endif

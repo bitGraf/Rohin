@@ -23,12 +23,6 @@ void SceneManager::handleMessage(Message msg) {
             //m_currentScene->loadFromFile(&g_ResourceManager, "", false);
         }
 
-        if (key == GLFW_KEY_C && action == GLFW_PRESS) {
-            Console::logMessage("Camera Toggle");
-
-            m_currentScene->cameraMode = m_currentScene->cameraMode == 0 ? 1 : 0;
-        }
-
         if (key == GLFW_KEY_R && action == GLFW_PRESS) {
             Console::logMessage("Camera Reset");
 
@@ -68,7 +62,6 @@ CoreSystem* SceneManager::create() {
 Scene::Scene() {
     camYaw = 0;
     objYaw = 0;
-    cameraMode = 1;
 }
 
 void SceneManager::loadScenes(ResourceManager* resource, bool testing) {
@@ -237,8 +230,11 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
 
 
 void Scene::update(double dt) {
-    camera.playerControlled = cameraMode == 1 ? 0 : 1;
     camera.update(dt);
+
+    for (int n = 0; n < m_entities.size(); n++) {
+        m_entities[n]->update(dt);
+    }
 }
 
 #ifndef CUSTOM_ENTITIES
@@ -261,12 +257,12 @@ void SceneManager::getRenderBatch(BatchDrawCall* batch) {
     if (m_currentScene) {
         // Set Camera
         m_currentScene->camera.updateViewFrustum(800, 600);
+
         batch->cameraView = m_currentScene->camera.viewMatrix;
         batch->cameraProjection = m_currentScene->camera.projectionMatrix;
+        batch->cameraViewProjectionMatrix = batch->cameraProjection * batch->cameraView;
 
         batch->camPos = m_currentScene->camera.position;
-        batch->viewPos = m_currentScene->camera.position;
-        batch->cameraViewProjectionMatrix = batch->cameraProjection * batch->cameraView;
         batch->cameraModelMatrix = (
             mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), 
                 vec4(m_currentScene->camera.position, 1)) *

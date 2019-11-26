@@ -13,7 +13,6 @@ void Entity::create() {
 }
 
 void Entity::update(double dt) {
-    std::cout << "I am a default entity\n";
 }
 
 void Entity::render() {

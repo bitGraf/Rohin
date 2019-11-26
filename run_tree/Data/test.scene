@@ -8,190 +8,21 @@ RESOURCE "Data/Models/Wall.glb"
 RESOURCE "Data/Models/City.glb"
 RESOURCE "Data/Models/ball.glb"
 
-#CAMERA "-2.6 1.96 0.04" "0 -17.877 -2.410"
-CAMERA "0 0 0" "0 0 0"
+CAMERA "-4.50 2.64 4.49" "0 -30 45"
 
 ENTITY PUPPET "helmet" "mesh_helmet_LP_13930damagedHelmet" "Material_MR" "0 1.5 0" "0.7" "0"
 
-ENTITY DEFAULT "ball1" "Sphere" "Woodball" "2 0 2" ".25" "0"
-ENTITY DEFAULT "ball2" "Sphere" "Woodball" "1 0 2" ".25" "0"
-ENTITY DEFAULT "ball3" "Sphere" "Woodball" "0 0 2" ".25" "0"
-ENTITY DEFAULT "ball4" "Sphere" "Woodball" "-1 0 2" ".25" "0"
-ENTITY DEFAULT "ball5" "Sphere" "Woodball" "-2 0 2" ".25" "0"
+ENTITY DEFAULT "ball1" "Sphere" "Woodball" "0 0 0" ".5" "0"
+ENTITY DEFAULT  "floor" "Plane" "Plane" "0 -1 0" "1" "0"
 
-ENTITY DEFAULT "ball6" "Sphere" "Woodball" "2 0 1" ".25" "0"
-ENTITY DEFAULT "ball7" "Sphere" "Woodball" "1 0 1" ".25" "0"
-ENTITY DEFAULT "ball8" "Sphere" "Woodball" "0 0 1" ".25" "0"
-ENTITY DEFAULT "ball9" "Sphere" "Woodball" "-1 0 1" ".25" "0"
-ENTITY DEFAULT "ball10" "Sphere" "Woodball" "-2 0 1" ".25" "0"
-
-ENTITY DEFAULT "ball11" "Sphere" "Woodball" "2 0 0" ".25" "0"
-ENTITY DEFAULT "ball12" "Sphere" "Woodball" "1 0 0" ".25" "0"
-ENTITY DEFAULT "ball13" "Sphere" "Woodball" "0 0 0" ".25" "0"
-ENTITY DEFAULT "ball14" "Sphere" "Woodball" "-1 0 0" ".25" "0"
-ENTITY DEFAULT "ball15" "Sphere" "Woodball" "-2 0 0" ".25" "0"
-
-ENTITY DEFAULT "ball16" "Sphere" "Woodball" "2 0 -1" ".25" "0"
-ENTITY DEFAULT "ball17" "Sphere" "Woodball" "1 0 -1" ".25" "0"
-ENTITY DEFAULT "ball18" "Sphere" "Woodball" "0 0 -1" ".25" "0"
-ENTITY DEFAULT "ball19" "Sphere" "Woodball" "-1 0 -1" ".25" "0"
-ENTITY DEFAULT "ball20" "Sphere" "Woodball" "-2 0 -1" ".25" "0"
-
-ENTITY DEFAULT "ball21" "Sphere" "Woodball" "2 0 -2" ".25" "0"
-ENTITY DEFAULT "ball22" "Sphere" "Woodball" "1 0 -2" ".25" "0"
-ENTITY DEFAULT "ball23" "Sphere" "Woodball" "0 0 -2" ".25" "0"
-ENTITY DEFAULT "ball25" "Sphere" "Woodball" "-1 0 -2" ".25" "0"
-ENTITY DEFAULT "ball25" "Sphere" "Woodball" "-2 0 -2" ".25" "0"
-
-
-
-
-ENTITY DEFAULT "ball1" "Sphere" "Woodball" "2 1 2" ".25" "0"
-ENTITY DEFAULT "ball2" "Sphere" "Woodball" "1 1 2" ".25" "0"
-ENTITY DEFAULT "ball3" "Sphere" "Woodball" "0 1 2" ".25" "0"
-ENTITY DEFAULT "ball4" "Sphere" "Woodball" "-1 1 2" ".25" "0"
-ENTITY DEFAULT "ball5" "Sphere" "Woodball" "-2 1 2" ".25" "0"
-
-ENTITY DEFAULT "ball6" "Sphere" "Woodball" "2 1 1" ".25" "0"
-ENTITY DEFAULT "ball7" "Sphere" "Woodball" "1 1 1" ".25" "0"
-ENTITY DEFAULT "ball8" "Sphere" "Woodball" "0 1 1" ".25" "0"
-ENTITY DEFAULT "ball9" "Sphere" "Woodball" "-1 1 1" ".25" "0"
-ENTITY DEFAULT "ball10" "Sphere" "Woodball" "-2 1 1" ".25" "0"
-
-ENTITY DEFAULT "ball11" "Sphere" "Woodball" "2 1 0" ".25" "0"
-ENTITY DEFAULT "ball12" "Sphere" "Woodball" "1 1 0" ".25" "0"
-ENTITY DEFAULT "ball13" "Sphere" "Woodball" "0 1 0" ".25" "0"
-ENTITY DEFAULT "ball14" "Sphere" "Woodball" "-1 1 0" ".25" "0"
-ENTITY DEFAULT "ball15" "Sphere" "Woodball" "-2 1 0" ".25" "0"
-
-ENTITY DEFAULT "ball16" "Sphere" "Woodball" "2 1 -1" ".25" "0"
-ENTITY DEFAULT "ball17" "Sphere" "Woodball" "1 1 -1" ".25" "0"
-ENTITY DEFAULT "ball18" "Sphere" "Woodball" "0 1 -1" ".25" "0"
-ENTITY DEFAULT "ball19" "Sphere" "Woodball" "-1 1 -1" ".25" "0"
-ENTITY DEFAULT "ball20" "Sphere" "Woodball" "-2 1 -1" ".25" "0"
-
-ENTITY DEFAULT "ball21" "Sphere" "Woodball" "2 1 -2" ".25" "0"
-ENTITY DEFAULT "ball22" "Sphere" "Woodball" "1 1 -2" ".25" "0"
-ENTITY DEFAULT "ball23" "Sphere" "Woodball" "0 1 -2" ".25" "0"
-ENTITY DEFAULT "ball25" "Sphere" "Woodball" "-1 1 -2" ".25" "0"
-ENTITY DEFAULT "ball25" "Sphere" "Woodball" "-2 1 -2" ".25" "0"
-
-
-
-
-
-
-ENTITY DEFAULT "ball1" "Sphere" "Woodball" "2 2 2" ".25" "0"
-ENTITY DEFAULT "ball2" "Sphere" "Woodball" "1 2 2" ".25" "0"
-ENTITY DEFAULT "ball3" "Sphere" "Woodball" "0 2 2" ".25" "0"
-ENTITY DEFAULT "ball4" "Sphere" "Woodball" "-1 2 2" ".25" "0"
-ENTITY DEFAULT "ball5" "Sphere" "Woodball" "-2 2 2" ".25" "0"
-
-ENTITY DEFAULT "ball6" "Sphere" "Woodball" "2 2 1" ".25" "0"
-ENTITY DEFAULT "ball7" "Sphere" "Woodball" "1 2 1" ".25" "0"
-ENTITY DEFAULT "ball8" "Sphere" "Woodball" "0 2 1" ".25" "0"
-ENTITY DEFAULT "ball9" "Sphere" "Woodball" "-1 2 1" ".25" "0"
-ENTITY DEFAULT "ball10" "Sphere" "Woodball" "-2 2 1" ".25" "0"
-
-ENTITY DEFAULT "ball11" "Sphere" "Woodball" "2 2 0" ".25" "0"
-ENTITY DEFAULT "ball12" "Sphere" "Woodball" "1 2 0" ".25" "0"
-ENTITY DEFAULT "ball13" "Sphere" "Woodball" "0 2 0" ".25" "0"
-ENTITY DEFAULT "ball14" "Sphere" "Woodball" "-1 2 0" ".25" "0"
-ENTITY DEFAULT "ball15" "Sphere" "Woodball" "-2 2 0" ".25" "0"
-
-ENTITY DEFAULT "ball16" "Sphere" "Woodball" "2 2 -1" ".25" "0"
-ENTITY DEFAULT "ball17" "Sphere" "Woodball" "1 2 -1" ".25" "0"
-ENTITY DEFAULT "ball18" "Sphere" "Woodball" "0 2 -1" ".25" "0"
-ENTITY DEFAULT "ball19" "Sphere" "Woodball" "-1 2 -1" ".25" "0"
-ENTITY DEFAULT "ball20" "Sphere" "Woodball" "-2 2 -1" ".25" "0"
-
-ENTITY DEFAULT "ball21" "Sphere" "Woodball" "2 2 -2" ".25" "0"
-ENTITY DEFAULT "ball22" "Sphere" "Woodball" "1 2 -2" ".25" "0"
-ENTITY DEFAULT "ball23" "Sphere" "Woodball" "0 2 -2" ".25" "0"
-ENTITY DEFAULT "ball25" "Sphere" "Woodball" "-1 2 -2" ".25" "0"
-ENTITY DEFAULT "ball25" "Sphere" "Woodball" "-2 2 -2" ".25" "0"
-
-
-
-
-ENTITY DEFAULT "ball1" "Sphere" "Woodball" "2 3 2" ".25" "0"
-ENTITY DEFAULT "ball2" "Sphere" "Woodball" "1 3 2" ".25" "0"
-ENTITY DEFAULT "ball3" "Sphere" "Woodball" "0 3 2" ".25" "0"
-ENTITY DEFAULT "ball4" "Sphere" "Woodball" "-1 3 2" ".25" "0"
-ENTITY DEFAULT "ball5" "Sphere" "Woodball" "-2 3 2" ".25" "0"
-
-ENTITY DEFAULT "ball6" "Sphere" "Woodball" "2 3 1" ".25" "0"
-ENTITY DEFAULT "ball7" "Sphere" "Woodball" "1 3 1" ".25" "0"
-ENTITY DEFAULT "ball8" "Sphere" "Woodball" "0 3 1" ".25" "0"
-ENTITY DEFAULT "ball9" "Sphere" "Woodball" "-1 3 1" ".25" "0"
-ENTITY DEFAULT "ball10" "Sphere" "Woodball" "-2 3 1" ".25" "0"
-
-ENTITY DEFAULT "ball11" "Sphere" "Woodball" "2 3 0" ".25" "0"
-ENTITY DEFAULT "ball12" "Sphere" "Woodball" "1 3 0" ".25" "0"
-ENTITY DEFAULT "ball13" "Sphere" "Woodball" "0 3 0" ".25" "0"
-ENTITY DEFAULT "ball14" "Sphere" "Woodball" "-1 3 0" ".25" "0"
-ENTITY DEFAULT "ball15" "Sphere" "Woodball" "-2 3 0" ".25" "0"
-
-ENTITY DEFAULT "ball16" "Sphere" "Woodball" "2 3 -1" ".25" "0"
-ENTITY DEFAULT "ball17" "Sphere" "Woodball" "1 3 -1" ".25" "0"
-ENTITY DEFAULT "ball18" "Sphere" "Woodball" "0 3 -1" ".25" "0"
-ENTITY DEFAULT "ball19" "Sphere" "Woodball" "-1 3 -1" ".25" "0"
-ENTITY DEFAULT "ball20" "Sphere" "Woodball" "-2 3 -1" ".25" "0"
-
-ENTITY DEFAULT "ball21" "Sphere" "Woodball" "2 3 -2" ".25" "0"
-ENTITY DEFAULT "ball22" "Sphere" "Woodball" "1 3 -2" ".25" "0"
-ENTITY DEFAULT "ball23" "Sphere" "Woodball" "0 3 -2" ".25" "0"
-ENTITY DEFAULT "ball25" "Sphere" "Woodball" "-1 3 -2" ".25" "0"
-ENTITY DEFAULT "ball25" "Sphere" "Woodball" "-2 3 -2" ".25" "0"
-
-
-
-
-
-
-ENTITY DEFAULT "ball1" "Sphere" "Woodball" "2 4 2" ".25" "0"
-ENTITY DEFAULT "ball2" "Sphere" "Woodball" "1 4 2" ".25" "0"
-ENTITY DEFAULT "ball3" "Sphere" "Woodball" "0 4 2" ".25" "0"
-ENTITY DEFAULT "ball4" "Sphere" "Woodball" "-1 4 2" ".25" "0"
-ENTITY DEFAULT "ball5" "Sphere" "Woodball" "-2 4 2" ".25" "0"
-
-ENTITY DEFAULT "ball6" "Sphere" "Woodball" "2 4 1" ".25" "0"
-ENTITY DEFAULT "ball7" "Sphere" "Woodball" "1 4 1" ".25" "0"
-ENTITY DEFAULT "ball8" "Sphere" "Woodball" "0 4 1" ".25" "0"
-ENTITY DEFAULT "ball9" "Sphere" "Woodball" "-1 4 1" ".25" "0"
-ENTITY DEFAULT "ball10" "Sphere" "Woodball" "-2 4 1" ".25" "0"
-
-ENTITY DEFAULT "ball11" "Sphere" "Woodball" "2 4 0" ".25" "0"
-ENTITY DEFAULT "ball12" "Sphere" "Woodball" "1 4 0" ".25" "0"
-ENTITY DEFAULT "ball13" "Sphere" "Woodball" "0 4 0" ".25" "0"
-ENTITY DEFAULT "ball14" "Sphere" "Woodball" "-1 4 0" ".25" "0"
-ENTITY DEFAULT "ball15" "Sphere" "Woodball" "-2 4 0" ".25" "0"
-
-ENTITY DEFAULT "ball16" "Sphere" "Woodball" "2 4 -1" ".25" "0"
-ENTITY DEFAULT "ball17" "Sphere" "Woodball" "1 4 -1" ".25" "0"
-ENTITY DEFAULT "ball18" "Sphere" "Woodball" "0 4 -1" ".25" "0"
-ENTITY DEFAULT "ball19" "Sphere" "Woodball" "-1 4 -1" ".25" "0"
-ENTITY DEFAULT "ball20" "Sphere" "Woodball" "-2 4 -1" ".25" "0"
-
-ENTITY DEFAULT "ball21" "Sphere" "Woodball" "2 4 -2" ".25" "0"
-ENTITY DEFAULT "ball22" "Sphere" "Woodball" "1 4 -2" ".25" "0"
-ENTITY DEFAULT "ball23" "Sphere" "Woodball" "0 4 -2" ".25" "0"
-ENTITY DEFAULT "ball25" "Sphere" "Woodball" "-1 4 -2" ".25" "0"
-ENTITY DEFAULT "ball25" "Sphere" "Woodball" "-2 4 -2" ".25" "0"
-
-
-
-
-
-ENTITY STATIC "wall" "Room" "Wall" "0 0 0" "0.5" "45"
+ENTITY DEFAULT1 "wall" "Room" "Wall" "0 0 0" "0.5" "45"
 ENTITY DEFAULT1 "ent1" "pCube49" "Corset_O" "0 1.7 0" "15" "0"
 ENTITY DEFAULT1 "ent2" "pCube49" "Corset_O" "-2 1.7 -2" "15" "0"
-ENTITY DEFAULT  "floor" "Plane" "Plane" "0 -1 0" "1" "0"
 ENTITY DEFAULT1 "outerBuildings" "Cube.001" "OuterBuilding" "0 0 0" "1" "0"
 ENTITY DEFAULT1 "innerBuildings" "Cube.011" "InnerBuilding" "0 0 0" "1" "0"
 
-#SKYBOX STANDARD "iceflow" ".tga"
-SKYBOX HDR "carpentry_shop_02_4k.hdr"
+SKYBOX STANDARD "iceflow" ".tga"
+#SKYBOX HDR "carpentry_shop_02_4k.hdr"
 
 LIGHT DIR "5" "0.412 0.592 0.886 1" "0 -2 1"
 LIGHT POINT "4" "0.812 0.112 0.234 1" "1 2 3"

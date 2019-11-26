@@ -31,7 +31,6 @@ public:
 //private:
     std::vector<Entity*> m_entities;
     Camera camera;
-    u8 cameraMode;
 
     f32 objYaw, camYaw;
 

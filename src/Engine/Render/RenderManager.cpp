@@ -160,9 +160,7 @@ void BatchRenderer::shadowPass(BatchDrawCall* batch) {
     glBindFramebuffer(GL_FRAMEBUFFER, sm.depthMapFBO);
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    mat4 identity;
-    m_shadowPass.setMat4("viewMatrix", batch->sunViewProjectionMatrix);
-    m_shadowPass.setMat4("projectionMatrix", identity);
+    m_shadowPass.setMat4("projectionViewMatrix", batch->sunViewProjectionMatrix);
     for (int n = 0; n < batch->numCalls; n++) {
         DrawCall* draw = &batch->calls[n];
 
@@ -185,9 +183,7 @@ void BatchRenderer::staticPass(BatchDrawCall* batch) {
         batch->spotLights
     );
 
-    mat4 identity;
-    m_staticPass.setMat4("viewMatrix", batch->cameraViewProjectionMatrix);
-    m_staticPass.setMat4("projectionMatrix", identity);
+    m_staticPass.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
     m_staticPass.setVec3("camPos", batch->camPos);
 
     m_staticPass.setInt("material.baseColorTexture", 0);
@@ -200,8 +196,7 @@ void BatchRenderer::staticPass(BatchDrawCall* batch) {
     m_staticPass.setInt("brdfLUT", 7);
     m_staticPass.setInt("shadowMap", 8);
 
-    m_staticPass.setMat4("lightViewMatrix", batch->sunViewProjectionMatrix);
-    m_staticPass.setMat4("lightProjectionMatrix", identity);
+    m_staticPass.setMat4("lightProjectionViewMatrix", batch->sunViewProjectionMatrix);
 
     batch->env->bindPBR(GL_TEXTURE5, GL_TEXTURE6, GL_TEXTURE7);
     sm.bind(GL_TEXTURE8);
@@ -266,9 +261,8 @@ void BatchRenderer::lightVolumePass(BatchDrawCall* batch) {
     m_lightVolumePass.setVec3("sun.direction", batch->sun->direction);
     m_lightVolumePass.setVec4("sun.color", batch->sun->color);
     m_lightVolumePass.setFloat("sun.strength", batch->sun->strength);
-    m_lightVolumePass.setMat4("lightViewMatrix", batch->sunViewProjectionMatrix);
-    mat4 identity;
-    m_lightVolumePass.setMat4("lightProjectionMatrix", identity);
+    m_lightVolumePass.setMat4("lightProjectionViewMatrix", batch->sunViewProjectionMatrix);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, fb.getTexture());
     glActiveTexture(GL_TEXTURE1);
@@ -361,6 +355,11 @@ void BatchRenderer::renderDebug(
     sprintf(text, "Draw Calls: %-3d", batch->numCalls);
     debugFont.drawText(5, 595, white, text, ALIGN_BOT_LEFT);
 
+    sprintf(text, "Position: (%.2f,%.2f,%.2f)", batch->camPos.x, batch->camPos.y, batch->camPos.z);
+    debugFont.drawText(795, 595, white, text, ALIGN_BOT_RIGHT);
+    sprintf(text, "Orientation: (%.2f,%.2f,%.2f)", 0.0f, 0.0f, 0.0f);
+    debugFont.drawText(795, 595-18, white, text, ALIGN_BOT_RIGHT);
+
     if (debugMode) {
         glClear(GL_DEPTH_BUFFER_BIT);
         m_debugMeshShader.use();
@@ -370,7 +369,7 @@ void BatchRenderer::renderDebug(
         m_debugMeshShader.setVec4("sun.color", batch->sun->color);
         m_debugMeshShader.setFloat("sun.strength", batch->sun->strength);
         m_debugMeshShader.setVec3("objColor", vec3(1,1,1));
-        m_debugMeshShader.setVec3("camPos", batch->camPos);
+        m_debugMeshShader.setVec3("camPos", batch->viewPos); // use viewPos so camera model has correct specular
 
         glBindVertexArray(cameraMesh->VAO);
         glDrawElements(GL_TRIANGLES, cameraMesh->numFaces * 3, GL_UNSIGNED_SHORT, 0);
