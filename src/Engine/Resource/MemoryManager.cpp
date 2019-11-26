@@ -1,30 +1,30 @@
 #include "MemoryManager.hpp"
 
 // Explicit instantiation for various types
-template void PoolAllocator::returnBlock(DataBlock<u8>&);
+/*template void PoolAllocator::returnBlock(DataBlock<u8>&);
 template void PoolAllocator::returnBlock(DataBlock<f32>&);
 template void PoolAllocator::returnBlock(DataBlock<f64>&);
 template void PoolAllocator::returnBlock(DataBlock<math::vec3>&);
-template void PoolAllocator::returnBlock(DataBlock<math::vec4>&);
+template void PoolAllocator::returnBlock(DataBlock<math::vec4>&);*/
 
 // Explicit instantiation for various types
-template DataBlock<u8> PoolAllocator::allocBlock(u32, bool);
+/*template DataBlock<u8> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<f32> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<f64> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<math::vec4> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<math::vec3> PoolAllocator::allocBlock(u32, bool);
 template DataBlock<math::vec2> PoolAllocator::allocBlock(u32, bool);
-template DataBlock<index_t> PoolAllocator::allocBlock(u32, bool);
+template DataBlock<index_t> PoolAllocator::allocBlock(u32, bool);*/
 
 // Explicit instantiation for various types
-template DataBlock<u8>& DataBlock<u8>::operator=(const DataBlock<u8>& db);
+/*template DataBlock<u8>& DataBlock<u8>::operator=(const DataBlock<u8>& db);
 template DataBlock<math::vec4>& DataBlock<math::vec4>::operator=(const DataBlock<math::vec4>& db);
 template DataBlock<math::vec3>& DataBlock<math::vec3>::operator=(const DataBlock<math::vec3>& db);
 template DataBlock<math::vec2>& DataBlock<math::vec2>::operator=(const DataBlock<math::vec2>& db);
-template DataBlock<index_t>& DataBlock<index_t>::operator=(const DataBlock<index_t>& db);
+template DataBlock<index_t>& DataBlock<index_t>::operator=(const DataBlock<index_t>& db);*/
 
 /* Assignment Operator */
-template<typename dataType>
+/*template<typename dataType>
 DataBlock<dataType>& DataBlock<dataType>::operator=(const DataBlock<dataType>& db) {
     assert(this->m_elementSize == db.m_elementSize);
     assert(db.data != nullptr);
@@ -34,7 +34,7 @@ DataBlock<dataType>& DataBlock<dataType>::operator=(const DataBlock<dataType>& d
     this->data = db.data;
 
     return *this;
-}
+}*/
 
 PoolAllocator::PoolAllocator(const u32 howManyBytes) :
     m_totalBytesInPool(howManyBytes),
@@ -96,7 +96,7 @@ void* PoolAllocator::allocBlock_raw(u32 howManyBytes, bool pullFromFront) {
     return nullptr;
 }
 
-template<typename T>
+/*template<typename T>
 DataBlock<T> PoolAllocator::allocBlock(u32 howManyElements, bool pullFromFront) {
     DataBlock<T> ret(howManyElements);
 
@@ -123,6 +123,7 @@ DataBlock<T> PoolAllocator::allocBlock(u32 howManyElements, bool pullFromFront) 
     ret.data = nullptr;
     return ret;
 }
+*/
 
 void PoolAllocator::returnBlock_raw(void* block) {
     // don't really need to do anything right now, as the
@@ -130,11 +131,11 @@ void PoolAllocator::returnBlock_raw(void* block) {
     block = nullptr;
 }
 
-template<typename T>
+/*template<typename T>
 void PoolAllocator::returnBlock(DataBlock<T>& block) {
     block.data = nullptr;
     block.m_numElements = 0;
-}
+}*/
 
 void* PoolAllocator::byteOffset(void* start, s32 numBytes) {
     // First cast to u8 (one-byte type)

@@ -24,7 +24,16 @@ struct DataBlock {
         data(nullptr)
     {}
 
-    DataBlock<dataType>& operator=(const DataBlock<dataType>& db);
+    DataBlock<dataType>& operator=(const DataBlock<dataType>& db) {
+        assert(this->m_elementSize == db.m_elementSize);
+        assert(db.data != nullptr);
+        assert(db.m_numElements > 0);
+
+        this->m_numElements = db.m_numElements;
+        this->data = db.data;
+
+        return *this;
+    }
 };
 
 /**
@@ -132,7 +141,33 @@ public:
      * data, the size of each element, and the number of elemetns
      */
     template<typename T>
-    DataBlock<T> allocBlock(u32 howManyElements, bool pullFromFront = true);
+    DataBlock<T> allocBlock(u32 howManyElements, bool pullFromFront = true) {
+        DataBlock<T> ret(howManyElements);
+
+        u32 howManyBytes = (howManyElements*ret.m_elementSize);
+        if (m_rawData && m_bytesLeft >= howManyBytes) {
+            T* start = nullptr;
+
+            if (pullFromFront) {
+                start = static_cast<T*>(m_frontPointer);
+                m_frontPointer = static_cast<void*>(start + howManyElements);
+            }
+            else {
+                start = static_cast<T*>(m_backPointer) - howManyElements;
+                m_backPointer = static_cast<void*>(start);
+            }
+
+            m_bytesLeft -= howManyBytes;
+
+            ret.data = start;
+            new (ret.data) T();
+            return ret;
+        }
+
+        ret.m_numElements = 0;
+        ret.data = nullptr;
+        return ret;
+    }
 
     /**
      * @brief Return a memory block to the pool
@@ -157,7 +192,10 @@ public:
      * @param block The memory block to free
      */
     template<typename T>
-    void returnBlock(DataBlock<T>& block);
+    void returnBlock(DataBlock<T>& block) {
+        block.data = nullptr;
+        block.m_numElements = 0;
+    }
 
     /**
      * @brief Get size of this pool
