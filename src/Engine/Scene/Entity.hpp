@@ -20,10 +20,9 @@ public:
     math::mat3 orientation;
     math::vec3 scale;
 
-    void create();
-    void update(double dt);
-    void render();
-
+    virtual void create();
+    virtual void update(double dt);
+    virtual void render();
     virtual void parseLevelData(std::istringstream &iss, ResourceManager* resource);
 
     void setMesh(meshRef _mesh);

@@ -426,3 +426,12 @@ materialRef ResourceManager::getMaterial(std::string id) {
         return &materials[id]; //TODO: This might not be safe.
     }
 }
+
+/*template <typename TYPE>
+DataBlock<TYPE> ResourceManager::reserveDataBlocks(int num) {
+    //DataBlock<TYPE> block = m_pool.allocBlock<TYPE>(num);
+
+    DataBlock<TYPE> block;
+
+    return block;
+}*/

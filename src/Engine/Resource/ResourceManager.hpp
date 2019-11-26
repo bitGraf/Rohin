@@ -29,6 +29,11 @@ public:
 
     void loadModelFromFile(std::string path, bool binary);
 
+    template <typename TYPE>
+    DataBlock<TYPE> reserveDataBlocks(int num) {
+        return m_pool.allocBlock<TYPE>(num);
+    }
+
     meshRef getMesh(std::string);
     materialRef getMaterial(std::string);
 

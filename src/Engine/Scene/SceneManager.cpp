@@ -133,14 +133,14 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
 
             if (entType.compare("DEFAULT") == 0) {
                 // Create entity
-                Entity ent;
-                ent.parseLevelData(iss, resource);
+                Entity* ent = resource->reserveDataBlocks<Entity>(1).data;
+                
+                ent->parseLevelData(iss, resource);
 
                 m_entities.push_back(ent);
-                recognizeCustomEntity(entType);
             }
             else if (recognizeCustomEntity(entType)) {
-                processCustomEntityLoad(entType, iss);
+                processCustomEntityLoad(entType, iss, resource);
             }
             else {
                 Console::logMessage("Don't recognize entity type: [" 
@@ -237,9 +237,6 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
 
 
 void Scene::update(double dt) {
-    objYaw += 12 * dt;
-    m_entities[0].orientation.toYawPitchRoll(objYaw - 90, 0, 0);
-
     camera.playerControlled = cameraMode == 1 ? 0 : 1;
     camera.update(dt);
 }
@@ -296,7 +293,7 @@ void SceneManager::getRenderBatch(BatchDrawCall* batch) {
         for (int n = 0; n < m_currentScene->m_entities.size(); n++) {
             if (batch->numCalls >= MAX_CALLS)
                 break;
-            auto ent = &m_currentScene->m_entities[n];
+            auto ent = m_currentScene->m_entities[n];
 
             if (m_currentScene->camera.withinFrustum(ent->position, 0.25)) { // Check to see if the entity is in the camera frustum
                 mat4 modelMatrix = (

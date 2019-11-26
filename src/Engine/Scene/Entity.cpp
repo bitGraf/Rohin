@@ -13,7 +13,7 @@ void Entity::create() {
 }
 
 void Entity::update(double dt) {
-
+    std::cout << "I am a default entity\n";
 }
 
 void Entity::render() {
@@ -29,7 +29,7 @@ void Entity::setMaterial(materialRef _mat) {
 }
 
 void Entity::parseLevelData(std::istringstream &iss, ResourceManager* resource) {
-    Console::logMessage("Default Entity parse");
+    //Console::logMessage("Default Entity parse");
 
     std::string entityName = getNextString(iss);
     std::string entityMesh = getNextString(iss);

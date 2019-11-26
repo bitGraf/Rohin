@@ -26,10 +26,10 @@ public:
     void update(double dt);
 
     virtual bool recognizeCustomEntity(std::string entType);
-    virtual void processCustomEntityLoad(std::string entType, std::istringstream &iss);
+    virtual void processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource);
 
 //private:
-    std::vector<Entity> m_entities;
+    std::vector<Entity*> m_entities;
     Camera camera;
     u8 cameraMode;
 

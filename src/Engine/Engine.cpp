@@ -92,6 +92,10 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
 
     m_debugCamera.playerControlled = true;
     m_MainWindow.cursorVisible(cursorMode);
+
+    for (int n = 0; n < m_Scenes.getCurrentScene()->m_entities.size(); n++) {
+        m_Scenes.getCurrentScene()->m_entities[n]->update(0);
+    }
 }
 
 void Engine::Update(double dt) {
