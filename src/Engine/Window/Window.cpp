@@ -193,14 +193,6 @@ void Window::WindowScaleUpdate(float xscale, float yscale) {
 /* Input Callback Function */
 void Window::InputKey(int key, int scancode, int action, int mods) {
     sendMessage(Message("InputKey", 4, key, scancode, action, mods));
-
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        Console::logMessage("Spacebar pressed");
-    }
-
-    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-        Console::logMessage("P pressed");
-    }
 }
 
 void Window::InputChar(unsigned int codepoint) {

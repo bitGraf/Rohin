@@ -37,9 +37,27 @@ math::vec3 math::vec3::get_unit() { math::scalar c = 1/length(); return vec3(x*c
 math::vec4 math::vec4::get_unit() { math::scalar c = 1/length(); return vec4(x*c, y*c, z*c, w*c); }
 
 /* normalize */
-math::vec2 math::vec2::normalize() { math::scalar c = 1 / length(); *this = vec2(x*c, y*c); return *this; }
-math::vec3 math::vec3::normalize() { math::scalar c = 1 / length(); *this = vec3(x*c, y*c, z*c); return *this; }
-math::vec4 math::vec4::normalize() { math::scalar c = 1 / length(); *this = vec4(x*c, y*c, z*c, w*c); return *this; }
+math::vec2 math::vec2::normalize() { 
+    scalar c = 0, l = length();
+    if (l > 0.01)
+        c = 1 / l;
+    *this = vec2(x*c, y*c); 
+    return *this; 
+}
+math::vec3 math::vec3::normalize() { 
+    scalar c = 0, l = length();
+    if (l > 0.01)
+        c = 1 / l;
+    *this = vec3(x*c, y*c, z*c); 
+    return *this; 
+}
+math::vec4 math::vec4::normalize() { 
+    scalar c = 0, l = length();
+    if (l > 0.01)
+        c = 1 / l;
+    *this = vec4(x*c, y*c, z*c, w*c); 
+    return *this; 
+}
 
 /* dot */
 math::scalar math::vec2::dot(math::vec2 v) { return (x*v.x + y*v.y); }
