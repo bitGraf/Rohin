@@ -11,20 +11,20 @@ in vec4 pass_fragPosLightSpace;
 
 struct PointLight {
     vec3 position;
-    vec4 color;
+    vec3 color;
 	float strength;
 };
 
 struct DirectionalLight {
 	vec3 direction;
-	vec4 color;
+	vec3 color;
 	float strength;
 };
 
 struct SpotLight {
 	vec3 position;
 	vec3 direction;
-	vec4 color;
+	vec3 color;
 	float strength;
 	float inner_cutoff;
 	float outer_cutoff;
@@ -203,7 +203,7 @@ vec3 addDirLight(DirectionalLight light, vec3 normal, vec3 fragPos,
 	vec3 L = normalize(-light.direction);
     vec3 H = normalize(viewDir + L);
         
-    vec3 radiance = light.color.xyz * light.strength;
+    vec3 radiance = light.color * light.strength;
         
     float NDF = DistributionGGX(normal, H, roughness);
     float G = GeometrySmith(normal, viewDir, L, roughness);
@@ -231,7 +231,7 @@ vec3 addPointLight(PointLight light, vec3 normal, vec3 fragPos,
         
     float distance = length(light.position - pass_fragPos);
     float attenuation = 1 / (distance * distance);
-    vec3 radiance = light.color.xyz * attenuation * light.strength;
+    vec3 radiance = light.color * attenuation * light.strength;
         
     float NDF = DistributionGGX(normal, H, roughness);
     float G = GeometrySmith(normal, viewDir, L, roughness);
@@ -263,7 +263,7 @@ vec3 addSpotLight(SpotLight light, vec3 normal, vec3 fragPos,
         
     float distance = length(light.position - pass_fragPos);
     float attenuation = 1 / (distance * distance);
-    vec3 radiance = light.color.xyz * attenuation * light.strength * intensity;
+    vec3 radiance = light.color * attenuation * light.strength * intensity;
         
     float NDF = DistributionGGX(normal, H, roughness);
     float G = GeometrySmith(normal, viewDir, L, roughness);

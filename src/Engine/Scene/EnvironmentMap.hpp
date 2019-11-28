@@ -9,7 +9,7 @@
 #include "stb_image.h"
 
 #include "Render/Shader.hpp"
-#include "Camera.hpp"
+#include "GameObject/Camera.hpp"
 
 const std::string SkyboxResourcePath = "Data/Images/";
 const std::string HdrResourcePath = "Data/Images/";

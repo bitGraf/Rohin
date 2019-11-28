@@ -244,6 +244,11 @@ namespace math {
     mat4 operator- (const mat4& M);                 ///< -Matrix4
 
     mat3 createYawPitchRollMatrix(scalar yaw, scalar pitch, scalar roll);
+    mat4 createInverseTransform(vec3 Position, vec3 YawPitchRoll, vec3 Scale = vec3(1));
+
+    vec3 createYawPitchRoll_Forward(vec3 YawPitchRoll);
+    vec3 createYawPitchRoll_Right(vec3 YawPitchRoll);
+    vec3 createYawPitchRoll_Up(vec3 YawPitchRoll);
 
     void vec4normalizeXYZ_remap(math::vec4 &v);
 }

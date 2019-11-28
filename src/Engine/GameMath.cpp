@@ -687,6 +687,14 @@ math::mat3 math::createYawPitchRollMatrix(scalar yaw, scalar pitch, scalar roll)
     return m;
 }
 
+math::mat4 math::createInverseTransform(vec3 Position, vec3 YawPitchRoll, vec3 Scale) {
+    mat4 out = mat4(createYawPitchRollMatrix(YawPitchRoll.x, YawPitchRoll.y, YawPitchRoll.z).getTranspose()) *
+        mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), 
+            vec4(-Position.x/Scale.x, -Position.y/Scale.y, -Position.z/Scale.z, 1));
+
+    return out;
+}
+
 void math::vec4normalizeXYZ_remap(math::vec4 &v) {
     scalar f = 1 / vec3(v).length();
 
@@ -696,6 +704,98 @@ void math::vec4normalizeXYZ_remap(math::vec4 &v) {
 math::vec3 math::vec4::XYZ() {
     return vec3(x, y, z);
 }
+
+math::vec3 math::createYawPitchRoll_Forward(vec3 YawPitchRoll) {
+    // 2-3-1 Body-Fixed Euler-Rotation
+    scalar C1 = cos(YawPitchRoll.z*d2r);  //x Roll
+    scalar S1 = sin(YawPitchRoll.z*d2r);
+    scalar C2 = cos(YawPitchRoll.y*d2r); //z Pitch
+    scalar S2 = sin(YawPitchRoll.y*d2r);
+    scalar C3 = cos(YawPitchRoll.x*d2r);   //y Yaw
+    scalar S3 = sin(YawPitchRoll.x*d2r);
+
+    mat3 X1 = mat3(
+        vec3(1, 0, 0),
+        vec3(0, C1, S1),
+        vec3(0, -S1, C1)
+    );
+    mat3 Z2 = mat3(
+        vec3(C2, S2, 0),
+        vec3(-S2, C2, 0),
+        vec3(0, 0, 1)
+    );
+    mat3 Y3 = mat3(
+        vec3(C3, 0, -S3),
+        vec3(0, 1, 0),
+        vec3(S3, 0, C3)
+    );
+
+    mat3 m = Y3 * Z2*X1;
+
+    return m.col1();
+}
+
+math::vec3 math::createYawPitchRoll_Right(vec3 YawPitchRoll) {
+    // 2-3-1 Body-Fixed Euler-Rotation
+    scalar C1 = cos(YawPitchRoll.z*d2r);  //x Roll
+    scalar S1 = sin(YawPitchRoll.z*d2r);
+    scalar C2 = cos(YawPitchRoll.y*d2r); //z Pitch
+    scalar S2 = sin(YawPitchRoll.y*d2r);
+    scalar C3 = cos(YawPitchRoll.x*d2r);   //y Yaw
+    scalar S3 = sin(YawPitchRoll.x*d2r);
+
+    mat3 X1 = mat3(
+        vec3(1, 0, 0),
+        vec3(0, C1, S1),
+        vec3(0, -S1, C1)
+    );
+    mat3 Z2 = mat3(
+        vec3(C2, S2, 0),
+        vec3(-S2, C2, 0),
+        vec3(0, 0, 1)
+    );
+    mat3 Y3 = mat3(
+        vec3(C3, 0, -S3),
+        vec3(0, 1, 0),
+        vec3(S3, 0, C3)
+    );
+
+    mat3 m = Y3 * Z2*X1;
+
+    return m.col3();
+}
+
+math::vec3 math::createYawPitchRoll_Up(vec3 YawPitchRoll) {
+    // 2-3-1 Body-Fixed Euler-Rotation
+    scalar C1 = cos(YawPitchRoll.z*d2r);  //x Roll
+    scalar S1 = sin(YawPitchRoll.z*d2r);
+    scalar C2 = cos(YawPitchRoll.y*d2r); //z Pitch
+    scalar S2 = sin(YawPitchRoll.y*d2r);
+    scalar C3 = cos(YawPitchRoll.x*d2r);   //y Yaw
+    scalar S3 = sin(YawPitchRoll.x*d2r);
+
+    mat3 X1 = mat3(
+        vec3(1, 0, 0),
+        vec3(0, C1, S1),
+        vec3(0, -S1, C1)
+    );
+    mat3 Z2 = mat3(
+        vec3(C2, S2, 0),
+        vec3(-S2, C2, 0),
+        vec3(0, 0, 1)
+    );
+    mat3 Y3 = mat3(
+        vec3(C3, 0, -S3),
+        vec3(0, 1, 0),
+        vec3(S3, 0, C3)
+    );
+
+    mat3 m = Y3 * Z2*X1;
+
+    return m.col2();
+}
+
+
 
 
 /* ostream function overloads */

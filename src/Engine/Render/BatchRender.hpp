@@ -5,9 +5,9 @@
 
 #include "glad\glad.h"
 #include "GameMath.hpp"
-#include "Scene\Lights.hpp"
 #include "Scene\EnvironmentMap.hpp"
 #include "Scene\Material.hpp"
+
 
 using namespace math;
 
@@ -30,9 +30,9 @@ struct BatchDrawCall {
 
     mat4 sunViewProjectionMatrix;
 
-    DirLight* sun;
-    PointLight (*pointLights)[4];
-    SpotLight (*spotLights)[4];
+    DirLight *sun;
+    PointLight *pointLights[4] = { nullptr };
+    SpotLight *spotLights[4] = { nullptr };
     EnvironmentMap (*env);
 
     DrawCall calls[MAX_CALLS];

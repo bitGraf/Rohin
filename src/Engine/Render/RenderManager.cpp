@@ -258,9 +258,9 @@ void BatchRenderer::lightVolumePass(BatchDrawCall* batch) {
     m_lightVolumePass.setInt("positionMap", 1);
     m_lightVolumePass.setInt("shadowMap", 2);
     m_lightVolumePass.setVec3("camPos", batch->camPos);
-    m_lightVolumePass.setVec3("sun.direction", batch->sun->direction);
-    m_lightVolumePass.setVec4("sun.color", batch->sun->color);
-    m_lightVolumePass.setFloat("sun.strength", batch->sun->strength);
+    m_lightVolumePass.setVec3("sun.direction", batch->sun->Direction);
+    m_lightVolumePass.setVec3("sun.color", batch->sun->Color);
+    m_lightVolumePass.setFloat("sun.strength", batch->sun->Strength);
     m_lightVolumePass.setMat4("lightProjectionViewMatrix", batch->sunViewProjectionMatrix);
 
     glActiveTexture(GL_TEXTURE0);
@@ -365,9 +365,9 @@ void BatchRenderer::renderDebug(
         m_debugMeshShader.use();
         m_debugMeshShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
         m_debugMeshShader.setMat4("modelMatrix", batch->cameraModelMatrix);
-        m_debugMeshShader.setVec3("sun.direction", batch->sun->direction);
-        m_debugMeshShader.setVec4("sun.color", batch->sun->color);
-        m_debugMeshShader.setFloat("sun.strength", batch->sun->strength);
+        m_debugMeshShader.setVec3("sun.direction", batch->sun->Direction);
+        m_debugMeshShader.setVec3("sun.color", batch->sun->Color);
+        m_debugMeshShader.setFloat("sun.strength", batch->sun->Strength);
         m_debugMeshShader.setVec3("objColor", vec3(1,1,1));
         m_debugMeshShader.setVec3("camPos", batch->viewPos); // use viewPos so camera model has correct specular
 

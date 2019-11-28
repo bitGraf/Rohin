@@ -7,16 +7,19 @@
 #include <string>
 
 #include "Message/CoreSystem.hpp"
-#include "Entity.hpp"
 #include "Resource/ResourceManager.hpp"
-#include "Camera.hpp"
-#include "Lights.hpp"
 #include "GLFW\glfw3.h"
 #include "Render\BatchRender.hpp"
 #include "Render\Shadowmap.hpp"
 
 #include "EnvironmentMap.hpp"
 #include "Utils.hpp"
+
+#include "GameObject\Player.hpp"
+#include "GameObject\Camera.hpp"
+#include "GameObject\Light.hpp"
+
+const int MAX_GAME_OBJECTS = 100;
 
 class Scene {
 public:
@@ -29,16 +32,32 @@ public:
     virtual void processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource);
 
 //private:
-    std::vector<Entity*> m_entities;
-    Camera camera;
+    //DataBlock<GameObject> m_masterList;
+    std::vector<GameObject*> m_masterList;
+    struct GameObjectLists_t {
+        void clear() {
+            Renderable.clear();
+            Camera.clear();
+            PointLights.clear();
+            SpotLights.clear();
+            DirLights.clear();
+        }
 
-    f32 objYaw, camYaw;
+        std::vector<RenderableObject*> Renderable;
+        std::vector<Camera*> Camera;
+        std::vector<PointLight*> PointLights;
+        std::vector<SpotLight*> SpotLights;
+        std::vector<DirLight*> DirLights;
+        //std::vector<CharacterObject*> Characters;
+        std::vector<PlayerObject*> Players;
+    };
+    GameObjectLists_t objectsByType;
 
-    static const int NUM_POINTLIGHTS = 4;
-    static const int NUM_SPOTLIGHTS = 4;
-    DirLight sun;
-    PointLight pointLights[NUM_POINTLIGHTS];
-    SpotLight spotLights[NUM_SPOTLIGHTS];
+    //static const int NUM_POINTLIGHTS = 4;
+    //static const int NUM_SPOTLIGHTS = 4;
+    //DirLight sun;
+    //PointLight pointLights[NUM_POINTLIGHTS];
+    //SpotLight spotLights[NUM_SPOTLIGHTS];
 
     EnvironmentMap envMap;
 
@@ -66,5 +85,8 @@ private:
 
     std::vector<Scene> scenes;
 };
+
+extern Scene* CurrentScene;
+Scene* GetScene();
 
 #endif

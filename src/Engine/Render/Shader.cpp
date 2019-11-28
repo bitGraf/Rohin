@@ -160,39 +160,45 @@ void Shader::setMaterial(const std::string &name, const Material* mat) const {
 
 void Shader::setLights(
     const DirLight* sun,
-    PointLight(*pointLights)[4],
-    SpotLight(*spotLights)[4]) const {
+    PointLight *pointLights[4],
+    SpotLight *spotLights[4]) const {
     using namespace math;
 
     /* Set Directional light */
-    setVec3("sun.direction", sun->direction);
-    setVec4("sun.color", sun->color);
-    setFloat("sun.strength", sun->strength);
+    if (sun) {
+        setVec3("sun.direction", sun->Direction);
+        setVec3("sun.color", sun->Color);
+        setFloat("sun.strength", sun->Strength);
+    }
 
     /* Point Lights */
     for (int n = 0; n < 4; n++) {
-        setVec3("pointLights[" + std::to_string(n) + 
-            "].position", (*pointLights)[n].position);
-        setVec4("pointLights[" + std::to_string(n) +
-            "].color", (*pointLights)[n].color);
-        setFloat("pointLights[" + std::to_string(n) +
-            "].strength", (*pointLights)[n].strength);
+        if (pointLights[n]) {
+            setVec3("pointLights[" + std::to_string(n) +
+                "].position", pointLights[n]->Position);
+            setVec3("pointLights[" + std::to_string(n) +
+                "].color", pointLights[n]->Color);
+            setFloat("pointLights[" + std::to_string(n) +
+                "].strength", pointLights[n]->Strength);
+        }
     }
 
     /* Spot Lights */
     for (int n = 0; n < 4; n++) {
-        setVec3("spotLights[" + std::to_string(n) +
-            "].position", (*spotLights)[n].position);
-        setVec3("spotLights[" + std::to_string(n) +
-            "].direction", (*spotLights)[n].direction);
-        setVec4("spotLights[" + std::to_string(n) +
-            "].color", (*spotLights)[n].color);
-        setFloat("spotLights[" + std::to_string(n) +
-            "].strength", (*spotLights)[n].strength);
-        setFloat("spotLights[" + std::to_string(n) +
-            "].inner_cutoff", (*spotLights)[n].inner_cutoff);
-        setFloat("spotLights[" + std::to_string(n) +
-            "].outer_cutoff", (*spotLights)[n].outer_cutoff);
+        if (spotLights[n]) {
+            setVec3("spotLights[" + std::to_string(n) +
+                "].position", spotLights[n]->Position);
+            setVec3("spotLights[" + std::to_string(n) +
+                "].direction", spotLights[n]->Direction);
+            setVec3("spotLights[" + std::to_string(n) +
+                "].color", spotLights[n]->Color);
+            setFloat("spotLights[" + std::to_string(n) +
+                "].strength", spotLights[n]->Strength);
+            setFloat("spotLights[" + std::to_string(n) +
+                "].inner_cutoff", spotLights[n]->inner_cutoff);
+            setFloat("spotLights[" + std::to_string(n) +
+                "].outer_cutoff", spotLights[n]->outer_cutoff);
+        }
     }
 }
 

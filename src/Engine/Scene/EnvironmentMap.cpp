@@ -90,13 +90,10 @@ void EnvironmentMap::initShaders() {
     prefilterShader.create("cubemapConvert.vert", "prefilter.frag", "irradianceShader");
     brdfComputeShader.create("brdf.vert", "brdf.frag", "brdfComputeShader");
 
-    captureCam.m_fov = 90;
-    captureCam.m_zFar = 10;
-    captureCam.m_zNear = .1;
-    captureCam.m_aspectRatio = 1;
+    captureCam.set(90, .1, 10);
     captureCam.updateViewFrustum(100, 100);
 
-    captureCam.position = vec3(0.0);
+    captureCam.Position = vec3(0.0);
     captureViews[0] = captureCam.lookAt(vec3(0, 0,  1), true).viewMatrix;
     captureViews[1] = captureCam.lookAt(vec3(0, 0, -1), true).viewMatrix;
     captureViews[2] = captureCam.lookAt(vec3(0, -1, 0), true).viewMatrix;

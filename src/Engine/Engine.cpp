@@ -5,6 +5,9 @@ Engine::Engine() {
     done = false;
     userQuit = false;
     cursorMode = true; //visible cursor
+
+    m_debugCamera.Position = vec3(-1, -1, 2);
+    m_debugCamera.YawPitchRoll = vec3(-45, -30, 0);
 }
 
 void Engine::Start(handleMessageFnc f, int argc, char* argv[]) {
@@ -90,15 +93,30 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glPointSize(10);
 
-    m_debugCamera.playerControlled = true;
+    //m_debugCamera.playerControlled = true;
     m_MainWindow.cursorVisible(cursorMode);
+
+
+    Input::watchKey("key_w", GLFW_KEY_W);
+    Input::watchKey("key_a", GLFW_KEY_A);
+    Input::watchKey("key_s", GLFW_KEY_S);
+    Input::watchKey("key_d", GLFW_KEY_D);
+    Input::watchKey("key_space", GLFW_KEY_SPACE);
+    Input::watchKey("key_shift", GLFW_KEY_LEFT_SHIFT);
+
+    Input::watchKey("key_up", GLFW_KEY_UP);
+    Input::watchKey("key_down", GLFW_KEY_DOWN);
+    Input::watchKey("key_left", GLFW_KEY_LEFT);
+    Input::watchKey("key_right", GLFW_KEY_RIGHT);
+    Input::watchKey("key_numpad0", GLFW_KEY_KP_0);
+    Input::watchKey("key_rctrl", GLFW_KEY_RIGHT_CONTROL);
 }
 
 void Engine::Update(double dt) {
     // Call the SceneManager update function
     // Update the Game State
     if (debugMode) {
-        m_debugCamera.update(dt);
+        m_debugCamera.Update(dt);
     } else {
         m_Scenes.update(dt);
     }
@@ -113,7 +131,7 @@ void Engine::PreRender() {
         m_debugCamera.updateViewFrustum(800, 600);
         batch.cameraViewProjectionMatrix = m_debugCamera.projectionMatrix *
             m_debugCamera.viewMatrix;
-        batch.viewPos = m_debugCamera.position;
+        batch.viewPos = m_debugCamera.Position;
 
         //batch.cameraView = m_debugCamera.viewMatrix;
         batch.cameraProjection = m_debugCamera.projectionMatrix;
@@ -153,9 +171,10 @@ void Engine::globalHandle(Message msg) {
         dt mods = msg.data[3];
 
         if (key == GLFW_KEY_C && action == GLFW_PRESS) {
-            m_debugCamera.playerControlled = cursorMode;
+            //m_debugCamera.playerControlled = cursorMode;
             cursorMode = !cursorMode;
             m_MainWindow.cursorVisible(cursorMode);
+            m_debugCamera.freeFlyMode = !cursorMode;
         }
 
         if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {

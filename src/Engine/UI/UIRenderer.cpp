@@ -155,9 +155,9 @@ void UIRenderer::renderScene(Window* window, Scene* scene) {
 }
 
 void UIRenderer::drawLensFlare(Scene* scene) {
-    auto cam = &scene->camera;
+    auto cam = scene->objectsByType.Camera[0];
 
-    vec3 sunPosWorld = -scene->sun.direction.get_unit() * 50;
+    vec3 sunPosWorld = scene->objectsByType.DirLights[0]->Position;
     vec4 sunScreenPos = cam->projectionMatrix * cam->viewMatrix * vec4(sunPosWorld, 1);
     vec2 screenPos = (vec2(sunScreenPos.x / sunScreenPos.w, sunScreenPos.y / sunScreenPos.w) / 2) + vec2(.5);
     screenPos = vec2(screenPos.x, 1 - screenPos.y);

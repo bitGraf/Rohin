@@ -9,7 +9,7 @@
 #include <chrono>
 
 #include "Scene/Material.hpp"
-#include "Scene/Lights.hpp"
+#include "GameObject/Light.hpp"
 //#include "System/SceneManager.hpp"
 
 const std::string ShaderResourcePath = "Data/shaders/";
@@ -36,9 +36,10 @@ public:
     void setMat4(const std::string &name, math::mat4 value) const;
 
     void setMaterial(const std::string &name, const Material* mat) const;
-    void setLights(const DirLight* sun,
-        PointLight (*pointLights)[4],
-        SpotLight (*spotLights)[4]) const;
+    void setLights(
+        const DirLight* sun,
+        PointLight *pointLights[4],
+        SpotLight *spotLights[4]) const;
 
     void use();
 

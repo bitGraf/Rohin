@@ -1,5 +1,8 @@
 #include "SceneManager.hpp"
 
+Scene* CurrentScene = nullptr;
+Scene* GetScene() { return CurrentScene; }
+
 SceneManager::SceneManager() {
     m_currentScene = nullptr;
 }
@@ -25,10 +28,6 @@ void SceneManager::handleMessage(Message msg) {
 
         if (key == GLFW_KEY_R && action == GLFW_PRESS) {
             Console::logMessage("Camera Reset");
-
-            m_currentScene->camera.yaw = 0;
-            m_currentScene->camera.pitch = 0;
-            m_currentScene->camera.roll = 0;
         }
 
         if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
@@ -54,14 +53,10 @@ void SceneManager::destroy() {
 }
 
 CoreSystem* SceneManager::create() {
-    Camera::init();
-
     return this;
 }
 
 Scene::Scene() {
-    camYaw = 0;
-    objYaw = 0;
 }
 
 void SceneManager::loadScenes(ResourceManager* resource, bool testing) {
@@ -89,7 +84,9 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
     u32 numSpotLightsLoaded = 0;
     u32 numPointLightsLoaded = 0;
 
-    m_entities.clear();
+    //m_masterList = resource->reserveDataBlocks<GameObject>(MAX_GAME_OBJECTS);
+    m_masterList.clear();
+    objectsByType.clear();
 
     std::string line;
     while (std::getline(infile, line))
@@ -124,20 +121,74 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
             std::string entType;
             iss >> entType;
 
-            if (entType.compare("DEFAULT") == 0) {
-                // Create entity
-                Entity* ent = resource->reserveDataBlocks<Entity>(1).data;
-                
-                ent->parseLevelData(iss, resource);
+            GameObject* go = nullptr;
 
-                m_entities.push_back(ent);
+            if (entType.compare("GAMEOBJECT") == 0) {
+                auto k = resource->reserveDataBlocks<GameObject>(1);
+                
+                k.data->Create(iss, resource);
+
+                go = k.data;
+            }
+            else if (entType.compare("CAMERA") == 0) {
+                auto k = resource->reserveDataBlocks<Camera>(1);
+
+                k.data->Create(iss, resource);
+                objectsByType.Camera.push_back(k.data);
+
+                go = k.data;
+            }
+            else if (entType.compare("RENDERABLE") == 0) {
+                auto k = resource->reserveDataBlocks<RenderableObject>(1);
+
+                k.data->Create(iss, resource);
+                objectsByType.Renderable.push_back(k.data);
+                
+                go = k.data;
+            }
+            else if (entType.compare("DIR") == 0) {
+                auto k = resource->reserveDataBlocks<DirLight>(1);
+
+                k.data->Create(iss, resource);
+                objectsByType.DirLights.push_back(k.data);
+
+                go = k.data;
+            }
+            else if (entType.compare("SPOT") == 0) {
+                auto k = resource->reserveDataBlocks<SpotLight>(1);
+
+                k.data->Create(iss, resource);
+                objectsByType.SpotLights.push_back(k.data);
+
+                go = k.data;
+            }
+            else if (entType.compare("POINT") == 0) {
+                auto k = resource->reserveDataBlocks<PointLight>(1);
+
+                k.data->Create(iss, resource);
+                objectsByType.PointLights.push_back(k.data);
+
+                go = k.data;
+            }
+            else if (entType.compare("PLAYER") == 0) {
+                auto k = resource->reserveDataBlocks<PlayerObject>(1);
+
+                k.data->Create(iss, resource);
+                objectsByType.Players.push_back(k.data);
+                objectsByType.Renderable.push_back(k.data);
+
+                go = k.data;
             }
             else if (recognizeCustomEntity(entType)) {
                 processCustomEntityLoad(entType, iss, resource);
-            }
+            } 
             else {
                 Console::logMessage("Don't recognize entity type: [" 
                     + entType + "]");
+            }
+
+            if (go) {
+                m_masterList.push_back(go);
             }
         } 
         else if (type.compare("SKYBOX") == 0) {
@@ -165,64 +216,6 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                     envMap.preCompute();
                 }
             }
-        } 
-        else if (type.compare("LIGHT") == 0) {
-            //std::cout << "  parsing skybox\n";
-
-            std::string lightType;
-            if (!(iss >> lightType)) { assert(false); break; } // error
-
-            if (lightType.compare("DIR") == 0) {
-                math::scalar strength = getNextFloat(iss);
-                math::vec4 color = getNextVec4(iss);
-                math::vec3 dir = getNextVec3(iss);
-
-                // create light
-                sun.strength = strength;
-                sun.color = color;
-                sun.direction = dir;
-
-            } else if (lightType.compare("POINT") == 0) {
-                math::scalar strength = getNextFloat(iss);
-                math::vec4 color = getNextVec4(iss);
-                math::vec3 pos = getNextVec3(iss);
-
-                // create light
-                if (numPointLightsLoaded == NUM_POINTLIGHTS) continue;
-
-                pointLights[numPointLightsLoaded].strength = strength;
-                pointLights[numPointLightsLoaded].color = color;
-                pointLights[numPointLightsLoaded].position = pos;
-                numPointLightsLoaded++;
-
-            } else if (lightType.compare("SPOT") == 0) {
-                math::scalar strength = getNextFloat(iss);
-                math::vec4 color = getNextVec4(iss);
-                math::vec3 pos = getNextVec3(iss);
-                math::vec3 dir = getNextVec3(iss);
-                math::vec2 cutoff = getNextVec2(iss);
-
-                // create light
-                if (numSpotLightsLoaded == NUM_SPOTLIGHTS) continue;
-
-                spotLights[numSpotLightsLoaded].strength = strength;
-                spotLights[numSpotLightsLoaded].color = color;
-                spotLights[numSpotLightsLoaded].position = pos;
-                spotLights[numSpotLightsLoaded].direction = dir;
-                spotLights[numSpotLightsLoaded].inner_cutoff = cos(cutoff.x * d2r);
-                spotLights[numSpotLightsLoaded].outer_cutoff = cos(cutoff.y * d2r);
-                numSpotLightsLoaded++;
-            }
-        }
-        else if (type.compare("CAMERA") == 0) {
-            //std::cout << "  parsing volume\n";
-            vec3 pos = getNextVec3(iss);
-            vec3 rpy = getNextVec3(iss);
-
-            camera.position = pos;
-            camera.roll = rpy.x;
-            camera.pitch = rpy.y;
-            camera.yaw = rpy.z;
         }
     }
     infile.close();
@@ -230,10 +223,8 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
 
 
 void Scene::update(double dt) {
-    camera.update(dt);
-
-    for (int n = 0; n < m_entities.size(); n++) {
-        m_entities[n]->update(dt);
+    for (int n = 0; n < m_masterList.size(); n++) {
+        m_masterList[n]->Update(dt);
     }
 }
 
@@ -256,51 +247,62 @@ void SceneManager::getRenderBatch(BatchDrawCall* batch) {
 
     if (m_currentScene) {
         // Set Camera
-        m_currentScene->camera.updateViewFrustum(800, 600);
+        auto camera = m_currentScene->objectsByType.Camera[0];
+        camera->updateViewFrustum(800, 600);
 
-        batch->cameraView = m_currentScene->camera.viewMatrix;
-        batch->cameraProjection = m_currentScene->camera.projectionMatrix;
+        batch->cameraView = camera->viewMatrix;
+        batch->cameraProjection = camera->projectionMatrix;
         batch->cameraViewProjectionMatrix = batch->cameraProjection * batch->cameraView;
 
-        batch->camPos = m_currentScene->camera.position;
+        batch->camPos = camera->Position;
         batch->cameraModelMatrix = (
             mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), 
-                vec4(m_currentScene->camera.position, 1)) *
-                mat4(createYawPitchRollMatrix(m_currentScene->camera.yaw, m_currentScene->camera.pitch, m_currentScene->camera.roll)) *
+                vec4(camera->Position, 1)) *
+                mat4(createYawPitchRollMatrix(camera->YawPitchRoll.x, camera->YawPitchRoll.y, camera->YawPitchRoll.z)) *
                 mat4(.5, .5, .5, 1));
 
         mat4 lightView;
-        lightView.lookAt(-m_currentScene->sun.direction.get_unit() * 50, vec3(), vec3(0, 1, 0));
+        lightView.lookAt(m_currentScene->objectsByType.DirLights[0]->Position, vec3(), vec3(0, 1, 0));
 
         batch->sunViewProjectionMatrix =
             Shadowmap::lightProjection *
             lightView;
 
         // Set lights
-        batch->sun = &m_currentScene->sun;
-        batch->pointLights = &m_currentScene->pointLights;
-        batch->spotLights = &m_currentScene->spotLights;
+        batch->sun = m_currentScene->objectsByType.DirLights[0];
+        int numPoints = min(4, (int)m_currentScene->objectsByType.PointLights.size());
+        int numSpots  = min(4, (int)m_currentScene->objectsByType.SpotLights.size());
+        
+        for (int n = 0; n < 4; n++) {
+            if (n < numPoints)
+                batch->pointLights[n] = m_currentScene->objectsByType.PointLights[n];
+            else
+                batch->pointLights[n] = nullptr;
+        }
+        for (int n = 0; n < 4; n++) {
+            if (n < numSpots)
+                batch->spotLights[n] = m_currentScene->objectsByType.SpotLights[n];
+            else
+                batch->spotLights[n] = nullptr;
+        }
 
         // Environment
         batch->env = &m_currentScene->envMap;
 
         batch->numCalls = 0;
         // pull every entity
-        for (int n = 0; n < m_currentScene->m_entities.size(); n++) {
+        for (int n = 0; n < m_currentScene->objectsByType.Renderable.size(); n++) {
             if (batch->numCalls >= MAX_CALLS)
                 break;
-            auto ent = m_currentScene->m_entities[n];
+            auto ent = m_currentScene->objectsByType.Renderable[n];
 
-            if (m_currentScene->camera.withinFrustum(ent->position, 0.25)) { // Check to see if the entity is in the camera frustum
-                mat4 modelMatrix = (
-                    mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(ent->position, 1)) *
-                    mat4(ent->orientation) *
-                    mat4(ent->scale.x, ent->scale.y, ent->scale.z, 1));
+            if (camera->withinFrustum(ent->Position, 0.25)) { // Check to see if the entity is in the camera frustum
+                mat4 modelMatrix = ent->getModelTransform();
 
                 batch->calls[batch->numCalls].modelMatrix = modelMatrix;
-                batch->calls[batch->numCalls].numVerts = ent->m_mesh->numFaces * 3;
-                batch->calls[batch->numCalls].VAO = ent->m_mesh->VAO;
-                batch->calls[batch->numCalls].mat = ent->m_material;
+                batch->calls[batch->numCalls].numVerts = ent->getMesh()->numFaces * 3;
+                batch->calls[batch->numCalls].VAO = ent->getMesh()->VAO;
+                batch->calls[batch->numCalls].mat = ent->getMaterial();
                 batch->numCalls++;
             }
         }
