@@ -1,7 +1,8 @@
 #include "Player.hpp"
 
 PlayerObject::PlayerObject() {
-    speed = 5;
+    speed = 4;
+    rotateToMovement = true;
 }
 
 void PlayerObject::Update(double dt) {

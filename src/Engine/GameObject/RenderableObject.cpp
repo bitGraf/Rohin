@@ -22,16 +22,19 @@ void RenderableObject::Create(istringstream &iss, ResourceManager* resource) {
 }
 
 mat4 RenderableObject::getModelTransform() {
-    mat4 parentTransform = GameObject::getTransform();
+    mat4 objectTransform = GameObject::getTransform();
 
-    mat4 transform = (
-        mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(Position, 1)) *
-        mat4(createYawPitchRollMatrix(YawPitchRoll.x, YawPitchRoll.y, YawPitchRoll.z)));
-
-    return parentTransform * transform;
+    return objectTransform * getMeshTransform();
 }
 
 void RenderableObject::setModel(ResourceManager* resource) {
     m_mesh = resource->getMesh("Sphere");
     m_material = resource->getMaterial("Woodball");
+}
+
+mat4 RenderableObject::getMeshTransform() {
+    return (
+        mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(mesh_Position, 1)) *
+        mat4(createYawPitchRollMatrix(mesh_YawPitchRoll.x, mesh_YawPitchRoll.y, mesh_YawPitchRoll.z)) * 
+        mat4(mesh_Scale.x, mesh_Scale.y, mesh_Scale.z, 1));
 }

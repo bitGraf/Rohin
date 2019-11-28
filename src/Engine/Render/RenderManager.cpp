@@ -1,4 +1,5 @@
 #include "RenderManager.hpp"
+#include "Scene\SceneManager.hpp"
 
 BatchRenderer::BatchRenderer() {
 
@@ -360,7 +361,8 @@ void BatchRenderer::renderDebug(
     sprintf(text, "Orientation: (%.2f,%.2f,%.2f)", 0.0f, 0.0f, 0.0f);
     debugFont.drawText(795, 595-18, white, text, ALIGN_BOT_RIGHT);
 
-    if (debugMode) {
+    
+    if (true) {
         glClear(GL_DEPTH_BUFFER_BIT);
         m_debugMeshShader.use();
         m_debugMeshShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
@@ -372,7 +374,7 @@ void BatchRenderer::renderDebug(
         m_debugMeshShader.setVec3("camPos", batch->viewPos); // use viewPos so camera model has correct specular
 
         glBindVertexArray(cameraMesh->VAO);
-        glDrawElements(GL_TRIANGLES, cameraMesh->numFaces * 3, GL_UNSIGNED_SHORT, 0);
+        if(debugMode) glDrawElements(GL_TRIANGLES, cameraMesh->numFaces * 3, GL_UNSIGNED_SHORT, 0);
         glBindVertexArray(0);
 
         // Draw wireframe things
@@ -388,6 +390,19 @@ void BatchRenderer::renderDebug(
         drawLine(camPos, camPos + forward, vec3(1, 0, 0), vec3(1, 0, 0));
         drawLine(camPos, camPos + up, vec3(0, 1, 0), vec3(0, 1, 0));
         drawLine(camPos, camPos + right, vec3(0, 0, 1), vec3(0, 0, 1));
+
+        for (auto k : batch->currScene->objectsByType.Renderable) {
+            vec3 vPos = k->Position;
+            mat3 meshTransform = k->getMeshTransform();
+            vec3 vFor = vec3(meshTransform.col1());
+            vec3 vUp = vec3(meshTransform.col2());
+            vec3 vRight = vec3(meshTransform.col3());
+
+            drawLine(vPos, vPos + vFor, vec3(1, 0, 0), vec3(1, 0, 0));
+            drawLine(vPos, vPos + vUp, vec3(0, 1, 0), vec3(0, 1, 0));
+            drawLine(vPos, vPos + vRight, vec3(0, 0, 1), vec3(0, 0, 1));
+        }
+
         glBindVertexArray(0);
 
         glEnable(GL_DEPTH_TEST);

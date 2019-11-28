@@ -7,7 +7,7 @@
 #include "GameMath.hpp"
 #include "Scene\EnvironmentMap.hpp"
 #include "Scene\Material.hpp"
-
+class Scene;
 
 using namespace math;
 
@@ -34,6 +34,8 @@ struct BatchDrawCall {
     PointLight *pointLights[4] = { nullptr };
     SpotLight *spotLights[4] = { nullptr };
     EnvironmentMap (*env);
+
+    Scene* currScene;
 
     DrawCall calls[MAX_CALLS];
     u16 numCalls = 0;

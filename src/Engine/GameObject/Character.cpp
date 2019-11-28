@@ -2,7 +2,8 @@
 
 CharacterObject::CharacterObject() :
     speed(1),
-    grounded(false)
+    grounded(false),
+    rotateToMovement(false)
 {}
 
 void CharacterObject::Update(double dt) {
@@ -10,6 +11,12 @@ void CharacterObject::Update(double dt) {
     Velocity = getLocalGroundTransform() * Velocity;
 
     Position += Velocity * dt;
+
+    if (Velocity.length_2() > .01) {
+        vec3 direction = Velocity.get_unit();
+
+        mesh_YawPitchRoll.x = atan2(-direction.z, direction.x) * r2d;
+    }
 
     Velocity = vec3();
 }
@@ -40,6 +47,8 @@ mat3 CharacterObject::getLocalGroundTransform() {
     vec3 floorY = floorNormal;
     vec3 floorZ = floorX.cross(floorY);
     floorX = floorY.cross(floorZ);
+
+    return mat3();
 
     return mat3(
         floorX,

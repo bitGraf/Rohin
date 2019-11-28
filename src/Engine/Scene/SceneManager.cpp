@@ -246,6 +246,8 @@ void SceneManager::getRenderBatch(BatchDrawCall* batch) {
         return;
 
     if (m_currentScene) {
+        batch->currScene = m_currentScene;
+
         // Set Camera
         auto camera = m_currentScene->objectsByType.Camera[0];
         camera->updateViewFrustum(800, 600);

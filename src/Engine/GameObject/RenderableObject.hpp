@@ -13,6 +13,7 @@ public:
 
     mat4 getModelTransform();
     void setModel(ResourceManager* resource);
+    mat4 getMeshTransform();
 
     meshRef getMesh() { return m_mesh; }
     materialRef getMaterial() { return m_material; }

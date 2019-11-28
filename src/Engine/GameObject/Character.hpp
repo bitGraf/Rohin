@@ -15,6 +15,7 @@ public:
     void Jump(float strength);
 
     vec3 Velocity;
+    bool rotateToMovement;
 
 protected:
     vec3 floorNormal;
