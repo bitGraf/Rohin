@@ -85,6 +85,8 @@ private:
     Shader m_debugLineShader;
     Shader m_debugMeshShader;
     TriangleMesh* cameraMesh;
+
+    u16 scr_width, scr_height;
 };
 
 #endif

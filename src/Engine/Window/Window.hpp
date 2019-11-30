@@ -8,9 +8,6 @@
 #include "GameMath.hpp"
 #include "Input.hpp"
 
-#define WINDOW_DEFAULT_HEIGHT   600
-#define WINDOW_DEFAULT_WIDTH    800
-
 /// acting as WindowManager for now
 class Window : public CoreSystem {
 public:
@@ -23,7 +20,7 @@ public:
     CoreSystem* create();
 
     void InitGLFW();
-    void create_window(const char* title = "Window", int width = WINDOW_DEFAULT_WIDTH, int height = WINDOW_DEFAULT_HEIGHT, bool hidden = false);
+    void create_window(const char* title = "Window", int width = DEFAULT_SCREEN_WIDTH, int height = DEFAULT_SCREEN_HEIGHT, bool hidden = false);
 
     /* Window functions */
     bool shouldClose();
@@ -64,6 +61,7 @@ public:
 private:
     math::vec2 m_cursorPos;
     bool cursorMode;
+    bool hasResized;
 
     /* Error Callback */
     inline static void ErrorCallback(

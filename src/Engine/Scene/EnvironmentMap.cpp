@@ -133,8 +133,8 @@ void EnvironmentMap::preCompute() {
     prefilterRes = 128;
     brdfLUTRes = 512;
 
-    viewportWidth = 800;
-    viewportHeight = 600;
+    viewportWidth = DEFAULT_SCREEN_WIDTH;
+    viewportHeight = DEFAULT_SCREEN_HEIGHT;
 
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 

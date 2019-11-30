@@ -41,6 +41,7 @@ public:
 
     void create(std::string filename, float fontSize, 
         u32 width, u32 height, int res = 512);
+    void resize(u32 width, u32 height);
 
 
     GLuint textRectVAO;

@@ -4,6 +4,8 @@ Scene* CurrentScene = nullptr;
 Scene* GetScene() { return CurrentScene; }
 
 Scene::Scene() {
+    scr_width = DEFAULT_SCREEN_WIDTH;
+    scr_height = DEFAULT_SCREEN_HEIGHT;
 }
 
 
@@ -178,6 +180,17 @@ GameObject* Scene::getObjectByID(const UID_t id) const {
     }
 }
 
+void Scene::handleMessage(Message msg) {
+    if (msg.isType("NewWindowSize")) {
+        using dt = Message::Datatype;
+        dt newX = msg.data[0];
+        dt newY = msg.data[1];
+
+        scr_width = newX;
+        scr_height = newY;
+    }
+}
+
 
 #ifndef CUSTOM_ENTITIES
 
@@ -200,7 +213,7 @@ void getRenderBatch(RenderBatch* batch) {
     if (CurrentScene) {
         // Set Camera
         auto camera = CurrentScene->objectsByType.Camera[0];
-        camera->updateViewFrustum(800, 600);
+        camera->updateViewFrustum(CurrentScene->scr_width, CurrentScene->scr_height);
 
         batch->cameraView = camera->viewMatrix;
         batch->cameraProjection = camera->projectionMatrix;
@@ -242,7 +255,7 @@ void getRenderBatch(RenderBatch* batch) {
         batch->env = &CurrentScene->envMap;
 
         batch->numCalls = 0;
-        // pull every entity
+        // pull every renderable object
         for (int n = 0; n < CurrentScene->objectsByType.Renderable.size(); n++) {
             if (batch->numCalls >= MAX_CALLS)
                 break;

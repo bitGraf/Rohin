@@ -51,7 +51,7 @@ public:
 
 protected:
     /* Debug Mesh - UNUSED */
-    void* m_debugMesh;
+    TriangleMesh* m_debugMesh;
 
     /* Type identifier */
     GameObjectType m_type;

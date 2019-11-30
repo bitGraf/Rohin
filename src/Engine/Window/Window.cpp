@@ -3,13 +3,18 @@
 Window::Window() {
     m_glfwWindow = nullptr;
 
-    m_height = WINDOW_DEFAULT_HEIGHT;
-    m_width = WINDOW_DEFAULT_WIDTH;
+    m_height = DEFAULT_SCREEN_WIDTH;
+    m_width = DEFAULT_SCREEN_HEIGHT;
     cursorMode = false;
+    hasResized = true;
 }
 
 void Window::update(double dt) {
-
+    if (hasResized) {
+        Console::logMessage("New window size: %d x %d.", m_width, m_height);
+        hasResized = false;
+        MessageBus::sendMessage(Message("NewWindowSize", 2, m_width, m_height));
+    }
 }
 
 void Window::handleMessage(Message msg) {
@@ -48,6 +53,8 @@ CoreSystem* Window::create() {
     Message::registerMessageType("InputScroll");
 
     Message::registerMessageType("FileDrop");
+
+    Message::registerMessageType("NewWindowSize");
 
     InitGLFW();
 
@@ -156,7 +163,7 @@ void Window::WindowPositionUpdate(int xpos, int ypos) {
     //sendMessage(msg);
 
 
-    sendMessage(Message("WindowMove", 2, xpos, ypos));
+    //sendMessage(Message("WindowMove", 2, xpos, ypos));
 }
 
 void Window::WindowSizeUpdate(int w, int h) {
@@ -186,6 +193,7 @@ void Window::WindowFramebufferUpdate(int w, int h) {
     glViewport(0, 0, m_width, m_height);
 
     sendMessage(Message("WindowResize", 2, w, h));
+    hasResized = true;
 }
 
 void Window::WindowScaleUpdate(float xscale, float yscale) {

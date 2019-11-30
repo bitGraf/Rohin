@@ -27,6 +27,7 @@ public:
 
     void loadFromFile(ResourceManager* resource, std::string path, bool noGLLoad);
     void update(double dt);
+    void handleMessage(Message msg);
 
     virtual bool recognizeCustomEntity(std::string entType);
     virtual void processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource);
@@ -57,6 +58,8 @@ public:
     GameObjectLists_t objectsByType;
 
     EnvironmentMap envMap;
+
+    u16 scr_width, scr_height;
 
     std::string name;
 };

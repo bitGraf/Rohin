@@ -1,6 +1,6 @@
 #include "Console.hpp"
 
-bool Console::EchoMessages = false;
+bool Console::EchoMessages = true;
 
 Console::Console()
 {}

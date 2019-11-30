@@ -81,6 +81,10 @@ void DynamicFont::create(std::string filename, float fontSize,
     }
 }
 
+void DynamicFont::resize(u32 width, u32 height) {
+    orthoMat.orthoProjection(0, width, height, 0, -1, 1);
+}
+
 void DynamicFont::printFontData() {
     for (int i = 0; i < 5; i++) {
         printf("x0: %2hu x1: %2hu y0: %2hu y1: %2hu xAdv: %7.3f xoff %6.3f yoff %7.3f\n",

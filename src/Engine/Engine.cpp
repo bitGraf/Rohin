@@ -120,6 +120,7 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
 void Engine::Update(double dt) {
     // Don't send input events to GameObjects while in debug mode
     Input::setHandleInput(!debugMode);
+    m_MainWindow.update(dt);
 
     if (debugMode) {
         m_debugCamera.Update(dt); // Only update the DebugCamera
@@ -134,7 +135,7 @@ void Engine::PreRender() {
 
     if (debugMode) {
         // inject debug camera values
-        m_debugCamera.updateViewFrustum(800, 600);
+        m_debugCamera.updateViewFrustum(m_MainWindow.m_width, m_MainWindow.m_height);
         batch.cameraViewProjectionMatrix = m_debugCamera.projectionMatrix *
             m_debugCamera.viewMatrix;
         batch.viewPos = m_debugCamera.Position;
@@ -240,5 +241,9 @@ void Engine::globalHandle(Message msg) {
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
             m_Options.click(xPos, yPos);
         }
+    }
+
+    if (GetScene()) {
+        GetScene()->handleMessage(msg);
     }
 }

@@ -1,13 +1,12 @@
 #include "BatchRenderer.hpp"
 #include "Scene\Scene.hpp"
 
-BatchRenderer::BatchRenderer() {
-
-}
+BatchRenderer::BatchRenderer() {}
 
 BatchRenderer::~BatchRenderer() {}
 
 void BatchRenderer::update(double dt) {}
+
 void BatchRenderer::handleMessage(Message msg) {
     if (msg.isType("InputKey")) {
         // int button, int action, int mods
@@ -29,7 +28,24 @@ void BatchRenderer::handleMessage(Message msg) {
             m_debugLineShader.create("DebugLine.vert", "DebugLine.frag", "debugLineShader");
         }
     }
+
+    if (msg.isType("NewWindowSize")) {
+        using dt = Message::Datatype;
+        dt newX = msg.data[0];
+        dt newY = msg.data[1];
+
+        fb.resize(newX, newY);
+        fb_volume.resize(newX, newY);
+        fb_toneMap.resize(newX, newY);
+
+        debugFont.resize(newX, newY);
+        debugFontSmall.resize(newX, newY);
+
+        scr_width = newX;
+        scr_height = newY;
+    }
 }
+
 void BatchRenderer::destroy() {}
 CoreSystem* BatchRenderer::create() {
     m_shadowPass.create("shadow.vert", "shadow.frag", "shadowPassShader");
@@ -49,14 +65,17 @@ CoreSystem* BatchRenderer::create() {
     Shadowmap::initShadows();
     sm.create(2048, 2048); // resolution of shadow map
 
-    fb.create(800, 600);
-    fb_volume.create(800, 600);
-    fb_toneMap.create(800, 600);
+    scr_width = DEFAULT_SCREEN_WIDTH;
+    scr_height = DEFAULT_SCREEN_HEIGHT;
+
+    fb.create(scr_width, scr_height);
+    fb_volume.create(scr_width, scr_height);
+    fb_toneMap.create(scr_width, scr_height);
 
     debugFont.InitTextRendering();
-    debugFont.create("UbuntuMono-Regular.ttf", 16, 800, 600);
+    debugFont.create("UbuntuMono-Regular.ttf", 16, scr_width, scr_height);
     debugFontSmall.InitTextRendering();
-    debugFontSmall.create("UbuntuMono-Regular.ttf", 10, 800, 600);
+    debugFontSmall.create("UbuntuMono-Regular.ttf", 10, scr_width, scr_height);
 
     const float fullscreenVerts[] = {
         -1, -1,
@@ -173,7 +192,7 @@ void BatchRenderer::shadowPass(RenderBatch* batch) {
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(0, 0, 800, 600);
+    glViewport(0, 0, scr_width, scr_height);
 }
 
 void BatchRenderer::staticPass(RenderBatch* batch) {
@@ -329,10 +348,10 @@ void BatchRenderer::renderDebug(
     vec4 white(1, 1, 1, 1);
     char text[128];
     sprintf(text, "FPS: %-2.1lf [%lld us]", 1000000.0/static_cast<double>(frameCount), lastFrame);
-    debugFont.drawText(800 - 5, 5, white, text, ALIGN_TOP_RIGHT);
+    debugFont.drawText(scr_width - 5, 5, white, text, ALIGN_TOP_RIGHT);
     sprintf(text, "FPS Lock: %s", 
         g_options.limitFramerate ? (g_options.highFramerate ? "250" : "50") : "NONE");
-    debugFont.drawText(800 - 5, 23, white, text, ALIGN_TOP_RIGHT);
+    debugFont.drawText(scr_width - 5, 23, white, text, ALIGN_TOP_RIGHT);
 
     long long scale = 1LL;
     int y = -13;
@@ -356,12 +375,12 @@ void BatchRenderer::renderDebug(
     debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
 
     sprintf(text, "Draw Calls: %-3d", batch->numCalls);
-    debugFont.drawText(5, 595, white, text, ALIGN_BOT_LEFT);
+    debugFont.drawText(5, scr_height - 5, white, text, ALIGN_BOT_LEFT);
 
     sprintf(text, "Position: (%.2f,%.2f,%.2f)", batch->camPos.x, batch->camPos.y, batch->camPos.z);
-    debugFont.drawText(795, 595, white, text, ALIGN_BOT_RIGHT);
+    debugFont.drawText(scr_width - 5, scr_height - 5, white, text, ALIGN_BOT_RIGHT);
     sprintf(text, "Orientation: (%.2f,%.2f,%.2f)", 0.0f, 0.0f, 0.0f);
-    debugFont.drawText(795, 595-18, white, text, ALIGN_BOT_RIGHT);
+    debugFont.drawText(scr_width - 5, scr_height - 18, white, text, ALIGN_BOT_RIGHT);
 
     
     if (true) {
@@ -410,7 +429,7 @@ void BatchRenderer::renderDebug(
                 screenPos = vec2(screenPos.x, 1 - screenPos.y);
 
                 sprintf(text, "%s:%llu{%s}", k->ObjectTypeString(), k->getID(), k->Name.c_str());
-                debugFontSmall.drawText(screenPos.x * 800, screenPos.y * 600, white, text, ALIGN_TOP_LEFT);
+                debugFontSmall.drawText(screenPos.x * scr_width, screenPos.y * scr_height, white, text, ALIGN_TOP_LEFT);
             }
         }
 
