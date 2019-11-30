@@ -15,8 +15,11 @@ class Input {
 public:
 
     static bool getKeyState(std::string key);
+    static f32 getAxisState(std::string key);
+
     static void watchKey(std::string key, int glfwKeyCode);
-    static void pollKeys(GLFWwindow* window);    
+    static void watchKeyAxis(std::string axisName, int glfwKeyCodePlus, int glfwKeyCodeMinus);
+    static void pollKeys(GLFWwindow* window, double dt);    
     static void registerGameObject(GameObject* obj);
     static void handleMessage(Message msg);
     static void setHandleInput(bool val);
@@ -25,8 +28,17 @@ public:
     static math::vec2 m_mouseAcc;
 
 private:
+    struct Axis {
+        int Plus;
+        int Minus;
+        Axis() : Plus(0), Minus(0) {}
+        Axis(int a, int b) : Plus(a), Minus(b) {}
+    };
     static std::unordered_map<std::string, bool> m_keyStates;
     static std::unordered_map<std::string, int> m_watchedKeys;
+
+    static std::unordered_map<std::string, Axis> m_watchedAxisKeys;
+    static std::unordered_map<std::string, f32> m_axes;
 
     static std::vector<GameObject*> m_GameObjects;
 

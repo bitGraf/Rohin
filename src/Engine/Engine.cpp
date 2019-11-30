@@ -26,7 +26,7 @@ void Engine::Start() {
         }
 
         MessageBus::processEntireQueue();
-        Input::pollKeys(m_MainWindow.m_glfwWindow);
+        Input::pollKeys(m_MainWindow.m_glfwWindow, dt);
 
         Update(dt);
 

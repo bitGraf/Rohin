@@ -16,32 +16,13 @@ void PlayerObject::Update(double dt) {
 
     switch (m_controlType) {
         case eControlType::Normal: {
-            if (Input::getKeyState("key_w")) {
-                MoveForward(1);
-            }
-            if (Input::getKeyState("key_s")) {
-                MoveForward(-1);
-            }
-            if (Input::getKeyState("key_a")) {
-                MoveRight(-1);
-            }
-            if (Input::getKeyState("key_d")) {
-                MoveRight(1);
-            }
+            MoveForward(Input::getAxisState("MoveForward"));
+            MoveRight(Input::getAxisState("MoveRight"));
+            Rotate(-Input::getAxisState("Rotate"));
         } break;
         case eControlType::Tank: {
-            if (Input::getKeyState("key_w")) {
-                MoveForward(1);
-            }
-            if (Input::getKeyState("key_s")) {
-                MoveForward(-1);
-            }
-            if (Input::getKeyState("key_a")) {
-                Rotate(1);
-            }
-            if (Input::getKeyState("key_d")) {
-                Rotate(-1);
-            }
+            MoveForward(Input::getAxisState("MoveForward"));
+            Rotate(-Input::getAxisState("MoveRight"));
         } break;
     }
 
@@ -98,6 +79,10 @@ const char* PlayerObject::GetControlType() {
 void PlayerObject::PostLoad() {
     m_cameraRef = static_cast<Camera*>(GetScene()->getObjectByName("MainCamera"));
     Input::registerGameObject(this);
+
+    Input::watchKeyAxis("MoveForward", GLFW_KEY_W, GLFW_KEY_S);
+    Input::watchKeyAxis("MoveRight", GLFW_KEY_D, GLFW_KEY_A);
+    Input::watchKeyAxis("Rotate", GLFW_KEY_RIGHT, GLFW_KEY_LEFT);
 }
 
 const char* PlayerObject::ObjectTypeString() {

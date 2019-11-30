@@ -7,6 +7,8 @@ math::vec2 Input::m_mouseMove;
 math::vec2 Input::m_mouseAcc;
 std::vector<GameObject*> Input::m_GameObjects;
 bool Input::ShouldGameObjectHandleInputEvent = true;
+std::unordered_map<std::string, Input::Axis> Input::m_watchedAxisKeys;
+std::unordered_map<std::string, f32> Input::m_axes;
 
 bool Input::getKeyState(std::string key) {
     if (m_keyStates.find(key) == m_keyStates.end()) {
@@ -14,6 +16,15 @@ bool Input::getKeyState(std::string key) {
     }
     else {
         return m_keyStates[key];
+    }
+}
+
+f32 Input::getAxisState(std::string key) {
+    if (m_axes.find(key) == m_axes.end()) {
+        return 0;
+    }
+    else {
+        return m_axes[key];
     }
 }
 
@@ -26,13 +37,56 @@ void Input::watchKey(std::string key, int glfwKeyCode) {
     }
 }
 
-void Input::pollKeys(GLFWwindow* window) {
+void Input::watchKeyAxis(std::string axisName, int glfwKeyCodePlus, int glfwKeyCodeMinus) {
+    if (m_axes.find(axisName) == m_axes.end()) {
+        // not already tracked
+
+        m_axes[axisName] = 0;
+        m_watchedAxisKeys[axisName] = Axis( glfwKeyCodePlus , glfwKeyCodeMinus );
+    }
+}
+
+void Input::pollKeys(GLFWwindow* window, double dt) {
+    m_mouseMove = m_mouseAcc;
+    m_mouseAcc = math::vec2();
     for (auto k : m_watchedKeys) {
         m_keyStates[k.first] = 
             (glfwGetKey(window, k.second) == GLFW_PRESS);
     }
-    m_mouseMove = m_mouseAcc;
-    m_mouseAcc = math::vec2();
+    for (auto k : m_watchedAxisKeys) {
+        auto key = k.first;
+        auto axis = k.second;
+
+        bool keyPlus = glfwGetKey(window, axis.Plus) == GLFW_PRESS;
+        bool keyMinus = glfwGetKey(window, axis.Minus) == GLFW_PRESS;
+
+        auto keyValue = &m_axes[key];
+        
+        double rate = 10.0 * dt;
+        if (keyPlus) {
+            *keyValue += rate;
+
+            if (*keyValue > 1.0)
+                *keyValue = 1.0;
+        }
+        if (keyMinus) {
+            *keyValue -= rate;
+
+            if (*keyValue < -1.0)
+                *keyValue = -1.0;
+        }
+        if (!keyPlus && !keyMinus) {
+            if (*keyValue > 0.1) {
+                *keyValue -= rate;
+            }
+            else if (m_axes[key] < -.1) {
+                *keyValue += rate;
+            }
+            else {
+                *keyValue = 0;
+            }
+        }
+    }
 }
 
 void Input::registerGameObject(GameObject* obj) {
