@@ -15,11 +15,15 @@ public:
     virtual void PostLoad() override;
 
     virtual void InputEvent(Message::Datatype key, Message::Datatype action) override;
+    virtual const char* ObjectTypeString() override;
 
 protected:
     Camera * m_Camera;
 
     bool CameraFollowPlayer;
+
+private:
+    static const char* _obj_type_PlayerObject;
 };
 
 #endif

@@ -10,6 +10,7 @@ public:
 
     virtual void Update(double dt) override;
     virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual const char* ObjectTypeString() override;
 
     void MoveForward(float speed_t); //[-1,1]
     void MoveRight(float speed_t); //[-1,1]
@@ -25,6 +26,9 @@ protected:
     float speed;
 
     mat3 getLocalGroundTransform();
+
+private:
+    static const char* _obj_type_CharacterObject;
 };
 
 #endif

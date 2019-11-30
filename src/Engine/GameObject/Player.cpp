@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include "Scene\Scene.hpp"
+const char* PlayerObject::_obj_type_PlayerObject = "Player";
 
 PlayerObject::PlayerObject() :
     CameraFollowPlayer(false)
@@ -42,4 +43,8 @@ void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
 void PlayerObject::PostLoad() {
     m_Camera = static_cast<Camera*>(GetScene()->getObjectByName("MainCamera"));
     Input::registerGameObject(this);
+}
+
+const char* PlayerObject::ObjectTypeString() {
+    return _obj_type_PlayerObject;
 }

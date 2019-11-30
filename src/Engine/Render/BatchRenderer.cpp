@@ -55,6 +55,8 @@ CoreSystem* BatchRenderer::create() {
 
     debugFont.InitTextRendering();
     debugFont.create("UbuntuMono-Regular.ttf", 16, 800, 600);
+    debugFontSmall.InitTextRendering();
+    debugFontSmall.create("UbuntuMono-Regular.ttf", 10, 800, 600);
 
     const float fullscreenVerts[] = {
         -1, -1,
@@ -391,9 +393,9 @@ void BatchRenderer::renderDebug(
         drawLine(camPos, camPos + up, vec3(0, 1, 0), vec3(0, 1, 0));
         drawLine(camPos, camPos + right, vec3(0, 0, 1), vec3(0, 0, 1));
 
-        for (auto k : GetScene()->objectsByType.Renderable) {
+        for (auto k : GetScene()->m_masterList) {
             vec3 vPos = k->Position;
-            mat3 meshTransform = k->getMeshTransform();
+            mat3 meshTransform = k->getTransform();
             vec3 vFor = vec3(meshTransform.col1());
             vec3 vUp = vec3(meshTransform.col2());
             vec3 vRight = vec3(meshTransform.col3());
@@ -401,6 +403,15 @@ void BatchRenderer::renderDebug(
             drawLine(vPos, vPos + vFor, vec3(1, 0, 0), vec3(1, 0, 0));
             drawLine(vPos, vPos + vUp, vec3(0, 1, 0), vec3(0, 1, 0));
             drawLine(vPos, vPos + vRight, vec3(0, 0, 1), vec3(0, 0, 1));
+
+            vec4 _screenPos = batch->cameraViewProjectionMatrix * vec4(vPos, 1);
+            if (_screenPos.w > 0) {
+                vec2 screenPos = (vec2(_screenPos.x / _screenPos.w, _screenPos.y / _screenPos.w) / 2) + vec2(.5);
+                screenPos = vec2(screenPos.x, 1 - screenPos.y);
+
+                sprintf(text, "%s:%llu{%s}", k->ObjectTypeString(), k->getID(), k->Name.c_str());
+                debugFontSmall.drawText(screenPos.x * 800, screenPos.y * 600, white, text, ALIGN_TOP_LEFT);
+            }
         }
 
         glBindVertexArray(0);

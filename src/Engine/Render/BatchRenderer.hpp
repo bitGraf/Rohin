@@ -69,6 +69,7 @@ private:
 
     GLuint fullscreenVAO;
     DynamicFont debugFont;
+    DynamicFont debugFontSmall;
 
 
     Shader m_shadowPass;

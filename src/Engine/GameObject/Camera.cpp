@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+const char* Camera::_obj_type_CameraObject = "Camera";
 
 Camera::Camera() :
     m_fov(75),
@@ -21,6 +22,10 @@ void Camera::Create(istringstream &iss, ResourceManager* resource) {
     set(getNextFloat(iss),
         getNextFloat(iss),
         getNextFloat(iss));
+}
+
+const char* Camera::ObjectTypeString() {
+    return _obj_type_CameraObject;
 }
 
 void Camera::updateViewFrustum(f32 width, f32 height) {

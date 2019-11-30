@@ -30,6 +30,7 @@ public:
     virtual void PostLoad(); /// Gets called after the entire Scene is loaded
     virtual void Update(double dt); /// Gets called every frame to update
     virtual void Destroy(); /// Gets called when the Scene is destroyed
+    virtual const char* ObjectTypeString();
 
     /// Gets called when an input message is received. Need to register GameObject with Input class
     virtual void InputEvent(Message::Datatype key, Message::Datatype action);
@@ -62,6 +63,8 @@ private:
     /// Get the next globally unique ID
     static UID_t getNextUID();
     static UID_t nextUID;
+
+    static const char* _obj_type_GameObject;
 };
 
 

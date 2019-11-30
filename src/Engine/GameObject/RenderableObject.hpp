@@ -11,6 +11,7 @@ public:
     RenderableObject();
 
     virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual const char* ObjectTypeString() override;
 
     mat4 getModelTransform();
     void setModel(ResourceManager* resource);
@@ -31,6 +32,9 @@ protected:
 
     /* Frustum cull radius */
     float m_cullRadius;
+
+private:
+    static const char* _obj_type_RenderableObject;
 };
 
 #endif

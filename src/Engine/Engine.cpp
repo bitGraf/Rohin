@@ -5,9 +5,6 @@ Engine::Engine() {
     done = false;
     userQuit = false;
     cursorMode = true; //visible cursor
-
-    m_debugCamera.Position = vec3(-1, -1, 2);
-    m_debugCamera.YawPitchRoll = vec3(-45, -30, 0);
 }
 
 void Engine::Start(handleMessageFnc f, int argc, char* argv[]) {
@@ -115,6 +112,9 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     m_scenes.push_back(k.data);
     CurrentScene = k.data;
     CurrentScene->loadFromFile(&m_Resource, "Data/test.scene", false);
+
+    m_debugCamera.Position = vec3(-4, 2, -4);
+    m_debugCamera.YawPitchRoll = vec3(-45, -30, 0);
 }
 
 void Engine::Update(double dt) {

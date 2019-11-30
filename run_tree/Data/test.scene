@@ -6,7 +6,7 @@ RESOURCE "Data/Models/Capsule.glb"
 SKYBOX STANDARD "iceflow" ".tga"
 #SKYBOX HDR "carpentry_shop_02_4k.hdr"
 
-ENTITY GAMEOBJECT "GameObject1" "0 1 2" "0 0 0" "1 1 1" ""
+ENTITY GAMEOBJECT "GameObject1" "2 1 2" "0 0 0" "1 1 1" ""
 ENTITY RENDERABLE "Renderable1" "0 1 2" "0 0 0" "1 1 1" "" "Sphere" "Woodball" "0 0 0" "0 0 0" "1 1 1" ".25"
 ENTITY RENDERABLE "Floor" "0 0 0" "0 0 0" "1 1 1" "" "Plane" "Plane" "0 0 0" "0 0 0" "1 1 1" ".25"
 ENTITY PLAYER "YaBoy" "0 0 0" "0 0 0" "1 1 1" "" "Capsule" "Chrome" "0 0 0" "0 0 0" ".5 .5 .5" ".25"

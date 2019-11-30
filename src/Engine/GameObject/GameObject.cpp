@@ -1,5 +1,7 @@
 #include "GameObject.hpp"
 
+const char* GameObject::_obj_type_GameObject = "GameObject";
+
 GameObject::GameObject() :
     Position(),
     YawPitchRoll(),
@@ -29,6 +31,9 @@ void GameObject::Update(double dt) {}
 void GameObject::Destroy() {}
 void GameObject::PostLoad() {}
 void GameObject::InputEvent(Message::Datatype key, Message::Datatype action) {}
+const char* GameObject::ObjectTypeString() {
+    return _obj_type_GameObject;
+}
 
 UID_t GameObject::getID() const {
     return m_uid;

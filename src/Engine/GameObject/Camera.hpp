@@ -12,6 +12,7 @@ public:
     void Create(istringstream &iss, ResourceManager* resource);
 
     virtual void Update(double dt) override;
+    virtual const char* ObjectTypeString() override;
 
     void updateViewMatrix();
     //void updateProjectionMatrix(f32 width, f32 height);
@@ -34,6 +35,9 @@ protected:
         Plane top, bottom, right, left, zNear, zFar;
     };
     Frustum_t frustum;
+
+private:
+    static const char* _obj_type_CameraObject;
 };
 
 #endif

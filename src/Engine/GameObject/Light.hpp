@@ -12,10 +12,14 @@ public:
     }
 
     virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual const char* ObjectTypeString() override;
 
 //protected:
     vec3 Color;
     float Strength;
+
+private:
+    static const char* _obj_type_PointLightObject;
 };
 
 /// A SpotLight pointed in a specific direction
@@ -28,6 +32,7 @@ public:
     }
 
     virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual const char* ObjectTypeString() override;
 
 //protected:
     vec3 Color;
@@ -35,6 +40,9 @@ public:
     float inner_cutoff;
     float outer_cutoff;
     float Strength;
+
+private:
+    static const char* _obj_type_SpotLightObject;
 };
 
 /// A Directional light like the sun
@@ -45,6 +53,7 @@ public:
     }
 
     virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual const char* ObjectTypeString() override;
 
 //protected:
     vec3 Color;
@@ -52,6 +61,9 @@ public:
     float Strength;
 
     //Shadowmap sm;
+
+private:
+    static const char* _obj_type_DirLightObject;
 };
 
 #endif

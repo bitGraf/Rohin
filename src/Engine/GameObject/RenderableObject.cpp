@@ -1,5 +1,6 @@
 #include "RenderableObject.hpp"
 #include "Resource\ResourceManager.hpp"
+const char* RenderableObject::_obj_type_RenderableObject = "Renderable";
 
 RenderableObject::RenderableObject() :
     m_mesh(nullptr),
@@ -37,4 +38,8 @@ mat4 RenderableObject::getMeshTransform() {
         mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(mesh_Position, 1)) *
         mat4(createYawPitchRollMatrix(mesh_YawPitchRoll.x, mesh_YawPitchRoll.y, mesh_YawPitchRoll.z)) * 
         mat4(mesh_Scale.x, mesh_Scale.y, mesh_Scale.z, 1));
+}
+
+const char* RenderableObject::ObjectTypeString() {
+    return _obj_type_RenderableObject;
 }

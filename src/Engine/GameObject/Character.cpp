@@ -1,4 +1,5 @@
 #include "Character.hpp"
+const char* CharacterObject::_obj_type_CharacterObject= "Character";
 
 CharacterObject::CharacterObject() :
     speed(1),
@@ -26,6 +27,12 @@ void CharacterObject::Create(istringstream &iss, ResourceManager* resource) {
 
     floorNormal = vec3(0, 1, 0);
 }
+
+const char* CharacterObject::ObjectTypeString() {
+    return _obj_type_CharacterObject;
+}
+
+
 
 void CharacterObject::MoveForward(float speed_t) {
     vec3 direction = createYawPitchRoll_Forward(YawPitchRoll);
