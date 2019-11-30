@@ -2,6 +2,7 @@
 
 Scene* CurrentScene = nullptr;
 Scene* GetScene() { return CurrentScene; }
+void SetCurrentScene(Scene* newScene) { CurrentScene = newScene; }
 
 Scene::Scene() {
     scr_width = DEFAULT_SCREEN_WIDTH;

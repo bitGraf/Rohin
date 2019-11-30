@@ -3,29 +3,38 @@ const char* CharacterObject::_obj_type_CharacterObject= "Character";
 
 CharacterObject::CharacterObject() :
     speed(1),
-    grounded(false),
-    rotateToMovement(false)
+    rotateSpeed(30),
+    rotateToMovement(false),
+    m_cameraRef(nullptr),
+    m_relativeSource(eRelativeSource::World)
 {}
 
 void CharacterObject::Update(double dt) {
-    // Transform into ground-space
-    Velocity = getLocalGroundTransform() * Velocity;
+    if (Velocity.length_2() != 0.0) {
 
-    Position += Velocity * dt;
+        // Transform into ground-space
+        Velocity = getRelativeAxes() * Velocity;
 
-    if (Velocity.length_2() > .01) {
-        vec3 direction = Velocity.get_unit();
+        Position += Velocity * dt;
 
-        mesh_YawPitchRoll.x = atan2(-direction.z, direction.x) * r2d;
+        if (rotateToMovement) {
+            vec3 direction = Velocity.get_unit();
+
+            mesh_YawPitchRoll.x = atan2(-direction.z, direction.x) * r2d;
+        }
+
+        Velocity = vec3();
     }
 
-    Velocity = vec3();
+    if (AngularVelocity.length_2() != 0.0) {
+        YawPitchRoll += (AngularVelocity * dt);
+
+        AngularVelocity = vec3();
+    }
 }
 
 void CharacterObject::Create(istringstream &iss, ResourceManager* resource) {
     RenderableObject::Create(iss, resource);
-
-    floorNormal = vec3(0, 1, 0);
 }
 
 const char* CharacterObject::ObjectTypeString() {
@@ -35,31 +44,81 @@ const char* CharacterObject::ObjectTypeString() {
 
 
 void CharacterObject::MoveForward(float speed_t) {
-    vec3 direction = createYawPitchRoll_Forward(YawPitchRoll);
+    vec3 direction = vec3(1, 0, 0);// createYawPitchRoll_Forward(YawPitchRoll);
 
     Velocity += direction * speed_t * speed;
 }
 
 void CharacterObject::MoveRight(float speed_t) {
-    vec3 direction = createYawPitchRoll_Right(YawPitchRoll);
+    vec3 direction = vec3(0, 0, 1);// createYawPitchRoll_Right(YawPitchRoll);
 
     Velocity += direction * speed_t * speed;
+}
+
+void CharacterObject::Rotate(float speed_t) {
+
+    AngularVelocity.x += (speed_t * rotateSpeed);
 }
 
 void CharacterObject::Jump(float strength) {
 }
 
-mat3 CharacterObject::getLocalGroundTransform() {
-    vec3 floorX = vec3(1, 0, 0);
-    vec3 floorY = floorNormal;
-    vec3 floorZ = floorX.cross(floorY);
-    floorX = floorY.cross(floorZ);
+const char* CharacterObject::GetRelativeMovementType() {
+    switch (m_relativeSource) {
+    case eRelativeSource::World: {
+        return "World";
+    } break;
+    case eRelativeSource::Camera: {
+        return "Camera";
+    } break;
+    case eRelativeSource::Character: {
+        return "Character";
+    } break;
+    }
+}
 
-    return mat3();
+mat3 CharacterObject::getRelativeAxes() {
 
-    return mat3(
-        floorX,
-        floorY,
-        floorZ
-    );
+    switch (m_relativeSource) {
+        case eRelativeSource::World: {
+            return mat3();
+        } break;
+        case eRelativeSource::Camera: {
+            if (m_cameraRef) {
+                vec3 cameraX = vec3(m_cameraRef->getTransform().col1());
+                vec3 cameraZ = vec3(m_cameraRef->getTransform().col3());
+
+                cameraX.y = 0;
+                cameraZ.y = 0;
+
+                cameraX.normalize();
+                cameraZ.normalize();
+
+                return mat3(
+                    cameraX,
+                    vec3(0, 1, 0),
+                    cameraZ
+                );
+            }
+            else {
+                return mat3();
+            }
+        } break;
+        case eRelativeSource::Character: {
+            vec3 localX = math::createYawPitchRoll_Forward(YawPitchRoll);
+            vec3 localZ = math::createYawPitchRoll_Right(YawPitchRoll);
+
+            localX.y = 0;
+            localZ.y = 0;
+
+            localX.normalize();
+            localZ.normalize();
+
+            return mat3(
+                localX,
+                vec3(0,1,0),
+                localZ
+            );
+        } break;
+    }
 }

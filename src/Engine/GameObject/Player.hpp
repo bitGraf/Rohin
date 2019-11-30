@@ -17,8 +17,14 @@ public:
     virtual void InputEvent(Message::Datatype key, Message::Datatype action) override;
     virtual const char* ObjectTypeString() override;
 
+    const char* GetControlType();
+
 protected:
-    Camera * m_Camera;
+    enum class eControlType {
+        Normal,
+        Tank
+    };
+    eControlType m_controlType;
 
     bool CameraFollowPlayer;
 

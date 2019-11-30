@@ -64,8 +64,9 @@ public:
     std::string name;
 };
 
-extern Scene* CurrentScene;
+//extern Scene* CurrentScene;
 Scene* GetScene();
+void   SetCurrentScene(Scene* newScene);
 void getRenderBatch(RenderBatch* batch);
 
 #endif

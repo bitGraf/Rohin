@@ -381,8 +381,13 @@ void BatchRenderer::renderDebug(
 
     sprintf(text, "Draw Calls: %-3d", batch->numCalls);
     debugFont.drawText(5, scr_height - 5, white, text, ALIGN_BOT_LEFT);
+
+    sprintf(text, "Relative Movement: %s", static_cast<CharacterObject*>(GetScene()->getObjectByName("YaBoy"))->GetRelativeMovementType());
+    debugFont.drawText(5, scr_height - 25, white, text, ALIGN_BOT_LEFT);
+    sprintf(text, "Control Type: %s", static_cast<PlayerObject*>(GetScene()->getObjectByName("YaBoy"))->GetControlType());
+    debugFont.drawText(5, scr_height - 45, white, text, ALIGN_BOT_LEFT);
     
-    if (GetScene()) {
+    if (GetScene()){// && debugMode) {
         sprintf(text, "Position: (%.2f,%.2f,%.2f)", batch->camPos.x, batch->camPos.y, batch->camPos.z);
         debugFont.drawText(scr_width - 5, scr_height - 5, white, text, ALIGN_BOT_RIGHT);
         sprintf(text, "Orientation: (%.2f,%.2f,%.2f)", 0.0f, 0.0f, 0.0f);
@@ -399,7 +404,8 @@ void BatchRenderer::renderDebug(
         m_debugMeshShader.setVec3("camPos", batch->viewPos); // use viewPos so camera model has correct specular
 
         glBindVertexArray(cameraMesh->VAO);
-        if(debugMode) glDrawElements(GL_TRIANGLES, cameraMesh->numFaces * 3, GL_UNSIGNED_SHORT, 0);
+        if (debugMode)
+            glDrawElements(GL_TRIANGLES, cameraMesh->numFaces * 3, GL_UNSIGNED_SHORT, 0);
         glBindVertexArray(0);
 
         // Draw wireframe things
@@ -407,14 +413,14 @@ void BatchRenderer::renderDebug(
         m_debugLineShader.use();
         m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
 
-        vec3 camPos = batch->camPos;
-        vec3 forward = vec3(batch->cameraView.row1());
-        vec3 up = vec3(batch->cameraView.row2());
-        vec3 right = vec3(batch->cameraView.row3());
+        //vec3 camPos = batch->camPos;
+        //vec3 forward = vec3(batch->cameraView.row1());
+        //vec3 up = vec3(batch->cameraView.row2());
+        //vec3 right = vec3(batch->cameraView.row3());
 
-        drawLine(camPos, camPos + forward, vec3(1, 0, 0), vec3(1, 0, 0));
-        drawLine(camPos, camPos + up, vec3(0, 1, 0), vec3(0, 1, 0));
-        drawLine(camPos, camPos + right, vec3(0, 0, 1), vec3(0, 0, 1));
+        //drawLine(camPos, camPos + forward, vec3(1, 0, 0), vec3(1, 0, 0));
+        //drawLine(camPos, camPos + up, vec3(0, 1, 0), vec3(0, 1, 0));
+        //drawLine(camPos, camPos + right, vec3(0, 0, 1), vec3(0, 0, 1));
 
         for (auto k : GetScene()->m_masterList) {
             vec3 vPos = k->Position;
@@ -422,6 +428,9 @@ void BatchRenderer::renderDebug(
             vec3 vFor = vec3(meshTransform.col1());
             vec3 vUp = vec3(meshTransform.col2());
             vec3 vRight = vec3(meshTransform.col3());
+
+            glDisable(GL_DEPTH_TEST);
+            m_debugLineShader.use();
 
             drawLine(vPos, vPos + vFor, vec3(1, 0, 0), vec3(1, 0, 0));
             drawLine(vPos, vPos + vUp, vec3(0, 1, 0), vec3(0, 1, 0));

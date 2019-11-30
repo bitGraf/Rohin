@@ -113,8 +113,8 @@ void Engine::LoadLevel(std::string levelPath) {
     // Load level
     DataBlock<Scene> k = m_Resource.reserveDataBlocks<Scene>(1);
     m_scenes.push_back(k.data);
-    CurrentScene = k.data;
-    CurrentScene->loadFromFile(&m_Resource, levelPath, false);
+    SetCurrentScene(k.data);
+    GetScene()->loadFromFile(&m_Resource, levelPath, false);
 }
 
 void Engine::Update(double dt) {
