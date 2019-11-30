@@ -25,12 +25,9 @@ void GameObject::Create(istringstream &iss, ResourceManager* resource) {
     std::cout << "GameObject:" << m_uid << "{" << Name << "} created." << endl;
 }
 
-void GameObject::Update(double dt) {
-
-}
-
-void GameObject::Destroy() {
-}
+void GameObject::Update(double dt) {}
+void GameObject::Destroy() {}
+void GameObject::PostLoad() {}
 
 UID_t GameObject::getID() const {
     return m_uid;

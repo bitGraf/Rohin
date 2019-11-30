@@ -74,12 +74,11 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     MessageBus::registerSystem(m_Resource.create());
     MessageBus::registerSystem(m_MainWindow.create());
     MessageBus::registerSystem(m_Renderer.create());
-    MessageBus::registerSystem(m_Scenes.create());
 
     Message::listMessageTypes();
 
     EnvironmentMap::InitVAO();
-    m_Scenes.loadScenes(&m_Resource);
+    //m_Scenes.loadScenes(&m_Resource);
     m_Renderer.loadResources(&m_Resource);
 
     Console::startListening(false);
@@ -110,6 +109,12 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     Input::watchKey("key_right", GLFW_KEY_RIGHT);
     Input::watchKey("key_numpad0", GLFW_KEY_KP_0);
     Input::watchKey("key_rctrl", GLFW_KEY_RIGHT_CONTROL);
+
+    // Load level
+    DataBlock<Scene> k = m_Resource.reserveDataBlocks<Scene>(1);
+    m_scenes.push_back(k.data);
+    CurrentScene = k.data;
+    CurrentScene->loadFromFile(&m_Resource, "Data/test.scene", false);
 }
 
 void Engine::Update(double dt) {
@@ -118,13 +123,13 @@ void Engine::Update(double dt) {
     if (debugMode) {
         m_debugCamera.Update(dt);
     } else {
-        m_Scenes.update(dt);
+        GetScene()->update(dt);
     }
 }
 
 void Engine::PreRender() {
     // Interrogate the SceneManager for a list of draw calls to make this frame.
-    m_Scenes.getRenderBatch(&batch);
+    getRenderBatch(&batch);
 
     if (debugMode) {
         // inject debug camera values
@@ -153,7 +158,6 @@ void Engine::End() {
 
     m_MainWindow.destroy();
     m_Renderer.destroy();
-    m_Scenes.destroy();
     m_Resource.destroy();
 
     Console::rejoin();
@@ -191,6 +195,33 @@ void Engine::globalHandle(Message msg) {
             Console::logMessage("Quitting");
             userQuit = true;
             m_MainWindow.close();
+        }
+
+        if (key == GLFW_KEY_BACKSLASH && action == GLFW_PRESS) {
+            Console::logMessage("Reloading level");
+
+            //m_currentScene->loadFromFile(&g_ResourceManager, "", false);
+        }
+
+        if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+            Console::logMessage("Camera Reset");
+        }
+
+        if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
+            Console::logMessage("FPS Limit Toggle");
+
+            if (g_options.limitFramerate) {
+                if (g_options.highFramerate) {
+                    g_options.limitFramerate = false;
+                    g_options.highFramerate = false;
+                }
+                else {
+                    g_options.highFramerate = true;
+                }
+            }
+            else {
+                g_options.limitFramerate = true;
+            }
         }
     }
 

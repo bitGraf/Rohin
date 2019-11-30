@@ -32,11 +32,13 @@ private:
     /* Core Systems */
     Window m_MainWindow;
     BatchRenderer m_Renderer;
-    SceneManager m_Scenes;
     ResourceManager m_Resource;
     Camera m_debugCamera;
     bool debugMode;
     bool cursorMode;
+
+    /* Loaded levels */
+    std::vector<Scene*> m_scenes;
 
     /* Frame Timing */
     using engine_clock = std::chrono::steady_clock;

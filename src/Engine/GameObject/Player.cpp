@@ -1,6 +1,9 @@
 #include "Player.hpp"
+#include "Scene\SceneManager.hpp"
 
-PlayerObject::PlayerObject() {
+PlayerObject::PlayerObject() :
+    CameraFollowPlayer(false)
+{
     speed = 4;
     rotateToMovement = true;
 }
@@ -24,4 +27,19 @@ void PlayerObject::Update(double dt) {
     }
 
     CharacterObject::Update(dt);
+
+    /* Move Camera behind Player */
+    if (CameraFollowPlayer)
+        m_Camera->lookAt(Position);
+}
+
+void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
+    if (key == GLFW_KEY_F && action == GLFW_RELEASE) {
+        CameraFollowPlayer = !CameraFollowPlayer;
+    }
+}
+
+void PlayerObject::PostLoad() {
+    m_Camera = static_cast<Camera*>(GetScene()->getObjectByName("MainCamera"));
+    Input::registerInputEventCallback(this);
 }

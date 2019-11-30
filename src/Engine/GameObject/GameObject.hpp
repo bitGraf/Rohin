@@ -26,6 +26,7 @@ public:
     virtual void Create(istringstream &iss, ResourceManager* resource);
     virtual void Update(double dt);
     virtual void Destroy();
+    virtual void PostLoad();
 
     UID_t getID() const;
     mat4 getTransform() const;
@@ -37,16 +38,16 @@ public:
     vec3 Position;
     vec3 YawPitchRoll;
 
-protected:
     /* Unique Identifier */
     const UID_t m_uid;
+    string Name;
 
+protected:
     /* Debug Mesh - UNUSED */
     void* m_debugMesh;
 
     /* Type identifier */
     GameObjectType m_type;
-    string Name;
 
     /* Parent Object */
     GameObject* m_parent;

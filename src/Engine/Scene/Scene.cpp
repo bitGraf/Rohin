@@ -3,83 +3,12 @@
 Scene* CurrentScene = nullptr;
 Scene* GetScene() { return CurrentScene; }
 
-SceneManager::SceneManager() {
-    m_currentScene = nullptr;
-}
-
-void SceneManager::update(double dt) {
-    m_currentScene->update(dt);
-}
-
-void SceneManager::handleMessage(Message msg) {
-    if (msg.isType("InputKey")) {
-        // int button, int action, int mods
-        using dt = Message::Datatype;
-        dt key = msg.data[0];
-        dt scancode = msg.data[1];
-        dt action = msg.data[2];
-        dt mods = msg.data[3];
-
-        if (key == GLFW_KEY_BACKSLASH && action == GLFW_PRESS) {
-            Console::logMessage("Reloading level");
-
-            //m_currentScene->loadFromFile(&g_ResourceManager, "", false);
-        }
-
-        if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-            Console::logMessage("Camera Reset");
-        }
-
-        if (key == GLFW_KEY_GRAVE_ACCENT && action == GLFW_PRESS) {
-            Console::logMessage("FPS Limit Toggle");
-
-            if (g_options.limitFramerate) {
-                if (g_options.highFramerate) {
-                    g_options.limitFramerate = false;
-                    g_options.highFramerate = false;
-                }
-                else {
-                    g_options.highFramerate = true;
-                }
-            }
-            else {
-                g_options.limitFramerate = true;
-            }
-        }
-    }
-}
-
-void SceneManager::destroy() {
-}
-
-CoreSystem* SceneManager::create() {
-    return this;
-}
-
 Scene::Scene() {
 }
 
-void SceneManager::loadScenes(ResourceManager* resource, bool testing) {
-    //Scene s;
-
-    //s.testCreate(resource);
-    //scenes.push_back(s);
-
-    Scene sTest;
-    //sTest.testCreate(resource);
-    sTest.loadFromFile(resource, "", testing);
-    scenes.push_back(sTest);
-
-    // TODO: Not safe. Pointers change when vector grows
-    m_currentScene = &scenes[0];
-}
-
-Scene* SceneManager::getCurrentScene() {
-    return m_currentScene;
-}
 
 void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLLoad) {
-    std::ifstream infile("Data/test.scene");
+    std::ifstream infile(path);
 
     u32 numSpotLightsLoaded = 0;
     u32 numPointLightsLoaded = 0;
@@ -219,6 +148,11 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
         }
     }
     infile.close();
+
+    /* Run Post-Load functions now that everything is loaded */
+    for (int n = 0; n < m_masterList.size(); n++) {
+        m_masterList[n]->PostLoad();
+    }
 }
 
 
@@ -227,6 +161,23 @@ void Scene::update(double dt) {
         m_masterList[n]->Update(dt);
     }
 }
+
+GameObject* Scene::getObjectByName(const std::string objectName) const {
+    for (int n = 0; n < m_masterList.size(); n++) {
+        if (m_masterList[n]->Name.compare(objectName) == 0) {
+            return m_masterList[n];
+        }
+    }
+}
+
+GameObject* Scene::getObjectByID(const UID_t id) const {
+    for (int n = 0; n < m_masterList.size(); n++) {
+        if (m_masterList[n]->m_uid == id) {
+            return m_masterList[n];
+        }
+    }
+}
+
 
 #ifndef CUSTOM_ENTITIES
 
@@ -241,15 +192,16 @@ void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss
 #endif
 
 
-void SceneManager::getRenderBatch(BatchDrawCall* batch) {
+
+void getRenderBatch(BatchDrawCall* batch) {
     if (batch == nullptr)
         return;
 
-    if (m_currentScene) {
-        batch->currScene = m_currentScene;
+    if (CurrentScene) {
+        batch->currScene = CurrentScene;
 
         // Set Camera
-        auto camera = m_currentScene->objectsByType.Camera[0];
+        auto camera = CurrentScene->objectsByType.Camera[0];
         camera->updateViewFrustum(800, 600);
 
         batch->cameraView = camera->viewMatrix;
@@ -258,45 +210,45 @@ void SceneManager::getRenderBatch(BatchDrawCall* batch) {
 
         batch->camPos = camera->Position;
         batch->cameraModelMatrix = (
-            mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), 
+            mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0),
                 vec4(camera->Position, 1)) *
-                mat4(createYawPitchRollMatrix(camera->YawPitchRoll.x, camera->YawPitchRoll.y, camera->YawPitchRoll.z)) *
-                mat4(.5, .5, .5, 1));
+            mat4(createYawPitchRollMatrix(camera->YawPitchRoll.x, camera->YawPitchRoll.y, camera->YawPitchRoll.z)) *
+            mat4(.5, .5, .5, 1));
 
         mat4 lightView;
-        lightView.lookAt(m_currentScene->objectsByType.DirLights[0]->Position, vec3(), vec3(0, 1, 0));
+        lightView.lookAt(CurrentScene->objectsByType.DirLights[0]->Position, vec3(), vec3(0, 1, 0));
 
         batch->sunViewProjectionMatrix =
             Shadowmap::lightProjection *
             lightView;
 
         // Set lights
-        batch->sun = m_currentScene->objectsByType.DirLights[0];
-        int numPoints = min(4, (int)m_currentScene->objectsByType.PointLights.size());
-        int numSpots  = min(4, (int)m_currentScene->objectsByType.SpotLights.size());
-        
+        batch->sun = CurrentScene->objectsByType.DirLights[0];
+        int numPoints = min(4, (int)CurrentScene->objectsByType.PointLights.size());
+        int numSpots = min(4, (int)CurrentScene->objectsByType.SpotLights.size());
+
         for (int n = 0; n < 4; n++) {
             if (n < numPoints)
-                batch->pointLights[n] = m_currentScene->objectsByType.PointLights[n];
+                batch->pointLights[n] = CurrentScene->objectsByType.PointLights[n];
             else
                 batch->pointLights[n] = nullptr;
         }
         for (int n = 0; n < 4; n++) {
             if (n < numSpots)
-                batch->spotLights[n] = m_currentScene->objectsByType.SpotLights[n];
+                batch->spotLights[n] = CurrentScene->objectsByType.SpotLights[n];
             else
                 batch->spotLights[n] = nullptr;
         }
 
         // Environment
-        batch->env = &m_currentScene->envMap;
+        batch->env = &CurrentScene->envMap;
 
         batch->numCalls = 0;
         // pull every entity
-        for (int n = 0; n < m_currentScene->objectsByType.Renderable.size(); n++) {
+        for (int n = 0; n < CurrentScene->objectsByType.Renderable.size(); n++) {
             if (batch->numCalls >= MAX_CALLS)
                 break;
-            auto ent = m_currentScene->objectsByType.Renderable[n];
+            auto ent = CurrentScene->objectsByType.Renderable[n];
 
             if (camera->withinFrustum(ent->Position, 0.25)) { // Check to see if the entity is in the camera frustum
                 mat4 modelMatrix = ent->getModelTransform();

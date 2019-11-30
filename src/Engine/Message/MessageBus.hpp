@@ -9,6 +9,7 @@ class MessageBus;
 #include "Message.hpp"
 #include "CoreSystem.hpp"
 #include "Console.hpp"
+#include "Input.hpp"
 
 typedef void(*handleMessageFnc)(Message);
 
