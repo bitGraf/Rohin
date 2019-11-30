@@ -3,6 +3,7 @@
 
 #include "RenderableObject.hpp"
 
+/// CharacterObject. Represents a Renderable Character that can move around.
 class CharacterObject : public RenderableObject {
 public:
     CharacterObject();

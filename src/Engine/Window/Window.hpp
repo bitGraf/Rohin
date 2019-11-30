@@ -23,7 +23,7 @@ public:
     CoreSystem* create();
 
     void InitGLFW();
-    void create_window(const char* title = "Window", int width = WINDOW_DEFAULT_WIDTH, int height = WINDOW_DEFAULT_HEIGHT);
+    void create_window(const char* title = "Window", int width = WINDOW_DEFAULT_WIDTH, int height = WINDOW_DEFAULT_HEIGHT, bool hidden = false);
 
     /* Window functions */
     bool shouldClose();

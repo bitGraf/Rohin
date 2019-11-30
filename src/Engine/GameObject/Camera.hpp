@@ -4,6 +4,7 @@
 #include "GameObject.hpp"
 #include "Input.hpp"
 
+/// Camera object. Represents a point of view in the world.
 class Camera : public GameObject {
 public:
     Camera();

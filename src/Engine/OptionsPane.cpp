@@ -1,53 +1,52 @@
 #include "OptionsPane.hpp"
 
 OptionsPane::OptionsPane() {
-
+    Visibility = false;
 }
 
-void OptionsPane::create(Window* mainWin, bool actually) {
-    if (actually) {
-        m_pane.create_window("Options", 300, 500);
-        m_pane.setPosition(20, 600);
-        m_pane.makeCurrent();
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+void OptionsPane::create(Window* mainWin, bool Show) {
+    Visibility = Show;
 
-        textFont.InitTextRendering();
-        textFont.create("UbuntuMono-Regular.ttf", 20, 300, 500);
+    m_pane.create_window("Options", 300, 500, !Show);
+    m_pane.setPosition(20, 600);
+    m_pane.makeCurrent();
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        m_main = mainWin;
-        ySpacing = textFont.m_fontSize*spacing;
+    textFont.InitTextRendering();
+    textFont.create("UbuntuMono-Regular.ttf", 20, 300, 500);
 
-        nextBound = vec4(xSetting, 0, 300, ySpacing);
-        // Create settings list
-        toggleSettings.push_back(
-            toggleSet("Render", 5,
-                toggle("Wireframe Mode", &g_options.wireFrameMode, getNextBound()),
-                toggle("Draw Shadows", &g_options.drawShadows, getNextBound()),
-                toggle("Draw Skybox", &g_options.drawSkybox, getNextBound()),
-                toggle("Draw Static Entities", &g_options.drawStaticEntities, getNextBound()),
-                toggle("Draw Dynamic Entities", &g_options.drawDynamicEntities, getNextBound()))
-        );
-        nextToggleSet();
-        toggleSettings.push_back(
-            toggleSet("Scene", 1,
-                toggle("Update Scene", &g_options.updateScene, getNextBound()))
-        );
-        nextToggleSet();
-        toggleSettings.push_back(
-            toggleSet("Debug", 2,
-                toggle("Draw Fps", &g_options.drawFps, getNextBound()),
-                toggle("Limit Framerate", &g_options.limitFramerate, getNextBound()))
-        );
-        for (int n = 0; n < toggleSettings.size(); n++) {
-            std::reverse(toggleSettings[n].settings.begin(), toggleSettings[n].settings.end());
-        }
+    m_main = mainWin;
+    ySpacing = textFont.m_fontSize*spacing;
+
+    nextBound = vec4(xSetting, 0, 300, ySpacing);
+    // Create settings list
+    toggleSettings.push_back(
+        toggleSet("Render", 5,
+            toggle("Wireframe Mode", &g_options.wireFrameMode, getNextBound()),
+            toggle("Draw Shadows", &g_options.drawShadows, getNextBound()),
+            toggle("Draw Skybox", &g_options.drawSkybox, getNextBound()),
+            toggle("Draw Static Entities", &g_options.drawStaticEntities, getNextBound()),
+            toggle("Draw Dynamic Entities", &g_options.drawDynamicEntities, getNextBound()))
+    );
+    nextToggleSet();
+    toggleSettings.push_back(
+        toggleSet("Scene", 1,
+            toggle("Update Scene", &g_options.updateScene, getNextBound()))
+    );
+    nextToggleSet();
+    toggleSettings.push_back(
+        toggleSet("Debug", 2,
+            toggle("Draw Fps", &g_options.drawFps, getNextBound()),
+            toggle("Limit Framerate", &g_options.limitFramerate, getNextBound()))
+    );
+    for (int n = 0; n < toggleSettings.size(); n++) {
+        std::reverse(toggleSettings[n].settings.begin(), toggleSettings[n].settings.end());
     }
-    active = actually;
 }
 
 void OptionsPane::redraw() {
-    if (active) {
+    if (Visibility) {
         m_pane.makeCurrent();
 
         //glClearColor(.4, .3, .2, 1);
@@ -83,7 +82,7 @@ void OptionsPane::redraw() {
 }
 
 void OptionsPane::click(Message::Datatype x, Message::Datatype y) {
-    if (active) {
+    if (Visibility) {
         if (m_pane.cursorOver) {
             for (auto ts : toggleSettings) {
                 for (auto t : ts.settings) {
@@ -117,4 +116,16 @@ bool OptionsPane::inBounds(vec4 bounds, vec2 loc) {
         }
     }
     return false;
+}
+
+void OptionsPane::ToggleVisibility() {
+    Visibility = !Visibility;
+
+    if (!Visibility) {
+        glfwHideWindow(m_pane.m_glfwWindow);
+    }
+    else {
+        glfwShowWindow(m_pane.m_glfwWindow);
+        this->redraw();
+    }
 }

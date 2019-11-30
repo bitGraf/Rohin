@@ -6,7 +6,7 @@
 #include "Shader.hpp"
 #include "Shadowmap.hpp"
 #include "Resource\Texture.hpp"
-#include "BatchRender.hpp"
+#include "RenderBatch.hpp"
 #include "Window\Framebuffer.hpp"
 #include "DynamicFont.hpp"
 #include "Utils.hpp"
@@ -23,20 +23,20 @@ public:
     CoreSystem* create();
 
     /* System Unique functions */
-    void renderBatch(BatchDrawCall* batch);
-    void renderDebug(BatchDrawCall* batch, 
+    void renderBatch(RenderBatch* batch);
+    void renderDebug(RenderBatch* batch,
         double frameCount, long long lastFrame,
         bool debugMode);
     void loadResources(ResourceManager* resource);
 
     // Render Passes
-    void shadowPass(BatchDrawCall* batch);
-    void staticPass(BatchDrawCall* batch);
-    void dynamicPass(BatchDrawCall* batch);
-    void skyboxPass(BatchDrawCall* batch);
-    void lightVolumePass(BatchDrawCall* batch);
-    void toneMap(BatchDrawCall* batch);
-    void gammaCorrect(BatchDrawCall* batch);
+    void shadowPass(RenderBatch* batch);
+    void staticPass(RenderBatch* batch);
+    void dynamicPass(RenderBatch* batch);
+    void skyboxPass(RenderBatch* batch);
+    void lightVolumePass(RenderBatch* batch);
+    void toneMap(RenderBatch* batch);
+    void gammaCorrect(RenderBatch* batch);
 
 private:
     void drawLine(vec3 A, vec3 B, vec3 colorA, vec3 colorB);

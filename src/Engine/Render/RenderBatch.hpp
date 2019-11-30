@@ -1,5 +1,5 @@
-#ifndef RENDER_UTIL_H
-#define RENDER_UTIL_H
+#ifndef RENDER_BATCH_H
+#define RENDER_BATCH_H
 
 #define MAX_CALLS 1000
 
@@ -18,7 +18,7 @@ struct DrawCall {
     Material* mat;
 };
 
-struct BatchDrawCall {
+struct RenderBatch {
     /* Common to all rendering */
     mat4 cameraViewProjectionMatrix;
     vec3 camPos;
@@ -34,8 +34,6 @@ struct BatchDrawCall {
     PointLight *pointLights[4] = { nullptr };
     SpotLight *spotLights[4] = { nullptr };
     EnvironmentMap (*env);
-
-    Scene* currScene;
 
     DrawCall calls[MAX_CALLS];
     u16 numCalls = 0;

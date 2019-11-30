@@ -66,7 +66,7 @@ void Window::InitGLFW() {
     glfwInit();
 }
 
-void Window::create_window(const char* title, int width, int height) {
+void Window::create_window(const char* title, int width, int height, bool hidden) {
     // Set window size
     m_width = width;
     m_height = height;
@@ -77,6 +77,7 @@ void Window::create_window(const char* title, int width, int height) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_VISIBLE, hidden ? GLFW_FALSE : GLFW_TRUE);
     m_glfwWindow = glfwCreateWindow(m_width, m_height, title, NULL, NULL);
 
     if (m_glfwWindow == NULL) {

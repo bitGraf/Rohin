@@ -33,7 +33,7 @@ void Texture::loadImage(std::string filename) {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
     else {
-        std::cout << "Failed to load texture [" << filename << "]" << std::endl;
+        Console::logMessage("Failed to load texture [" + filename + "]");
     }
 
     stbi_image_free(data);
@@ -61,11 +61,12 @@ void Texture::loadCubemap(std::string filename, std::string filetype) {
         unsigned char* data = stbi_load((TextureResourcePath + faces[i]).c_str(), &width, &height, &nrChannels, 0);
         if (data) {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            printf("Loaded texture: [%dx%d], %d channels\n", width, height, nrChannels);
+            Console::logMessage("Loaded texture: [" + std::to_string(width) + 
+                "x" + std::to_string(height) + "], " + std::to_string(nrChannels) + " channels");
             stbi_image_free(data);
         }
         else {
-            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            Console::logMessage("Cubemap texture failed to load at path: " + faces[i]);
             stbi_image_free(data);
         }
     }

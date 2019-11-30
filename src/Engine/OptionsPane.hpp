@@ -10,12 +10,15 @@ class OptionsPane {
 public:
     OptionsPane();
 
-    void create(Window* mainWin, bool actually = false);
+    void create(Window* mainWin, bool Show = false);
     void redraw();
 
     void click(Message::Datatype x, Message::Datatype y);
+    void ToggleVisibility();
 
 private:
+    bool Visibility;
+
     struct toggle {
         std::string name;
         bool* value;
@@ -45,7 +48,6 @@ private:
     Window m_pane;
     DynamicFont textFont;
     Window* m_main;
-    bool active;
 
     int xHeader = 5;
     int xSetting = 20;

@@ -4,6 +4,7 @@
 #include "GameObject.hpp"
 #include "Render\Shadowmap.hpp"
 
+/// An omnidirectional Pointlight
 class PointLight : public GameObject {
 public:
     PointLight() { 
@@ -17,6 +18,7 @@ public:
     float Strength;
 };
 
+/// A SpotLight pointed in a specific direction
 class SpotLight : public GameObject {
 public:
     SpotLight() { 
@@ -35,6 +37,7 @@ public:
     float Strength;
 };
 
+/// A Directional light like the sun
 class DirLight : public GameObject {
 public:
     DirLight() { 

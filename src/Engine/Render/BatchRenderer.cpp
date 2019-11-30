@@ -1,4 +1,4 @@
-#include "RenderManager.hpp"
+#include "BatchRenderer.hpp"
 #include "Scene\Scene.hpp"
 
 BatchRenderer::BatchRenderer() {
@@ -98,7 +98,7 @@ CoreSystem* BatchRenderer::create() {
     return this;
 }
 
-void BatchRenderer::renderBatch(BatchDrawCall* batch) {
+void BatchRenderer::renderBatch(RenderBatch* batch) {
     /* Use list of draw calls to render the scene in multiple passes
     1. Shadow Pass
     2. Static Entity Pass
@@ -154,7 +154,7 @@ void BatchRenderer::renderBatch(BatchDrawCall* batch) {
     endProfile();
 }
 
-void BatchRenderer::shadowPass(BatchDrawCall* batch) {
+void BatchRenderer::shadowPass(RenderBatch* batch) {
     // First, render to depth map
     m_shadowPass.use();
     glViewport(0, 0, sm.width, sm.height);
@@ -174,7 +174,7 @@ void BatchRenderer::shadowPass(BatchDrawCall* batch) {
     glViewport(0, 0, 800, 600);
 }
 
-void BatchRenderer::staticPass(BatchDrawCall* batch) {
+void BatchRenderer::staticPass(RenderBatch* batch) {
     glEnable(GL_DEPTH_TEST);
 
     m_staticPass.use();
@@ -234,10 +234,10 @@ void BatchRenderer::staticPass(BatchDrawCall* batch) {
     }
 }
 
-void BatchRenderer::dynamicPass(BatchDrawCall* batch) {
+void BatchRenderer::dynamicPass(RenderBatch* batch) {
 }
 
-void BatchRenderer::skyboxPass(BatchDrawCall* batch) {
+void BatchRenderer::skyboxPass(RenderBatch* batch) {
     m_skyboxPass.use();
     mat4 identity;
     m_skyboxPass.setMat4("viewMatrix", mat4(mat3(batch->cameraView)));
@@ -253,7 +253,7 @@ void BatchRenderer::skyboxPass(BatchDrawCall* batch) {
     glDepthFunc(GL_LESS);
 }
 
-void BatchRenderer::lightVolumePass(BatchDrawCall* batch) {
+void BatchRenderer::lightVolumePass(RenderBatch* batch) {
     m_lightVolumePass.use();
     m_lightVolumePass.setInt("tex", 0);
     m_lightVolumePass.setInt("positionMap", 1);
@@ -282,7 +282,7 @@ void BatchRenderer::lightVolumePass(BatchDrawCall* batch) {
     glEnable(GL_DEPTH_TEST);
 }
 
-void BatchRenderer::toneMap(BatchDrawCall* batch) {
+void BatchRenderer::toneMap(RenderBatch* batch) {
     // read from FBO, render to screen buffer
     // perform hdr correction
     m_toneMap.use();
@@ -300,7 +300,7 @@ void BatchRenderer::toneMap(BatchDrawCall* batch) {
     glEnable(GL_DEPTH_TEST);
 }
 
-void BatchRenderer::gammaCorrect(BatchDrawCall* batch) {
+void BatchRenderer::gammaCorrect(RenderBatch* batch) {
     // read from FBO, render to screen buffer
     // perform hdr correction
     m_gammaCorrect.use();
@@ -319,7 +319,7 @@ void BatchRenderer::gammaCorrect(BatchDrawCall* batch) {
 }
 
 void BatchRenderer::renderDebug(
-    BatchDrawCall* batch, 
+    RenderBatch* batch,
     double frameCount, 
     long long lastFrame,
     bool debugMode) {
@@ -391,7 +391,7 @@ void BatchRenderer::renderDebug(
         drawLine(camPos, camPos + up, vec3(0, 1, 0), vec3(0, 1, 0));
         drawLine(camPos, camPos + right, vec3(0, 0, 1), vec3(0, 0, 1));
 
-        for (auto k : batch->currScene->objectsByType.Renderable) {
+        for (auto k : GetScene()->objectsByType.Renderable) {
             vec3 vPos = k->Position;
             mat3 meshTransform = k->getMeshTransform();
             vec3 vFor = vec3(meshTransform.col1());

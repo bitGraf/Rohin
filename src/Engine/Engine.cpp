@@ -80,8 +80,8 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     EnvironmentMap::InitVAO();
     //m_Scenes.loadScenes(&m_Resource);
     m_Renderer.loadResources(&m_Resource);
-
-    Console::startListening(false);
+    m_Options.create(&m_MainWindow);
+    m_Options.redraw();
 
     m_MainWindow.makeCurrent();
 
@@ -118,12 +118,13 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
 }
 
 void Engine::Update(double dt) {
-    // Call the SceneManager update function
-    // Update the Game State
+    // Don't send input events to GameObjects while in debug mode
+    Input::setHandleInput(!debugMode);
+
     if (debugMode) {
-        m_debugCamera.Update(dt);
+        m_debugCamera.Update(dt); // Only update the DebugCamera
     } else {
-        GetScene()->update(dt);
+        GetScene()->update(dt); // Update the whole scene
     }
 }
 
@@ -154,13 +155,9 @@ void Engine::Render() {
 void Engine::End() {
     glfwTerminate();
 
-    Console::destroy();
-
     m_MainWindow.destroy();
     m_Renderer.destroy();
     m_Resource.destroy();
-
-    Console::rejoin();
 
     if (!userQuit)
         std::this_thread::sleep_for(std::chrono::milliseconds(1500));
@@ -223,6 +220,12 @@ void Engine::globalHandle(Message msg) {
                 g_options.limitFramerate = true;
             }
         }
+
+        if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+            Console::logMessage("Toggle Options Pane");
+
+            m_Options.ToggleVisibility();
+        }
     }
 
     if (msg.isType("InputMouseButton")) {
@@ -235,6 +238,7 @@ void Engine::globalHandle(Message msg) {
         dt yPos = msg.data[4];
 
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+            m_Options.click(xPos, yPos);
         }
     }
 }

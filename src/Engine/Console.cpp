@@ -1,164 +1,37 @@
 #include "Console.hpp"
 
-//HANDLE Console::hConsole;
-//CONSOLE_SCREEN_BUFFER_INFO Console::csbi;
-//COORD Console::cursorPos;
+bool Console::EchoMessages = false;
 
-std::vector<std::string> Console::textBuffer;
-int Console::bufferPos;
-
-Console::eConsoleStatus Console::status;
-bool Console::forceKill;
-
-std::mutex Console::status_lock;
-std::thread Console::myThread;
-bool Console::threaded;
-
-Console::Console() {
-}
-
-
-void Console::update(double dt) {
-    switch (status) {
-    case eConsoleStatus::sleep: {
-        // Do nothing this update cycle
-        printf(".");
-    } break;
-    case eConsoleStatus::update: {
-        // redraw the console
-
-        status = eConsoleStatus::sleep;
-
-        //clear();
-
-        int numMessages = textBuffer.size();
-
-        //cursorPos = { 0, 0 };
-        //setCursorPos(cursorPos);
-
-        if (numMessages > CONSOLE_MAX_MESSAGES) {
-            bufferPos = numMessages - CONSOLE_MAX_MESSAGES;
-        }
-
-        for (int n = bufferPos; n < numMessages; n++) {
-            printf(textBuffer[n].c_str());
-            printf("\n");
-            //cursorPos.Y++;
-        }
-    } break;
-    case eConsoleStatus::prompt: {
-        // ask for input
-
-        std::string input;
-
-        std::cout << "> ";
-        std::cin >> input;
-
-        input.insert((size_t)0, "Command entered: ", (size_t)17);
-        logMessage(input);
-
-        status = eConsoleStatus::update;
-    } break;
-    case eConsoleStatus::kill: {
-        logMessage("Killing Console");
-    } break;
-    }
-
-    if (forceKill) {
-        status = eConsoleStatus::kill;
-    }
-}
+Console::Console()
+{}
 
 void Console::handleMessage(Message msg) {
-    std::ostringstream stringStream;
+    if (EchoMessages) {
+        std::ostringstream stringStream;
 
-    stringStream <<
-        Message::getNameFromMessageType(msg.type);
-    for (u8 n = 0; n < msg.numArgs; n++) {
-        stringStream << ", " << std::to_string(msg.data[n]);
-    }
-    /*if (msg.type > 0) {
-        if (msg.type == Configuration::getMessageType("WindowMove")) {
-            int xpos, ypos;
-            Configuration::decodeData(msg, xpos, ypos);
-            stringStream << ": xpos=" << xpos << ", ypos=" << ypos;
+        stringStream <<
+            Message::getNameFromMessageType(msg.type);
+        for (u8 n = 0; n < msg.numArgs; n++) {
+            stringStream << ", " << std::to_string(msg.data[n]);
         }
-    }*/
-    std::string copyOfStr = stringStream.str();
-
-    if (threaded) {
-        textBuffer.push_back(copyOfStr);
-
-        status_lock.lock();
-        status = eConsoleStatus::update;
-        status_lock.unlock();
-    }
-    else {
+        std::string copyOfStr = stringStream.str();
+        
         logMessage(copyOfStr);
-    }
-}
-
-void Console::destroy() {
-    status_lock.lock();
-    status = eConsoleStatus::kill;
-    forceKill = true;
-    status_lock.unlock();
-}
-
-void Console::create() {
-    //hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    bufferPos = 0;
-    status = eConsoleStatus::update;
-    logMessage("Console created");
-    forceKill = false;
-    update(0);
-    threaded = false;
-}
-
-
-
-void Console::prompt() {
-    // Tell the console to ask for input
-    status_lock.lock();
-    status = eConsoleStatus::prompt;
-    status_lock.unlock();
-}
-
-void Console::startListening(bool separateThread) {
-    threaded = separateThread;
-
-    if (threaded) {
-        myThread = std::thread(&Console::startThread);
-    }
-}
-
-void Console::startThread() {
-    if (threaded) {
-        update(0);
-
-        auto nowTime = std::chrono::system_clock::now();
-
-        int num = 0;
-        while (status != eConsoleStatus::kill) {
-            nowTime = std::chrono::system_clock::now();
-            update(0);
-
-            //limit this loop to the update rate set
-            nowTime += std::chrono::milliseconds(MILLS_PER_UPDATE);
-            std::this_thread::sleep_until(nowTime);
-        }
-        update(0);
-    }
-}
-
-void Console::rejoin() {
-    if (threaded) {
-        myThread.join();
-        threaded = false;
     }
 }
 
 void Console::logMessage(std::string text) {
     std::cout << "> " << text << std::endl;
+}
+
+void Console::logMessage(char const* const _Format, ...) {
+    va_list args;
+
+    printf("> ");
+
+    va_start(args, _Format);
+    vprintf(_Format, args);
+    va_end(args);
+
+    printf("\n");
 }

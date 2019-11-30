@@ -41,5 +41,5 @@ void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
 
 void PlayerObject::PostLoad() {
     m_Camera = static_cast<Camera*>(GetScene()->getObjectByName("MainCamera"));
-    Input::registerInputEventCallback(this);
+    Input::registerGameObject(this);
 }

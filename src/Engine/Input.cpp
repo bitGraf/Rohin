@@ -1,11 +1,12 @@
 #include "Input.hpp"
-#include "GameObject\Player.hpp"
+#include "GameObject\GameObject.hpp"
 
 std::unordered_map<std::string, bool> Input::m_keyStates;
 std::unordered_map<std::string, int> Input::m_watchedKeys;
 math::vec2 Input::m_mouseMove;
 math::vec2 Input::m_mouseAcc;
-std::vector<PlayerObject*> Input::m_PlayerObjects;
+std::vector<GameObject*> Input::m_GameObjects;
+bool Input::ShouldGameObjectHandleInputEvent = true;
 
 bool Input::getKeyState(std::string key) {
     if (m_keyStates.find(key) == m_keyStates.end()) {
@@ -34,23 +35,29 @@ void Input::pollKeys(GLFWwindow* window) {
     m_mouseAcc = math::vec2();
 }
 
-void Input::registerInputEventCallback(PlayerObject* obj) {
+void Input::registerGameObject(GameObject* obj) {
     if (obj) {
-        m_PlayerObjects.push_back(obj);
+        m_GameObjects.push_back(obj);
     }
 }
 
 void Input::handleMessage(Message msg) {
-    if (msg.isType("InputKey")) {
-        using dt = Message::Datatype;
+    if (ShouldGameObjectHandleInputEvent) {
+        if (msg.isType("InputKey")) {
+            using dt = Message::Datatype;
 
-        dt key = msg.data[0];
-        dt scancode = msg.data[1];
-        dt action = msg.data[2];
-        dt mods = msg.data[3];
+            dt key = msg.data[0];
+            dt scancode = msg.data[1];
+            dt action = msg.data[2];
+            dt mods = msg.data[3];
 
-        for (auto f : m_PlayerObjects) {
-            f->InputEvent(key, action);
+            for (GameObject* go : m_GameObjects) {
+                go->InputEvent(key, action);
+            }
         }
     }
+}
+
+void Input::setHandleInput(bool val) {
+    ShouldGameObjectHandleInputEvent = val;
 }

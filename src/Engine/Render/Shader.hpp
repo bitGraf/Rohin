@@ -10,7 +10,6 @@
 
 #include "Scene/Material.hpp"
 #include "GameObject/Light.hpp"
-//#include "System/SceneManager.hpp"
 
 const std::string ShaderResourcePath = "Data/shaders/";
 

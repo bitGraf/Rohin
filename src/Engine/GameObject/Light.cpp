@@ -5,7 +5,7 @@ void PointLight::Create(istringstream &iss, ResourceManager* resource) {
     Strength = getNextFloat(iss);
     Position = getNextVec3(iss);
 
-    std::cout << "Light:" << m_uid << "{" << Name << "} created." << endl;
+    Console::logMessage("GameObject: %llu {%s} created.", (m_uid), Name.c_str());
 }
 
 void SpotLight::Create(istringstream &iss, ResourceManager* resource) {
@@ -19,7 +19,7 @@ void SpotLight::Create(istringstream &iss, ResourceManager* resource) {
     inner_cutoff = cos(cutoff.x * d2r);
     outer_cutoff = cos(cutoff.y * d2r);
 
-    std::cout << "Light:" << m_uid << "{" << Name << "} created." << endl;
+    Console::logMessage("GameObject: %llu {%s} created.", (m_uid), Name.c_str());
 }
 
 void DirLight::Create(istringstream &iss, ResourceManager* resource) {
@@ -31,5 +31,5 @@ void DirLight::Create(istringstream &iss, ResourceManager* resource) {
 
     Position = -Direction*distance;
 
-    std::cout << "Light:" << m_uid << "{" << Name << "} created." << endl;
+    Console::logMessage("GameObject: %llu {%s} created.", (m_uid), Name.c_str());
 }

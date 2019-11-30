@@ -9,7 +9,7 @@
 #include "GameMath.hpp"
 #include "Message\Message.hpp"
 
-class PlayerObject;
+class GameObject;
 
 class Input {
 public:
@@ -17,8 +17,9 @@ public:
     static bool getKeyState(std::string key);
     static void watchKey(std::string key, int glfwKeyCode);
     static void pollKeys(GLFWwindow* window);    
-    static void registerInputEventCallback(PlayerObject* obj);
+    static void registerGameObject(GameObject* obj);
     static void handleMessage(Message msg);
+    static void setHandleInput(bool val);
 
     static math::vec2 m_mouseMove;
     static math::vec2 m_mouseAcc;
@@ -27,7 +28,10 @@ private:
     static std::unordered_map<std::string, bool> m_keyStates;
     static std::unordered_map<std::string, int> m_watchedKeys;
 
-    static std::vector<PlayerObject*> m_PlayerObjects;
+    static std::vector<GameObject*> m_GameObjects;
+
+    static bool ShouldGameObjectHandleInputEvent;
+
     Input();
 };
 

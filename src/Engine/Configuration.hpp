@@ -1,6 +1,7 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+// Global Options
 class OptionSet {
 public:
     // Rendering

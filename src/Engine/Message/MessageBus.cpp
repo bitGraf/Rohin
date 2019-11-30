@@ -9,7 +9,7 @@ MessageBus::MessageBus() {
 }
 
 void MessageBus::create() {
-    printf("MessageBus created\n");
+    Console::logMessage("MessageBus created");
     hasMessages = true;
     globalFunc = nullptr;
 }
@@ -41,7 +41,7 @@ Message MessageBus::PopQueue() {
             hasMessages = true;
     }
     else {
-        printf("No messages to pop\n");
+        Console::logMessage("No messages to pop");
     }
 
     return msg;

@@ -8,7 +8,6 @@ class CoreSystem;
 #include <cstdarg>
 
 #include "Configuration.hpp"
-#include "HashTable.hpp"
 
 #include "MessageBus.hpp"
 

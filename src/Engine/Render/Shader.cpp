@@ -21,13 +21,12 @@ void Shader::create(
 
     auto startTime = std::chrono::system_clock::now();
 
-    printf("Building shader(%s): [%s]|[%s]\n", 
-        ShaderName.c_str(), vShaderPath.c_str(), fShaderPath.c_str());
+    Console::logMessage("Building shader(" + ShaderName + "): [" + vShaderPath + "]|[" + fShaderPath + "]");
 
     /* load shader files */
     FILE *f = fopen((ShaderResourcePath + vShaderPath).c_str(), "rb");
     if (f == NULL) {
-        printf("  Failed to open file: %s\n", vShaderPath.c_str());
+        Console::logMessage("   Failed to open file: " + vShaderPath);
         return;
     }
     fseek(f, 0, SEEK_END);
@@ -41,7 +40,7 @@ void Shader::create(
 
     f = fopen((ShaderResourcePath + fShaderPath).c_str(), "rb");
     if (f == NULL) {
-        printf("  Failed to open file: %s\n", fShaderPath.c_str());
+        Console::logMessage("   Failed to open file: " + fShaderPath);
         return;
     }
     fseek(f, 0, SEEK_END);
@@ -65,7 +64,7 @@ void Shader::create(
     glGetShaderiv(vShader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(vShader, 512, NULL, infoLog);
-        printf("  ERROR::SHADER::VERTEX::COMPILATION_FAILED(%s)\n %s\n", vShaderPath.c_str(), infoLog);
+        Console::logMessage("  ERROR::SHADER::VERTEX::COMPILATION_FAILED(" + vShaderPath + ")\n" + std::string(infoLog));
     }
     //Fragment shader
     GLuint fShader;
@@ -76,8 +75,7 @@ void Shader::create(
     glGetShaderiv(fShader, GL_COMPILE_STATUS, &success);
     if (!success) {
         glGetShaderInfoLog(fShader, 512, NULL, infoLog);
-        printf("  ERROR::SHADER::FRAGMENT::COMPILATION_FAILED(%s)\n %s\n", fShaderPath.c_str(), infoLog);
-        system("pause");
+        Console::logMessage("  ERROR::SHADER::FRAGMENT::COMPILATION_FAILED(" + fShaderPath + ")\n" + std::string(infoLog));
     }
     //Shader program
     glShaderID = glCreateProgram();
@@ -88,8 +86,8 @@ void Shader::create(
     glGetProgramiv(glShaderID, GL_LINK_STATUS, &success);
     if (!success) {
         glGetProgramInfoLog(glShaderID, 512, NULL, infoLog);
-        printf("  ERROR::SHADER::LINK_FAILED\n %s\n", infoLog);
-        system("pause");
+        Console::logMessage("  ERROR::SHADER::LINK_FAILED\n" + std::string(infoLog));
+        //system("pause");
     }
 
     free(vShaderCode);
@@ -99,8 +97,7 @@ void Shader::create(
 
     auto duration = std::chrono::system_clock::now() - startTime;
 
-    std::cout << std::chrono::duration_cast<std::chrono::microseconds>(duration).count() <<
-        " Microseconds to compile." << std::endl;
+    Console::logMessage("   " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(duration).count()) + " Microseconds to compile");
 }
 
 void Shader::setBool(const std::string &name, bool value) const {

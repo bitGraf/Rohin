@@ -22,12 +22,13 @@ void GameObject::Create(istringstream &iss, ResourceManager* resource) {
         //m_parent = GetScene()->findGameObject(parentName);
     }
 
-    std::cout << "GameObject:" << m_uid << "{" << Name << "} created." << endl;
+    Console::logMessage("GameObject: %llu {%s} created.", (m_uid) , Name.c_str());
 }
 
 void GameObject::Update(double dt) {}
 void GameObject::Destroy() {}
 void GameObject::PostLoad() {}
+void GameObject::InputEvent(Message::Datatype key, Message::Datatype action) {}
 
 UID_t GameObject::getID() const {
     return m_uid;

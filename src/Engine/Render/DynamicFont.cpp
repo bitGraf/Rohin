@@ -10,13 +10,13 @@ DynamicFont::DynamicFont() {
 }
 
 void DynamicFont::InitTextRendering() {
-    Console::logMessage("\nInitializing Text Rendering...\n");
+    Console::logMessage("Initializing Text Rendering...");
 
     textShader.create("text.vert", "text.frag", "textShader");
     textShader.use();
     textShader.setInt("fontTex", 0);
     
-    Console::logMessage("Initializing text rendering VAO\n");
+    Console::logMessage("Initializing text rendering VAO");
     GLuint vbo;
 
     float quadVertices[] = {//vec2 position, vec2 uv

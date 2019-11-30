@@ -11,9 +11,4 @@
     #define cd chdir
 #endif
 
-#include <stdio.h>
-#include "DataTypes.hpp"
-
-#include "Console.hpp"
-
 #endif //ifndef PLATFORM_H

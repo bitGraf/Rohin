@@ -48,43 +48,17 @@ math::vec4 getNextVec4(std::istringstream& iss) {
     return v;
 }
 
-/*
-template MovingAverage<long long, 10>::MovingAverage();
-template void MovingAverage<long long, 10>::addSample(long long data);
-template f32 MovingAverage<long long, 10>::getCurrentAverage() const;
+u32 hash_djb2(unsigned char* str) {
+    u32 hash = 5381;
+    int c;
 
-template<typename TYPE, int SIZE>
-MovingAverage<TYPE, SIZE>::MovingAverage() :
-    m_sum(static_cast<TYPE>(0)),
-    m_curSample(0),
-    m_sampleCount(0)
-{
+    while (c = *str++) {
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    }
+
+    return hash;
 }
 
-template<typename TYPE, int SIZE>
-void MovingAverage<TYPE, SIZE>::addSample(TYPE data) {
-    if (m_sampleCount == SIZE) {
-        m_sum -= m_samples[m_curSample];
-    }
-    else {
-        m_sampleCount++;
-    }
-
-    m_samples[m_curSample] = data;
-    m_sum += data;
-    m_curSample++;
-
-    if (m_curSample >= SIZE) {
-        m_curSample = 0;
-    }
+stringID operator"" _sid(const char *input, size_t s) {
+    return hash_djb2((unsigned char*)input);
 }
-
-template<typename TYPE, int SIZE>
-f32 MovingAverage<TYPE, SIZE>::getCurrentAverage() const {
-    if (m_sampleCounr != 0) {
-        return static_cast<f32>(m_sum) / static_cast<f32>(m_sampleCount);
-    }
-
-    return 0;
-}
-*/

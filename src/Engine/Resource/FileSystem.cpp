@@ -17,20 +17,20 @@ void FileSystem::destroy() {
 
 CoreSystem* FileSystem::create() {
     char currDir[128];
-    std::cout << "CWD: " << cwd(currDir, sizeof currDir) << std::endl;
+    Console::logMessage("CWD: " + std::string(cwd(currDir, sizeof currDir)));
 
     if (0 == cd(exeLoc)) {
-        std::cout << "CWD changed to: " << cwd(currDir, sizeof currDir) << std::endl;
+        Console::logMessage("CWD changes to: " + std::string(cwd(currDir, sizeof currDir)));
     }
     else {
-        std::cout << "Error changing directory." << std::endl;
+        Console::logMessage("Error changing directory.");
     }
 
     if (0 == cd("../../run_tree/")) {
-        std::cout << "CWD changed to: " << cwd(currDir, sizeof currDir) << std::endl;
+        Console::logMessage("CWD changes to: " + std::string(cwd(currDir, sizeof currDir)));
     }
     else {
-        std::cout << "Error changing directory." << std::endl;
+        Console::logMessage("Error changing directory.");
     }
 
     return this;

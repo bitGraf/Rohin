@@ -6,6 +6,7 @@
 
 #include "glad\glad.h"
 #include "stb_image.h"
+#include "Console.hpp"
 
 const std::string TextureResourcePath = "Data/Images/";
 

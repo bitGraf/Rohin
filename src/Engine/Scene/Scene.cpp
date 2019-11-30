@@ -193,13 +193,11 @@ void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss
 
 
 
-void getRenderBatch(BatchDrawCall* batch) {
+void getRenderBatch(RenderBatch* batch) {
     if (batch == nullptr)
         return;
 
     if (CurrentScene) {
-        batch->currScene = CurrentScene;
-
         // Set Camera
         auto camera = CurrentScene->objectsByType.Camera[0];
         camera->updateViewFrustum(800, 600);

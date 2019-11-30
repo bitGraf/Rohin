@@ -3,8 +3,11 @@
 
 #include "Console.hpp"
 #include "Window\Window.hpp"
-#include "Render\RenderManager.hpp"
+#include "Render\BatchRenderer.hpp"
 #include "Scene\Scene.hpp"
+#include "OptionsPane.hpp"
+
+#include <thread>
 
 const bool BUSY_LOOP = true;
 const int FPS_NORMAL = 50;
@@ -27,13 +30,16 @@ private:
     bool done;
     bool userQuit;
 
-    BatchDrawCall batch;
+    RenderBatch batch;
 
     /* Core Systems */
     Window m_MainWindow;
     BatchRenderer m_Renderer;
     ResourceManager m_Resource;
     Camera m_debugCamera;
+    OptionsPane m_Options;
+
+    /* State variables */
     bool debugMode;
     bool cursorMode;
 

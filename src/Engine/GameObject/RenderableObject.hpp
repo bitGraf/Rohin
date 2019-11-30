@@ -2,9 +2,10 @@
 #define RENDERABLE_OBJECT_H
 
 #include "GameObject.hpp"
-#include "Scene\Models.hpp"
+#include "Resource\TriangleMesh.hpp"
 #include "Scene\Material.hpp"
 
+/// A GameObject that has a model that gets drawn to the screen.
 class RenderableObject : public GameObject {
 public:
     RenderableObject();

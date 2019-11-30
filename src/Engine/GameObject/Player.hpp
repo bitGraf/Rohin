@@ -6,6 +6,7 @@
 #include "Input.hpp"
 #include "GLFW\glfw3.h"
 
+/// A Character Object that responds to player input.
 class PlayerObject : public CharacterObject {
 public:
     PlayerObject();
@@ -13,7 +14,7 @@ public:
     virtual void Update(double dt) override;
     virtual void PostLoad() override;
 
-    virtual void InputEvent(Message::Datatype key, Message::Datatype action);
+    virtual void InputEvent(Message::Datatype key, Message::Datatype action) override;
 
 protected:
     Camera * m_Camera;

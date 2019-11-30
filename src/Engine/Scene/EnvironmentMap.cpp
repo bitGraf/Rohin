@@ -24,7 +24,7 @@ void EnvironmentMap::loadHDRi(std::string filename) {
 
         stbi_image_free(data);
     } else {
-        std::cout << "Failed to load HDR image [" << filename << "." << std::endl;
+        Console::logMessage("Failed to load HDRi [" + filename + "]");
     }
 }
 
@@ -51,12 +51,13 @@ void EnvironmentMap::loadSkybox(std::string filename, std::string filetype) {
         unsigned char* data = stbi_load((SkyboxResourcePath + faces[i]).c_str(), &width, &height, &nrChannels, 0);
         if (data) {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            printf("Loaded texture: [%dx%d], %d channels\n", width, height, nrChannels);
+            Console::logMessage("Loaded texture: [" + std::to_string(width) +
+                "x" + std::to_string(height) + "], " + std::to_string(nrChannels) + " channels");
             stbi_image_free(data);
             SkyboxRes = width;
         }
         else {
-            std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+            Console::logMessage("Cubemap texture failed to load at path: " + faces[i]);
             stbi_image_free(data);
         }
     }
@@ -144,9 +145,7 @@ void EnvironmentMap::preCompute() {
     prefilter();
     computeBRDF();
     auto duration = std::chrono::system_clock::now() - startTime;
-
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() <<
-        " Milliseconds to precompute environment." << std::endl;
+    Console::logMessage("   " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count()) + " Milliseconds to precompute environment");
 }
 
 GLuint EnvironmentMap::getTexture() {

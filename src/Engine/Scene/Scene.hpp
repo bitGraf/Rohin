@@ -9,7 +9,7 @@
 #include "Message/CoreSystem.hpp"
 #include "Resource/ResourceManager.hpp"
 #include "GLFW\glfw3.h"
-#include "Render\BatchRender.hpp"
+#include "Render\RenderBatch.hpp"
 #include "Render\Shadowmap.hpp"
 
 #include "EnvironmentMap.hpp"
@@ -63,6 +63,6 @@ public:
 
 extern Scene* CurrentScene;
 Scene* GetScene();
-void getRenderBatch(BatchDrawCall* batch);
+void getRenderBatch(RenderBatch* batch);
 
 #endif
