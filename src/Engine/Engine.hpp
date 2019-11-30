@@ -17,11 +17,12 @@ class Engine {
 public:
     Engine();
 
-    void Start(handleMessageFnc f, int argc, char* argv[]);
+    void InitEngine(handleMessageFnc f, int argc, char* argv[]);
+    void Start();
+    void LoadLevel(std::string levelPath);
     void globalHandle(Message msg);
 
 private:
-    void InitEngine(handleMessageFnc f, int argc, char* argv[]);
     void End();
     void Update(double dt);
     void PreRender();

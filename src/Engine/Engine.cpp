@@ -7,9 +7,7 @@ Engine::Engine() {
     cursorMode = true; //visible cursor
 }
 
-void Engine::Start(handleMessageFnc f, int argc, char* argv[]) {
-    InitEngine(f, argc, argv);
-
+void Engine::Start() {
     auto frameStart = engine_clock::now();
     auto frameEnd = frameStart + Framerate{ 1 };
 
@@ -107,14 +105,16 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     Input::watchKey("key_numpad0", GLFW_KEY_KP_0);
     Input::watchKey("key_rctrl", GLFW_KEY_RIGHT_CONTROL);
 
+    m_debugCamera.Position = vec3(-4, 2, -4);
+    m_debugCamera.YawPitchRoll = vec3(-45, -30, 0);
+}
+
+void Engine::LoadLevel(std::string levelPath) {
     // Load level
     DataBlock<Scene> k = m_Resource.reserveDataBlocks<Scene>(1);
     m_scenes.push_back(k.data);
     CurrentScene = k.data;
-    CurrentScene->loadFromFile(&m_Resource, "Data/test.scene", false);
-
-    m_debugCamera.Position = vec3(-4, 2, -4);
-    m_debugCamera.YawPitchRoll = vec3(-45, -30, 0);
+    CurrentScene->loadFromFile(&m_Resource, levelPath, false);
 }
 
 void Engine::Update(double dt) {
@@ -125,7 +125,8 @@ void Engine::Update(double dt) {
     if (debugMode) {
         m_debugCamera.Update(dt); // Only update the DebugCamera
     } else {
-        GetScene()->update(dt); // Update the whole scene
+        if (GetScene())
+            GetScene()->update(dt); // Update the whole scene
     }
 }
 

@@ -132,45 +132,50 @@ void BatchRenderer::renderBatch(RenderBatch* batch) {
 
     beginProfile();
 
-    shadowPass(batch);
-    dur_shadowPass = profileRenderPass();
-
-    fb.bind();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //static const float black[] = { 0, 0, 0, 1 };
-    //static const float red[] = { -100, 0, -100, 1 };
-    //glClearBufferfv(GL_COLOR, 0, black);
-    //glClearBufferfv(GL_COLOR, 1, red);
-
-    staticPass(batch);
-    dur_staticPass = profileRenderPass();
-
-    dynamicPass(batch);
-    dur_dynamicPass = profileRenderPass();
-
-    skyboxPass(batch);
-    dur_skyboxPass = profileRenderPass();
-
-    fb.unbind();
-    fb_volume.bind();
-    glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    lightVolumePass(batch);
-    dur_lightVolumePass = profileRenderPass();
+    if (GetScene()) {
 
-    fb_volume.unbind();
-    fb_toneMap.bind();
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        shadowPass(batch);
+        dur_shadowPass = profileRenderPass();
 
-    toneMap(batch);
-    dur_toneMap = profileRenderPass();
+        fb.bind();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //static const float black[] = { 0, 0, 0, 1 };
+        //static const float red[] = { -100, 0, -100, 1 };
+        //glClearBufferfv(GL_COLOR, 0, black);
+        //glClearBufferfv(GL_COLOR, 1, red);
 
-    fb_toneMap.unbind();
+        staticPass(batch);
+        dur_staticPass = profileRenderPass();
 
-    gammaCorrect(batch);
-    dur_gammaCorrect = profileRenderPass();
+        dynamicPass(batch);
+        dur_dynamicPass = profileRenderPass();
+
+        skyboxPass(batch);
+        dur_skyboxPass = profileRenderPass();
+
+        fb.unbind();
+        fb_volume.bind();
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        lightVolumePass(batch);
+        dur_lightVolumePass = profileRenderPass();
+
+        fb_volume.unbind();
+        fb_toneMap.bind();
+        glClearColor(0, 0, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        toneMap(batch);
+        dur_toneMap = profileRenderPass();
+
+        fb_toneMap.unbind();
+
+        gammaCorrect(batch);
+        dur_gammaCorrect = profileRenderPass();
+    }
 
     endProfile();
 }
@@ -376,14 +381,13 @@ void BatchRenderer::renderDebug(
 
     sprintf(text, "Draw Calls: %-3d", batch->numCalls);
     debugFont.drawText(5, scr_height - 5, white, text, ALIGN_BOT_LEFT);
-
-    sprintf(text, "Position: (%.2f,%.2f,%.2f)", batch->camPos.x, batch->camPos.y, batch->camPos.z);
-    debugFont.drawText(scr_width - 5, scr_height - 5, white, text, ALIGN_BOT_RIGHT);
-    sprintf(text, "Orientation: (%.2f,%.2f,%.2f)", 0.0f, 0.0f, 0.0f);
-    debugFont.drawText(scr_width - 5, scr_height - 18, white, text, ALIGN_BOT_RIGHT);
-
     
-    if (true) {
+    if (GetScene()) {
+        sprintf(text, "Position: (%.2f,%.2f,%.2f)", batch->camPos.x, batch->camPos.y, batch->camPos.z);
+        debugFont.drawText(scr_width - 5, scr_height - 5, white, text, ALIGN_BOT_RIGHT);
+        sprintf(text, "Orientation: (%.2f,%.2f,%.2f)", 0.0f, 0.0f, 0.0f);
+        debugFont.drawText(scr_width - 5, scr_height - 18, white, text, ALIGN_BOT_RIGHT);
+
         glClear(GL_DEPTH_BUFFER_BIT);
         m_debugMeshShader.use();
         m_debugMeshShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);

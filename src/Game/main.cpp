@@ -5,7 +5,10 @@ void GlobalHandleMessage(Message msg);
 Engine g_engine;
 
 int main(int argc, char* argv[]) {
-    g_engine.Start(GlobalHandleMessage, argc, argv);
+    g_engine.InitEngine(GlobalHandleMessage, argc, argv);
+    g_engine.LoadLevel("Data/test.scene");
+
+    g_engine.Start();
 
     return 0;
 }
