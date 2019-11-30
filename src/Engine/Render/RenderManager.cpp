@@ -1,5 +1,5 @@
 #include "RenderManager.hpp"
-#include "Scene\SceneManager.hpp"
+#include "Scene\Scene.hpp"
 
 BatchRenderer::BatchRenderer() {
 

@@ -4,7 +4,7 @@
 #include "Console.hpp"
 #include "Window\Window.hpp"
 #include "Render\RenderManager.hpp"
-#include "Scene\SceneManager.hpp"
+#include "Scene\Scene.hpp"
 
 const bool BUSY_LOOP = true;
 const int FPS_NORMAL = 50;

@@ -1,5 +1,5 @@
 #include "Player.hpp"
-#include "Scene\SceneManager.hpp"
+#include "Scene\Scene.hpp"
 
 PlayerObject::PlayerObject() :
     CameraFollowPlayer(false)

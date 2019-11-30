@@ -5,7 +5,7 @@
 #include "Window\Window.hpp"
 #include "Render\Shader.hpp"
 #include "UIElement.hpp"
-#include "Scene\SceneManager.hpp"
+#include "Scene\Scene.hpp"
 
 class UIRenderer : public CoreSystem {
 public:

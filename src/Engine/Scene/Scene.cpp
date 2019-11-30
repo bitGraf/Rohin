@@ -1,4 +1,4 @@
-#include "SceneManager.hpp"
+#include "Scene.hpp"
 
 Scene* CurrentScene = nullptr;
 Scene* GetScene() { return CurrentScene; }
