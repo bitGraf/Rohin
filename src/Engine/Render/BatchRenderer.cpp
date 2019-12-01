@@ -297,8 +297,6 @@ void BatchRenderer::lightVolumePass(RenderBatch* batch) {
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, sm.depthMap);
 
-    //glBindTexture(GL_TEXTURE_2D, sm.depthMap);
-
     glDisable(GL_DEPTH_TEST);
     glBindVertexArray(fullscreenVAO);
     glDisable(GL_CULL_FACE);

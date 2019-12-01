@@ -6,7 +6,7 @@ in mat4 lightSpaceMatrix;
 
 struct DirectionalLight {
 	vec3 direction;
-	vec4 color;
+	vec3 color;
 	float strength;
 };
 

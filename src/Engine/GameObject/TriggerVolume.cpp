@@ -11,8 +11,8 @@ void TriggerVolume::Create(istringstream &iss, ResourceManager* resource) {
 
     Name = getNextString(iss);
     Position = getNextVec3(iss);
-    bounds_min = getNextVec3(iss); //vec3(-2, -.5, -2);
-    bounds_max = getNextVec3(iss); //vec3( 2,  4,  2);
+    bounds_min = getNextVec3(iss);
+    bounds_max = getNextVec3(iss);
     m_triggerObjectName = getNextString(iss);
 }
 

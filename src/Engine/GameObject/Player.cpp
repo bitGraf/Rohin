@@ -6,8 +6,8 @@ PlayerObject::PlayerObject() :
     CameraFollowPlayer(false),
     m_controlType(eControlType::Normal)
 {
-    speed = 5;
-    rotateSpeed = 90;
+    speed = 10;
+    rotateSpeed = 360;
     rotateToMovement = true;
     m_relativeSource = eRelativeSource::Camera;
 }
