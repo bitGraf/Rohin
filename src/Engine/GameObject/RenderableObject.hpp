@@ -20,6 +20,8 @@ public:
     meshRef getMesh() { return m_mesh; }
     materialRef getMaterial() { return m_material; }
 
+    bool noCull;
+
 protected:
     /* Mesh info */
     meshRef m_mesh;

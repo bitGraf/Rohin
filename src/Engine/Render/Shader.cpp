@@ -158,7 +158,7 @@ void Shader::setMaterial(const std::string &name, const Material* mat) const {
 void Shader::setLights(
     const DirLight* sun,
     PointLight *pointLights[4],
-    SpotLight *spotLights[4]) const {
+    SpotLight *spotLights[10]) const {
     using namespace math;
 
     /* Set Directional light */
@@ -181,7 +181,7 @@ void Shader::setLights(
     }
 
     /* Spot Lights */
-    for (int n = 0; n < 4; n++) {
+    for (int n = 0; n < 10; n++) {
         if (spotLights[n]) {
             setVec3("spotLights[" + std::to_string(n) +
                 "].position", spotLights[n]->Position);

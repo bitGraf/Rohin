@@ -6,7 +6,8 @@ RenderableObject::RenderableObject() :
     m_mesh(nullptr),
     m_material(nullptr),
     m_cullRadius(1),
-    mesh_Scale(1)
+    mesh_Scale(1),
+    noCull(true)
 {
     m_type = GameObjectType::Renderable;
 }

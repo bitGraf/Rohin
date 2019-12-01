@@ -32,7 +32,7 @@ struct RenderBatch {
 
     DirLight *sun;
     PointLight *pointLights[4] = { nullptr };
-    SpotLight *spotLights[4] = { nullptr };
+    SpotLight *spotLights[10] = { nullptr };
     EnvironmentMap (*env);
 
     DrawCall calls[MAX_CALLS];

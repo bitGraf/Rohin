@@ -36,11 +36,9 @@ const char* SpotLight::ObjectTypeString() {
 void DirLight::Create(istringstream &iss, ResourceManager* resource) {
     Color = getNextVec3(iss);
     Strength = getNextFloat(iss);
-    float distance = getNextFloat(iss);
+    Position = getNextVec3(iss);
 
     Direction = getNextVec3(iss).get_unit().normalize();
-
-    Position = -Direction*distance;
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid), Name.c_str());
 }

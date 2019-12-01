@@ -51,6 +51,8 @@ def add_object(self, context):
     obj['max_x'] = b[0]
     obj['max_y'] = b[1]
     obj['max_z'] = b[2]
+    
+    obj['Target'] = '_target_name_'
 
 
 class OBJECT_OT_add_object(Operator, AddObjectHelper):

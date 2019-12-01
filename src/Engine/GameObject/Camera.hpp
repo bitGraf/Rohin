@@ -20,14 +20,14 @@ public:
 
     Camera& lookAt(vec3 target, bool UpdateMatrix = false);
     bool withinFrustum(vec3 location, float radius);
-    void set(float fov, float z_near, float z_far);
+    void set(float fovVert, float z_near, float z_far);
 
     mat4 viewMatrix;
     mat4 projectionMatrix;
     bool freeFlyMode;
 
 protected:
-    float m_fov;
+    float m_fovVert;
     float m_zNear, m_zFar;
 
     using Plane = math::vec4;

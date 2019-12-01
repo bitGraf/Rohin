@@ -2,7 +2,7 @@
 const char* Camera::_obj_type_CameraObject = "Camera";
 
 Camera::Camera() :
-    m_fov(75),
+    m_fovVert(75),
     m_zNear(.01),
     m_zFar(100),
     freeFlyMode(false)
@@ -10,8 +10,8 @@ Camera::Camera() :
     m_type = GameObjectType::Camera;
 }
 
-void Camera::set(float fov, float z_near, float z_far) {
-    m_fov = fov;
+void Camera::set(float fovVert, float z_near, float z_far) {
+    m_fovVert = fovVert; //horizontal fov
     m_zNear = z_near;
     m_zFar = z_far;
 }
@@ -19,11 +19,16 @@ void Camera::set(float fov, float z_near, float z_far) {
 void Camera::Create(istringstream &iss, ResourceManager* resource) {
     GameObject::Create(iss, resource);
 
-    auto fov = getNextFloat(iss);
+    auto fovHoriz = getNextFloat(iss);
     auto ne = getNextFloat(iss);
     auto fa = getNextFloat(iss);
 
-    set(fov, ne, fa);
+    //h = 2 * atan(AR*tan(v/2))
+    //tan(h/2) = AR*tan(v/2)
+    //v = 2 * atan(tan(h/2)/AR)
+    f32 fovVert = 2 * atan(tan(fovHoriz * d2r/2.0) / (800.0/600.0)) * r2d;
+
+    set(fovVert, ne, fa);
 }
 
 const char* Camera::ObjectTypeString() {
@@ -33,7 +38,7 @@ const char* Camera::ObjectTypeString() {
 void Camera::updateViewFrustum(f32 width, f32 height) {
     updateViewMatrix();
 
-    f32 tanHalf = tan(m_fov * d2r / 2);
+    f32 tanHalf = tan(m_fovVert * d2r / 2);
     f32 m_aspectRatio = width / height;
 
     projectionMatrix = mat4(
@@ -43,13 +48,13 @@ void Camera::updateViewFrustum(f32 width, f32 height) {
         vec4(0, 0, -(2 * m_zFar*m_zNear) / (m_zFar - m_zNear), 0)
     ) * mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1));
 
-    scalar vertFOV = m_fov * d2r; //radians
-    scalar horizFOV = 2 * atan(m_aspectRatio*tanHalf); //radians
+    f32 vertFOV = m_fovVert * d2r; //radians
+    f32 horizFOV = 2 * atan(m_aspectRatio*tanHalf); //radians
 
-    scalar s_h = sin(horizFOV / 2);
-    scalar c_h = cos(horizFOV / 2);
-    scalar s_v = sin(vertFOV / 2);
-    scalar c_v = cos(vertFOV / 2);
+    f32 s_h = sin(horizFOV / 2);
+    f32 c_h = cos(horizFOV / 2);
+    f32 s_v = sin(vertFOV / 2);
+    f32 c_v = cos(vertFOV / 2);
 
     mat4 vv = mat4(viewMatrix.row1(), viewMatrix.row2(), viewMatrix.row3(), viewMatrix.row4());
 
@@ -185,7 +190,7 @@ void Camera::Update(double dt) {
         vel *= speed;
         yawChange *= yawRate;
         pitchChange *= pitchRate;
-        rollChange *= rollRate;
+        rollChange *= rollRate*dt;
 
         Position += vel * dt;
         YawPitchRoll.x += yawChange;

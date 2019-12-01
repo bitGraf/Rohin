@@ -8,7 +8,10 @@ Shadowmap::Shadowmap() {
 
 void Shadowmap::initShadows() {
     using namespace math;
-    lightProjection.orthoProjection(-10, 10, -10, 10, 1, 75);
+    f32 xSize = 100;
+    f32 ySize = 100;
+    f32 zSize = 150;
+    lightProjection.orthoProjection(-xSize, xSize, -ySize, ySize, 1, zSize);
     //lightProjection *= mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1));
 }
 

@@ -60,7 +60,12 @@ class RohinLevelExport(bpy.types.Operator):
             for obj in D.collections['Static'].objects:
                 mesh = obj.data
 
-                self.writeMesh(f, 'RENDERABLE', obj, mesh.copy())
+                if (self.getProp(obj, 'Player') > 0.5):
+                    self.writeMesh(f, 'PLAYER', obj, mesh)
+                elif (self.getProp(obj, 'AICharacter') > 0.5):
+                    self.writeMesh(f, 'AICHARACTER', obj, mesh)
+                else:
+                    self.writeMesh(f, 'RENDERABLE', obj, mesh)
 
 
 
@@ -84,11 +89,19 @@ class RohinLevelExport(bpy.types.Operator):
         wm = obj.matrix_world
         
         mat = conv @ wm
-        forward = Vector((-mat[0][2],-mat[1][2],-mat[2][2])).normalized()
-        right   = Vector((mat[0][0],mat[1][0],mat[2][0])).normalized()
-        up      = Vector((mat[0][1],mat[1][1],mat[2][1])).normalized()
+        up = Vector((mat[0][2],mat[1][2],mat[2][2])).normalized()
+        right   = Vector((mat[0][1],mat[1][1],mat[2][1])).normalized()
+        forward      = Vector((mat[0][0],mat[1][0],mat[2][0])).normalized()
+        
+        print('Mesh: %s\n' % obj.name_full)
+        print(forward)
+        print(up)
+        print(right)
         
         YawPitchRoll = self.calcYawPitchRoll(forward, right, up)
+        print('Yaw: %.1f' % YawPitchRoll[0])
+        print('Pitch: %.1f' % YawPitchRoll[1])
+        print('Roll: %.1f' % YawPitchRoll[2])
         
         self.writeVec3_nomod(fid, YawPitchRoll)
 
@@ -99,7 +112,7 @@ class RohinLevelExport(bpy.types.Operator):
         self.writeStr(fid, '')
         
         #MeshName
-        self.writeStr(fid, obj.name_full)
+        self.writeStr(fid, mesh.name_full)
         
         #Material
         self.writeStr(fid, mesh.materials[0].name_full)
@@ -173,9 +186,11 @@ class RohinLevelExport(bpy.types.Operator):
     def writeDirLight(self, fid, obj, light):
         fid.write('ENTITY DIR ')
         
+        energyScale = 1.5
+        
         self.writeVec4(fid, light.color)
-        fid.write('"%.2f" ' % (light.energy)) #strength
-        fid.write('"%.2f" ' % (obj.location.length))
+        fid.write('"%.2f" ' % (light.energy * energyScale)) #strength
+        self.writeVec3(fid, obj.location) #sun position
 
         mat = obj.matrix_world
         z = [-mat[0][2],-mat[1][2],-mat[2][2]]
@@ -188,8 +203,17 @@ class RohinLevelExport(bpy.types.Operator):
         fid.write('ENTITY SPOT ')
         
         self.writeVec4(fid, light.color)
-        fid.write('"%.2f" ' % (light.energy)) #strength
+        energyScale = 14
+        fid.write('"%.2f" ' % (light.energy/energyScale)) #strength
         self.writeVec3(fid, obj.location)
+        
+        mat = obj.matrix_world
+        z = [-mat[0][2],-mat[1][2],-mat[2][2]]
+        self.writeVec3(fid, z) #direction
+        
+        outer_cutoff = light.spot_size * 180/math.pi / 2
+        inner_cutoff = math.cos(light.spot_blend*math.pi/2) * outer_cutoff
+        fid.write('"%.2f %.2f" ' % (inner_cutoff, outer_cutoff)) # angle cutoff values
         
         fid.write('\n')
         
@@ -198,10 +222,7 @@ class RohinLevelExport(bpy.types.Operator):
         
         self.writeVec4(fid, light.color)
         fid.write('"%.2f" ' % (light.energy)) #strength
-
-        mat = obj.matrix_world
-        z = [-mat[0][2],-mat[1][2],-mat[2][2]]
-        self.writeVec3(fid, z)
+        self.writeVec3(fid, obj.location)
         
         fid.write('\n')
     
@@ -217,7 +238,7 @@ class RohinLevelExport(bpy.types.Operator):
         b_min = [b_min[0], b_max[1], b_min[2]]
         b_max = [b_max[0], tmp,      b_max[2]]
         
-        targ = 'YaBoy'
+        targ = obj['Target']
                 
         fid.write('%s %s ' % ('ENTITY', 'VOLUME'))
         

@@ -224,7 +224,7 @@ void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss
 
 
 
-void getRenderBatch(RenderBatch* batch) {
+void getRenderBatch(RenderBatch* batch, bool useCull) {
     if (batch == nullptr)
         return;
 
@@ -245,7 +245,7 @@ void getRenderBatch(RenderBatch* batch) {
             mat4(.5, .5, .5, 1));
 
         mat4 lightView;
-        lightView.lookAt(CurrentScene->objectsByType.DirLights[0]->Position, vec3(), vec3(0, 1, 0));
+        lightView.lookAt(CurrentScene->objectsByType.DirLights[0]->Position, CurrentScene->objectsByType.DirLights[0]->Position + CurrentScene->objectsByType.DirLights[0]->Direction, vec3(0, 1, 0));
 
         batch->sunViewProjectionMatrix =
             Shadowmap::lightProjection *
@@ -254,7 +254,7 @@ void getRenderBatch(RenderBatch* batch) {
         // Set lights
         batch->sun = CurrentScene->objectsByType.DirLights[0];
         int numPoints = min(4, (int)CurrentScene->objectsByType.PointLights.size());
-        int numSpots = min(4, (int)CurrentScene->objectsByType.SpotLights.size());
+        int numSpots = min(10, (int)CurrentScene->objectsByType.SpotLights.size());
 
         for (int n = 0; n < 4; n++) {
             if (n < numPoints)
@@ -262,7 +262,7 @@ void getRenderBatch(RenderBatch* batch) {
             else
                 batch->pointLights[n] = nullptr;
         }
-        for (int n = 0; n < 4; n++) {
+        for (int n = 0; n < 10; n++) {
             if (n < numSpots)
                 batch->spotLights[n] = CurrentScene->objectsByType.SpotLights[n];
             else
@@ -279,14 +279,16 @@ void getRenderBatch(RenderBatch* batch) {
                 break;
             auto ent = CurrentScene->objectsByType.Renderable[n];
 
-            if (camera->withinFrustum(ent->Position, 0.25)) { // Check to see if the entity is in the camera frustum
-                mat4 modelMatrix = ent->getModelTransform();
+            if (ent->getMesh()) {
+                if (!useCull || ent->noCull || camera->withinFrustum(ent->Position, 0.25)) { // Check to see if the entity is in the camera frustum
+                    mat4 modelMatrix = ent->getModelTransform();
 
-                batch->calls[batch->numCalls].modelMatrix = modelMatrix;
-                batch->calls[batch->numCalls].numVerts = ent->getMesh()->numFaces * 3;
-                batch->calls[batch->numCalls].VAO = ent->getMesh()->VAO;
-                batch->calls[batch->numCalls].mat = ent->getMaterial();
-                batch->numCalls++;
+                    batch->calls[batch->numCalls].modelMatrix = modelMatrix;
+                    batch->calls[batch->numCalls].numVerts = ent->getMesh()->numFaces * 3;
+                    batch->calls[batch->numCalls].VAO = ent->getMesh()->VAO;
+                    batch->calls[batch->numCalls].mat = ent->getMaterial();
+                    batch->numCalls++;
+                }
             }
         }
     }

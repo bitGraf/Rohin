@@ -132,7 +132,7 @@ void Engine::Update(double dt) {
 
 void Engine::PreRender() {
     // Interrogate the SceneManager for a list of draw calls to make this frame.
-    getRenderBatch(&batch);
+    getRenderBatch(&batch, !debugMode);
 
     if (debugMode) {
         // inject debug camera values
@@ -199,7 +199,7 @@ void Engine::globalHandle(Message msg) {
         if (key == GLFW_KEY_BACKSLASH && action == GLFW_PRESS) {
             Console::logMessage("Reloading level");
 
-            //m_currentScene->loadFromFile(&g_ResourceManager, "", false);
+            LoadLevel("Data/outFile.scene");
         }
 
         if (key == GLFW_KEY_R && action == GLFW_PRESS) {

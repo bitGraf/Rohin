@@ -44,7 +44,7 @@ struct PBRMaterial {
 };
 
 const int NUMPOINTLIGHTS = 4;
-const int NUMSPOTLIGHTS = 4;
+const int NUMSPOTLIGHTS = 10;
 
 uniform DirectionalLight sun;
 uniform PointLight pointLights[NUMPOINTLIGHTS];
@@ -135,7 +135,7 @@ void main()
 
     vec3 s = vec3(ShadowCalculation(pass_fragPosLightSpace, N, sun.direction));
     
-    FragColor = vec4(color, 1);
+    FragColor = vec4(Lo, 1);
 
     //FragColor = vec4(.2, .6, .5, 1);
 }

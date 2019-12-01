@@ -33,6 +33,7 @@ const float G_SCATTERING = 0.1;
 const float PI = 3.14159265359;
 
 void main() {
+    /*
     vec3 worldPos = texture(positionMap, tex_coord).rgb;
     vec3 startPosition = worldPos;
 
@@ -69,7 +70,10 @@ void main() {
 
     vec3 color_in = texture(tex, tex_coord).rgb;
     vec3 color_out = color_in + accumFog;
+    FragColor = vec4(color_out, 1);
+    */
 
+    vec3 color_in = texture(tex, tex_coord).rgb;
     FragColor = vec4(color_in, 1);
 }
 

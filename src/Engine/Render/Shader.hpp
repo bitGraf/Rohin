@@ -38,7 +38,7 @@ public:
     void setLights(
         const DirLight* sun,
         PointLight *pointLights[4],
-        SpotLight *spotLights[4]) const;
+        SpotLight *spotLights[10]) const;
 
     void use();
 
