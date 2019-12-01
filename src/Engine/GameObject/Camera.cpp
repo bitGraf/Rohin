@@ -19,9 +19,11 @@ void Camera::set(float fov, float z_near, float z_far) {
 void Camera::Create(istringstream &iss, ResourceManager* resource) {
     GameObject::Create(iss, resource);
 
-    set(getNextFloat(iss),
-        getNextFloat(iss),
-        getNextFloat(iss));
+    auto fov = getNextFloat(iss);
+    auto ne = getNextFloat(iss);
+    auto fa = getNextFloat(iss);
+
+    set(fov, ne, fa);
 }
 
 const char* Camera::ObjectTypeString() {

@@ -92,7 +92,8 @@ void ResourceManager::loadModelFromFile(std::string path, bool binary) {
             std::vector<double> nodePosition = currentNode.translation;
             int meshID = currentNode.mesh;
 
-            processMesh(&root, meshID);
+            if (meshID >= 0)
+                processMesh(&root, meshID);
         }
     }
 
