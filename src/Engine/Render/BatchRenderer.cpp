@@ -348,37 +348,23 @@ void BatchRenderer::renderDebug(
     long long lastFrame,
     bool debugMode) {
 
+    profileStart = _clock::now();
+
     vec4 white(1, 1, 1, 1);
     char text[128];
+    long long scale = 1LL;
+    int y = -13;
+
     sprintf(text, "FPS: %-2.1lf [%lld us]", 1000000.0/static_cast<double>(frameCount), lastFrame);
     debugFont.drawText(scr_width - 5, 5, white, text, ALIGN_TOP_RIGHT);
     sprintf(text, "FPS Lock: %s", 
         g_options.limitFramerate ? (g_options.highFramerate ? "250" : "50") : "NONE");
     debugFont.drawText(scr_width - 5, 23, white, text, ALIGN_TOP_RIGHT);
 
-    long long scale = 1LL;
-    int y = -13;
-    sprintf(text, "Render - - - %-3lld us (%-3lld us avg.)", 
-        dur_fullRenderPass/ scale,
+    sprintf(text, "Render - - - %-3lld us (%-3lld us avg.)",
+        dur_fullRenderPass / scale,
         static_cast<long long>(avgRenderPass.getCurrentAverage()) / scale);
-    debugFont.drawText(5, y+=18, white, text, ALIGN_TOP_LEFT);
-    sprintf(text, " Shadow- - - %-3lld us", dur_shadowPass / scale);
     debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
-    sprintf(text, " Static- - - %-3lld us", dur_staticPass / scale);
-    debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
-    sprintf(text, " Dynamic - - %-3lld us", dur_dynamicPass / scale);
-    debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
-    sprintf(text, " Skybox- - - %-3lld us", dur_skyboxPass / scale);
-    debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
-    sprintf(text, " Volume- - - %-3lld us", dur_lightVolumePass / scale);
-    debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
-    sprintf(text, " ToneMap - - %-3lld us", dur_toneMap / scale);
-    debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
-    sprintf(text, " Gamma - - - %-3lld us", dur_gammaCorrect / scale);
-    debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
-
-    sprintf(text, "Draw Calls: %-3d", batch->numCalls);
-    debugFont.drawText(5, scr_height - 5, white, text, ALIGN_BOT_LEFT);
 
     sprintf(text, "[T] Relative Movement: %s", static_cast<CharacterObject*>(GetScene()->getObjectByName("YaBoy"))->GetRelativeMovementType());
     debugFont.drawText(5, scr_height - 18, white, text, ALIGN_BOT_LEFT);
@@ -389,8 +375,25 @@ void BatchRenderer::renderDebug(
     debugFont.drawText(scr_width - 5, scr_height - 5, white, text, ALIGN_BOT_RIGHT);
     sprintf(text, "MoveRight: %.2f", Input::getAxisState("MoveRight"));
     debugFont.drawText(scr_width - 5, scr_height - 18, white, text, ALIGN_BOT_RIGHT);
-    
-    if (GetScene()){// && debugMode) {
+
+    if (GetScene() && (true || debugMode)) {
+        sprintf(text, " Shadow- - - %-3lld us", dur_shadowPass / scale);
+        debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
+        sprintf(text, " Static- - - %-3lld us", dur_staticPass / scale);
+        debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
+        sprintf(text, " Dynamic - - %-3lld us", dur_dynamicPass / scale);
+        debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
+        sprintf(text, " Skybox- - - %-3lld us", dur_skyboxPass / scale);
+        debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
+        sprintf(text, " Volume- - - %-3lld us", dur_lightVolumePass / scale);
+        debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
+        sprintf(text, " ToneMap - - %-3lld us", dur_toneMap / scale);
+        debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
+        sprintf(text, " Gamma - - - %-3lld us", dur_gammaCorrect / scale);
+        debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
+
+        sprintf(text, "Draw Calls: %-3d", batch->numCalls);
+        debugFont.drawText(5, scr_height - 5, white, text, ALIGN_BOT_LEFT);
 
         glClear(GL_DEPTH_BUFFER_BIT);
         m_debugMeshShader.use();
@@ -442,11 +445,38 @@ void BatchRenderer::renderDebug(
             vec3 pos = k->Position;
             drawAABBB(pos, k->bounds_min, k->bounds_max, k->Inside() ? vec3 (1,.2,.2) : vec3(1));
         }
+        for (auto k : GetScene()->objectsByType.DirLights) {
+            vec3 pos = k->Position;
+            vec3 dir = k->Direction;
+            drawLine(pos, pos + dir * 10, k->Color, k->Color);
+        }
+        for (auto k : GetScene()->objectsByType.SpotLights) {
+            vec3 pos = k->Position;
+            vec3 dir = k->Direction;
+            drawLine(pos, pos + dir * 3, k->Color, k->Color);
+        }
+        for (auto k : GetScene()->objectsByType.PointLights) {
+            vec3 pos = k->Position;
+            const scalar pointLightLength = .3;
+            drawLine(pos, pos + vec3( 1,  1,  1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3( 1,  1, -1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(-1,  1,  1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(-1,  1, -1) *pointLightLength, k->Color, k->Color);
+
+            drawLine(pos, pos + vec3( 1, -1,  1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3( 1, -1, -1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(-1, -1,  1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(-1, -1, -1) *pointLightLength, k->Color, k->Color);
+        }
 
         glBindVertexArray(0);
 
         glEnable(GL_DEPTH_TEST);
     }
+    sprintf(text, "Debug- - - - %-3lld us", dur_debug / scale);
+    debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
+
+    dur_debug = profileRenderPass();
 }
 
 void BatchRenderer::drawLine(vec3 A, vec3 B, vec3 colorA, vec3 colorB) {

@@ -56,6 +56,7 @@ private:
     _dur dur_lightVolumePass;
     _dur dur_toneMap;
     _dur dur_gammaCorrect;
+    _dur dur_debug;
 
     void beginProfile();
     _dur profileRenderPass();

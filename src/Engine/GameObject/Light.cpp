@@ -20,7 +20,7 @@ void SpotLight::Create(istringstream &iss, ResourceManager* resource) {
     Strength = getNextFloat(iss);
     Position = getNextVec3(iss);
 
-    Direction = getNextVec3(iss);
+    Direction = getNextVec3(iss).normalize();
 
     vec2 cutoff = getNextVec2(iss);
     inner_cutoff = cos(cutoff.x * d2r);
@@ -38,7 +38,7 @@ void DirLight::Create(istringstream &iss, ResourceManager* resource) {
     Strength = getNextFloat(iss);
     float distance = getNextFloat(iss);
 
-    Direction = getNextVec3(iss).get_unit();
+    Direction = getNextVec3(iss).get_unit().normalize();
 
     Position = -Direction*distance;
 
