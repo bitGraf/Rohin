@@ -111,6 +111,15 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
 
                 go = k.data;
             }
+            else if (entType.compare("AICHARACTER") == 0) {
+                auto k = resource->reserveDataBlocks<AICharacter>(1);
+
+                k.data->Create(iss, resource);
+                //objectsByType.Players.push_back(k.data);
+                objectsByType.Renderable.push_back(k.data);
+
+                go = k.data;
+            }
             else if (recognizeCustomEntity(entType)) {
                 processCustomEntityLoad(entType, iss, resource);
             } 

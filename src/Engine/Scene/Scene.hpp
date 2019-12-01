@@ -18,6 +18,7 @@
 #include "GameObject\Player.hpp"
 #include "GameObject\Camera.hpp"
 #include "GameObject\Light.hpp"
+#include "GameObject\AICharacter.hpp"
 
 const int MAX_GAME_OBJECTS = 100;
 

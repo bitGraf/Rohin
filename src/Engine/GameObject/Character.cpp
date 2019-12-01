@@ -17,10 +17,10 @@ void CharacterObject::Update(double dt) {
 
         Position += Velocity * dt;
 
-        if (rotateToMovement) {
+        if (m_relativeSource != eRelativeSource::Character && rotateToMovement) {
             vec3 direction = Velocity.get_unit();
 
-            mesh_YawPitchRoll.x = atan2(-direction.z, direction.x) * r2d;
+            YawPitchRoll.x = atan2(-direction.z, direction.x) * r2d;
         }
 
         Velocity = vec3();

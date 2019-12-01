@@ -392,7 +392,7 @@ void BatchRenderer::renderDebug(
     sprintf(text, "MoveRight: %.2f", Input::getAxisState("MoveRight"));
     debugFont.drawText(scr_width - 5, scr_height - 18, white, text, ALIGN_BOT_RIGHT);
     
-    if (GetScene() && debugMode) {
+    if (GetScene()){// && debugMode) {
 
         glClear(GL_DEPTH_BUFFER_BIT);
         m_debugMeshShader.use();
@@ -405,7 +405,7 @@ void BatchRenderer::renderDebug(
         m_debugMeshShader.setVec3("camPos", batch->viewPos); // use viewPos so camera model has correct specular
 
         glBindVertexArray(cameraMesh->VAO);
-        //if (debugMode)
+        if (debugMode)
             glDrawElements(GL_TRIANGLES, cameraMesh->numFaces * 3, GL_UNSIGNED_SHORT, 0);
         glBindVertexArray(0);
 
