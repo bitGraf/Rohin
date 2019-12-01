@@ -438,6 +438,13 @@ void BatchRenderer::renderDebug(
             }
         }
 
+        glDisable(GL_DEPTH_TEST);
+        m_debugLineShader.use();
+        for (auto k : GetScene()->objectsByType.Volumes) {
+            vec3 pos = k->Position;
+            drawAABBB(pos, k->bounds_min, k->bounds_max, k->Inside() ? vec3 (1,.2,.2) : vec3(1));
+        }
+
         glBindVertexArray(0);
 
         glEnable(GL_DEPTH_TEST);
@@ -452,16 +459,39 @@ void BatchRenderer::drawLine(vec3 A, vec3 B, vec3 colorA, vec3 colorB) {
 
     glBindVertexArray(debugLineVAO);
     glDrawArrays(GL_LINES, 0, 2);
+}
 
-    /*
-    uniform mat4 viewMatrix;
-    uniform mat4 projectionMatrix;
+void BatchRenderer::drawAABBB(vec3 center, vec3 min, vec3 max, vec3 color) {
+    vec3 a = center + min;
+    vec3 b = center + max;
 
-    uniform vec3 vertexA;
-    uniform vec3 vertexB;
-    uniform vec3 colorA;
-    uniform vec3 colorB;
-    */
+    vec3 v0 = vec3(a.x, a.y, a.z);
+    vec3 v1 = vec3(a.x, a.y, b.z);
+    vec3 v2 = vec3(b.x, a.y, b.z);
+    vec3 v3 = vec3(b.x, a.y, a.z);
+
+    vec3 v4 = vec3(a.x, b.y, a.z);
+    vec3 v5 = vec3(a.x, b.y, b.z);
+    vec3 v6 = vec3(b.x, b.y, b.z);
+    vec3 v7 = vec3(b.x, b.y, a.z);
+
+    // Bottom
+    drawLine(v0, v1, color, color);
+    drawLine(v1, v2, color, color);
+    drawLine(v2, v3, color, color);
+    drawLine(v3, v0, color, color);
+
+    // Top
+    drawLine(v4, v5, color, color);
+    drawLine(v5, v6, color, color);
+    drawLine(v6, v7, color, color);
+    drawLine(v7, v4, color, color);
+
+    // Vertical Lines
+    drawLine(v0, v4, color, color);
+    drawLine(v1, v5, color, color);
+    drawLine(v2, v6, color, color);
+    drawLine(v3, v7, color, color);
 }
 
 void BatchRenderer::loadResources(ResourceManager* resource) {

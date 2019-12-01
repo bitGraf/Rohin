@@ -1,4 +1,5 @@
 #include "GameObject.hpp"
+#include "Scene\Scene.hpp"
 
 const char* GameObject::_obj_type_GameObject = "GameObject";
 
@@ -21,7 +22,8 @@ void GameObject::Create(istringstream &iss, ResourceManager* resource) {
 
     string parentName = getNextString(iss);
     if (parentName.compare("") != 0) {
-        //m_parent = GetScene()->findGameObject(parentName);
+        /// Move this to PostLoad()
+        //m_parent = GetScene()->getObjectByName(parentName);
     }
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid) , Name.c_str());

@@ -7,10 +7,10 @@ class AICharacter : public CharacterObject {
 public:
     AICharacter();
 
-    void Create(istringstream &iss, ResourceManager* resource) override;
-    void PostLoad() override;
-    void Update(double dt) override;
-    void Destroy() override;
+    virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual void PostLoad() override;
+    virtual void Update(double dt) override;
+    virtual void Destroy() override;
     virtual void InputEvent(Message::Datatype key, Message::Datatype action) override;
 
     const char* ObjectTypeString() override;

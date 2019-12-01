@@ -97,6 +97,13 @@ Camera& Camera::lookAt(vec3 target, bool updateMatrix) {
     YawPitchRoll.x = -atan2(forward.z, forward.x) * r2d;
     YawPitchRoll.z = -atan2(right.y, up.y) * r2d;
 
+    if (YawPitchRoll.y > 80) {
+        YawPitchRoll.y = 80;
+    }
+    if (YawPitchRoll.y < -80) {
+        YawPitchRoll.y = -80;
+    }
+
     if (updateMatrix) updateViewMatrix();
 
     return *this;

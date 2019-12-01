@@ -120,6 +120,14 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
 
                 go = k.data;
             }
+            else if (entType.compare("VOLUME") == 0) {
+                auto k = resource->reserveDataBlocks<TriggerVolume>(1);
+
+                k.data->Create(iss, resource);
+                objectsByType.Volumes.push_back(k.data);
+
+                go = k.data;
+            }
             else if (recognizeCustomEntity(entType)) {
                 processCustomEntityLoad(entType, iss, resource);
             } 

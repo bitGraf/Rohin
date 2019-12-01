@@ -19,6 +19,7 @@
 #include "GameObject\Camera.hpp"
 #include "GameObject\Light.hpp"
 #include "GameObject\AICharacter.hpp"
+#include "GameObject\TriggerVolume.hpp"
 
 const int MAX_GAME_OBJECTS = 100;
 
@@ -46,6 +47,8 @@ public:
             PointLights.clear();
             SpotLights.clear();
             DirLights.clear();
+            Players.clear();
+            Volumes.clear();
         }
 
         std::vector<RenderableObject*> Renderable;
@@ -55,6 +58,7 @@ public:
         std::vector<DirLight*> DirLights;
         //std::vector<CharacterObject*> Characters;
         std::vector<PlayerObject*> Players;
+        std::vector<TriggerVolume*> Volumes;
     };
     GameObjectLists_t objectsByType;
 
