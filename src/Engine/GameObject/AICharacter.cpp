@@ -1,5 +1,7 @@
 #include "AICharacter.hpp"
 #include "Scene\Scene.hpp"
+
+// Begin General AI Character Class
 const char* AICharacter::_obj_type_AICharacter = "AICharacter";
 
 AICharacter::AICharacter() {
@@ -37,10 +39,48 @@ void AICharacter::PostLoad() {
     m_playerRef = static_cast<CharacterObject*>(GetScene()->getObjectByName("YaBoy"));
 }
 
+
 void AICharacter::InputEvent(Message::Datatype key, Message::Datatype action) {
 
 }
 
 const char* AICharacter::ObjectTypeString() {
     return _obj_type_AICharacter;
+}
+
+// Begin GOAP Character Class Info
+const char* GoapCharacter::_obj_type_GoapCharacter = "GoapCharacter";
+
+GoapCharacter::GoapCharacter() {
+	m_relativeSource = eRelativeSource::Character;
+	speed = 1.0;
+}
+
+void GoapCharacter::Create(istringstream &iss, ResourceManager* resource) {
+	CharacterObject::Create(iss, resource);
+}
+
+void GoapCharacter::PostLoad() {
+	m_playerRef = static_cast<CharacterObject*>(GetScene()->getObjectByName("YaBoy"));
+	// Here we will load in available actions, along with pre- and post-conditions
+
+	// We must also check the world state for our conditions
+
+	// Describe initial desired world sate
+}
+
+void GoapCharacter::Update(double dt) {
+
+}
+
+void GoapCharacter::Destroy() {
+
+}
+
+void GoapCharacter::InputEvent(Message::Datatype key, Message::Datatype action) {
+	
+}
+
+const char* GoapCharacter::ObjectTypeString() {
+	return _obj_type_GoapCharacter;
 }

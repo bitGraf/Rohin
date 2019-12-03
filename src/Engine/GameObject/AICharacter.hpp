@@ -22,4 +22,23 @@ private:
     static const char* _obj_type_AICharacter;
 };
 
+class GoapCharacter : public CharacterObject {
+public:
+	GoapCharacter();
+
+	virtual void Create(istringstream &iss, ResourceManager* resource) override;
+	virtual void PostLoad() override;
+	virtual void Update(double dt) override;
+	virtual void Destroy() override;
+	virtual void InputEvent(Message::Datatype key, Message::Datatype action) override;
+
+	const char* ObjectTypeString() override;
+	
+protected:
+	CharacterObject * m_playerRef;
+
+private: 
+	static const char* _obj_type_GoapCharacter;
+};
+
 #endif
