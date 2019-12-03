@@ -17,7 +17,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
     u32 numPointLightsLoaded = 0;
 
     //m_masterList = resource->reserveDataBlocks<GameObject>(MAX_GAME_OBJECTS);
-    m_masterList.clear();
+    m_masterMap.clear();
     objectsByType.clear();
 
     std::string line;
@@ -137,7 +137,8 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
             }
 
             if (go) {
-                m_masterList.push_back(go);
+                // Insert the created GameObject into the hash map, keyed by its unique ID
+                m_masterMap.insert(std::unordered_map<UID_t, GameObject*>::value_type(go->getID(), go));
             }
         } 
         else if (type.compare("SKYBOX") == 0) {
@@ -170,32 +171,49 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
     infile.close();
 
     /* Run Post-Load functions now that everything is loaded */
-    for (int n = 0; n < m_masterList.size(); n++) {
-        m_masterList[n]->PostLoad();
+    for (auto k : m_masterMap) {
+        k.second->PostLoad();
     }
 }
 
 
 void Scene::update(double dt) {
-    for (int n = 0; n < m_masterList.size(); n++) {
-        m_masterList[n]->Update(dt);
+    // TODO : Find better way than iterating through a hash map every frame
+    for (auto k : m_masterMap) {
+        k.second->Update(dt);
     }
 }
 
 GameObject* Scene::getObjectByName(const std::string objectName) const {
-    for (int n = 0; n < m_masterList.size(); n++) {
-        if (m_masterList[n]->Name.compare(objectName) == 0) {
-            return m_masterList[n];
+    for (auto k : m_masterMap) {
+        if (k.second->Name.compare(objectName) == 0) {
+            return k.second;
         }
     }
 }
 
 GameObject* Scene::getObjectByID(const UID_t id) const {
-    for (int n = 0; n < m_masterList.size(); n++) {
-        if (m_masterList[n]->m_uid == id) {
-            return m_masterList[n];
+    if (id) {
+        auto it = m_masterMap.find(id);
+        if (it != m_masterMap.end()) {
+            return it->second;
+        }
+        else {
+            return nullptr;
         }
     }
+    else {
+        return nullptr;
+    }
+}
+
+UID_t Scene::getObjectIDByName(const std::string objectName) const {
+    for (auto k : m_masterMap) {
+        if (k.second->Name.compare(objectName) == 0) {
+            return k.second->getID();
+        }
+    }
+    return 0; // Object not found with ObjectName
 }
 
 void Scene::handleMessage(Message msg) {

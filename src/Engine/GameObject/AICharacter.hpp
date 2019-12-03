@@ -16,7 +16,7 @@ public:
     const char* ObjectTypeString() override;
 
 protected:
-    CharacterObject * m_playerRef;
+    UID_t m_playerID;
 
 private:
     static const char* _obj_type_AICharacter;

@@ -1,11 +1,13 @@
 #include "Character.hpp"
+#include "Scene\Scene.hpp"
 const char* CharacterObject::_obj_type_CharacterObject= "Character";
 
 CharacterObject::CharacterObject() :
     speed(1),
     rotateSpeed(30),
     rotateToMovement(false),
-    m_cameraRef(nullptr),
+    //m_cameraRef(nullptr),
+    m_cameraID(0),
     m_relativeSource(eRelativeSource::World)
 {}
 
@@ -84,9 +86,10 @@ mat3 CharacterObject::getRelativeAxes() {
             return mat3();
         } break;
         case eRelativeSource::Camera: {
-            if (m_cameraRef) {
-                vec3 cameraX = vec3(m_cameraRef->getTransform().col1());
-                vec3 cameraZ = vec3(m_cameraRef->getTransform().col3());
+            GameObject* camRef = GetScene()->getObjectByID(m_cameraID);
+            if (camRef) {
+                vec3 cameraX = vec3(camRef->getTransform().col1());
+                vec3 cameraZ = vec3(camRef->getTransform().col3());
 
                 cameraX.y = 0;
                 cameraZ.y = 0;

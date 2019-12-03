@@ -235,19 +235,19 @@ void BatchRenderer::staticPass(RenderBatch* batch) {
         glBindVertexArray(call->VAO);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, call->mat->baseColorTexture.glTexID == 0 ? blackTex.glTextureID : call->mat->baseColorTexture.glTexID);
+        glBindTexture(GL_TEXTURE_2D, call->mat->baseColorTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->baseColorTexture.glTexID);
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, call->mat->normalTexture.glTexID == 0 ? normalTex.glTextureID : call->mat->normalTexture.glTexID);
 
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, call->mat->metallicRoughnessTexture.glTexID == 0 ? greenTex.glTextureID : call->mat->metallicRoughnessTexture.glTexID);
+        glBindTexture(GL_TEXTURE_2D, call->mat->metallicRoughnessTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->metallicRoughnessTexture.glTexID);
 
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, call->mat->occlusionTexture.glTexID == 0 ? greenTex.glTextureID : call->mat->occlusionTexture.glTexID);
+        glBindTexture(GL_TEXTURE_2D, call->mat->occlusionTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->occlusionTexture.glTexID);
 
         glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, call->mat->emissiveTexture.glTexID == 0 ? blackTex.glTextureID : call->mat->emissiveTexture.glTexID);
+        glBindTexture(GL_TEXTURE_2D, call->mat->emissiveTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->emissiveTexture.glTexID);
 
         m_staticPass.setVec3("material.emissiveFactor", call->mat->emissiveFactor);
         m_staticPass.setVec4("material.baseColorFactor", call->mat->baseColorFactor);
@@ -415,9 +415,10 @@ void BatchRenderer::renderDebug(
         m_debugLineShader.use();
         m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
 
-        for (auto k : GetScene()->m_masterList) {
-            vec3 vPos = k->Position;
-            mat3 meshTransform = k->getTransform();
+        for (auto k : GetScene()->m_masterMap) {
+            auto go = k.second;
+            vec3 vPos = go->Position;
+            mat3 meshTransform = go->getTransform();
             vec3 vFor = vec3(meshTransform.col1());
             vec3 vUp = vec3(meshTransform.col2());
             vec3 vRight = vec3(meshTransform.col3());
@@ -434,7 +435,7 @@ void BatchRenderer::renderDebug(
                 vec2 screenPos = (vec2(_screenPos.x / _screenPos.w, _screenPos.y / _screenPos.w) / 2) + vec2(.5);
                 screenPos = vec2(screenPos.x, 1 - screenPos.y);
 
-                sprintf(text, "%s:%llu{%s}", k->ObjectTypeString(), k->getID(), k->Name.c_str());
+                sprintf(text, "%s:%llu{%s}", go->ObjectTypeString(), go->getID(), go->Name.c_str());
                 debugFontSmall.drawText(screenPos.x * scr_width, screenPos.y * scr_height, white, text, ALIGN_TOP_LEFT);
             }
         }

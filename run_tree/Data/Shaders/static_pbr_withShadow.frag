@@ -101,7 +101,7 @@ void main()
 
     normal2 = normalize(normal2 * 2.0 - 1.0);
 
-    vec3 normal = pass_normal;
+    vec3 normal = normal2;
     
     //Calcualte tangent space normal
     vec3 N = normal;
@@ -135,7 +135,7 @@ void main()
 
     vec3 s = vec3(ShadowCalculation(pass_fragPosLightSpace, N, sun.direction));
     
-    FragColor = vec4(Lo, 1);
+    FragColor = vec4(color, 1);
 
     //FragColor = vec4(.2, .6, .5, 1);
 }

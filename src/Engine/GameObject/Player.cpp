@@ -29,8 +29,10 @@ void PlayerObject::Update(double dt) {
     CharacterObject::Update(dt);
 
     /* Move Camera behind Player */
-    if (CameraFollowPlayer)
-        m_cameraRef->lookAt(Position);
+    if (CameraFollowPlayer) {
+        Camera* camRef = static_cast<Camera*>(GetScene()->getObjectByID(m_cameraID));
+        camRef->lookAt(Position);
+    }
 }
 
 void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
@@ -77,7 +79,7 @@ const char* PlayerObject::GetControlType() {
 }
 
 void PlayerObject::PostLoad() {
-    m_cameraRef = static_cast<Camera*>(GetScene()->getObjectByName("MainCamera"));
+    m_cameraID = GetScene()->getObjectIDByName("MainCamera");
     Input::registerGameObject(this);
 
     Input::watchKeyAxis("MoveForward", GLFW_KEY_W, GLFW_KEY_S);

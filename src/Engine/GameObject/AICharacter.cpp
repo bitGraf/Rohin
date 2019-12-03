@@ -12,8 +12,9 @@ void AICharacter::Create(istringstream &iss, ResourceManager* resource) {
 }
 
 void AICharacter::Update(double dt) {
-    if (m_playerRef) {
-        vec3 toPlayer = m_playerRef->Position - Position;
+    GameObject* playerRef = GetScene()->getObjectByID(m_playerID);
+    if (playerRef) {
+        vec3 toPlayer = playerRef->Position - Position;
         toPlayer.y = 0;
 
         if (toPlayer.length_2() > 4) {
@@ -34,7 +35,7 @@ void AICharacter::Destroy() {
 }
 
 void AICharacter::PostLoad() {
-    m_playerRef = static_cast<CharacterObject*>(GetScene()->getObjectByName("YaBoy"));
+    m_playerID = GetScene()->getObjectIDByName("YaBoy");
 }
 
 void AICharacter::InputEvent(Message::Datatype key, Message::Datatype action) {

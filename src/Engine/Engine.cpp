@@ -77,6 +77,7 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     m_Renderer.loadResources(&m_Resource);
     m_Options.create(&m_MainWindow);
     m_Options.redraw();
+    //m_MainWindow.resize(1200, 900);
 
     m_MainWindow.makeCurrent();
 

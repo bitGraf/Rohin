@@ -36,10 +36,12 @@ public:
 
     GameObject* getObjectByName(const std::string objectName) const;
     GameObject* getObjectByID(const UID_t id) const;
+    UID_t getObjectIDByName(const std::string objectName) const;
 
 //private:
     //DataBlock<GameObject> m_masterList;
-    std::vector<GameObject*> m_masterList;
+    //std::vector<GameObject*> m_masterList;
+    std::unordered_map<UID_t, GameObject*> m_masterMap;
     struct GameObjectLists_t {
         void clear() {
             Renderable.clear();

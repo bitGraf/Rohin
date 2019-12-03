@@ -31,7 +31,7 @@ protected:
         Character // Based on Character's local XYZ
     };
     eRelativeSource m_relativeSource;
-    Camera* m_cameraRef;
+    UID_t m_cameraID;
 
     float speed;
     float rotateSpeed;

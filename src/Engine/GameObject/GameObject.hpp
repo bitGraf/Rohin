@@ -57,7 +57,7 @@ protected:
     GameObjectType m_type;
 
     /* Parent Object */
-    GameObject* m_parent;
+    GameObject* m_parent; // < Should definitely be a UID_t if we plan on keeping parents.
 
 private:
     /// Get the next globally unique ID

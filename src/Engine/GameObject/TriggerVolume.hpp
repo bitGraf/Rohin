@@ -18,7 +18,8 @@ public:
     vec3 bounds_min, bounds_max;
 
 protected:
-    GameObject *m_triggerObject;
+    //GameObject *m_triggerObject;
+    UID_t m_triggerObjectID;
     bool inside;
 
 private:
