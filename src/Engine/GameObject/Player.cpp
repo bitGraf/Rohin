@@ -3,7 +3,6 @@
 const char* PlayerObject::_obj_type_PlayerObject = "Player";
 
 PlayerObject::PlayerObject() :
-    CameraFollowPlayer(false),
     m_controlType(eControlType::Normal)
 {
     speed = 10;
@@ -29,16 +28,16 @@ void PlayerObject::Update(double dt) {
     CharacterObject::Update(dt);
 
     /* Move Camera behind Player */
-    if (CameraFollowPlayer) {
-        Camera* camRef = static_cast<Camera*>(GetScene()->getObjectByID(m_cameraID));
-        camRef->lookAt(Position);
-    }
+    //if (CameraLookAtPlayer) {
+    //    Camera* camRef = static_cast<Camera*>(GetScene()->getObjectByID(m_cameraID));
+    //    camRef->lookAt(Position);
+    //}
 }
 
 void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
-    if (key == GLFW_KEY_F && action == GLFW_PRESS) {
-        CameraFollowPlayer = !CameraFollowPlayer;
-    }
+    //if (key == GLFW_KEY_F && action == GLFW_PRESS) {
+    //    CameraFollowPlayer = !CameraFollowPlayer;
+    //}
 
     if (key == GLFW_KEY_T && action == GLFW_PRESS) {
         switch (m_relativeSource) {
@@ -79,7 +78,7 @@ const char* PlayerObject::GetControlType() {
 }
 
 void PlayerObject::PostLoad() {
-    m_cameraID = GetScene()->getObjectIDByName("MainCamera");
+    m_cameraID = GetScene()->getObjectIDByName("MainCamera"); // < Should this REALLY be in here?
     Input::registerGameObject(this);
 
     Input::watchKeyAxis("MoveForward", GLFW_KEY_W, GLFW_KEY_S);

@@ -26,8 +26,6 @@ protected:
     };
     eControlType m_controlType;
 
-    bool CameraFollowPlayer;
-
 private:
     static const char* _obj_type_PlayerObject;
 };

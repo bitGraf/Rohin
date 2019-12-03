@@ -178,7 +178,14 @@ void Engine::globalHandle(Message msg) {
             //m_debugCamera.playerControlled = cursorMode;
             cursorMode = !cursorMode;
             m_MainWindow.cursorVisible(cursorMode);
-            m_debugCamera.freeFlyMode = !cursorMode;
+            switch (m_debugCamera.m_cameraMode) {
+                case Camera::eCameraMode::Static: {
+                    m_debugCamera.m_cameraMode = Camera::eCameraMode::Freefly;
+                } break;
+                case Camera::eCameraMode::Freefly: {
+                    m_debugCamera.m_cameraMode = Camera::eCameraMode::Static;
+                } break;
+            }
         }
 
         if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {

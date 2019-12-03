@@ -13,6 +13,8 @@ public:
 
     virtual void Update(double dt) override;
     virtual const char* ObjectTypeString() override;
+    virtual void PostLoad() override;
+    virtual void InputEvent(Message::Datatype key, Message::Datatype action) override;
 
     void updateViewMatrix();
     //void updateProjectionMatrix(f32 width, f32 height);
@@ -24,9 +26,19 @@ public:
 
     mat4 viewMatrix;
     mat4 projectionMatrix;
-    bool freeFlyMode;
+
+    enum class eCameraMode {
+        Static,
+        StaticLookAt,
+        ThirdPersonFollow,
+        OrbitFollow,
+        Freefly
+    };
+    eCameraMode m_cameraMode;
 
 protected:
+    UID_t m_followTargetID;
+
     float m_fovVert;
     float m_zNear, m_zFar;
 
@@ -38,6 +50,9 @@ protected:
 
 private:
     static const char* _obj_type_CameraObject;
+
+    vec3 originalPosition;
+    vec3 originalYPR;
 };
 
 #endif

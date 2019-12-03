@@ -1,11 +1,12 @@
 #include "Camera.hpp"
+#include "Scene\Scene.hpp"
 const char* Camera::_obj_type_CameraObject = "Camera";
 
 Camera::Camera() :
     m_fovVert(75),
     m_zNear(.01),
     m_zFar(100),
-    freeFlyMode(false)
+    m_cameraMode(eCameraMode::Static)
 {
     m_type = GameObjectType::Camera;
 }
@@ -22,6 +23,7 @@ void Camera::Create(istringstream &iss, ResourceManager* resource) {
     auto fovHoriz = getNextFloat(iss);
     auto ne = getNextFloat(iss);
     auto fa = getNextFloat(iss);
+    std::string followTarget = getNextString(iss);
 
     //h = 2 * atan(AR*tan(v/2))
     //tan(h/2) = AR*tan(v/2)
@@ -31,9 +33,160 @@ void Camera::Create(istringstream &iss, ResourceManager* resource) {
     set(fovVert, ne, fa);
 }
 
+void Camera::Update(double dt) {
+
+    switch (m_cameraMode) {
+        case eCameraMode::Freefly: {
+            vec3 vel;
+            f32 rollChange = 0;
+
+            f32 speed = 10;
+            f32 rollRate = 60;
+
+            f32 horizSens = 0.12; // Mouse based sensitivities
+            f32 vertSens = 0.12;
+
+            vec3 forward = vec3(viewMatrix.row1()).get_unit();
+            vec3 up = vec3(viewMatrix.row2()).get_unit();
+            vec3 right = vec3(viewMatrix.row3()).get_unit();
+
+            if (Input::getKeyState("key_w")) {
+                vel += forward;
+            }
+            if (Input::getKeyState("key_s")) {
+                vel -= forward;
+            }
+            if (Input::getKeyState("key_a")) {
+                vel -= right;
+            }
+            if (Input::getKeyState("key_d")) {
+                vel += right;
+            }
+            if (Input::getKeyState("key_space")) {
+                vel += up;
+            }
+            if (Input::getKeyState("key_shift")) {
+                vel -= up;
+            }
+
+            if (Input::getKeyState("key_numpad0")) {
+                rollChange += 1;
+            }
+            if (Input::getKeyState("key_rctrl")) {
+                rollChange -= 1;
+            }
+
+            Position += vel * speed * dt;
+            YawPitchRoll.x += -Input::m_mouseMove.x * horizSens;
+            YawPitchRoll.y += -Input::m_mouseMove.y * vertSens;
+            YawPitchRoll.z += rollChange * rollRate * dt; // < Yaw and Pitch are already time scaled 
+                                                          //   since they are captured by real mouse movement
+        } break;
+        case eCameraMode::Static: {
+            return;
+        } break;
+        case eCameraMode::StaticLookAt: {
+            GameObject* followTarget = GetScene()->getObjectByID(m_followTargetID);
+            if (followTarget) {
+                lookAt(followTarget->Position);
+            }
+        } break;
+        case eCameraMode::ThirdPersonFollow: {
+            GameObject* followTarget = GetScene()->getObjectByID(m_followTargetID);
+            if (followTarget) {
+                CharacterObject* f = static_cast<CharacterObject*>(followTarget);
+                vec3 forward = vec3(f->getTransform().col1());
+                Position = followTarget->Position + vec3(0, 7, 0) - (forward.get_unit() * 8);
+                lookAt(followTarget->Position);
+            }
+            return;
+        } break;
+        case eCameraMode::OrbitFollow: {
+            GameObject* followTarget = GetScene()->getObjectByID(m_followTargetID);
+            if (followTarget) {
+                f32 camYaw = 0;
+                vec3 camDir = vec3(cos(camYaw), 0, sin(camYaw));
+                Position = followTarget->Position + vec3(0, 7, 0) - (camDir * 8);
+                lookAt(followTarget->Position);
+            }
+            return;
+        } break;
+    }
+    /*
+    if (freeFlyMode) {
+        vec3 vel;
+        f32 yawChange = 0;
+        f32 pitchChange = 0;
+        f32 rollChange = 0;
+
+        f32 speed = 10;
+        f32 yawRate = 60;
+        f32 pitchRate = 60;
+        f32 rollRate = 60;
+
+        f32 horizSens = 0.002;
+        f32 vertSens = 0.002;
+
+        vec3 forward = vec3(viewMatrix.row1()).get_unit();
+        vec3 up = vec3(viewMatrix.row2()).get_unit();
+        vec3 right = vec3(viewMatrix.row3()).get_unit();
+
+        if (Input::getKeyState("key_w")) {
+            vel += forward;
+        }
+        if (Input::getKeyState("key_s")) {
+            vel -= forward;
+        }
+        if (Input::getKeyState("key_a")) {
+            vel -= right;
+        }
+        if (Input::getKeyState("key_d")) {
+            vel += right;
+        }
+        if (Input::getKeyState("key_space")) {
+            vel += up;
+        }
+        if (Input::getKeyState("key_shift")) {
+            vel -= up;
+        }
+
+        yawChange = -Input::m_mouseMove.x * horizSens;
+        pitchChange = -Input::m_mouseMove.y * vertSens;
+        if (Input::getKeyState("key_numpad0")) {
+            rollChange += 1;
+        }
+        if (Input::getKeyState("key_rctrl")) {
+            rollChange -= 1;
+        }
+
+        vel *= speed;
+        yawChange *= yawRate;
+        pitchChange *= pitchRate;
+        rollChange *= rollRate * dt;
+
+        Position += vel * dt;
+        YawPitchRoll.x += yawChange;
+        YawPitchRoll.y += pitchChange;
+        YawPitchRoll.z += rollChange;
+    }
+    */
+}
+
 const char* Camera::ObjectTypeString() {
     return _obj_type_CameraObject;
 }
+
+void Camera::PostLoad() {
+    m_followTargetID = GetScene()->getObjectIDByName("YaBoy");
+    Input::registerGameObject(this);
+
+    originalPosition = Position;
+    originalYPR = YawPitchRoll;
+}
+
+
+
+
 
 void Camera::updateViewFrustum(f32 width, f32 height) {
     updateViewMatrix();
@@ -140,61 +293,27 @@ bool Camera::withinFrustum(vec3 location, float radius) {
     return true;
 }
 
-void Camera::Update(double dt) {
-    if (freeFlyMode) {
-        vec3 vel;
-        f32 yawChange = 0;
-        f32 pitchChange = 0;
-        f32 rollChange = 0;
+void Camera::InputEvent(Message::Datatype key, Message::Datatype action) {
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+        switch (m_cameraMode) {
+            case eCameraMode::Static: {
+                m_cameraMode = eCameraMode::StaticLookAt;
+            } break;
+            case eCameraMode::StaticLookAt: {
+                m_cameraMode = eCameraMode::ThirdPersonFollow;
+            } break;
+            case eCameraMode::ThirdPersonFollow: {
+                m_cameraMode = eCameraMode::OrbitFollow;
+            } break;
+            case eCameraMode::OrbitFollow: {
+                m_cameraMode = eCameraMode::Freefly;
+            } break;
+            case eCameraMode::Freefly: {
+                m_cameraMode = eCameraMode::Static;
 
-        f32 speed = 10;
-        f32 yawRate = 60;
-        f32 pitchRate = 60;
-        f32 rollRate = 60;
-
-        f32 horizSens = 0.002;
-        f32 vertSens = 0.002;
-
-        vec3 forward = vec3(viewMatrix.row1()).get_unit();
-        vec3 up = vec3(viewMatrix.row2()).get_unit();
-        vec3 right = vec3(viewMatrix.row3()).get_unit();
-
-        if (Input::getKeyState("key_w")) {
-            vel += forward;
+                Position = originalPosition;
+                YawPitchRoll = originalYPR;
+            } break;
         }
-        if (Input::getKeyState("key_s")) {
-            vel -= forward;
-        }
-        if (Input::getKeyState("key_a")) {
-            vel -= right;
-        }
-        if (Input::getKeyState("key_d")) {
-            vel += right;
-        }
-        if (Input::getKeyState("key_space")) {
-            vel += up;
-        }
-        if (Input::getKeyState("key_shift")) {
-            vel -= up;
-        }
-
-        yawChange = -Input::m_mouseMove.x * horizSens;
-        pitchChange = -Input::m_mouseMove.y * vertSens;
-        if (Input::getKeyState("key_numpad0")) {
-            rollChange += 1;
-        }
-        if (Input::getKeyState("key_rctrl")) {
-            rollChange -= 1;
-        }
-
-        vel *= speed;
-        yawChange *= yawRate;
-        pitchChange *= pitchRate;
-        rollChange *= rollRate*dt;
-
-        Position += vel * dt;
-        YawPitchRoll.x += yawChange;
-        YawPitchRoll.y += pitchChange;
-        YawPitchRoll.z += rollChange;
     }
 }
