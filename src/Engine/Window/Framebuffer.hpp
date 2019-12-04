@@ -13,6 +13,7 @@ public:
     void unbind();
 
     virtual void bind();
+    virtual void create_LDR(u32 width, u32 height);
     virtual void create(u32 width, u32 height);
     virtual void cleanup();
     virtual GLuint getTexture() { return texture; }

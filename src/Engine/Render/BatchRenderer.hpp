@@ -36,7 +36,10 @@ public:
     void skyboxPass(RenderBatch* batch);
     void lightVolumePass(RenderBatch* batch);
     void toneMap(RenderBatch* batch);
+    void pickPass(RenderBatch* batch);
     void gammaCorrect(RenderBatch* batch);
+
+    UID_t pickObject(GLint x, GLint y);
 
 private:
     void drawLine(vec3 A, vec3 B, vec3 colorA, vec3 colorB);
@@ -56,6 +59,7 @@ private:
     _dur dur_lightVolumePass;
     _dur dur_toneMap;
     _dur dur_gammaCorrect;
+    _dur dur_pickPass;
     _dur dur_debug;
 
     void beginProfile();
@@ -67,12 +71,15 @@ private:
     //Framebuffer_swap swap_fb;
     Framebuffer fb_volume;
     Framebuffer fb_toneMap;
+    Framebuffer fb_pick;
     Texture blackTex, whiteTex, normalTex, greenTex;
 
     GLuint fullscreenVAO;
     DynamicFont debugFont;
     DynamicFont debugFontSmall;
 
+    Shader m_pickPassShader;
+    vec3 getUniqueColor(UID_t id);
 
     Shader m_shadowPass;
     Shader m_staticPass;

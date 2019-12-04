@@ -16,7 +16,7 @@ void Console::handleMessage(Message msg) {
         }
         std::string copyOfStr = stringStream.str();
         
-        if (!msg.isType("InputKey")) // Don't need to flood the console
+        if (!(msg.isType("InputKey") || msg.isType("InputMouseButton"))) // Don't need to flood the console
             logMessage(copyOfStr);
     }
 }

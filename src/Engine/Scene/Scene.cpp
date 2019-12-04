@@ -301,6 +301,7 @@ void getRenderBatch(RenderBatch* batch, bool useCull) {
                 if (!useCull || ent->noCull || camera->withinFrustum(ent->Position, 0.25)) { // Check to see if the entity is in the camera frustum
                     mat4 modelMatrix = ent->getModelTransform();
 
+                    batch->calls[batch->numCalls].id = ent->getID();
                     batch->calls[batch->numCalls].modelMatrix = modelMatrix;
                     batch->calls[batch->numCalls].numVerts = ent->getMesh()->numFaces * 3;
                     batch->calls[batch->numCalls].VAO = ent->getMesh()->VAO;

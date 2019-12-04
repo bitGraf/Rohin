@@ -16,6 +16,7 @@ struct DrawCall {
     GLuint numVerts = 0;
     GLuint VAO = 0;
     Material* mat;
+    UID_t id = 0;
 };
 
 struct RenderBatch {

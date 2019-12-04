@@ -46,6 +46,22 @@ void BatchRenderer::handleMessage(Message msg) {
     }
 }
 
+UID_t BatchRenderer::pickObject(GLint x, GLint y) {
+    fb_pick.bind();
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    auto i = static_cast<GLint>(x / 4);
+    auto j = static_cast<GLint>((scr_height - y) / 4);
+
+    u8 pixels[4] = { 0 };
+    glReadPixels(i, j, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    int id = pixels[0] + pixels[1] * 256 + pixels[2] * 256 * 256;
+
+    return id;
+}
+
 void BatchRenderer::destroy() {}
 CoreSystem* BatchRenderer::create() {
     m_shadowPass.create("shadow.vert", "shadow.frag", "shadowPassShader");
@@ -56,6 +72,7 @@ CoreSystem* BatchRenderer::create() {
     m_gammaCorrect.create("toneMap.vert", "gammaCorrect.frag", "gammaCorrectShader");
     m_debugLineShader.create("DebugLine.vert", "DebugLine.frag", "debugLineShader");
     m_debugMeshShader.create("DebugMesh.vert", "DebugMesh.frag", "debugMeshShader");
+    m_pickPassShader.create("shadow.vert", "pickPass.frag", "pickPassShader");
 
     blackTex.loadImage("black.png");
     whiteTex.loadImage("white.png");
@@ -71,6 +88,7 @@ CoreSystem* BatchRenderer::create() {
     fb.create(scr_width, scr_height);
     fb_volume.create(scr_width, scr_height);
     fb_toneMap.create(scr_width, scr_height);
+    fb_pick.create_LDR(scr_width/4, scr_height/4);
 
     debugFont.InitTextRendering();
     debugFont.create("UbuntuMono-Regular.ttf", 16, scr_width, scr_height);
@@ -136,6 +154,9 @@ void BatchRenderer::renderBatch(RenderBatch* batch) {
 
     if (GetScene()) {
 
+        pickPass(batch);
+        dur_pickPass = profileRenderPass();
+
         shadowPass(batch);
         dur_shadowPass = profileRenderPass();
 
@@ -185,6 +206,7 @@ void BatchRenderer::shadowPass(RenderBatch* batch) {
     m_shadowPass.use();
     glViewport(0, 0, sm.width, sm.height);
     glBindFramebuffer(GL_FRAMEBUFFER, sm.depthMapFBO);
+    glClearColor(1, 1, 1, 1);
     glClear(GL_DEPTH_BUFFER_BIT);
 
     m_shadowPass.setMat4("projectionViewMatrix", batch->sunViewProjectionMatrix);
@@ -198,6 +220,41 @@ void BatchRenderer::shadowPass(RenderBatch* batch) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, scr_width, scr_height);
+}
+
+void BatchRenderer::pickPass(RenderBatch* batch) {
+    // bind pickPass framebuffer
+    // bind viewProjection matrix
+    // For every entity in view:
+        //bind the entities model transform
+        //bind the entities obb transform
+        //determine unique entity color
+        //bind cube VAO and render
+        // First, render to depth map
+    m_pickPassShader.use();
+    fb_pick.bind();
+    glViewport(0, 0, scr_width/4, scr_height/4); // downsample so its faster i guess
+    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+    m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+    for (int n = 0; n < batch->numCalls; n++) {
+        DrawCall* draw = &batch->calls[n];
+        glBindVertexArray(draw->VAO); // draw the base mesh for now, might use a simpler mesh later
+        m_pickPassShader.setMat4("modelMatrix", draw->modelMatrix);
+        m_pickPassShader.setVec3("idColor", getUniqueColor(draw->id));
+        glDrawElements(GL_TRIANGLES, draw->numVerts, GL_UNSIGNED_SHORT, 0);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(0, 0, scr_width, scr_height);
+}
+
+vec3 BatchRenderer::getUniqueColor(UID_t id) {
+    int r = (id & 0x000000FF) >> 0;
+    int g = (id & 0x0000FF00) >> 8;
+    int b = (id & 0x00FF0000) >> 16;
+
+    return vec3(r/255.0f, g / 255.0f, b / 255.0f);
 }
 
 void BatchRenderer::staticPass(RenderBatch* batch) {
@@ -376,7 +433,7 @@ void BatchRenderer::renderDebug(
     sprintf(text, "MoveRight: %.2f", Input::getAxisState("MoveRight"));
     debugFont.drawText(scr_width - 5, scr_height - 18, white, text, ALIGN_BOT_RIGHT);
 
-    if (GetScene() && (true || debugMode)) {
+    if (GetScene() && (false || debugMode)) {
         sprintf(text, " Shadow- - - %-3lld us", dur_shadowPass / scale);
         debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
         sprintf(text, " Static- - - %-3lld us", dur_staticPass / scale);
@@ -390,6 +447,8 @@ void BatchRenderer::renderDebug(
         sprintf(text, " ToneMap - - %-3lld us", dur_toneMap / scale);
         debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
         sprintf(text, " Gamma - - - %-3lld us", dur_gammaCorrect / scale);
+        debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
+        sprintf(text, " Pick- - - - %-3lld us", dur_pickPass / scale);
         debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
 
         sprintf(text, "Draw Calls: %-3d", batch->numCalls);

@@ -249,6 +249,14 @@ void Engine::globalHandle(Message msg) {
 
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
             m_Options.click(xPos, yPos);
+
+            if (GLFW_CURSOR_NORMAL == glfwGetInputMode(m_MainWindow.m_glfwWindow, GLFW_CURSOR)) {
+                auto id = m_Renderer.pickObject(xPos, yPos);
+                GameObject* go = GetScene()->getObjectByID(id);
+                if (go) {
+                    Console::logMessage("You clicked on GameObject id [" + std::to_string(id) + "]:{" + go->Name + "}");
+                }
+            }
         }
     }
 
