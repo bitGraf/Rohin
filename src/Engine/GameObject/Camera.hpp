@@ -38,6 +38,8 @@ public:
 
 protected:
     UID_t m_followTargetID;
+    scalar m_followYaw, m_followPitch;
+    scalar m_followDistance;
 
     float m_fovVert;
     float m_zNear, m_zFar;

@@ -3,12 +3,14 @@
 
 std::unordered_map<std::string, bool> Input::m_keyStates;
 std::unordered_map<std::string, int> Input::m_watchedKeys;
-math::vec2 Input::m_mouseMove;
-math::vec2 Input::m_mouseAcc;
 std::vector<GameObject*> Input::m_GameObjects;
 bool Input::ShouldGameObjectHandleInputEvent = true;
 std::unordered_map<std::string, Input::Axis> Input::m_watchedAxisKeys;
 std::unordered_map<std::string, f32> Input::m_axes;
+bool Input::m_mouseLeft;
+bool Input::m_mouseRight;
+math::vec2 Input::m_mouseMove;
+math::vec2 Input::m_mouseAcc;
 
 bool Input::getKeyState(std::string key) {
     if (m_keyStates.find(key) == m_keyStates.end()) {
@@ -27,6 +29,15 @@ f32 Input::getAxisState(std::string key) {
         return m_axes[key];
     }
 }
+
+bool Input::getLeftMouse() {
+    return m_mouseLeft;
+}
+
+bool Input::getRightMouse() {
+    return m_mouseRight;
+}
+
 
 void Input::watchKey(std::string key, int glfwKeyCode) {
     if (m_keyStates.find(key) == m_keyStates.end()) {
@@ -87,6 +98,9 @@ void Input::pollKeys(GLFWwindow* window, double dt) {
             }
         }
     }
+
+    m_mouseLeft  = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    m_mouseRight = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 }
 
 void Input::registerGameObject(GameObject* obj) {
