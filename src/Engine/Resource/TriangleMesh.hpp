@@ -5,15 +5,20 @@
 #include "GameMath.hpp"
 #include "Resource/MemoryManager.hpp"
 
+struct Triangle {
+    index_t indices[3] = { 0,0,0 };
+};
+
+struct Edge {
+    index_t indices[2] = { 0,0 };
+};
+
 typedef DataBlock<math::vec4>   vec4Array;
 typedef DataBlock<math::vec3>   vec3Array;
 typedef DataBlock<math::vec2>   vec2Array;
 typedef DataBlock<index_t>      indexArray;
-
-class Triangle {
-public:
-    index_t indices[3] = { 0,0,0 };
-};
+typedef DataBlock<Triangle>     triangleArray;
+typedef DataBlock<Edge>         EdgeArray;
 
 /* 104 bytes */
 class TriangleMesh {

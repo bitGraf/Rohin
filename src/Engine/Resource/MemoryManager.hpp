@@ -9,6 +9,7 @@
 template<typename dataType>
 struct DataBlock {
     const size_t m_elementSize;
+    size_t blockBytes;
     u32 m_numElements;
     dataType* data;
 
@@ -31,6 +32,7 @@ struct DataBlock {
 
         this->m_numElements = db.m_numElements;
         this->data = db.data;
+        this->blockBytes = db.blockBytes;
 
         return *this;
     }
@@ -161,11 +163,13 @@ public:
 
             ret.data = start;
             new (ret.data) T();
+            ret.blockBytes = howManyBytes;
             return ret;
         }
 
         ret.m_numElements = 0;
         ret.data = nullptr;
+        ret.blockBytes = 0;
         return ret;
     }
 

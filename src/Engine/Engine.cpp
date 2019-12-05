@@ -106,6 +106,8 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     Input::watchKey("key_numpad0", GLFW_KEY_KP_0);
     Input::watchKey("key_rctrl", GLFW_KEY_RIGHT_CONTROL);
 
+    Message::registerMessageType("CollisionEvent");
+
     m_debugCamera.Position = vec3(-4, 2, -4);
     m_debugCamera.YawPitchRoll = vec3(-45, -30, 0);
 }

@@ -26,6 +26,9 @@ void BatchRenderer::handleMessage(Message msg) {
             m_toneMap.create("toneMap.vert", "toneMap.frag", "toneMapShader");
             m_gammaCorrect.create("toneMap.vert", "gammaCorrect.frag", "gammaCorrectShader");
             m_debugLineShader.create("DebugLine.vert", "DebugLine.frag", "debugLineShader");
+            m_debugMeshShader.create("DebugMesh.vert", "DebugMesh.frag", "debugMeshShader");
+            m_pickPassShader.create("shadow.vert", "pickPass.frag", "pickPassShader");
+            //m_wireframeShader.create("wireframe.vert", "wireframe.frag", "wireframeShader");
         }
     }
 
@@ -73,6 +76,7 @@ CoreSystem* BatchRenderer::create() {
     m_debugLineShader.create("DebugLine.vert", "DebugLine.frag", "debugLineShader");
     m_debugMeshShader.create("DebugMesh.vert", "DebugMesh.frag", "debugMeshShader");
     m_pickPassShader.create("shadow.vert", "pickPass.frag", "pickPassShader");
+    //m_wireframeShader.create("wireframe.vert", "wireframe.frag", "wireframeShader");
 
     blackTex.loadImage("black.png");
     whiteTex.loadImage("white.png");
@@ -530,6 +534,18 @@ void BatchRenderer::renderDebug(
         }
 
         glBindVertexArray(0);
+
+        m_pickPassShader.use();
+        m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+        m_pickPassShader.setVec3("idColor", vec3(1, .2, .4));
+        for (auto k : GetScene()->objectsByType.Collisions) {
+            auto hull = &k->m_hull;
+
+            m_pickPassShader.setMat4("modelMatrix", k->getTransform());
+
+            glBindVertexArray(hull->wireframeVAO);
+            glDrawElements(GL_LINES, hull->edges.m_numElements * 2, GL_UNSIGNED_SHORT, 0);
+        }
 
         glEnable(GL_DEPTH_TEST);
     }

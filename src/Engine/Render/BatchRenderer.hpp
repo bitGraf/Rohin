@@ -92,6 +92,9 @@ private:
 
     GLuint debugLineVAO;
     Shader m_debugLineShader;
+
+    //Shader m_wireframeShader;
+
     Shader m_debugMeshShader;
     TriangleMesh* cameraMesh;
 
