@@ -66,29 +66,29 @@ set_target_properties(tinygltf PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(tinygltf PRIVATE ${TINYGLTF_DIR}/)
 
 # Doxygen
-option(BUILD_DOC "Build documentation" ON)
+option(BUILD_DOC "Build documentation" OFF)
 
 # check if Doxygen is installed
-find_package(Doxygen)
-if (DOXYGEN_FOUND)
-    # set input and output files
-    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
-    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/../docs/Doxyfile)
-
-    # request to configure the file
-    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
-    message("Doxygen build started")
-
-    # note the option ALL which allows to build the docs together with the application
-    # add_custom_target(doc_dox ALL
-	add_custom_target(doc_dox
-        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Generating API documentation with Doxygen"
-        VERBATIM )
-else (DOXYGEN_FOUND)
-  message("Doxygen need to be installed to generate the doxygen documentation")
-endif (DOXYGEN_FOUND)
+#find_package(Doxygen)
+#if (DOXYGEN_FOUND)
+#    # set input and output files
+#    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
+#    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/../docs/Doxyfile)
+#
+#    # request to configure the file
+#    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+#    message("Doxygen build started")
+#
+#    # note the option ALL which allows to build the docs together with the application
+#    # add_custom_target(doc_dox ALL
+#	add_custom_target(doc_dox
+#        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+#        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+#        COMMENT "Generating API documentation with Doxygen"
+#        VERBATIM )
+#else (DOXYGEN_FOUND)
+#  message("Doxygen need to be installed to generate the doxygen documentation")
+#endif (DOXYGEN_FOUND)
 
 # Executable definition for Game
 add_executable(Game ${source_list_game})
@@ -140,6 +140,6 @@ target_link_libraries(TestGame tinygltf ${CMAKE_DL_LIBS})
 
 # Assign Visual Studio folders
 set_target_properties(tinygltf glad glfw PROPERTIES FOLDER Libraries)
-set_target_properties(Game TestGame engine doc_dox PROPERTIES FOLDER Rohin)
+set_target_properties(Game TestGame engine PROPERTIES FOLDER Rohin)
 #set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Game)
 set(VS_STARTUP_PROJECT Rohin/Game)
