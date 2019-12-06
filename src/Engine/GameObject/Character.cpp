@@ -8,15 +8,27 @@ CharacterObject::CharacterObject() :
     rotateToMovement(false),
     //m_cameraRef(nullptr),
     m_cameraID(0),
-    m_relativeSource(eRelativeSource::World)
+    m_relativeSource(eRelativeSource::World),
+    cHull_ptr(nullptr)
 {}
 
 void CharacterObject::Update(double dt) {
     if (Velocity.length_2() != 0.0) {
 
-        // Transform into ground-space
+        // Transform velocity into world-space
         Velocity = getRelativeAxes() * Velocity;
 
+        // Get actual Velocity that the character can acheive from world.
+        if (cHull_ptr) {
+            // if I have collision
+
+            ShapeCastResult res;
+            cWorld.shapeCast(cHull_ptr, Position, Velocity.get_unit(), &res);
+
+            // use ShapeCastResults to know if the player can move in this direction.
+        }
+
+        // Integrate
         Position += Velocity * dt;
 
         if (m_relativeSource != eRelativeSource::Character && rotateToMovement) {

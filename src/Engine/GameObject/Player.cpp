@@ -26,12 +26,10 @@ void PlayerObject::Update(double dt) {
     }
 
     CharacterObject::Update(dt);
+}
 
-    /* Move Camera behind Player */
-    //if (CameraLookAtPlayer) {
-    //    Camera* camRef = static_cast<Camera*>(GetScene()->getObjectByID(m_cameraID));
-    //    camRef->lookAt(Position);
-    //}
+void PlayerObject::Create(istringstream &iss, ResourceManager* resource) {
+    CharacterObject::Create(iss, resource);
 }
 
 void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {

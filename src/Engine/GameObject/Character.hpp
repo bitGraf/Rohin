@@ -4,6 +4,9 @@
 #include "RenderableObject.hpp"
 #include "Camera.hpp"
 
+#include "Collision\CollisionHull.hpp"
+#include "Collision\CollisionWorld.hpp"
+
 /// CharacterObject. Represents a Renderable Character that can move around.
 class CharacterObject : public RenderableObject {
 public:
@@ -37,6 +40,8 @@ protected:
     float rotateSpeed;
 
     mat3 getRelativeAxes();
+
+    CollisionHull* cHull_ptr;
 
 private:
     static const char* _obj_type_CharacterObject;
