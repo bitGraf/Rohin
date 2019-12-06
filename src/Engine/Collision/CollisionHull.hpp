@@ -3,7 +3,6 @@
 
 #include "GameMath.hpp"
 #include "Resource\TriangleMesh.hpp"
-#include <vector>
 
 using namespace math;
 class ResourceManager;
