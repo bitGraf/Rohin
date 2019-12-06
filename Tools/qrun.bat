@@ -6,8 +6,8 @@ echo *********************
 echo.
 
 rem BUILD HERE
-pushd ..\bin\Release
-bigDisc.exe ..\..\run_tree
+pushd ..\bin\Debug
+Game.exe ..\..\run_tree
 popd
 rem END BUILDING
 
