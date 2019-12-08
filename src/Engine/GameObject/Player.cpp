@@ -5,7 +5,7 @@ const char* PlayerObject::_obj_type_PlayerObject = "Player";
 PlayerObject::PlayerObject() :
     m_controlType(eControlType::Normal)
 {
-    speed = 10;
+    speed = 6;
     rotateSpeed = 360;
     rotateToMovement = true;
     m_relativeSource = eRelativeSource::Camera;
@@ -74,7 +74,7 @@ void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
     }
 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        Jump(6);
+        Jump(5.5);
     }
 }
 

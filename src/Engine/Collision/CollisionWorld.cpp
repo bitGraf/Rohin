@@ -205,6 +205,48 @@ UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource, vec3 position
     return hull.m_hullID;
 }
 
+UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource, 
+    vec3 position, scalar xSize, scalar ySize, scalar zSize) {
+    CollisionHull hull;
+
+    scalar halfx = xSize / 2.0f;
+    scalar halfy = ySize / 2.0f;
+    scalar halfz = zSize / 2.0f;
+
+    // Box hull
+    hull.loadVerts(resource, 8,
+        vec3(-halfx, -halfy, -halfz),
+        vec3(-halfx, -halfy, halfz),
+        vec3(halfx, -halfy, halfz),
+        vec3(halfx, -halfy, -halfz),
+
+        vec3(-halfx, halfy, -halfz),
+        vec3(-halfx, halfy, halfz),
+        vec3(halfx, halfy, halfz),
+        vec3(halfx, halfy, -halfz)
+    );
+    hull.loadFaces(resource, 12,
+        Triangle(0, 1, 4),
+        Triangle(4, 1, 5),
+        Triangle(1, 2, 6),
+        Triangle(1, 6, 5),
+        Triangle(2, 3, 7),
+        Triangle(2, 7, 6),
+
+        Triangle(3, 0, 4),
+        Triangle(3, 4, 7),
+        Triangle(0, 2, 1),
+        Triangle(0, 3, 2),
+        Triangle(4, 5, 7),
+        Triangle(7, 5, 6)
+    );
+    hull.bufferData();
+    hull.position = position;
+    m_static.push_back(hull);
+
+    return hull.m_hullID;
+}
+
 UID_t CollisionWorld::CreateNewCapsule(ResourceManager* resource, 
     vec3 position, scalar height, scalar radius) {
     CollisionHull hull;

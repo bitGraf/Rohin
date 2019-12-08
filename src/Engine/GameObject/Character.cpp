@@ -21,7 +21,6 @@ void CharacterObject::Update(double dt) {
         // it has collision info
         vec3 fallDir(0, -1, 0);
         res = cWorld.Raycast(Position, fallDir, max(-Velocity.y*dt, 0.1)); // raycast down 1 unit
-        printf("Raycast length: %f\n", max(-Velocity.y*dt, 0.1));
 
         if (res.t > 1.0) {
             Velocity.y -= 9.81*dt;

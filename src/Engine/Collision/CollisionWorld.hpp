@@ -41,6 +41,8 @@ public:
 
     UID_t CreateNewCubeHull(ResourceManager* resource, 
         vec3 position, scalar size);
+    UID_t CreateNewCubeHull(ResourceManager* resource,
+        vec3 position, scalar xSize, scalar ySize, scalar zSize);
     UID_t CreateNewCapsule(ResourceManager* resource, 
         vec3 position, scalar height, scalar radius);
     CollisionHull* getHullFromID(UID_t id);

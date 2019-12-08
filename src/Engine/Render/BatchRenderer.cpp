@@ -590,14 +590,14 @@ void BatchRenderer::renderDebug(
     // Render Collision World
     for (int n = 0; n < cWorld.m_static.size(); n++) {
         auto cHull = &cWorld.m_static[n];
-        m_pickPassShader.setMat4("modelMatrix", mat4(cHull->rotation) * mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(cHull->position, 1)));
+        m_pickPassShader.setMat4("modelMatrix", mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(cHull->position, 1)) * mat4(cHull->rotation));
         glBindVertexArray(cHull->wireframeVAO);
         glDrawElements(GL_TRIANGLES, cHull->faces.m_numElements * 3, GL_UNSIGNED_SHORT, 0);
     }
     m_pickPassShader.setVec3("idColor", vec3(.2, .5, .8));
     for (int n = 0; n < cWorld.m_dynamic.size(); n++) {
         auto cHull = &cWorld.m_dynamic[n];
-        m_pickPassShader.setMat4("modelMatrix", mat4(cHull->rotation) * mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(cHull->position, 1)));
+        m_pickPassShader.setMat4("modelMatrix", mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(cHull->position, 1)) * mat4(cHull->rotation));
         glBindVertexArray(cHull->wireframeVAO);
         glDrawElements(GL_TRIANGLES, cHull->faces.m_numElements * 3, GL_UNSIGNED_SHORT, 0);
     }
@@ -668,9 +668,6 @@ void BatchRenderer::loadResources(ResourceManager* resource) {
     cameraMesh = resource->getMesh("Camera");
 
     viz.Init(resource);
-    cWorld.testCreate(resource);
-    cWorld.CreateNewCubeHull(resource, vec3(2, 0.5, 2), 1);
-    cWorld.CreateNewCapsule(resource, vec3(-2, 0.6f, -2), 1, .55f);
 }
 
 

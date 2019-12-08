@@ -110,6 +110,15 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
 
     m_debugCamera.Position = vec3(-4, 2, -4);
     m_debugCamera.YawPitchRoll = vec3(-45, -30, 0);
+
+    // Load collision info
+    //cWorld.testCreate(&m_Resource);
+    cWorld.CreateNewCubeHull(&m_Resource, vec3(0, -2.5, 0), 75, 5, 75);
+    cWorld.CreateNewCubeHull(&m_Resource, vec3(0, 1.5, -4), 8, 3, 3);
+    UID_t id = cWorld.CreateNewCubeHull(&m_Resource, vec3(-5.42, 1, 1.88), 2);
+    cWorld.getHullFromID(id)->rotation.toYawPitchRoll(38.27, 0, 0);
+    cWorld.CreateNewCubeHull(&m_Resource, vec3(-3.41, 0.5, -0.89), .75, 1.5, .75);
+    cWorld.CreateNewCubeHull(&m_Resource, vec3(-1.47, 0.5, 2.09), .75, 1.5, .75);
 }
 
 void Engine::LoadLevel(std::string levelPath) {
