@@ -1,21 +1,5 @@
 #include "Visualizer.hpp"
 
-int Poly::GetSupport(const vec3& d) {
-    int bestIndex = 0;
-    float bestValue = m_points[0].dot(d);
-    for (int i = 1; i < m_count; ++i)
-    {
-        float value = m_points[i].dot(d);
-        if (value > bestValue)
-        {
-            bestIndex = i;
-            bestValue = value;
-        }
-    }
-
-    return bestIndex;
-}
-
 vec3 Simplex::GetSearchDirection() {
     // calcualte the search direction based on current simplex
     switch (m_count)
@@ -484,17 +468,15 @@ float Simplex::GetDistance() {
 // Compute the distance between two polygons using the GJK algorithm.
 void Distance3D(Output* output, gjk_Input& input)
 {
-    Poly* polygon1 = &input.polygon1;
-    Poly* polygon2 = &input.polygon2;
+    CollisionHull* polygon1 = &input.polygon1;
+    CollisionHull* polygon2 = &input.polygon2;
 
     // Initialize the simplex.
     Simplex simplex;
     simplex.m_vertexA.index1 = 0;
     simplex.m_vertexA.index2 = 0;
-    vec3 localPoint1 = polygon1->m_points[0]; // should transform into poly-space
-    vec3 localPoint2 = polygon2->m_points[0];
-    simplex.m_vertexA.point1 = localPoint1;
-    simplex.m_vertexA.point2 = localPoint2;
+    simplex.m_vertexA.point1 = polygon1->GetVertWorldSpace(0);
+    simplex.m_vertexA.point2 = polygon2->GetVertWorldSpace(0);
     simplex.m_vertexA.point = simplex.m_vertexA.point2 - simplex.m_vertexA.point1;
     simplex.m_vertexA.u = 1.0f;
     simplex.m_vertexA.index1 = 0;
@@ -513,6 +495,8 @@ void Distance3D(Output* output, gjk_Input& input)
     // can check for duplicates and prevent cycling.
     int save1[4], save2[4];
     int saveCount = 0;
+
+    int numItsIncreasing = 0;
 
     // Main iteration loop.
     const int k_maxIters = 20;
@@ -550,6 +534,12 @@ void Distance3D(Output* output, gjk_Input& input)
             assert(false);
         }
 
+        float d2 = simplex.GetDistance();
+        if (d2 >= simplex.m_distance) {
+            numItsIncreasing++;
+        }
+        simplex.m_distance = d2;
+
         // Record for visualization.
         output->simplices[output->simplexCount++] = simplex;
 
@@ -560,12 +550,10 @@ void Distance3D(Output* output, gjk_Input& input)
             break;
         }
 
-        float d2 = simplex.GetDistance();
-        if (d2 >= simplex.m_distance) {
+        if (numItsIncreasing >= MAX_INCREASING_ITS) {
             term = Output::TermCode::e_distanceIncrease;
-            break; // check if this is the correct thing to do.
+            break;
         }
-        simplex.m_distance = d2;
 
         // Get search direction.
         vec3 d = simplex.GetSearchDirection();
@@ -579,10 +567,10 @@ void Distance3D(Output* output, gjk_Input& input)
 
         // Compute a tentative new simplex vertex using support points.
         simplexVertex* vertex = vertices + simplex.m_count;
-        vertex->index1 = polygon1->GetSupport(-d);
-        vertex->point1 = polygon1->m_points[vertex->index1];
-        vertex->index2 = polygon2->GetSupport(d);
-        vertex->point2 = polygon2->m_points[vertex->index2];
+        vertex->index1 = polygon1->GetSupport(polygon1->rotation.getTranspose() * (-d));
+        vertex->point1 = polygon1->GetVertWorldSpace(vertex->index1);
+        vertex->index2 = polygon2->GetSupport(polygon2->rotation.getTranspose() * (d));
+        vertex->point2 = polygon2->GetVertWorldSpace(vertex->index2);
         vertex->point = vertex->point2 - vertex->point1;
 
         // Iteration count is equated to the number of support point calls.
@@ -617,31 +605,44 @@ void Distance3D(Output* output, gjk_Input& input)
     output->m_term = term;
 }
 
-void Visualizer::Init() {
-    in.polygon1.m_points[0] = vec3(-1, 0, 1);
-    in.polygon1.m_points[1] = vec3(-2, 0, 1);
-    in.polygon1.m_points[2] = vec3(-2, 0, -1);
-    in.polygon1.m_points[3] = vec3(-1, 0, -1);
-    in.polygon1.m_points[4] = vec3(-1.5, 2, 0);
-    in.polygon1.m_count = 5;
-    in.polygon1.faces[0] = Tri(0, 1, 2);
-    in.polygon1.faces[1] = Tri(0, 2, 3);
-    in.polygon1.faces[2] = Tri(0, 1, 4);
-    in.polygon1.faces[3] = Tri(1, 2, 4);
-    in.polygon1.faces[4] = Tri(2, 3, 4);
-    in.polygon1.faces[5] = Tri(3, 0, 4);
-    in.polygon1.numFaces = 6;
+#include "Resource\ResourceManager.hpp"
+void Visualizer::Init(ResourceManager* resource) {
+    in.polygon1.loadVerts(resource, 5, 
+        vec3(.5, 0, 1),
+        vec3(-.5, 0, 1),
+        vec3(-.5, 0, -1),
+        vec3(.5, 0, -1),
+        vec3(0, 2, 0)
+    );
+    in.polygon1.loadEdges(resource, 8,
+        Edge(0, 1),
+        Edge(1, 2),
+        Edge(2, 3),
+        Edge(3, 0),
+        Edge(0, 4),
+        Edge(1, 4),
+        Edge(2, 4),
+        Edge(3, 4)
+        );
+    in.polygon1.bufferData();
+    in.polygon1.position = vec3(-1.5, 0, 0);
 
-    in.polygon2.m_points[0] = vec3(3, 0, 0);
-    in.polygon2.m_points[1] = vec3(2, 0, -1);
-    in.polygon2.m_points[2] = vec3(2, 0, 1);
-    in.polygon2.m_points[3] = vec3(1.5, 1, 0);
-    in.polygon2.m_count = 4;
-    in.polygon2.faces[0] = Tri(0, 1, 2);
-    in.polygon2.faces[1] = Tri(0, 1, 3);
-    in.polygon2.faces[2] = Tri(1, 2, 3);
-    in.polygon2.faces[3] = Tri(2, 0, 3);
-    in.polygon2.numFaces = 4;
+    in.polygon2.loadVerts(resource, 4,
+        vec3(3, 0, 0),
+        vec3(2, 0, -1),
+        vec3(2, 0, 1),
+        vec3(1.5, 1, 0)
+        );
+
+    in.polygon2.loadEdges(resource, 6,
+        Edge(0, 1),
+        Edge(1, 2),
+        Edge(2, 0),
+        Edge(0, 3),
+        Edge(1, 3),
+        Edge(2, 3)
+        );
+    in.polygon2.bufferData();
 
     Distance3D(&out, in);
 
@@ -652,34 +653,11 @@ void Visualizer::Init() {
 }
 
 void Visualizer::Step() {
+    currStep++;
     if (currStep >= out.simplexCount)
         currStep = 0;
-
-    printf("GJK: simplex %d of %d\n", currStep+1, out.simplexCount);
-    switch (out.m_term)
-    {
-    case 0:
-        printf("Shapes are intersecting\n");
-        break;
-    case 1:
-        printf("Distance started increasing\n");
-        break;
-    case 2:
-        printf("Zero search direction\n");
-        break;
-    case 3:
-        printf("Duplicated verts\n");
-        break;
-    case 4:
-        printf("Maximum iterations reached\n");
-        break;
-    default:
-        break;
-    }
 
     Simplex& s = out.simplices[currStep];
 
     s.GetWitnessPoints(&line[0], &line[1]);
-
-    currStep++;
 }

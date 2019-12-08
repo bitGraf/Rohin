@@ -1,27 +1,13 @@
 #pragma once
 
 #include "Collision\CollisionMath.hpp"
+#include "Collision\CollisionHull.hpp"
 #include <vector>
 #include <cassert>
 
 #define MAX_POINTS 10
 #define MAX_FACES 10
-
-struct Tri {
-    int a, b, c;
-    Tri() { a = b = c = 0; }
-    Tri(int _a, int _b, int _c) : a(_a), b(_b), c(_c) {}
-};
-
-struct Poly {
-    int GetSupport(const vec3& d);
-
-    vec3 m_points[MAX_POINTS];
-    int m_count;
-
-    Tri faces[MAX_FACES];
-    int numFaces;
-};
+#define MAX_INCREASING_ITS 5
 
 struct simplexVertex {
     vec3 point1;
@@ -70,14 +56,15 @@ struct Output {
 };
 
 struct gjk_Input {
-    Poly polygon1;
-    Poly polygon2;
+    CollisionHull polygon1;
+    CollisionHull polygon2;
 };
 
 void Distance3D(Output* output, gjk_Input& input);
 
+class ResourceManager;
 struct Visualizer {
-    void Init();
+    void Init(ResourceManager* resource);
     void Step();
 
     vec3 line[2];

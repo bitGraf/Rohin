@@ -5,10 +5,10 @@ CollisionHull::CollisionHull() {
 
 }
 
-vec3 CollisionHull::supportPoint(vec3 search_dir) {
+int CollisionHull::GetSupport(vec3 search_dir) {
     /* This ALL happens inside model space */
-    scalar maxDist = -1;
-    int maxIndex = -1;
+    scalar maxDist = vertices.data[0].dot(search_dir);
+    int maxIndex = 0;
     for (int n = 0; n < vertices.m_numElements; n++) {
         auto v = &vertices.data[n];
         scalar dist = v->dot(search_dir);
@@ -20,7 +20,12 @@ vec3 CollisionHull::supportPoint(vec3 search_dir) {
     }
 
     assert(maxIndex >= 0);
-    return vertices.data[maxIndex];
+    return maxIndex;
+}
+
+vec3 CollisionHull::GetVertWorldSpace(int index) {
+    vec3 local = vertices.data[index];
+    return rotation * local + position;
 }
 
 void CollisionHull::testLoadCube(scalar size, ResourceManager* resource) {
@@ -53,6 +58,32 @@ void CollisionHull::testLoadCube(scalar size, ResourceManager* resource) {
     edges.data[11] = { 3, 7 };
 
     bufferData();
+}
+
+void CollisionHull::loadVerts(ResourceManager* resource, int count...) {
+    vertices = resource->reserveDataBlocks<vec3>(count);
+
+    va_list args;
+    va_start(args, count);
+
+    for (int n = 0; n < count; n++) {
+        vertices.data[n] = va_arg(args, vec3);
+    }
+
+    va_end(args);
+}
+
+void CollisionHull::loadEdges(ResourceManager* resource, int count...) {
+    edges = resource->reserveDataBlocks<Edge>(count);
+
+    va_list args;
+    va_start(args, count);
+
+    for (int n = 0; n < count; n++) {
+        edges.data[n] = va_arg(args, Edge);
+    }
+
+    va_end(args);
 }
 
 void CollisionHull::bufferData() {

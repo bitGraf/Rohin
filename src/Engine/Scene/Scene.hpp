@@ -20,9 +20,6 @@
 #include "GameObject\Light.hpp"
 #include "GameObject\AICharacter.hpp"
 #include "GameObject\TriggerVolume.hpp"
-#include "GameObject\CollisionObject.hpp"
-
-#include "Collision\GJK.hpp"
 
 const int MAX_GAME_OBJECTS = 100;
 
@@ -54,7 +51,6 @@ public:
             DirLights.clear();
             Players.clear();
             Volumes.clear();
-            Collisions.clear();
         }
 
         std::vector<RenderableObject*> Renderable;
@@ -65,7 +61,6 @@ public:
         //std::vector<CharacterObject*> Characters;
         std::vector<PlayerObject*> Players;
         std::vector<TriggerVolume*> Volumes;
-        std::vector<CollisionObject*> Collisions;
     };
     GameObjectLists_t objectsByType;
 

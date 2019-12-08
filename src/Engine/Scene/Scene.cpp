@@ -128,14 +128,6 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
 
                 go = k.data;
             }
-            else if (entType.compare("COLLISION") == 0) {
-                auto k = resource->reserveDataBlocks<CollisionObject>(1);
-
-                k.data->Create(iss, resource);
-                objectsByType.Collisions.push_back(k.data);
-
-                go = k.data;
-            }
             else if (recognizeCustomEntity(entType)) {
                 processCustomEntityLoad(entType, iss, resource);
             } 
@@ -189,26 +181,6 @@ void Scene::update(double dt) {
     // TODO : Find better way than iterating through a hash map every frame
     for (auto k : m_masterMap) {
         k.second->Update(dt);
-    }
-
-    // Perform all collision tests
-    return;
-    for (int c1 = 0; c1 < objectsByType.Collisions.size(); c1++) {
-        for (int c2 = c1 + 1; c2 < objectsByType.Collisions.size(); c2++) {
-            // test collision b/w c1 and c2
-            auto col1 = objectsByType.Collisions[c1];
-            auto col2 = objectsByType.Collisions[c2];
-            vec3 mtv;
-            float slope = 0;
-            if (GJK(col1, col2, &mtv)) {
-                slope = acos(mtv.normalize().dot(vec3(0, 1, 0))) * r2d;
-                MessageBus::sendMessage(
-                    Message("CollisionEvent", 2, 
-                        static_cast<Message::Datatype>(col1->getID()),
-                        static_cast<Message::Datatype>(col2->getID()))
-                );
-            }
-        }
     }
 }
 

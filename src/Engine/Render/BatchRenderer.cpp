@@ -146,9 +146,6 @@ CoreSystem* BatchRenderer::create() {
 
     glBindVertexArray(0);
 
-
-    viz.Init();
-
     return this;
 }
 
@@ -546,7 +543,8 @@ void BatchRenderer::renderDebug(
 
         glBindVertexArray(0);
 
-        m_pickPassShader.use();
+        // Draw buffered wireframe meshes
+        /*m_pickPassShader.use();
         m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
         m_pickPassShader.setVec3("idColor", vec3(1, .2, .4));
         for (auto k : GetScene()->objectsByType.Collisions) {
@@ -556,7 +554,7 @@ void BatchRenderer::renderDebug(
 
             glBindVertexArray(hull->wireframeVAO);
             glDrawElements(GL_LINES, hull->edges.m_numElements * 2, GL_UNSIGNED_SHORT, 0);
-        }
+        }*/
 
         glEnable(GL_DEPTH_TEST);
     }
@@ -567,34 +565,40 @@ void BatchRenderer::renderDebug(
     // TEMPORARY VISUALIZATION
     vec3 red = vec3(1, 0, 0);
     vec3 orange = vec3(1, .5, .3);
+
+    // Draw buffered wireframe meshes
+    m_pickPassShader.use();
+    m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+    m_pickPassShader.setVec3("idColor", white);
+    
+    auto hull = &viz.in.polygon1;
+    m_pickPassShader.setMat4("modelMatrix", mat4(hull->rotation) * mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(hull->position, 1)));
+    glBindVertexArray(hull->wireframeVAO);
+    glDrawElements(GL_LINES, hull->edges.m_numElements * 2, GL_UNSIGNED_SHORT, 0);
+    
+    hull = &viz.in.polygon2;
+    m_pickPassShader.setMat4("modelMatrix", mat4(hull->rotation) * mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(hull->position, 1)));
+    glBindVertexArray(hull->wireframeVAO);
+    glDrawElements(GL_LINES, hull->edges.m_numElements * 2, GL_UNSIGNED_SHORT, 0);
+
+
+
     m_debugLineShader.use();
     m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
-
-    vec3 a, b;
-    vec3 *verts = viz.in.polygon1.m_points;
-    for (int n = 0; n < viz.in.polygon1.numFaces; n++) {
-        Tri &f = viz.in.polygon1.faces[n];
-
-        drawLine(verts[f.a], verts[f.b], white, white);
-        drawLine(verts[f.b], verts[f.c], white, white);
-        drawLine(verts[f.c], verts[f.a], white, white);
-    }
-
-    verts = viz.in.polygon2.m_points;
-    for (int n = 0; n < viz.in.polygon2.numFaces; n++) {
-        Tri &f = viz.in.polygon2.faces[n];
-
-        drawLine(verts[f.a], verts[f.b], white, white);
-        drawLine(verts[f.b], verts[f.c], white, white);
-        drawLine(verts[f.c], verts[f.a], white, white);
-    }
-
-    a = viz.line[0];
-    b = viz.line[1];
-    drawLine((a), (b), orange, orange);
+    drawLine(viz.line[0], viz.line[1], orange, orange);
+    drawPoint(viz.line[0], red);
+    drawPoint(viz.line[1], red);
 
     drawLine(vec3(), vec3(1, 0, 0), vec3(1, 0, 0), vec3(1, 0, 0));
     drawLine(vec3(), vec3(0, 0, 1), vec3(0, 0, 1), vec3(0, 0, 1));
+
+    debugFont.drawText(300, 5, vec4(orange,1),   "Simplex Info:");
+    sprintf(text, " Termination reason: %d", viz.out.m_term);
+    debugFont.drawText(300, 20, vec4(orange, 1), text);
+    sprintf(text, " Simplex view[J]: %d/%d", viz.currStep+1, viz.out.simplexCount);
+    debugFont.drawText(300, 35, vec4(orange, 1), text);
+    sprintf(text, " Distance: %.3f", sqrt(viz.out.simplices[viz.currStep].m_distance));
+    debugFont.drawText(300, 50, vec4(orange, 1), text);
 
     ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -658,6 +662,8 @@ void BatchRenderer::loadResources(ResourceManager* resource) {
     resource->loadModelFromFile("Data/Models/camera.glb", true);
 
     cameraMesh = resource->getMesh("Camera");
+
+    viz.Init(resource);
 }
 
 

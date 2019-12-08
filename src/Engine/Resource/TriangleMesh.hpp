@@ -10,7 +10,9 @@ struct Triangle {
 };
 
 struct Edge {
-    index_t indices[2] = { 0,0 };
+    index_t indices[2];
+    Edge() : indices{ 0,0 } {}
+    Edge(index_t n1, index_t n2) : indices{ n1,n2 } {}
 };
 
 typedef DataBlock<math::vec4>   vec4Array;

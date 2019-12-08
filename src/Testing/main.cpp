@@ -1,6 +1,5 @@
 #include "Collision\CollisionWorld.hpp"
 #include "Collision\CollisionHull.hpp"
-#include "Collision\GJK.hpp"
 #include "Collision\CollisionMath.hpp"
 
 scalar springMassAcc(scalar x) {
