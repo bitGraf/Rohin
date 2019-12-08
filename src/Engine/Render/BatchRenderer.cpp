@@ -1,11 +1,15 @@
 #include "BatchRenderer.hpp"
 #include "Scene\Scene.hpp"
+#include "Collision\Visualizer.hpp"
+
+Visualizer viz;
 
 BatchRenderer::BatchRenderer() {}
 
 BatchRenderer::~BatchRenderer() {}
 
-void BatchRenderer::update(double dt) {}
+void BatchRenderer::update(double dt) {
+}
 
 void BatchRenderer::handleMessage(Message msg) {
     if (msg.isType("InputKey")) {
@@ -29,6 +33,10 @@ void BatchRenderer::handleMessage(Message msg) {
             m_debugMeshShader.create("DebugMesh.vert", "DebugMesh.frag", "debugMeshShader");
             m_pickPassShader.create("shadow.vert", "pickPass.frag", "pickPassShader");
             //m_wireframeShader.create("wireframe.vert", "wireframe.frag", "wireframeShader");
+        }
+
+        if (key == GLFW_KEY_J && action == GLFW_PRESS) {
+            viz.Step();
         }
     }
 
@@ -137,6 +145,9 @@ CoreSystem* BatchRenderer::create() {
     glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, sizeof(f32), (void*)0);
 
     glBindVertexArray(0);
+
+
+    viz.Init();
 
     return this;
 }
@@ -405,7 +416,7 @@ void BatchRenderer::gammaCorrect(RenderBatch* batch) {
 
 void BatchRenderer::renderDebug(
     RenderBatch* batch,
-    double frameCount, 
+    double frameCount,
     long long lastFrame,
     bool debugMode) {
 
@@ -416,9 +427,9 @@ void BatchRenderer::renderDebug(
     long long scale = 1LL;
     int y = -13;
 
-    sprintf(text, "FPS: %-2.1lf [%lld us]", 1000000.0/static_cast<double>(frameCount), lastFrame);
+    sprintf(text, "FPS: %-2.1lf [%lld us]", 1000000.0 / static_cast<double>(frameCount), lastFrame);
     debugFont.drawText(scr_width - 5, 5, white, text, ALIGN_TOP_RIGHT);
-    sprintf(text, "FPS Lock: %s", 
+    sprintf(text, "FPS Lock: %s",
         g_options.limitFramerate ? (g_options.highFramerate ? "250" : "50") : "NONE");
     debugFont.drawText(scr_width - 5, 23, white, text, ALIGN_TOP_RIGHT);
 
@@ -465,7 +476,7 @@ void BatchRenderer::renderDebug(
         m_debugMeshShader.setVec3("sun.direction", batch->sun->Direction);
         m_debugMeshShader.setVec3("sun.color", batch->sun->Color);
         m_debugMeshShader.setFloat("sun.strength", batch->sun->Strength);
-        m_debugMeshShader.setVec3("objColor", vec3(1,1,1));
+        m_debugMeshShader.setVec3("objColor", vec3(1, 1, 1));
         m_debugMeshShader.setVec3("camPos", batch->viewPos); // use viewPos so camera model has correct specular
 
         glBindVertexArray(cameraMesh->VAO);
@@ -507,7 +518,7 @@ void BatchRenderer::renderDebug(
         m_debugLineShader.use();
         for (auto k : GetScene()->objectsByType.Volumes) {
             vec3 pos = k->Position;
-            drawAABBB(pos, k->bounds_min, k->bounds_max, k->Inside() ? vec3 (1,.2,.2) : vec3(1));
+            drawAABBB(pos, k->bounds_min, k->bounds_max, k->Inside() ? vec3(1, .2, .2) : vec3(1));
         }
         for (auto k : GetScene()->objectsByType.DirLights) {
             vec3 pos = k->Position;
@@ -522,14 +533,14 @@ void BatchRenderer::renderDebug(
         for (auto k : GetScene()->objectsByType.PointLights) {
             vec3 pos = k->Position;
             const scalar pointLightLength = .3;
-            drawLine(pos, pos + vec3( 1,  1,  1) *pointLightLength, k->Color, k->Color);
-            drawLine(pos, pos + vec3( 1,  1, -1) *pointLightLength, k->Color, k->Color);
-            drawLine(pos, pos + vec3(-1,  1,  1) *pointLightLength, k->Color, k->Color);
-            drawLine(pos, pos + vec3(-1,  1, -1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(1, 1, 1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(1, 1, -1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(-1, 1, 1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(-1, 1, -1) *pointLightLength, k->Color, k->Color);
 
-            drawLine(pos, pos + vec3( 1, -1,  1) *pointLightLength, k->Color, k->Color);
-            drawLine(pos, pos + vec3( 1, -1, -1) *pointLightLength, k->Color, k->Color);
-            drawLine(pos, pos + vec3(-1, -1,  1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(1, -1, 1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(1, -1, -1) *pointLightLength, k->Color, k->Color);
+            drawLine(pos, pos + vec3(-1, -1, 1) *pointLightLength, k->Color, k->Color);
             drawLine(pos, pos + vec3(-1, -1, -1) *pointLightLength, k->Color, k->Color);
         }
 
@@ -552,6 +563,41 @@ void BatchRenderer::renderDebug(
     sprintf(text, "Debug- - - - %-3lld us", dur_debug / scale);
     debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    // TEMPORARY VISUALIZATION
+    vec3 red = vec3(1, 0, 0);
+    vec3 orange = vec3(1, .5, .3);
+    m_debugLineShader.use();
+    m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+
+    vec3 a, b;
+    vec3 *verts = viz.in.polygon1.m_points;
+    for (int n = 0; n < viz.in.polygon1.numFaces; n++) {
+        Tri &f = viz.in.polygon1.faces[n];
+
+        drawLine(verts[f.a], verts[f.b], white, white);
+        drawLine(verts[f.b], verts[f.c], white, white);
+        drawLine(verts[f.c], verts[f.a], white, white);
+    }
+
+    verts = viz.in.polygon2.m_points;
+    for (int n = 0; n < viz.in.polygon2.numFaces; n++) {
+        Tri &f = viz.in.polygon2.faces[n];
+
+        drawLine(verts[f.a], verts[f.b], white, white);
+        drawLine(verts[f.b], verts[f.c], white, white);
+        drawLine(verts[f.c], verts[f.a], white, white);
+    }
+
+    a = viz.line[0];
+    b = viz.line[1];
+    drawLine((a), (b), orange, orange);
+
+    drawLine(vec3(), vec3(1, 0, 0), vec3(1, 0, 0), vec3(1, 0, 0));
+    drawLine(vec3(), vec3(0, 0, 1), vec3(0, 0, 1), vec3(0, 0, 1));
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+
     dur_debug = profileRenderPass();
 }
 
@@ -563,6 +609,16 @@ void BatchRenderer::drawLine(vec3 A, vec3 B, vec3 colorA, vec3 colorB) {
 
     glBindVertexArray(debugLineVAO);
     glDrawArrays(GL_LINES, 0, 2);
+}
+
+void BatchRenderer::drawPoint(vec3 P, vec3 Color) {
+    m_debugLineShader.setVec3("vertexA", P);
+    m_debugLineShader.setVec3("vertexB", P);
+    m_debugLineShader.setVec3("colorA", Color);
+    m_debugLineShader.setVec3("colorB", Color);
+
+    glBindVertexArray(debugLineVAO);
+    glDrawArrays(GL_POINTS, 0, 1);
 }
 
 void BatchRenderer::drawAABBB(vec3 center, vec3 min, vec3 max, vec3 color) {

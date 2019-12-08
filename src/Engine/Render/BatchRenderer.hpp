@@ -43,6 +43,7 @@ public:
 
 private:
     void drawLine(vec3 A, vec3 B, vec3 colorA, vec3 colorB);
+    void drawPoint(vec3 P, vec3 Color);
     void drawAABBB(vec3 center, vec3 min, vec3 max, vec3 color);
 
     using _clock = std::chrono::system_clock;

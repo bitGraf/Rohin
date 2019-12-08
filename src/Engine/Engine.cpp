@@ -124,6 +124,7 @@ void Engine::Update(double dt) {
     // Don't send input events to GameObjects while in debug mode
     Input::setHandleInput(!debugMode);
     m_MainWindow.update(dt);
+    m_Renderer.update(dt);
 
     if (debugMode) {
         m_debugCamera.Update(dt); // Only update the DebugCamera
