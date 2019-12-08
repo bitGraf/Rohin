@@ -6,7 +6,9 @@
 #include "Resource/MemoryManager.hpp"
 
 struct Triangle {
-    index_t indices[3] = { 0,0,0 };
+    index_t indices[3];
+    Triangle() : indices{ 0,0,0 } {}
+    Triangle(index_t n1, index_t n2, index_t n3) : indices{ n1,n2,n3 } {}
 };
 
 struct Edge {
@@ -21,6 +23,7 @@ typedef DataBlock<math::vec2>   vec2Array;
 typedef DataBlock<index_t>      indexArray;
 typedef DataBlock<Triangle>     triangleArray;
 typedef DataBlock<Edge>         EdgeArray;
+typedef DataBlock<Triangle>     FaceArray;
 
 /* 104 bytes */
 class TriangleMesh {

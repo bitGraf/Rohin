@@ -2,6 +2,7 @@
 
 #include "Collision\CollisionMath.hpp"
 #include "Collision\CollisionHull.hpp"
+#include "Collision\CollisionWorld.hpp"
 #include <vector>
 #include <cassert>
 
@@ -62,15 +63,20 @@ struct gjk_Input {
 
 void Distance3D(Output* output, gjk_Input& input);
 
+struct Line {
+    vec3 a, b;
+};
+
 class ResourceManager;
 struct Visualizer {
     void Init(ResourceManager* resource);
     void Step();
 
-    vec3 line[2];
+    std::vector<Line> m_lines;
+
+    RaycastResult res;
 
     Output out;
     gjk_Input in;
-    int currStep;
 
 };

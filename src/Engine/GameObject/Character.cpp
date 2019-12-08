@@ -18,16 +18,6 @@ void CharacterObject::Update(double dt) {
         // Transform velocity into world-space
         Velocity = getRelativeAxes() * Velocity;
 
-        // Get actual Velocity that the character can acheive from world.
-        if (cHull_ptr) {
-            // if I have collision
-
-            ShapeCastResult res;
-            cWorld.shapeCast(cHull_ptr, Position, Velocity.get_unit(), &res);
-
-            // use ShapeCastResults to know if the player can move in this direction.
-        }
-
         // Integrate
         Position += Velocity * dt;
 

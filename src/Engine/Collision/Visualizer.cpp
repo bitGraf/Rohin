@@ -607,57 +607,19 @@ void Distance3D(Output* output, gjk_Input& input)
 
 #include "Resource\ResourceManager.hpp"
 void Visualizer::Init(ResourceManager* resource) {
-    in.polygon1.loadVerts(resource, 5, 
-        vec3(.5, 0, 1),
-        vec3(-.5, 0, 1),
-        vec3(-.5, 0, -1),
-        vec3(.5, 0, -1),
-        vec3(0, 2, 0)
-    );
-    in.polygon1.loadEdges(resource, 8,
-        Edge(0, 1),
-        Edge(1, 2),
-        Edge(2, 3),
-        Edge(3, 0),
-        Edge(0, 4),
-        Edge(1, 4),
-        Edge(2, 4),
-        Edge(3, 4)
-        );
-    in.polygon1.bufferData();
-    in.polygon1.position = vec3(-1.5, 0, 0);
-
-    in.polygon2.loadVerts(resource, 4,
-        vec3(3, 0, 0),
-        vec3(2, 0, -1),
-        vec3(2, 0, 1),
-        vec3(1.5, 1, 0)
-        );
-
-    in.polygon2.loadEdges(resource, 6,
-        Edge(0, 1),
-        Edge(1, 2),
-        Edge(2, 0),
-        Edge(0, 3),
-        Edge(1, 3),
-        Edge(2, 3)
-        );
-    in.polygon2.bufferData();
-
-    Distance3D(&out, in);
-
-    line[0] = out.point1;
-    line[1] = out.point2;
-
-    currStep = 0;
 }
 
 void Visualizer::Step() {
-    currStep++;
-    if (currStep >= out.simplexCount)
-        currStep = 0;
+    m_lines.clear();
 
-    Simplex& s = out.simplices[currStep];
+    in.polygon1 = cWorld.m_dynamic[0];
+    for (int n = 0; n < cWorld.m_static.size(); n++) {
+        in.polygon2 = cWorld.m_static[n];
 
-    s.GetWitnessPoints(&line[0], &line[1]);
+        Distance3D(&out, in);
+        Line l = {out.point1, out.point2};
+        m_lines.push_back(l);
+    }
+
+    res = cWorld.Raycast(cWorld.m_dynamic[0].position, vec3(0,-1,0), 0.5f);
 }

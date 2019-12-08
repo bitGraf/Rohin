@@ -8,6 +8,15 @@
 
 typedef u64 UID_t;
 
+struct RaycastResult {
+    f32 t;
+    UID_t colliderID;
+    vec3 contactPoint;
+    vec3 normal;
+
+    vec3 start, end;
+};
+
 struct ShapeCastContact {
     f32 t;
     UID_t colliderID;
@@ -26,14 +35,15 @@ class CollisionWorld {
 public:
     CollisionWorld();
 
-    void step(double dt);
+    void Update(double dt);
 
-    vec3 getVelocity(CollisionHull* hull, vec3 wishVel);
+    void testCreate(ResourceManager* resource);
+    RaycastResult Raycast(vec3 start, vec3 end);
+    RaycastResult Raycast(vec3 start, vec3 direction, scalar distance);
 
-    void shapeCast(CollisionHull* shape, vec3 start, vec3 dir, ShapeCastResult *res);
-
-private:
-    std::vector<CollisionHull> m_hulls;
+//private:
+    std::vector<CollisionHull> m_static;
+    std::vector<CollisionHull> m_dynamic;
 };
 
 extern CollisionWorld cWorld;

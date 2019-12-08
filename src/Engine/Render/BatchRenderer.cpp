@@ -565,40 +565,46 @@ void BatchRenderer::renderDebug(
     // TEMPORARY VISUALIZATION
     vec3 red = vec3(1, 0, 0);
     vec3 orange = vec3(1, .5, .3);
-
-    // Draw buffered wireframe meshes
-    m_pickPassShader.use();
-    m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
-    m_pickPassShader.setVec3("idColor", white);
-    
-    auto hull = &viz.in.polygon1;
-    m_pickPassShader.setMat4("modelMatrix", mat4(hull->rotation) * mat4(vec4(1,0,0,0), vec4(0,1,0,0), vec4(0,0,1,0), vec4(hull->position, 1)));
-    glBindVertexArray(hull->wireframeVAO);
-    glDrawElements(GL_LINES, hull->edges.m_numElements * 2, GL_UNSIGNED_SHORT, 0);
-    
-    hull = &viz.in.polygon2;
-    m_pickPassShader.setMat4("modelMatrix", mat4(hull->rotation) * mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(hull->position, 1)));
-    glBindVertexArray(hull->wireframeVAO);
-    glDrawElements(GL_LINES, hull->edges.m_numElements * 2, GL_UNSIGNED_SHORT, 0);
-
-
+    vec3 green = vec3(.2, .5, .8);
 
     m_debugLineShader.use();
     m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
-    drawLine(viz.line[0], viz.line[1], orange, orange);
-    drawPoint(viz.line[0], red);
-    drawPoint(viz.line[1], red);
-
-    drawLine(vec3(), vec3(1, 0, 0), vec3(1, 0, 0), vec3(1, 0, 0));
-    drawLine(vec3(), vec3(0, 0, 1), vec3(0, 0, 1), vec3(0, 0, 1));
+    for (int n = 0; n < viz.m_lines.size(); n++) {
+        //drawLine(viz.m_lines[n].a, viz.m_lines[n].b, orange, orange);
+        //drawPoint(viz.m_lines[n].a, red);
+        //drawPoint(viz.m_lines[n].b, red);
+    }
+    drawLine(viz.res.start, viz.res.end, orange, red);
+    drawPoint(viz.res.contactPoint, green);
 
     debugFont.drawText(300, 5, vec4(orange,1),   "Simplex Info:");
     sprintf(text, " Termination reason: %d", viz.out.m_term);
     debugFont.drawText(300, 20, vec4(orange, 1), text);
-    sprintf(text, " Simplex view[J]: %d/%d", viz.currStep+1, viz.out.simplexCount);
+    sprintf(text, " Distance: %.3f", viz.out.distance);
     debugFont.drawText(300, 35, vec4(orange, 1), text);
-    sprintf(text, " Distance: %.3f", sqrt(viz.out.simplices[viz.currStep].m_distance));
-    debugFont.drawText(300, 50, vec4(orange, 1), text);
+
+    // Draw buffered wireframe meshes
+    m_pickPassShader.use();
+    m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+    m_pickPassShader.setVec3("idColor", vec3(.7, 0, .6));
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDisable(GL_CULL_FACE);
+    // Render Collision World
+    for (int n = 0; n < cWorld.m_static.size(); n++) {
+        auto cHull = &cWorld.m_static[n];
+        m_pickPassShader.setMat4("modelMatrix", mat4(cHull->rotation) * mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(cHull->position, 1)));
+        glBindVertexArray(cHull->wireframeVAO);
+        glDrawElements(GL_TRIANGLES, cHull->faces.m_numElements * 3, GL_UNSIGNED_SHORT, 0);
+    }
+    m_pickPassShader.setVec3("idColor", vec3(.2, .5, .8));
+    for (int n = 0; n < cWorld.m_dynamic.size(); n++) {
+        auto cHull = &cWorld.m_dynamic[n];
+        m_pickPassShader.setMat4("modelMatrix", mat4(cHull->rotation) * mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(cHull->position, 1)));
+        glBindVertexArray(cHull->wireframeVAO);
+        glDrawElements(GL_TRIANGLES, cHull->faces.m_numElements * 3, GL_UNSIGNED_SHORT, 0);
+    }
+    glEnable(GL_CULL_FACE);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -664,6 +670,7 @@ void BatchRenderer::loadResources(ResourceManager* resource) {
     cameraMesh = resource->getMesh("Camera");
 
     viz.Init(resource);
+    cWorld.testCreate(resource);
 }
 
 
