@@ -74,7 +74,7 @@ RaycastResult CollisionWorld::Raycast(vec3 start, vec3 end) {
             //v *= s;
             //w *= s;
 
-            if ((u > 0.0f && v > 0.0f && w > 0.0f)) {
+            if ((u >= 0.0f && v >= 0.0f && w >= 0.0f)) {
                 // The ray intersects the triangle
                 if (t < closest_t) {
                     // this is the new closest t value

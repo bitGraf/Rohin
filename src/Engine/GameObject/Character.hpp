@@ -42,6 +42,7 @@ protected:
 
     float speed;
     float rotateSpeed;
+    bool grounded;
 
     mat3 getRelativeAxes();
 

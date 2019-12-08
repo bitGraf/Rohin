@@ -13,36 +13,45 @@ CharacterObject::CharacterObject() :
 {}
 
 void CharacterObject::Update(double dt) {
-    if (Velocity.length_2() != 0.0) {
-
-        // Transform velocity into world-space
-        Velocity = getRelativeAxes() * Velocity;
-
-        // Integrate
-        Position += Velocity * dt;
-
-        if (m_relativeSource != eRelativeSource::Character && rotateToMovement) {
-            vec3 direction = Velocity.get_unit();
-
-            YawPitchRoll.x = atan2(-direction.z, direction.x) * r2d;
-        }
-
-        Velocity = vec3();
-    }
+    // Transform velocity into world-space
+    Velocity = getRelativeAxes() * Velocity;
 
     // Perform collision logic
     if (m_collisionHullId > 0) {
         // it has collision info
+        vec3 fallDir(0, -1, 0);
+        res = cWorld.Raycast(Position, fallDir, max(-Velocity.y*dt, 0.1)); // raycast down 1 unit
+        printf("Raycast length: %f\n", max(-Velocity.y*dt, 0.1));
 
-        res = cWorld.Raycast(Position, vec3(0, -1, 0), 1.0f);
-
-        if (res.t > 0.1f) {
-            // There is no intersection
-            Position.y -= 0.5f * dt; //slowly drop it
+        if (res.t > 1.0) {
+            Velocity.y -= 9.81*dt;
+            Position += Velocity * dt;
+        }
+        else {
+            if (Velocity.y < 0) {
+                Velocity.y = 0;
+                grounded = true;
+            }
+            Position += Velocity * dt;
         }
 
         CollisionHull* hull = cWorld.getHullFromID(m_collisionHullId);
         hull->position = Position;
+    }
+    else {
+        // Just use normal movement.
+        Position += Velocity * dt;
+    }
+
+    Velocity = vec3(0, Velocity.y, 0);
+    if (Velocity.y < -0.1) {
+        grounded = false;
+    }
+
+    if (m_relativeSource != eRelativeSource::Character && rotateToMovement) {
+        vec3 direction = Velocity.get_unit();
+
+        YawPitchRoll.x = atan2(-direction.z, direction.x) * r2d;
     }
 
     if (AngularVelocity.length_2() != 0.0) {
@@ -75,15 +84,11 @@ CollisionHull* CharacterObject::getHull() {
 
 
 void CharacterObject::MoveForward(float speed_t) {
-    vec3 direction = vec3(1, 0, 0);// createYawPitchRoll_Forward(YawPitchRoll);
-
-    Velocity += direction * speed_t * speed;
+    Velocity.x += speed_t * speed;
 }
 
 void CharacterObject::MoveRight(float speed_t) {
-    vec3 direction = vec3(0, 0, 1);// createYawPitchRoll_Right(YawPitchRoll);
-
-    Velocity += direction * speed_t * speed;
+    Velocity.z += speed_t * speed;
 }
 
 void CharacterObject::Rotate(float speed_t) {
@@ -92,7 +97,10 @@ void CharacterObject::Rotate(float speed_t) {
 }
 
 void CharacterObject::Jump(float strength) {
-    Position.y += 3.0f;
+    if (grounded) {
+        Velocity.y += strength;
+        grounded = false;
+    }
 }
 
 const char* CharacterObject::GetRelativeMovementType() {

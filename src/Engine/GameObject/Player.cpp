@@ -26,10 +26,19 @@ void PlayerObject::Update(double dt) {
     }
 
     CharacterObject::Update(dt);
+
+
+    // Reset character if they fall off the stage
+    if (Position.y < -10) {
+        Position = vec3(0, 2, 0);
+        Velocity = vec3(0, 0, 0);
+    }
 }
 
 void PlayerObject::Create(istringstream &iss, ResourceManager* resource) {
     CharacterObject::Create(iss, resource);
+    Position = vec3(0, 2, 0);
+    Velocity = vec3(0, 0, 0);
     m_collisionHullId = cWorld.CreateNewCapsule(resource, Position, 2, 0.5f);
 }
 
@@ -65,7 +74,7 @@ void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
     }
 
     if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        Jump(1);
+        Jump(6);
     }
 }
 
