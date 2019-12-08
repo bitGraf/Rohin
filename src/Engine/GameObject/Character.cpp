@@ -9,7 +9,7 @@ CharacterObject::CharacterObject() :
     //m_cameraRef(nullptr),
     m_cameraID(0),
     m_relativeSource(eRelativeSource::World),
-    cHull_ptr(nullptr)
+    m_collisionHullId(0)
 {}
 
 void CharacterObject::Update(double dt) {
@@ -30,6 +30,21 @@ void CharacterObject::Update(double dt) {
         Velocity = vec3();
     }
 
+    // Perform collision logic
+    if (m_collisionHullId > 0) {
+        // it has collision info
+
+        res = cWorld.Raycast(Position, vec3(0, -1, 0), 1.0f);
+
+        if (res.t > 0.1f) {
+            // There is no intersection
+            Position.y -= 0.5f * dt; //slowly drop it
+        }
+
+        CollisionHull* hull = cWorld.getHullFromID(m_collisionHullId);
+        hull->position = Position;
+    }
+
     if (AngularVelocity.length_2() != 0.0) {
         YawPitchRoll += (AngularVelocity * dt);
 
@@ -41,8 +56,20 @@ void CharacterObject::Create(istringstream &iss, ResourceManager* resource) {
     RenderableObject::Create(iss, resource);
 }
 
+void CharacterObject::PostLoad() {
+}
+
 const char* CharacterObject::ObjectTypeString() {
     return _obj_type_CharacterObject;
+}
+
+CollisionHull* CharacterObject::getHull() {
+    if (m_collisionHullId > 0) {
+        return cWorld.getHullFromID(m_collisionHullId);
+    }
+    else {
+        return nullptr;
+    }
 }
 
 
@@ -65,6 +92,7 @@ void CharacterObject::Rotate(float speed_t) {
 }
 
 void CharacterObject::Jump(float strength) {
+    Position.y += 3.0f;
 }
 
 const char* CharacterObject::GetRelativeMovementType() {

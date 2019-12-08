@@ -1,9 +1,10 @@
 #include "CollisionHull.hpp"
 #include "Resource\ResourceManager.hpp"
 
-CollisionHull::CollisionHull() {
-
-}
+CollisionHull::CollisionHull() :
+    m_hullID(getNextUID()),
+    m_radius(0.0f)
+{}
 
 int CollisionHull::GetSupport(vec3 search_dir) {
     /* This ALL happens inside model space */
@@ -71,4 +72,13 @@ void CollisionHull::bufferData() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, faces.blockBytes, faces.data, GL_STATIC_DRAW);
     
     glEnableVertexAttribArray(0);
+}
+
+
+
+
+
+UID_t CollisionHull::nextUID = 0;
+UID_t CollisionHull::getNextUID() {
+    return ++nextUID; // starts at 1
 }

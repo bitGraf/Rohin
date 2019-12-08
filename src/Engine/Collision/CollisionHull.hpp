@@ -6,6 +6,7 @@
 
 using namespace math;
 class ResourceManager;
+typedef u64 UID_t;
 
 class CollisionHull {
 public:
@@ -26,6 +27,14 @@ public:
 
     vec3Array vertices;
     FaceArray faces;
+    float m_radius;
+
+    const UID_t m_hullID;
+
+private:
+    /// Get the next globally unique ID
+    static UID_t getNextUID();
+    static UID_t nextUID;
 };
 
 #endif

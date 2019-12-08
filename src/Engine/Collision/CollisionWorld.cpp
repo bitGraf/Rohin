@@ -19,12 +19,12 @@ RaycastResult CollisionWorld::Raycast(vec3 start, vec3 end) {
     RaycastResult res;
 
     vec3 d = end - start;
-    scalar closest_t = 1;
+    scalar closest_t = 2;
 
     res.start = start;
     res.end = end;
-    res.t = 1;
-    //res.colliderID = 0;
+    res.t = closest_t;
+    res.colliderID = 0;
     res.contactPoint = end;
     res.normal = vec3(0,0,0);
 
@@ -39,10 +39,10 @@ RaycastResult CollisionWorld::Raycast(vec3 start, vec3 end) {
 
         // loop through all the triangles in the hull
         for (int m = 0; m < hull->faces.m_numElements; m++) {
-            auto face = &hull->faces.data[m];
-            vec3 v0 = hull->GetVertWorldSpace(face->indices[0]);
-            vec3 v1 = hull->GetVertWorldSpace(face->indices[1]);
-            vec3 v2 = hull->GetVertWorldSpace(face->indices[2]);
+            auto face = hull->faces.data[m];
+            vec3 v0 = hull->GetVertWorldSpace(face.indices[0]);
+            vec3 v1 = hull->GetVertWorldSpace(face.indices[1]);
+            vec3 v2 = hull->GetVertWorldSpace(face.indices[2]);
 
             vec3 normal = (v1 - v0).cross(v2 - v0).get_unit();
 
@@ -60,23 +60,30 @@ RaycastResult CollisionWorld::Raycast(vec3 start, vec3 end) {
             vec3 Q = start + d * t; // point on the triangle's plane
 
             // Compute signed triangle area.
-            vec3 n1 = (v1 - Q).cross(v2);
-            vec3 n2 = (v2 - Q).cross(v0);
-            vec3 n3 = (v0 - Q).cross(v1);
+            vec3 norm = (v1 - v0).cross(v2 - v0);
+            vec3 n0 = (v1 - Q).cross(v2 - Q);
+            vec3 n1 = (v2 - Q).cross(v0 - Q);
+            vec3 n2 = (v0 - Q).cross(v1 - Q);
 
             // Compute triangle barycentric coordinates (pre-division).
-            float u = n1.dot(normal);
-            float v = n2.dot(normal);
-            float w = n3.dot(normal);
+            float u = n0.dot(norm);
+            float v = n1.dot(norm);
+            float w = n2.dot(norm);
+            //float s = 1.0f / (u + v + w);
+            //u *= s;
+            //v *= s;
+            //w *= s;
 
-            if (u > 0.0f && v > 0.0f && w > 0.0f) {
+            if ((u > 0.0f && v > 0.0f && w > 0.0f)) {
                 // The ray intersects the triangle
                 if (t < closest_t) {
                     // this is the new closest t value
                     res.t = t;
-                    //res.colliderID = hull->id;
+                    res.colliderID = hull->m_hullID;
                     res.contactPoint = Q;
                     res.normal = normal;
+
+                    closest_t = t;
                 }
             }
         }
@@ -86,10 +93,10 @@ RaycastResult CollisionWorld::Raycast(vec3 start, vec3 end) {
 }
 
 void CollisionWorld::testCreate(ResourceManager* resource) {
-    CollisionHull hull;
-
+    
     // Floor box
-    hull.loadVerts(resource, 8,
+    CollisionHull hull1;
+    hull1.loadVerts(resource, 8,
         vec3(-5, 0, -5),
         vec3(-5, 0,  5),
         vec3( 5, 0,  5),
@@ -99,7 +106,7 @@ void CollisionWorld::testCreate(ResourceManager* resource) {
         vec3( 5, -2,  5),
         vec3( 5, -2, -5)
     );
-    hull.loadFaces(resource, 13,
+    hull1.loadFaces(resource, 2,
         Triangle(0, 1, 2),
         Triangle(0, 2, 3)
         
@@ -115,18 +122,19 @@ void CollisionWorld::testCreate(ResourceManager* resource) {
 
         Edge(0, 2)*/
         );
-    hull.bufferData();
-    m_static.push_back(hull);
+    hull1.bufferData();
+    m_static.push_back(hull1);
 
     // Square pyramid
-    hull.loadVerts(resource, 5,
+    CollisionHull hull2;
+    hull2.loadVerts(resource, 5,
         vec3(.5, 0, 1),
         vec3(-.5, 0, 1),
         vec3(-.5, 0, -1),
         vec3(.5, 0, -1),
         vec3(0, 2, 0)
     );
-    hull.loadFaces(resource, 8,
+    hull2.loadFaces(resource, 6,
         Triangle(0, 1, 2),
         Triangle(0, 2, 3),
         Triangle(0, 1, 4),
@@ -134,25 +142,100 @@ void CollisionWorld::testCreate(ResourceManager* resource) {
         Triangle(2, 3, 4),
         Triangle(3, 0, 4)
     );
-    hull.bufferData();
-    hull.position = vec3(-1.5, 0, 0);
-    m_static.push_back(hull);
+    hull2.bufferData();
+    hull2.position = vec3(-1.5, 0, 0);
+    m_static.push_back(hull2);
 
+    CollisionHull hull3;
     // Triangle pyramid
-    hull.loadVerts(resource, 4,
+    hull3.loadVerts(resource, 4,
         vec3(-.5, 0, 0),
         vec3(.5, 0, -1),
         vec3(.5, 0, 1),
         vec3(0, 1, 0)
     );
 
-    hull.loadFaces(resource, 6,
+    hull3.loadFaces(resource, 4,
         Triangle(0, 1, 2),
         Triangle(0, 1, 3),
         Triangle(1, 2, 3),
         Triangle(2, 0, 3)
     );
+    hull3.bufferData();
+    hull3.position = vec3(-1.5, 2.25, 0);
+    m_dynamic.push_back(hull3);
+}
+
+UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource, vec3 position, scalar size) {
+    CollisionHull hull;
+
+    scalar halfSize = size / 2.0f;
+
+    // Box hull
+    hull.loadVerts(resource, 8,
+        vec3(-halfSize, -halfSize, -halfSize),
+        vec3(-halfSize, -halfSize, halfSize),
+        vec3(halfSize, -halfSize, halfSize),
+        vec3(halfSize, -halfSize, -halfSize),
+
+        vec3(-halfSize, halfSize, -halfSize),
+        vec3(-halfSize, halfSize, halfSize),
+        vec3(halfSize, halfSize, halfSize),
+        vec3(halfSize, halfSize, -halfSize)
+    );
+    hull.loadFaces(resource, 12,
+        Triangle(0, 1, 4),
+        Triangle(4, 1, 5),
+        Triangle(1, 2, 6),
+        Triangle(1, 6, 5),
+        Triangle(2, 3, 7),
+        Triangle(2, 7, 6),
+
+        Triangle(3, 0, 4),
+        Triangle(3, 4, 7),
+        Triangle(0, 2, 1),
+        Triangle(0, 3, 2),
+        Triangle(4, 5, 7),
+        Triangle(7, 5, 6)
+    );
     hull.bufferData();
-    hull.position = vec3(-1.5, 2.25, 0);
+    hull.position = position;
+    m_static.push_back(hull);
+
+    return hull.m_hullID;
+}
+
+UID_t CollisionWorld::CreateNewCapsule(ResourceManager* resource, 
+    vec3 position, scalar height, scalar radius) {
+    CollisionHull hull;
+
+    // Box hull
+    hull.loadVerts(resource, 3,
+        vec3(0, 0, 0),
+        vec3(0, height/2, 0), // to allow it to render more easily
+        vec3(0, height, 0)
+    );
+    hull.loadFaces(resource, 1, // kind of hackey - should only be a line
+        Triangle(0, 1, 2)
+    );
+    hull.bufferData();
+    hull.position = position;
+    hull.m_radius = radius;
     m_dynamic.push_back(hull);
+
+    return hull.m_hullID;
+}
+
+CollisionHull* CollisionWorld::getHullFromID(UID_t id) {
+    for (int n = 0; n < m_static.size(); n++) {
+        auto hull = &m_static[n];
+        if (hull->m_hullID == id)
+            return hull;
+    }
+    for (int n = 0; n < m_dynamic.size(); n++) {
+        auto hull = &m_dynamic[n];
+        if (hull->m_hullID == id)
+            return hull;
+    }
+    return nullptr;
 }

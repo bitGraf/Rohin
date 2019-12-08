@@ -14,6 +14,7 @@ public:
 
     virtual void Update(double dt) override;
     virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual void PostLoad() override;
     virtual const char* ObjectTypeString() override;
 
     const char* GetRelativeMovementType();
@@ -22,10 +23,13 @@ public:
     void MoveRight(float speed_t); //[-1,1]
     void Rotate(float speed_t); //[-1,1]
     void Jump(float strength);
+    CollisionHull* getHull();
 
     vec3 Velocity;
     vec3 AngularVelocity;
     bool rotateToMovement;
+
+    RaycastResult res;
 
 protected:
     enum class eRelativeSource { // How the input is mapped to movement
@@ -41,7 +45,7 @@ protected:
 
     mat3 getRelativeAxes();
 
-    CollisionHull* cHull_ptr;
+    UID_t m_collisionHullId;
 
 private:
     static const char* _obj_type_CharacterObject;

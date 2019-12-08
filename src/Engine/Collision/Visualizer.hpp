@@ -21,7 +21,8 @@ struct simplexVertex {
 
 struct Simplex {
     vec3 GetSearchDirection();
-    void GetWitnessPoints(vec3* point1, vec3* point2);
+    void GetWitnessPoints(vec3* point1, vec3* point2, 
+        float radius1 = -1, float radius2 = -1);
     float GetDistance();
     void Solve2(const vec3& P);
     void Solve3(const vec3& P);
@@ -57,8 +58,8 @@ struct Output {
 };
 
 struct gjk_Input {
-    CollisionHull polygon1;
-    CollisionHull polygon2;
+    CollisionHull* polygon1;
+    CollisionHull* polygon2;
 };
 
 void Distance3D(Output* output, gjk_Input& input);

@@ -570,18 +570,16 @@ void BatchRenderer::renderDebug(
     m_debugLineShader.use();
     m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
     for (int n = 0; n < viz.m_lines.size(); n++) {
-        //drawLine(viz.m_lines[n].a, viz.m_lines[n].b, orange, orange);
-        //drawPoint(viz.m_lines[n].a, red);
-        //drawPoint(viz.m_lines[n].b, red);
+        drawLine(viz.m_lines[n].a, viz.m_lines[n].b, orange, orange);
+        drawPoint(viz.m_lines[n].a, red);
+        drawPoint(viz.m_lines[n].b, red);
     }
     drawLine(viz.res.start, viz.res.end, orange, red);
     drawPoint(viz.res.contactPoint, green);
 
-    debugFont.drawText(300, 5, vec4(orange,1),   "Simplex Info:");
-    sprintf(text, " Termination reason: %d", viz.out.m_term);
-    debugFont.drawText(300, 20, vec4(orange, 1), text);
-    sprintf(text, " Distance: %.3f", viz.out.distance);
-    debugFont.drawText(300, 35, vec4(orange, 1), text);
+    auto character = GetScene()->objectsByType.Players[0];// ->getHull();
+    drawLine(character->res.start, character->res.end, orange, red);
+    drawPoint(character->res.contactPoint, green);
 
     // Draw buffered wireframe meshes
     m_pickPassShader.use();
@@ -671,6 +669,8 @@ void BatchRenderer::loadResources(ResourceManager* resource) {
 
     viz.Init(resource);
     cWorld.testCreate(resource);
+    cWorld.CreateNewCubeHull(resource, vec3(2, 0.5, 2), 1);
+    cWorld.CreateNewCapsule(resource, vec3(-2, 0.6f, -2), 1, .55f);
 }
 
 

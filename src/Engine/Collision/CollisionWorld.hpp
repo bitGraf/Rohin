@@ -6,8 +6,6 @@
 
 #include <vector>
 
-typedef u64 UID_t;
-
 struct RaycastResult {
     f32 t;
     UID_t colliderID;
@@ -40,6 +38,12 @@ public:
     void testCreate(ResourceManager* resource);
     RaycastResult Raycast(vec3 start, vec3 end);
     RaycastResult Raycast(vec3 start, vec3 direction, scalar distance);
+
+    UID_t CreateNewCubeHull(ResourceManager* resource, 
+        vec3 position, scalar size);
+    UID_t CreateNewCapsule(ResourceManager* resource, 
+        vec3 position, scalar height, scalar radius);
+    CollisionHull* getHullFromID(UID_t id);
 
 //private:
     std::vector<CollisionHull> m_static;

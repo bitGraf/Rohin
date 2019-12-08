@@ -30,7 +30,7 @@ vec3 Simplex::GetSearchDirection() {
     return vec3();
 }
 
-void Simplex::GetWitnessPoints(vec3* point1, vec3* point2)
+void Simplex::GetWitnessPoints(vec3* point1, vec3* point2, float radius1, float radius2)
 {
     switch (m_count) {
     case 1:
@@ -62,6 +62,13 @@ void Simplex::GetWitnessPoints(vec3* point1, vec3* point2)
                   (denom * m_vertexC.u) * m_vertexC.point2 +
                   (denom * m_vertexD.u) * m_vertexD.point2;
     } break;
+    }
+
+    if (radius1 > 0.0f || radius2 > 0.0f) {
+        vec3 dir = (*point1 - *point2).get_unit();
+
+        *point1 -= dir * radius1;
+        *point2 += dir * radius2;
     }
 }
 
@@ -468,8 +475,8 @@ float Simplex::GetDistance() {
 // Compute the distance between two polygons using the GJK algorithm.
 void Distance3D(Output* output, gjk_Input& input)
 {
-    CollisionHull* polygon1 = &input.polygon1;
-    CollisionHull* polygon2 = &input.polygon2;
+    CollisionHull* polygon1 = input.polygon1;
+    CollisionHull* polygon2 = input.polygon2;
 
     // Initialize the simplex.
     Simplex simplex;
@@ -599,7 +606,7 @@ void Distance3D(Output* output, gjk_Input& input)
     }
 
     // Prepare output.
-    simplex.GetWitnessPoints(&output->point1, &output->point2);
+    simplex.GetWitnessPoints(&output->point1, &output->point2, polygon1->m_radius, polygon2->m_radius);
     output->distance = (output->point1 - output->point2).length();
     output->iterations = iter;
     output->m_term = term;
@@ -612,9 +619,9 @@ void Visualizer::Init(ResourceManager* resource) {
 void Visualizer::Step() {
     m_lines.clear();
 
-    in.polygon1 = cWorld.m_dynamic[0];
+    in.polygon1 = &cWorld.m_dynamic[1];
     for (int n = 0; n < cWorld.m_static.size(); n++) {
-        in.polygon2 = cWorld.m_static[n];
+        in.polygon2 = &cWorld.m_static[n];
 
         Distance3D(&out, in);
         Line l = {out.point1, out.point2};

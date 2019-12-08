@@ -30,6 +30,7 @@ void PlayerObject::Update(double dt) {
 
 void PlayerObject::Create(istringstream &iss, ResourceManager* resource) {
     CharacterObject::Create(iss, resource);
+    m_collisionHullId = cWorld.CreateNewCapsule(resource, Position, 2, 0.5f);
 }
 
 void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
@@ -61,6 +62,10 @@ void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
                 m_controlType = eControlType::Normal;
             } break;
         }
+    }
+
+    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+        Jump(1);
     }
 }
 
