@@ -329,7 +329,7 @@ scalar CollisionWorld::TimeOfImpact(CollisionHull* hull1, vec3 vel1, CollisionHu
         ++iter;
         vec3 d_vec = (b - a).get_unit();
         float velocity_bound = abs(d_vec.dot(v)); //should prob just check if positive
-        if (!velocity_bound) break; // moving perpendicular
+        if (!velocity_bound) return 1; // moving perpendicular
 
         float delta = d / velocity_bound; // how far (in t units) hulls will move together.
         float t0 = t;

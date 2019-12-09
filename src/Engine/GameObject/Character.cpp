@@ -26,15 +26,23 @@ void CharacterObject::Update(double dt) {
             // it has collision info
             res = cWorld.Shapecast(m_collisionHullId, Velocity);
             ghostPosition = Position + (Velocity*res.TOI);
+            static bool was1;
+            if (res.TOI > 0.9) {
+                was1 = true;
+            }
+            if (res.TOI < 0.1 && was1) {
+                bool stophere = true;
+            }
+            ShapecastResult res2 = cWorld.Shapecast(m_collisionHullId, Velocity);
+            res2 = cWorld.Shapecast(m_collisionHullId, Velocity);
 
             if (Velocity.dot(-res.contact_normal) < 0) {
                 if (res.TOI < 1) {
                     // time of impact is TOI
 
                     if (res.TOI < dt) {
-                        vec3 contactNormal = -res.contact_normal; // get this from the Shapecast Result
-
                         // impact will happen between this frame and the next.
+                        vec3 contactNormal = -res.contact_normal;
 
                         // Place character at point of impact
                         Position += (Velocity*res.TOI);
@@ -45,6 +53,7 @@ void CharacterObject::Update(double dt) {
 
                         Velocity = tangentVelocity + pushOff;
                         Position += Velocity * (dt - res.TOI);
+                        ghostPosition = Position;
                     }
                     else {
                         Position += Velocity * dt;

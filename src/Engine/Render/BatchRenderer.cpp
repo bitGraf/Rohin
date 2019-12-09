@@ -599,6 +599,9 @@ void BatchRenderer::renderDebug(
     sprintf(text, "-Termcode: %d", out.m_term);
     debugFont.drawText(300, 40, vec4(orange, 1), text);
 
+    sprintf(text, "-Shadow Distance: %.4f", character->res.TOI);
+    debugFont.drawText(300, 60, vec4(orange, 1), text);
+
     //sprintf(text, "-Termcode: %d", out.m_term);
     //debugFont.drawText(300, 40, vec4(orange, 1), text);
 
