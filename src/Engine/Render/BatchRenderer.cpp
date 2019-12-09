@@ -582,19 +582,22 @@ void BatchRenderer::renderDebug(
     //drawPoint(character->res.contactPoint, green);
 
     /* Draw GJK result from player to crate */
-    /*auto crateHull = cWorld.getHullFromID(4);
+    auto crateHull = cWorld.getHullFromID(2);
     auto playerHull = character->getHull();
     gjk_Input in;
     in.hull1 = playerHull;
     in.hull2 = crateHull;
     gjk_Output out;
     cWorld.GJK(&out, in);
-    drawLine(out.point1, out.point2, red, red);*/
+    drawLine(out.point1, out.point2, red, red);
 
     debugFont.drawText(300, 0, vec4(orange,1), "Shapecast Info:");
 
-    sprintf(text, "-Distance: %.2f", character->res.TOI);
+    sprintf(text, "-Distance: %.4f", out.distance);
     debugFont.drawText(300, 20, vec4(orange, 1), text);
+
+    sprintf(text, "-Termcode: %d", out.m_term);
+    debugFont.drawText(300, 40, vec4(orange, 1), text);
 
     //sprintf(text, "-Termcode: %d", out.m_term);
     //debugFont.drawText(300, 40, vec4(orange, 1), text);

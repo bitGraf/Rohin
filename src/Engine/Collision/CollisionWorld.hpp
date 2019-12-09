@@ -67,6 +67,7 @@ struct gjk_Output {
     vec3 point2;
     float distance;
     int iterations;
+    bool m_hit;
 
     Simplex simplices[e_maxSimplices];
     int simplexCount;

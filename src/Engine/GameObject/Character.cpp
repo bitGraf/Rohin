@@ -27,16 +27,12 @@ void CharacterObject::Update(double dt) {
             res = cWorld.Shapecast(m_collisionHullId, Velocity);
             ghostPosition = Position + (Velocity*res.TOI);
 
-            if (res.TOI < 1) {
-                // time of impact is TOI
+            if (Velocity.dot(-res.contact_normal) < 0) {
+                if (res.TOI < 1) {
+                    // time of impact is TOI
 
-                if (res.TOI < dt) {
-                    vec3 contactNormal = -res.contact_normal; // get this from the Shapecast Result
-                    // Check if we are moving away from the object
-                    if (Velocity.dot(contactNormal) > 0) {
-                        Position += Velocity * dt;
-                    }
-                    else {
+                    if (res.TOI < dt) {
+                        vec3 contactNormal = -res.contact_normal; // get this from the Shapecast Result
 
                         // impact will happen between this frame and the next.
 
@@ -50,13 +46,17 @@ void CharacterObject::Update(double dt) {
                         Velocity = tangentVelocity + pushOff;
                         Position += Velocity * (dt - res.TOI);
                     }
+                    else {
+                        Position += Velocity * dt;
+                    }
                 }
                 else {
+                    // no collision imminent
                     Position += Velocity * dt;
                 }
             }
             else {
-                // no collision imminent
+                // moving away from the object
                 Position += Velocity * dt;
             }
 

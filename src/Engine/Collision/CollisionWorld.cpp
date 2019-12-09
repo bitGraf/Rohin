@@ -379,6 +379,10 @@ scalar CollisionWorld::StepGJK(float t,
     *point1 = out.point1;
     *point2 = out.point2;
 
+    if (out.m_hit) {
+        bool stopper = true;
+    }
+
     hull1->position = hull1Pos; // reset to actual values
     hull2->position = hull2Pos;
     hull1->m_radius = radius;
@@ -892,6 +896,7 @@ void CollisionWorld::GJK(gjk_Output* output, gjk_Input& input)
 
                                // Begin recording the simplices for visualization.
     output->simplexCount = 0;
+    output->m_hit = false;
     gjk_Output::TermCode term = gjk_Output::TermCode::e_maxIterations;
 
     // Get simplex vertices as an array.
@@ -1010,4 +1015,5 @@ void CollisionWorld::GJK(gjk_Output* output, gjk_Input& input)
     output->distance = (output->point1 - output->point2).length();
     output->iterations = iter;
     output->m_term = term;
+    output->m_hit = simplex.m_hit;
 }
