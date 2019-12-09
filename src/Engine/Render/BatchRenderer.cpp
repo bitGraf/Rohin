@@ -578,8 +578,26 @@ void BatchRenderer::renderDebug(
     drawPoint(viz.res.contactPoint, green);
 
     auto character = GetScene()->objectsByType.Players[0];// ->getHull();
-    drawLine(character->res.start, character->res.end, orange, red);
-    drawPoint(character->res.contactPoint, green);
+    //drawLine(character->res.start, character->res.end, orange, red);
+    //drawPoint(character->res.contactPoint, green);
+
+    /* Draw GJK result from player to crate */
+    /*auto crateHull = cWorld.getHullFromID(4);
+    auto playerHull = character->getHull();
+    gjk_Input in;
+    in.hull1 = playerHull;
+    in.hull2 = crateHull;
+    gjk_Output out;
+    cWorld.GJK(&out, in);
+    drawLine(out.point1, out.point2, red, red);*/
+
+    debugFont.drawText(300, 0, vec4(orange,1), "Shapecast Info:");
+
+    sprintf(text, "-Distance: %.2f", character->res.TOI);
+    debugFont.drawText(300, 20, vec4(orange, 1), text);
+
+    //sprintf(text, "-Termcode: %d", out.m_term);
+    //debugFont.drawText(300, 40, vec4(orange, 1), text);
 
     // Draw buffered wireframe meshes
     m_pickPassShader.use();
@@ -587,6 +605,13 @@ void BatchRenderer::renderDebug(
     m_pickPassShader.setVec3("idColor", vec3(.7, 0, .6));
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDisable(GL_CULL_FACE);
+
+    m_pickPassShader.setVec3("idColor", vec3(.7, .4, .6));
+    m_pickPassShader.setMat4("modelMatrix", mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(character->ghostPosition + vec3(0,1,0), 1)));
+    glBindVertexArray(character->getMesh()->VAO);
+    glDrawElements(GL_TRIANGLES, character->getMesh()->numFaces * 3, GL_UNSIGNED_SHORT, 0);
+
+    m_pickPassShader.setVec3("idColor", vec3(.7, 0, .6));
     // Render Collision World
     for (int n = 0; n < cWorld.m_static.size(); n++) {
         auto cHull = &cWorld.m_static[n];

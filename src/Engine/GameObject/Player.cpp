@@ -30,16 +30,18 @@ void PlayerObject::Update(double dt) {
 
     // Reset character if they fall off the stage
     if (Position.y < -10) {
-        Position = vec3(0, 2, 0);
+        Position = vec3(0, 0.1f, 0);
         Velocity = vec3(0, 0, 0);
     }
 }
 
 void PlayerObject::Create(istringstream &iss, ResourceManager* resource) {
     CharacterObject::Create(iss, resource);
-    Position = vec3(0, 2, 0);
+    Position = vec3(0, 0.1f, 0);
     Velocity = vec3(0, 0, 0);
-    m_collisionHullId = cWorld.CreateNewCapsule(resource, Position, 2, 0.5f);
+    //m_collisionHullId = cWorld.CreateNewCapsule(resource, Position, 2, 0.5f);
+    m_collisionHullId = cWorld.CreateNewCubeHull(resource, Position+vec3(0,1,0), .75, 2, .75);
+    //cWorld.getHullFromID(m_collisionHullId)->rotation.toYawPitchRoll(.001, 0, 0);
 }
 
 void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {

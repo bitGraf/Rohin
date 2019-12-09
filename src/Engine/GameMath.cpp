@@ -34,19 +34,19 @@ math::scalar math::vec4::length_2() { return (x*x + y*y + z*z + w*w); }
 /* get_unit */
 math::vec2 math::vec2::get_unit() { 
     math::scalar c = 0, l = length(); 
-    if (l > 0.01)
+    if (l > 0.0)
         c = 1 / l;
     return vec2(x*c, y*c); 
 }
 math::vec3 math::vec3::get_unit() { 
     math::scalar c = 0, l = length();
-    if (l > 0.01)
+    if (l > 0.0)
         c = 1 / l;
     return vec3(x*c, y*c, z*c); 
 }
 math::vec4 math::vec4::get_unit() { 
     math::scalar c = 0, l = length();
-    if (l > 0.01)
+    if (l > 0.0)
         c = 1 / l;
     return vec4(x*c, y*c, z*c, w*c); 
 }
@@ -54,21 +54,21 @@ math::vec4 math::vec4::get_unit() {
 /* normalize */
 math::vec2 math::vec2::normalize() { 
     scalar c = 0, l = length();
-    if (l > 0.01)
+    if (l > 0.0)
         c = 1 / l;
     *this = vec2(x*c, y*c); 
     return *this; 
 }
 math::vec3 math::vec3::normalize() { 
     scalar c = 0, l = length();
-    if (l > 0.01)
+    if (l > 0.0)
         c = 1 / l;
     *this = vec3(x*c, y*c, z*c); 
     return *this; 
 }
 math::vec4 math::vec4::normalize() { 
     scalar c = 0, l = length();
-    if (l > 0.01)
+    if (l > 0.0)
         c = 1 / l;
     *this = vec4(x*c, y*c, z*c, w*c); 
     return *this; 

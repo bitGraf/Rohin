@@ -113,7 +113,7 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
 
     // Load collision info
     //cWorld.testCreate(&m_Resource);
-    cWorld.CreateNewCubeHull(&m_Resource, vec3(0, -2.5, 0), 75, 5, 75);
+    UID_t floor = cWorld.CreateNewCubeHull(&m_Resource, vec3(0, -2.5, 0), 75, 5, 75);
     cWorld.CreateNewCubeHull(&m_Resource, vec3(0, 1.5, -4), 8, 3, 3);
     UID_t id = cWorld.CreateNewCubeHull(&m_Resource, vec3(-5.42, 1, 1.88), 2);
     cWorld.getHullFromID(id)->rotation.toYawPitchRoll(38.27, 0, 0);
@@ -139,7 +139,7 @@ void Engine::Update(double dt) {
         m_debugCamera.Update(dt); // Only update the DebugCamera
     } else {
         if (GetScene())
-            GetScene()->update(dt); // Update the whole scene
+            GetScene()->update(dt * 1); // Update the whole scene
     }
 }
 

@@ -6,6 +6,7 @@
 #include <vector>
 #include <cassert>
 
+/*
 #define MAX_POINTS 10
 #define MAX_FACES 10
 #define MAX_INCREASING_ITS 5
@@ -60,9 +61,9 @@ struct Output {
 struct gjk_Input {
     CollisionHull* polygon1;
     CollisionHull* polygon2;
-};
+};*/
 
-void Distance3D(Output* output, gjk_Input& input);
+void Distance3D(gjk_Output* output, gjk_Input& input);
 
 struct Line {
     vec3 a, b;
@@ -77,7 +78,7 @@ struct Visualizer {
 
     RaycastResult res;
 
-    Output out;
+    gjk_Output out;
     gjk_Input in;
 
 };

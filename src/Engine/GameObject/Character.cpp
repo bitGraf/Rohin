@@ -16,33 +16,61 @@ void CharacterObject::Update(double dt) {
     // Transform velocity into world-space
     Velocity = getRelativeAxes() * Velocity;
 
-    // Perform collision logic
-    if (m_collisionHullId > 0) {
-        // it has collision info
-        vec3 fallDir(0, -1, 0);
-        res = cWorld.Raycast(Position, fallDir, max(-Velocity.y*dt, 0.1)); // raycast down 1 unit
+    if (Velocity.length_2() > 25) {
+        auto bk = false;
+    }
 
-        if (res.t > 1.0) {
-            Velocity.y -= 9.81*dt;
-            Position += Velocity * dt;
+    if (Velocity.length() > 0.0) {
+        // Perform collision logic
+        if (m_collisionHullId > 0) {
+            // it has collision info
+            res = cWorld.Shapecast(m_collisionHullId, Velocity);
+            ghostPosition = Position + (Velocity*res.TOI);
+
+            if (res.TOI < 1) {
+                // time of impact is TOI
+
+                if (res.TOI < dt) {
+                    vec3 contactNormal = -res.contact_normal; // get this from the Shapecast Result
+                    // Check if we are moving away from the object
+                    if (Velocity.dot(contactNormal) > 0) {
+                        Position += Velocity * dt;
+                    }
+                    else {
+
+                        // impact will happen between this frame and the next.
+
+                        // Place character at point of impact
+                        Position += (Velocity*res.TOI);
+
+                        // Then substep the rest of the timestep.
+                        vec3 pushOff = contactNormal * (0.5f);
+                        vec3 tangentVelocity = Velocity - (Velocity.dot(contactNormal)*contactNormal);
+
+                        Velocity = tangentVelocity + pushOff;
+                        Position += Velocity * (dt - res.TOI);
+                    }
+                }
+                else {
+                    Position += Velocity * dt;
+                }
+            }
+            else {
+                // no collision imminent
+                Position += Velocity * dt;
+            }
+
+            CollisionHull* hull = cWorld.getHullFromID(m_collisionHullId);
+            hull->position = Position + vec3(0, 1, 0);
         }
         else {
-            if (Velocity.y < 0) {
-                Velocity.y = 0;
-                grounded = true;
-            }
+            // Just use normal movement.
             Position += Velocity * dt;
+            ghostPosition = Position;
         }
-
-        CollisionHull* hull = cWorld.getHullFromID(m_collisionHullId);
-        hull->position = Position;
-    }
-    else {
-        // Just use normal movement.
-        Position += Velocity * dt;
     }
 
-    Velocity = vec3(0, Velocity.y, 0);
+    Velocity = vec3(0, 0, 0);
     if (Velocity.y < -0.1) {
         grounded = false;
     }
@@ -97,7 +125,7 @@ void CharacterObject::Rotate(float speed_t) {
 
 void CharacterObject::Jump(float strength) {
     if (grounded) {
-        Velocity.y += strength;
+        //Velocity.y += strength;
         grounded = false;
     }
 }

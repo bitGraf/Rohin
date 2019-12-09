@@ -29,7 +29,8 @@ public:
     vec3 AngularVelocity;
     bool rotateToMovement;
 
-    RaycastResult res;
+    ShapecastResult res;
+    vec3 ghostPosition;
 
 protected:
     enum class eRelativeSource { // How the input is mapped to movement
