@@ -119,6 +119,8 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     cWorld.getHullFromID(id)->rotation.toYawPitchRoll(38.27, 0, 0);
     cWorld.CreateNewCubeHull(&m_Resource, vec3(-3.41, 0.5, -0.89), .75, 1.5, .75);
     cWorld.CreateNewCubeHull(&m_Resource, vec3(-1.47, 0.5, 2.09), .75, 1.5, .75);
+    UID_t ramp = cWorld.CreateNewCubeHull(&m_Resource, vec3(5, 0, 5), 10, 1, 4);
+    cWorld.getHullFromID(ramp)->rotation.toYawPitchRoll(0, 10, 0);
 }
 
 void Engine::LoadLevel(std::string levelPath) {
@@ -138,8 +140,15 @@ void Engine::Update(double dt) {
     if (debugMode) {
         m_debugCamera.Update(dt); // Only update the DebugCamera
     } else {
+        float tf;
+        if (glfwGetKey(m_MainWindow.m_glfwWindow, GLFW_KEY_LEFT_SHIFT)) {
+            tf = 0.25;
+        }
+        else {
+            tf = 1;
+        }
         if (GetScene())
-            GetScene()->update(dt * 1); // Update the whole scene
+            GetScene()->update(.02 * tf); // Update the whole scene
     }
 }
 

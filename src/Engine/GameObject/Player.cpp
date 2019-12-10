@@ -37,10 +37,10 @@ void PlayerObject::Update(double dt) {
 
 void PlayerObject::Create(istringstream &iss, ResourceManager* resource) {
     CharacterObject::Create(iss, resource);
-    Position = vec3(0, 0.1f, 0);
+    Position = vec3(0, 2, 0);
     Velocity = vec3(0, 0, 0);
-    m_collisionHullId = cWorld.CreateNewCapsule(resource, Position, 2, 0.5f);
-    //m_collisionHullId = cWorld.CreateNewCubeHull(resource, Position+vec3(0,1,0), .75, 2, .75);
+    //m_collisionHullId = cWorld.CreateNewCapsule(resource, Position + vec3(0, 0.5, 0), 1, 0.5f);
+    m_collisionHullId = cWorld.CreateNewCubeHull(resource, Position+vec3(0,1,0), .75, 2, .75);
     //cWorld.getHullFromID(m_collisionHullId)->rotation.toYawPitchRoll(.001, 0, 0);
 }
 
@@ -98,6 +98,7 @@ void PlayerObject::PostLoad() {
     Input::watchKeyAxis("MoveForward", GLFW_KEY_W, GLFW_KEY_S);
     Input::watchKeyAxis("MoveRight", GLFW_KEY_D, GLFW_KEY_A);
     Input::watchKeyAxis("Rotate", GLFW_KEY_RIGHT, GLFW_KEY_LEFT);
+    Input::watchKey("spacebar", GLFW_KEY_SPACE);
 }
 
 const char* PlayerObject::ObjectTypeString() {

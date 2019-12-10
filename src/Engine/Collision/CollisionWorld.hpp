@@ -17,11 +17,20 @@ struct RaycastResult {
 
 #define MAX_CONTACTS 8
 
-struct ShapecastResult {
+struct ContactPlane {
+    float TOI;
+    UID_t colliderID;
+
     vec3 contact_normal;
     vec3 contact_point;
+};
+
+struct ShapecastResult {
+    ContactPlane planes[MAX_CONTACTS];
+    int numContacts;
+
     int iters;
-    float TOI;
+    float lowestTOI;
 };
 
 #define MAX_POINTS 10

@@ -31,6 +31,7 @@ public:
 
     ShapecastResult res;
     vec3 ghostPosition;
+    bool grounded;
 
 protected:
     enum class eRelativeSource { // How the input is mapped to movement
@@ -43,7 +44,6 @@ protected:
 
     float speed;
     float rotateSpeed;
-    bool grounded;
 
     mat3 getRelativeAxes();
 

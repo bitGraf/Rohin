@@ -284,7 +284,9 @@ CollisionHull* CollisionWorld::getHullFromID(UID_t id) {
 
 ShapecastResult CollisionWorld::Shapecast(UID_t id, vec3 vel) {
     ShapecastResult res;
-    res.TOI = 1;
+    res.lowestTOI = 1;
+    res.numContacts = 0;
+    res.planes[0].TOI = 1e10;
     CollisionHull* hull1 = this->getHullFromID(id);
     if (hull1 == nullptr) {
         return res;
@@ -295,17 +297,40 @@ ShapecastResult CollisionWorld::Shapecast(UID_t id, vec3 vel) {
         if (hull1->m_hullID == hull2->m_hullID)
             continue; // don't check against itself
 
-        vec3 contact_normal;
-        vec3 contact_point;
         int iters;
-        scalar toi = TimeOfImpact(hull1, vel, hull2, vec3(),
-            &contact_normal, &contact_point, &iters);
+        ContactPlane plane;
+        plane.colliderID = hull2->m_hullID;
+        plane.TOI= TimeOfImpact(hull1, vel, hull2, vec3(),
+            &plane.contact_normal, &plane.contact_point, &iters);
+        bool placed = false;
+        if (plane.TOI < 1) {
+            if (res.numContacts == 0) {
+                res.planes[0] = plane; // start the list
+            }
+            else {
+                for (int n = 0; n < res.numContacts; n++) {
+                    if (plane.TOI < res.planes[n].TOI) {
+                        // shift entire list back once
+                        for (int m = res.numContacts - 1; m >= n; m--) {
+                            res.planes[m+1] = res.planes[m];
+                        }
 
-        if (toi < res.TOI) {
-            res.TOI = toi; // TODO: fill out an actual struct of relevant info
-            res.contact_normal = contact_normal;
-            res.contact_point = contact_point;
-            res.iters = iters;
+                        // insert element at position n
+                        res.planes[n] = plane;
+                        placed = true;
+                        break;
+                    }
+                }
+
+                if (!placed) {
+                    res.planes[res.numContacts] = plane;
+                }
+            }
+
+            res.numContacts++;
+            if (res.numContacts > MAX_CONTACTS) {
+                res.numContacts = MAX_CONTACTS;
+            }
         }
     }
 
@@ -342,7 +367,7 @@ scalar CollisionWorld::TimeOfImpact(CollisionHull* hull1, vec3 vel1, CollisionHu
     }
 
     d = StepGJK(t, hull1, vel1, hull2, vel2, &a, &b, 0);
-    n = (b - a).get_unit();
+    n = (a - b).get_unit();
     t = t >= 1 ? 1 : t;
 
     vec3 p = (a + b) * 0.5f;

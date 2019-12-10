@@ -16,73 +16,74 @@ void CharacterObject::Update(double dt) {
     // Transform velocity into world-space
     Velocity = getRelativeAxes() * Velocity;
 
-    if (Velocity.length_2() > 25) {
-        auto bk = false;
+    if (!grounded) {
+        Velocity.y -= 9.81 * dt;
+    }
+    else {
+        // Raycast down to see if there is anything beneath us
+        // TODO: Cache the currect collisionID of the ground and check against that.
+        RaycastResult rc = cWorld.Raycast(Position + vec3(0, 0.5, 0), vec3(0, -1, 0), .6);
+
+        if (rc.colliderID == 0) {
+            grounded = false;
+        }
     }
 
-    if (Velocity.length() > 0.0) {
-        // Perform collision logic
-        if (m_collisionHullId > 0) {
-            // it has collision info
-            res = cWorld.Shapecast(m_collisionHullId, Velocity);
-            ghostPosition = Position + (Velocity*res.TOI);
-            static bool was1;
-            if (res.TOI > 0.9) {
-                was1 = true;
-            }
-            if (res.TOI < 0.1 && was1) {
-                bool stophere = true;
-            }
-            ShapecastResult res2 = cWorld.Shapecast(m_collisionHullId, Velocity);
-            res2 = cWorld.Shapecast(m_collisionHullId, Velocity);
+    // Perform collision logic
+    if (m_collisionHullId > 0) {
+        // it has collision info
+        res = cWorld.Shapecast(m_collisionHullId, Velocity);
 
-            if (Velocity.dot(-res.contact_normal) < 0) {
-                if (res.TOI < 1) {
-                    // time of impact is TOI
+        if (res.numContacts) {
+            vec3 p_target = Position + Velocity * dt;
+            vec3 p = p_target;
+            ghostPosition = Position + (Velocity*res.planes[0].TOI);
 
-                    if (res.TOI < dt) {
-                        // impact will happen between this frame and the next.
-                        vec3 contactNormal = -res.contact_normal;
+            for (int it = 0; it < 1; it++) {
+                for (int n = 0; n < res.numContacts; n++) {
+                    auto plane = &res.planes[n];
 
-                        // Place character at point of impact
-                        Position += (Velocity*res.TOI);
+                    if (plane->TOI < dt) {
+                        vec3 contactPoint = plane->contact_point;
+                        vec3 contactNormal = plane->contact_normal;
 
-                        // Then substep the rest of the timestep.
-                        vec3 pushOff = contactNormal * (0.5f);
-                        vec3 tangentVelocity = Velocity - (Velocity.dot(contactNormal)*contactNormal);
+                        vec3 p_t = Position + Velocity * plane->TOI;
+                        vec3 body2contact = contactPoint - p_t;
 
-                        Velocity = tangentVelocity + pushOff;
-                        Position += Velocity * (dt - res.TOI);
-                        ghostPosition = Position;
-                    }
-                    else {
-                        Position += Velocity * dt;
+                        vec3 sv = ((p + body2contact) - contactPoint);
+                        float s = ((p + body2contact) - contactPoint).dot(contactNormal);
+                        if (s < 0) {
+                            p -= (s - 1.0e-3f)*contactNormal;
+
+                            if (acos(contactNormal.dot(vec3(0, 1, 0))) < (45 * d2r)) {
+                                grounded = true;
+                                Velocity.y = 0;
+                            }
+                        }
                     }
                 }
-                else {
-                    // no collision imminent
-                    Position += Velocity * dt;
-                }
-            }
-            else {
-                // moving away from the object
-                Position += Velocity * dt;
             }
 
-            CollisionHull* hull = cWorld.getHullFromID(m_collisionHullId);
-            hull->position = Position + vec3(0, 1, 0);
+            Position = p;
         }
         else {
-            // Just use normal movement.
             Position += Velocity * dt;
             ghostPosition = Position;
         }
+
+        CollisionHull* hull = cWorld.getHullFromID(m_collisionHullId);
+        hull->position = Position + vec3(0, 1, 0);
+
+        // TODO: Expand the ShapeCast function to allow for rotation
+        //hull->rotation.toYawPitchRoll(YawPitchRoll.x, 0, 0);
+    }
+    else {
+        // Just use normal movement.
+        Position += Velocity * dt;
+        ghostPosition = Position;
     }
 
-    Velocity = vec3(0, 0, 0);
-    if (Velocity.y < -0.1) {
-        grounded = false;
-    }
+    Velocity = vec3(0, Velocity.y, 0);
 
     if (m_relativeSource != eRelativeSource::Character && rotateToMovement) {
         vec3 direction = Velocity.get_unit();
@@ -134,7 +135,7 @@ void CharacterObject::Rotate(float speed_t) {
 
 void CharacterObject::Jump(float strength) {
     if (grounded) {
-        //Velocity.y += strength;
+        Velocity.y += strength;
         grounded = false;
     }
 }

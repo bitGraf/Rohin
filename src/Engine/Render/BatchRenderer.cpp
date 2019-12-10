@@ -4,7 +4,8 @@
 
 Visualizer viz;
 
-BatchRenderer::BatchRenderer() {}
+BatchRenderer::BatchRenderer() : colliderID(1)
+{}
 
 BatchRenderer::~BatchRenderer() {}
 
@@ -35,8 +36,11 @@ void BatchRenderer::handleMessage(Message msg) {
             //m_wireframeShader.create("wireframe.vert", "wireframe.frag", "wireframeShader");
         }
 
-        if (key == GLFW_KEY_J && action == GLFW_PRESS) {
-            viz.Step();
+        if (key == GLFW_KEY_V && action == GLFW_PRESS) {
+            colliderID++;
+
+            if (colliderID > cWorld.m_static.size())
+                colliderID = 1;
         }
     }
 
@@ -582,7 +586,7 @@ void BatchRenderer::renderDebug(
     //drawPoint(character->res.contactPoint, green);
 
     /* Draw GJK result from player to crate */
-    auto crateHull = cWorld.getHullFromID(2);
+    auto crateHull = cWorld.getHullFromID(colliderID);
     auto playerHull = character->getHull();
     gjk_Input in;
     in.hull1 = playerHull;
@@ -591,35 +595,44 @@ void BatchRenderer::renderDebug(
     cWorld.GJK(&out, in);
     drawLine(out.point1, out.point2, red, red);
 
-    debugFont.drawText(300, 0, vec4(orange,1), "Shapecast Info:");
-
-    sprintf(text, "-Distance: %.4f", out.distance);
-    debugFont.drawText(300, 20, vec4(orange, 1), text);
-
-    sprintf(text, "-Termcode: %d", out.m_term);
+    sprintf(text, "Distance from [%d]: %.4f", colliderID, out.distance);
+    debugFont.drawText(300, 0, vec4(orange,1), text);
+    sprintf(text, "Grounded: %s   Y: %.4f    VY: %.4f", 
+        character->grounded ? "Yes" : "No",
+        character->Position.y, character->Velocity.y);
+    debugFont.drawText(290, 20, vec4(orange, 1), text);
+    int nonzero = 0;
+    for (int n = 0; n < character->res.numContacts; n++) {
+        if (character->res.planes[n].TOI < .02) {
+            nonzero++;
+            sprintf(text, " ToI: %.4f: (%.1f,%.1f,%.1f)", 
+                character->res.planes[n].TOI,
+                character->res.planes[n].contact_point.x,
+                character->res.planes[n].contact_point.y,
+                character->res.planes[n].contact_point.z);
+            debugFont.drawText(300, 60 + 20 * n, vec4(orange, 1), text);
+        }
+    }
+    sprintf(text, "Contact planes: %d", nonzero);
     debugFont.drawText(300, 40, vec4(orange, 1), text);
-
-    sprintf(text, "-Shadow Distance: %.4f", character->res.TOI);
-    debugFont.drawText(300, 60, vec4(orange, 1), text);
-
-    //sprintf(text, "-Termcode: %d", out.m_term);
-    //debugFont.drawText(300, 40, vec4(orange, 1), text);
 
     // Draw buffered wireframe meshes
     m_pickPassShader.use();
     m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
     m_pickPassShader.setVec3("idColor", vec3(.7, 0, .6));
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDisable(GL_CULL_FACE);
+    //glDisable(GL_CULL_FACE);
 
     m_pickPassShader.setVec3("idColor", vec3(.7, .4, .6));
-    m_pickPassShader.setMat4("modelMatrix", mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(character->ghostPosition + vec3(0,1,0), 1)));
+    m_pickPassShader.setMat4("modelMatrix", mat4(
+        vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), 
+        vec4(0, 0, 1, 0), vec4(character->ghostPosition + vec3(0,1,0), 1)));
     glBindVertexArray(character->getMesh()->VAO);
-    glDrawElements(GL_TRIANGLES, character->getMesh()->numFaces * 3, GL_UNSIGNED_SHORT, 0);
+    //glDrawElements(GL_TRIANGLES, character->getMesh()->numFaces * 3, GL_UNSIGNED_SHORT, 0);
 
     m_pickPassShader.setVec3("idColor", vec3(.7, 0, .6));
     // Render Collision World
-    for (int n = 0; n < cWorld.m_static.size(); n++) {
+    for (int n = 1; n < cWorld.m_static.size(); n++) {
         auto cHull = &cWorld.m_static[n];
         m_pickPassShader.setMat4("modelMatrix", mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(cHull->position, 1)) * mat4(cHull->rotation));
         glBindVertexArray(cHull->wireframeVAO);
@@ -632,7 +645,7 @@ void BatchRenderer::renderDebug(
         glBindVertexArray(cHull->wireframeVAO);
         glDrawElements(GL_TRIANGLES, cHull->faces.m_numElements * 3, GL_UNSIGNED_SHORT, 0);
     }
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     ///////////////////////////////////////////////////////////////////////////////////////
