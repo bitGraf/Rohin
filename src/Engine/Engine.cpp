@@ -121,8 +121,18 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     cWorld.getHullFromID(id)->rotation.toYawPitchRoll(38.27, 0, 0);
     cWorld.CreateNewCubeHull(&m_Resource, vec3(-3.41, 0.5, -0.89), .75, 1.5, .75);
     cWorld.CreateNewCubeHull(&m_Resource, vec3(-1.47, 0.5, 2.09), .75, 1.5, .75);
-    UID_t ramp = cWorld.CreateNewCubeHull(&m_Resource, vec3(5, 0, 5), 10, 1, 4);
-    cWorld.getHullFromID(ramp)->rotation.toYawPitchRoll(0, 10, 0);
+
+    // Ramps at various angles
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(&m_Resource, vec3(5, 0, 5), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 10, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(&m_Resource, vec3(5, 1, 8), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 20, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(&m_Resource, vec3(5, 2, 11), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 30, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(&m_Resource, vec3(5, 3, 14), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 40, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(&m_Resource, vec3(5, 3.5, 17), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 50, 0);
 }
 
 void Engine::LoadLevel(std::string levelPath) {

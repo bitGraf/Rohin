@@ -34,6 +34,7 @@ public:
     bool grounded;
     int iterations;
     vec3 m_floorUp;
+    float m_floorAngleLimit;
 
 protected:
     enum class eRelativeSource { // How the input is mapped to movement

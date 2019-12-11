@@ -10,7 +10,8 @@ CharacterObject::CharacterObject() :
     m_cameraID(0),
     m_relativeSource(eRelativeSource::World),
     m_collisionHullId(0),
-    iterations(0)
+    iterations(0),
+    m_floorAngleLimit(35)
 {}
 
 void CharacterObject::Update(double dt) {
@@ -71,7 +72,7 @@ void CharacterObject::Update(double dt) {
 
                             p -= (s - 1.0e-3f)*contactNormal;
 
-                            if (acos(contactNormal.dot(vec3(0, 1, 0))) < (45 * d2r)) {
+                            if (acos(contactNormal.dot(vec3(0, 1, 0))) < (m_floorAngleLimit * d2r)) {
                                 grounded = true;
                                 Velocity.y = 0;
                                 m_floorUp = plane->contact_normal;
