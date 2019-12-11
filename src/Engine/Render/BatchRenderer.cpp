@@ -597,10 +597,19 @@ void BatchRenderer::renderDebug(
 
     sprintf(text, "Distance from [%d]: %.4f", colliderID, out.distance);
     debugFont.drawText(300, 0, vec4(orange,1), text);
-    sprintf(text, "Grounded: %s   Y: %.4f    VY: %.4f", 
-        character->grounded ? "Yes" : "No",
-        character->Position.y, character->Velocity.y);
-    debugFont.drawText(290, 20, vec4(orange, 1), text);
+    sprintf(text, "Grounded: %s", 
+        character->grounded ? "Yes" : "No");
+    debugFont.drawText(300, 20, vec4(orange, 1), text);
+    sprintf(text, "Floor up: (%.4f,%.4f,%.4f)", 
+        character->m_floorUp.x,
+        character->m_floorUp.y,
+        character->m_floorUp.z);
+    debugFont.drawText(300, 40, vec4(orange, 1), text);
+    sprintf(text, "Velocity: (%.4f,%.4f,%.4f)",
+        character->Velocity.x,
+        character->Velocity.y,
+        character->Velocity.z);
+    debugFont.drawText(300, 60, vec4(orange, 1), text);
     int nonzero = 0;
     for (int n = 0; n < character->res.numContacts; n++) {
         if (character->res.planes[n].TOI < .02) {
@@ -610,11 +619,11 @@ void BatchRenderer::renderDebug(
                 character->res.planes[n].contact_point.x,
                 character->res.planes[n].contact_point.y,
                 character->res.planes[n].contact_point.z);
-            debugFont.drawText(300, 60 + 20 * n, vec4(orange, 1), text);
+            debugFont.drawText(300, 100 + 20 * n, vec4(orange, 1), text);
         }
     }
     sprintf(text, "Contact planes: %d, %d iterations", nonzero, character->iterations);
-    debugFont.drawText(300, 40, vec4(orange, 1), text);
+    debugFont.drawText(300, 80, vec4(orange, 1), text);
 
     // Draw buffered wireframe meshes
     m_pickPassShader.use();

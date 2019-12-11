@@ -33,6 +33,7 @@ public:
     vec3 ghostPosition;
     bool grounded;
     int iterations;
+    vec3 m_floorUp;
 
 protected:
     enum class eRelativeSource { // How the input is mapped to movement
@@ -49,6 +50,7 @@ protected:
     mat3 getRelativeAxes();
 
     UID_t m_collisionHullId;
+    vec3 m_hullOffset;
 
 private:
     static const char* _obj_type_CharacterObject;

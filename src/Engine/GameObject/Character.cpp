@@ -14,6 +14,9 @@ CharacterObject::CharacterObject() :
 {}
 
 void CharacterObject::Update(double dt) {
+    if (m_floorUp.y != 1.0) {
+        auto k = 1.f;
+    }
     // Transform velocity into world-space
     Velocity = getRelativeAxes() * Velocity;
 
@@ -23,10 +26,11 @@ void CharacterObject::Update(double dt) {
     else {
         // Raycast down to see if there is anything beneath us
         // TODO: Cache the currect collisionID of the ground and check against that.
-        RaycastResult rc = cWorld.Raycast(Position + vec3(0, 0.5, 0), vec3(0, -1, 0), .6);
+        RaycastResult rc = cWorld.Raycast(Position + m_hullOffset, vec3(0, -1, 0), .6);
 
         if (rc.colliderID == 0) {
             grounded = false;
+            m_floorUp = vec3(0, 1, 0);
         }
     }
     iterations = 0;
@@ -35,9 +39,6 @@ void CharacterObject::Update(double dt) {
     if (m_collisionHullId > 0) {
         // it has collision info
         res = cWorld.Shapecast(m_collisionHullId, Velocity);
-        if (res.numContacts == 2 && res.planes[0].TOI < dt) {
-            bool kkkkk = true;
-        }
 
         if (res.numContacts) {
             vec3 p_target = Position + Velocity * dt;
@@ -53,17 +54,6 @@ void CharacterObject::Update(double dt) {
                     if (plane->TOI < dt) {
                         vec3 contactPoint = plane->contact_point;
                         vec3 contactNormal = plane->contact_normal;
-
-                        if (contactNormal.length_2() == 0.0f) {
-                            ShapecastResult rr = cWorld.Shapecast(m_collisionHullId, Velocity);
-
-                            // TODO: raycast against the specific collider to find contact normal
-                            //RaycastResult rr = cWorld.Raycast(plane->colliderID, Position, contactPoint);
-                            //if (rr.colliderID == plane->colliderID &&
-                            //    rr.t < 1) {
-                            //    contactNormal = rr.normal;
-                            //}
-                        }
 
                         vec3 p_t;
                         if (n > 0) {
@@ -84,6 +74,7 @@ void CharacterObject::Update(double dt) {
                             if (acos(contactNormal.dot(vec3(0, 1, 0))) < (45 * d2r)) {
                                 grounded = true;
                                 Velocity.y = 0;
+                                m_floorUp = plane->contact_normal;
                             }
                         }
                     }
@@ -105,7 +96,7 @@ void CharacterObject::Update(double dt) {
         }
 
         CollisionHull* hull = cWorld.getHullFromID(m_collisionHullId);
-        hull->position = Position + vec3(0, 1, 0);
+        hull->position = Position + m_hullOffset;
 
         // TODO: Expand the ShapeCast function to allow for rotation
         //hull->rotation.toYawPitchRoll(YawPitchRoll.x, 0, 0);
@@ -116,7 +107,12 @@ void CharacterObject::Update(double dt) {
         ghostPosition = Position;
     }
 
-    Velocity = vec3(0, Velocity.y, 0);
+    if (grounded) {
+        Velocity = vec3(0, 0, 0);
+    }
+    else {
+        Velocity = vec3(0, Velocity.y, 0);
+    }
 
     if (m_relativeSource != eRelativeSource::Character && rotateToMovement) {
         vec3 direction = Velocity.get_unit();
@@ -170,6 +166,7 @@ void CharacterObject::Jump(float strength) {
     if (grounded) {
         Velocity.y += strength;
         grounded = false;
+        m_floorUp = vec3(0, 1, 0);
     }
 }
 
@@ -191,43 +188,57 @@ mat3 CharacterObject::getRelativeAxes() {
 
     switch (m_relativeSource) {
         case eRelativeSource::World: {
-            return mat3();
+            vec3 worldX = vec3(1,0,0);
+
+            vec3 worldZ = worldX.cross(m_floorUp);
+            worldX = m_floorUp.cross(worldZ);
+
+            return mat3(
+                worldX,
+                m_floorUp,
+                worldZ
+            );
         } break;
         case eRelativeSource::Camera: {
             GameObject* camRef = GetScene()->getObjectByID(m_cameraID);
             if (camRef) {
                 vec3 cameraX = vec3(camRef->getTransform().col1());
-                vec3 cameraZ = vec3(camRef->getTransform().col3());
-
                 cameraX.y = 0;
-                cameraZ.y = 0;
-
                 cameraX.normalize();
-                cameraZ.normalize();
+
+                vec3 cameraZ = cameraX.cross(m_floorUp);
+                cameraX = m_floorUp.cross(cameraZ);
 
                 return mat3(
                     cameraX,
-                    vec3(0, 1, 0),
+                    m_floorUp,
                     cameraZ
                 );
             }
             else {
-                return mat3();
+                vec3 worldX = vec3(1, 0, 0);
+
+                vec3 worldZ = worldX.cross(m_floorUp);
+                worldX = m_floorUp.cross(worldZ);
+
+                return mat3(
+                    worldX,
+                    m_floorUp,
+                    worldZ
+                );
             }
         } break;
         case eRelativeSource::Character: {
             vec3 localX = math::createYawPitchRoll_Forward(YawPitchRoll);
-            vec3 localZ = math::createYawPitchRoll_Right(YawPitchRoll);
-
             localX.y = 0;
-            localZ.y = 0;
-
             localX.normalize();
-            localZ.normalize();
+
+            vec3 localZ = localX.cross(m_floorUp);
+            localX = m_floorUp.cross(localZ);
 
             return mat3(
                 localX,
-                vec3(0,1,0),
+                m_floorUp,
                 localZ
             );
         } break;
