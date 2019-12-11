@@ -92,6 +92,80 @@ RaycastResult CollisionWorld::Raycast(vec3 start, vec3 end) {
     return res;
 }
 
+RaycastResult CollisionWorld::Raycast(UID_t target, vec3 start, vec3 end) {
+    RaycastResult res;
+
+    vec3 d = end - start;
+    scalar closest_t = 2;
+
+    res.start = start;
+    res.end = end;
+    res.t = closest_t;
+    res.colliderID = 0;
+    res.contactPoint = end;
+    res.normal = vec3(0, 0, 0);
+
+    auto hull = this->getHullFromID(target);
+
+    // only select the ones that close
+    vec3 toHull = hull->position - start;
+    if (toHull.dot(d) < 0)
+        return res;
+
+    // loop through all the triangles in the hull
+    for (int m = 0; m < hull->faces.m_numElements; m++) {
+        auto face = hull->faces.data[m];
+        vec3 v0 = hull->GetVertWorldSpace(face.indices[0]);
+        vec3 v1 = hull->GetVertWorldSpace(face.indices[1]);
+        vec3 v2 = hull->GetVertWorldSpace(face.indices[2]);
+
+        vec3 normal = (v1 - v0).cross(v2 - v0).get_unit();
+
+        scalar t = (v0 - start).dot(normal) / (d.dot(normal));
+        if (t > 1.0f || t < 0.0f) {
+            // ray doesn't intersect the plane with t of [0,1]
+            continue;
+        }
+
+        if (t > closest_t) {
+            // there is a guaranteed intersect that is closer
+            continue;
+        }
+
+        vec3 Q = start + d * t; // point on the triangle's plane
+
+                                // Compute signed triangle area.
+        vec3 norm = (v1 - v0).cross(v2 - v0);
+        vec3 n0 = (v1 - Q).cross(v2 - Q);
+        vec3 n1 = (v2 - Q).cross(v0 - Q);
+        vec3 n2 = (v0 - Q).cross(v1 - Q);
+
+        // Compute triangle barycentric coordinates (pre-division).
+        float u = n0.dot(norm);
+        float v = n1.dot(norm);
+        float w = n2.dot(norm);
+        //float s = 1.0f / (u + v + w);
+        //u *= s;
+        //v *= s;
+        //w *= s;
+
+        if ((u >= 0.0f && v >= 0.0f && w >= 0.0f)) {
+            // The ray intersects the triangle
+            if (t < closest_t) {
+                // this is the new closest t value
+                res.t = t;
+                res.colliderID = hull->m_hullID;
+                res.contactPoint = Q;
+                res.normal = normal;
+
+                closest_t = t;
+            }
+        }
+    }
+
+    return res;
+}
+
 void CollisionWorld::testCreate(ResourceManager* resource) {
     
     // Floor box
@@ -349,7 +423,7 @@ scalar CollisionWorld::TimeOfImpact(CollisionHull* hull1, vec3 vel1, CollisionHu
     vec3 v = vel2 - vel1;
 
     int iter = 0;
-    float eps = 1.0e-6f;
+    float eps = 1.0e-4f;
     while (d > eps && t < 1) {
         ++iter;
         vec3 d_vec = (b - a).get_unit();
@@ -372,7 +446,12 @@ scalar CollisionWorld::TimeOfImpact(CollisionHull* hull1, vec3 vel1, CollisionHu
 
     vec3 p = (a + b) * 0.5f;
 
-    *out_normal = n;
+    if (n.length_2() == 0) {
+        *out_normal = -v.get_unit();
+    }
+    else {
+        *out_normal = n;
+    }
     *out_contact_point = p;
     *out_iterations = iter;
 
@@ -487,7 +566,7 @@ void Simplex::GetWitnessPoints(vec3* point1, vec3* point2, float radius1, float 
     } break;
     }
 
-    if (m_hit) {
+    if (m_hit) { // could record a hit that actually is a miss ?
         *point1 = *point2;
     }
     else {

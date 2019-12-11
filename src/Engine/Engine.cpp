@@ -115,6 +115,8 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     //cWorld.testCreate(&m_Resource);
     UID_t floor = cWorld.CreateNewCubeHull(&m_Resource, vec3(0, -2.5, 0), 75, 5, 75);
     cWorld.CreateNewCubeHull(&m_Resource, vec3(0, 1.5, -4), 8, 3, 3);
+    UID_t crate = cWorld.CreateNewCubeHull(&m_Resource, vec3(-2, 1.5, -8), 8, 3, 3);
+    cWorld.getHullFromID(crate)->rotation.toYawPitchRoll(30, 0, 0);
     UID_t id = cWorld.CreateNewCubeHull(&m_Resource, vec3(-5.42, 1, 1.88), 2);
     cWorld.getHullFromID(id)->rotation.toYawPitchRoll(38.27, 0, 0);
     cWorld.CreateNewCubeHull(&m_Resource, vec3(-3.41, 0.5, -0.89), .75, 1.5, .75);

@@ -98,6 +98,8 @@ public:
     RaycastResult Raycast(vec3 start, vec3 end);
     RaycastResult Raycast(vec3 start, vec3 direction, scalar distance);
 
+    RaycastResult Raycast(UID_t target, vec3 start, vec3 end);
+
     ShapecastResult Shapecast(UID_t id, vec3 vel);
     scalar TimeOfImpact(CollisionHull* hull1, vec3 vel1, 
         CollisionHull* hull2, vec3 vel2,

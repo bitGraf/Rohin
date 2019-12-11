@@ -32,6 +32,7 @@ public:
     ShapecastResult res;
     vec3 ghostPosition;
     bool grounded;
+    int iterations;
 
 protected:
     enum class eRelativeSource { // How the input is mapped to movement

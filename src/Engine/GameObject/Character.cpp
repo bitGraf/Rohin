@@ -9,7 +9,8 @@ CharacterObject::CharacterObject() :
     //m_cameraRef(nullptr),
     m_cameraID(0),
     m_relativeSource(eRelativeSource::World),
-    m_collisionHullId(0)
+    m_collisionHullId(0),
+    iterations(0)
 {}
 
 void CharacterObject::Update(double dt) {
@@ -28,18 +29,24 @@ void CharacterObject::Update(double dt) {
             grounded = false;
         }
     }
+    iterations = 0;
 
     // Perform collision logic
     if (m_collisionHullId > 0) {
         // it has collision info
         res = cWorld.Shapecast(m_collisionHullId, Velocity);
+        if (res.numContacts == 2 && res.planes[0].TOI < dt) {
+            bool kkkkk = true;
+        }
 
         if (res.numContacts) {
             vec3 p_target = Position + Velocity * dt;
             vec3 p = p_target;
+            vec3 p_start = Position;
             ghostPosition = Position + (Velocity*res.planes[0].TOI);
 
-            for (int it = 0; it < 1; it++) {
+            for (iterations = 0; iterations < 8; iterations++) {
+                float errorAcc = 0;
                 for (int n = 0; n < res.numContacts; n++) {
                     auto plane = &res.planes[n];
 
@@ -47,12 +54,31 @@ void CharacterObject::Update(double dt) {
                         vec3 contactPoint = plane->contact_point;
                         vec3 contactNormal = plane->contact_normal;
 
-                        vec3 p_t = Position + Velocity * plane->TOI;
+                        if (contactNormal.length_2() == 0.0f) {
+                            ShapecastResult rr = cWorld.Shapecast(m_collisionHullId, Velocity);
+
+                            // TODO: raycast against the specific collider to find contact normal
+                            //RaycastResult rr = cWorld.Raycast(plane->colliderID, Position, contactPoint);
+                            //if (rr.colliderID == plane->colliderID &&
+                            //    rr.t < 1) {
+                            //    contactNormal = rr.normal;
+                            //}
+                        }
+
+                        vec3 p_t;
+                        if (n > 0) {
+                            p_t = p_start + Velocity * (plane->TOI - res.planes[n-1].TOI);
+                        }
+                        else {
+                            p_t = p_start + Velocity * plane->TOI;
+                        }
                         vec3 body2contact = contactPoint - p_t;
 
                         vec3 sv = ((p + body2contact) - contactPoint);
                         float s = ((p + body2contact) - contactPoint).dot(contactNormal);
                         if (s < 0) {
+                            errorAcc -= s;
+
                             p -= (s - 1.0e-3f)*contactNormal;
 
                             if (acos(contactNormal.dot(vec3(0, 1, 0))) < (45 * d2r)) {
@@ -62,6 +88,13 @@ void CharacterObject::Update(double dt) {
                         }
                     }
                 }
+                float eps = 1e-9;
+                if (errorAcc < eps) {
+                    // We went through en entire iteration without moving 
+                    // the object, we can stop iterating now.
+                    break;
+                }
+                p_start = p;
             }
 
             Position = p;

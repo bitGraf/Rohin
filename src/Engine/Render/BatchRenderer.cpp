@@ -613,7 +613,7 @@ void BatchRenderer::renderDebug(
             debugFont.drawText(300, 60 + 20 * n, vec4(orange, 1), text);
         }
     }
-    sprintf(text, "Contact planes: %d", nonzero);
+    sprintf(text, "Contact planes: %d, %d iterations", nonzero, character->iterations);
     debugFont.drawText(300, 40, vec4(orange, 1), text);
 
     // Draw buffered wireframe meshes
@@ -628,7 +628,7 @@ void BatchRenderer::renderDebug(
         vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), 
         vec4(0, 0, 1, 0), vec4(character->ghostPosition + vec3(0,1,0), 1)));
     glBindVertexArray(character->getMesh()->VAO);
-    //glDrawElements(GL_TRIANGLES, character->getMesh()->numFaces * 3, GL_UNSIGNED_SHORT, 0);
+    glDrawElements(GL_TRIANGLES, character->getMesh()->numFaces * 3, GL_UNSIGNED_SHORT, 0);
 
     m_pickPassShader.setVec3("idColor", vec3(.7, 0, .6));
     // Render Collision World
