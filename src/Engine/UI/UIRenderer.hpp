@@ -1,11 +1,11 @@
 #ifndef UIRENDER_MANAGER_H
 #define UIRENDER_MANAGER_H
 
-#include "Message\CoreSystem.hpp"
-#include "Window\Window.hpp"
-#include "Render\Shader.hpp"
+#include "Message/CoreSystem.hpp"
+#include "Window/Window.hpp"
+#include "Render/Shader.hpp"
 #include "UIElement.hpp"
-#include "Scene\Scene.hpp"
+#include "Scene/Scene.hpp"
 
 class UIRenderer : public CoreSystem {
 public:

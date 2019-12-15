@@ -1,5 +1,5 @@
 #include "Camera.hpp"
-#include "Scene\Scene.hpp"
+#include "Scene/Scene.hpp"
 const char* Camera::_obj_type_CameraObject = "Camera";
 
 Camera::Camera() :

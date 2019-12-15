@@ -4,8 +4,8 @@
 /*
 
 #include "Configuration.hpp"
-#include "Window\Window.hpp"
-#include "Render\DynamicFont.hpp"
+#include "Window/Window.hpp"
+#include "Render/DynamicFont.hpp"
 #include <algorithm>
 
 class OptionsPane {

@@ -1,5 +1,5 @@
 #include "TriggerVolume.hpp"
-#include "Scene\Scene.hpp"
+#include "Scene/Scene.hpp"
 
 const char* TriggerVolume::_obj_type_TriggerVolume = "Trigger";
 

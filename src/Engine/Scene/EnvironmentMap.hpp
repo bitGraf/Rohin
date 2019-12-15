@@ -5,7 +5,7 @@
 #include <iostream>
 #include <chrono>
 
-#include "glad\glad.h"
+#include "glad/glad.h"
 #include "stb_image.h"
 
 #include "Render/Shader.hpp"

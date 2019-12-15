@@ -1,7 +1,7 @@
 #ifndef TRIANGLE_MESH_H
 #define TRIANGLE_MESH_H
 
-#include "glad\glad.h"
+#include "glad/glad.h"
 #include "GameMath.hpp"
 #include "Resource/MemoryManager.hpp"
 

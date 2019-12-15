@@ -1,7 +1,7 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
-#include "glad\glad.h"
+#include "glad/glad.h"
 #include "GameMath.hpp"
 
 struct Material_Texture {

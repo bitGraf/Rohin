@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Collision\CollisionMath.hpp"
-#include "Collision\CollisionHull.hpp"
-#include "Collision\CollisionWorld.hpp"
+#include "Collision/CollisionMath.hpp"
+#include "Collision/CollisionHull.hpp"
+#include "Collision/CollisionWorld.hpp"
 #include <vector>
 #include <cassert>
 

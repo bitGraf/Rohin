@@ -3,10 +3,10 @@
 
 #define MAX_CALLS 1000
 
-#include "glad\glad.h"
+#include "glad/glad.h"
 #include "GameMath.hpp"
-#include "Scene\EnvironmentMap.hpp"
-#include "Scene\Material.hpp"
+#include "Scene/EnvironmentMap.hpp"
+#include "Scene/Material.hpp"
 class Scene;
 
 using namespace math;

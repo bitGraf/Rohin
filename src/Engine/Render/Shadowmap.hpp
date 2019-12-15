@@ -1,7 +1,7 @@
 #ifndef SHADOWMAP_H
 #define SHADOWMAP_H
 
-#include "glad\glad.h"
+#include "glad/glad.h"
 #include "GameMath.hpp"
 
 class Shadowmap {

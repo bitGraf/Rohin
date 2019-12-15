@@ -1,6 +1,6 @@
 #include "BatchRenderer.hpp"
-#include "Scene\Scene.hpp"
-#include "Collision\Visualizer.hpp"
+#include "Scene/Scene.hpp"
+#include "Collision/Visualizer.hpp"
 
 Visualizer viz;
 

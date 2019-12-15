@@ -1,13 +1,13 @@
 #ifndef RENDER_MANAGER_H
 #define RENDER_MANAGER_H
 
-#include "GLFW\glfw3.h"
-#include "Message\CoreSystem.hpp"
+#include "GLFW/glfw3.h"
+#include "Message/CoreSystem.hpp"
 #include "Shader.hpp"
 #include "Shadowmap.hpp"
-#include "Resource\Texture.hpp"
+#include "Resource/Texture.hpp"
 #include "RenderBatch.hpp"
-#include "Window\Framebuffer.hpp"
+#include "Window/Framebuffer.hpp"
 #include "DynamicFont.hpp"
 #include "Utils.hpp"
 #include "Resource/ResourceManager.hpp"

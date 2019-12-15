@@ -4,10 +4,10 @@
 #include <unordered_map>
 #include <string>
 
-#include <GLFW\glfw3.h>
+#include <GLFW/glfw3.h>
 
 #include "GameMath.hpp"
-#include "Message\Message.hpp"
+#include "Message/Message.hpp"
 
 class GameObject;
 
