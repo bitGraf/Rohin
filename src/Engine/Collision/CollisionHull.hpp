@@ -2,7 +2,7 @@
 #define COLLISION_HULL_H
 
 #include "GameMath.hpp"
-#include "Resource\TriangleMesh.hpp"
+#include "Resource/TriangleMesh.hpp"
 
 using namespace math;
 class ResourceManager;
