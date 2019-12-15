@@ -114,6 +114,7 @@ target_link_libraries(Game engine ${CMAKE_DL_LIBS})
 target_link_libraries(Game glfw ${GLFW_LIBRARIES})
 target_link_libraries(Game glad ${CMAKE_DL_LIBS})
 target_link_libraries(Game tinygltf ${CMAKE_DL_LIBS})
+target_link_libraries(Game ${OPENGL_LIBRARIES})
 
 
 
@@ -138,6 +139,7 @@ target_link_libraries(TestGame engine ${CMAKE_DL_LIBS})
 target_link_libraries(TestGame glfw ${GLFW_LIBRARIES})
 target_link_libraries(TestGame glad ${CMAKE_DL_LIBS})
 target_link_libraries(TestGame tinygltf ${CMAKE_DL_LIBS})
+target_link_libraries(TestGame ${OPENGL_LIBRARIES})
 
 
 
