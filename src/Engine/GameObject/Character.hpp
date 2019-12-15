@@ -29,7 +29,7 @@ public:
     vec3 AngularVelocity;
     bool rotateToMovement;
 
-    ShapecastResult res;
+    ShapecastResult_multi res;
     vec3 ghostPosition;
     bool grounded;
     int iterations;

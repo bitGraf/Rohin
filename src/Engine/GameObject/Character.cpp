@@ -39,7 +39,7 @@ void CharacterObject::Update(double dt) {
     // Perform collision logic
     if (m_collisionHullId > 0) {
         // it has collision info
-        res = cWorld.Shapecast(m_collisionHullId, Velocity);
+        res = cWorld.Shapecast_multi(m_collisionHullId, Velocity);
 
         if (res.numContacts) {
             vec3 p_target = Position + Velocity * dt;
