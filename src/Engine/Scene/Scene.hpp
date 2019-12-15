@@ -31,8 +31,8 @@ public:
     void update(double dt);
     void handleMessage(Message msg);
 
-    virtual bool recognizeCustomEntity(std::string entType);
-    virtual void processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource);
+    bool recognizeCustomEntity(std::string entType);
+    void processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource);
 
     GameObject* getObjectByName(const std::string objectName) const;
     GameObject* getObjectByID(const UID_t id) const;
