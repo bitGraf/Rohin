@@ -19,6 +19,7 @@ void Engine::Start() {
             frameStart - frameEnd).count();
         fpsAvg.addSample(lastFrameTime);
         dt = fpsAvg.getCurrentAverage() / 1000000.0;
+        dt = 0.02;
 
         if (m_MainWindow.shouldClose()) {
             done = true;
@@ -160,7 +161,7 @@ void Engine::Update(double dt) {
             tf = 1;
         }
         if (GetScene())
-            GetScene()->update(.02 * tf); // Update the whole scene
+            GetScene()->update(dt * tf); // Update the whole scene
     }
 }
 
@@ -268,6 +269,11 @@ void Engine::globalHandle(Message msg) {
             Console::logMessage("Toggle Options Pane");
 
             m_Options.ToggleVisibility();
+        }
+
+        if (key == GLFW_KEY_M && action == GLFW_PRESS) {
+            // for debugging
+            bool _____stop = true;
         }
     }
 

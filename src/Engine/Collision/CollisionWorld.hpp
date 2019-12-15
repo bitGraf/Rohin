@@ -25,12 +25,19 @@ struct ContactPlane {
     vec3 contact_point;
 };
 
-struct ShapecastResult {
+struct ShapecastResult_multi {
     ContactPlane planes[MAX_CONTACTS];
     int numContacts;
 
     int iters;
     float lowestTOI;
+};
+struct ShapecastResult {
+    int iters;
+    float TOI;
+    vec3 contact_normal;
+    vec3 contact_point;
+    UID_t colliderID;
 };
 
 #define MAX_POINTS 10
@@ -94,13 +101,14 @@ public:
 
     void Update(double dt);
 
-    void testCreate(ResourceManager* resource);
     RaycastResult Raycast(vec3 start, vec3 end);
     RaycastResult Raycast(vec3 start, vec3 direction, scalar distance);
 
     RaycastResult Raycast(UID_t target, vec3 start, vec3 end);
 
+    ShapecastResult_multi Shapecast_multi(UID_t id, vec3 vel);
     ShapecastResult Shapecast(UID_t id, vec3 vel);
+
     scalar TimeOfImpact(CollisionHull* hull1, vec3 vel1, 
         CollisionHull* hull2, vec3 vel2,
         vec3* out_normal, vec3* out_contact_point, 

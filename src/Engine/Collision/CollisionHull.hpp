@@ -12,8 +12,8 @@ class CollisionHull {
 public:
     CollisionHull();
 
-    void loadVerts(ResourceManager* resource, int count...);
-    void loadFaces(ResourceManager* resource, int count...);
+    //void loadVerts(ResourceManager* resource, int count...);
+    //void loadFaces(ResourceManager* resource, int count...);
 
     int GetSupport(vec3 search_dir);
     vec3 GetVertWorldSpace(int index);

@@ -29,6 +29,7 @@ vec3 CollisionHull::GetVertWorldSpace(int index) {
     return rotation * local + position;
 }
 
+/*
 void CollisionHull::loadVerts(ResourceManager* resource, int count...) {
     vertices = resource->reserveDataBlocks<vec3>(count);
 
@@ -54,6 +55,7 @@ void CollisionHull::loadFaces(ResourceManager* resource, int count...) {
 
     va_end(args);
 }
+*/
 
 void CollisionHull::bufferData() {
     glGenVertexArrays(1, &wireframeVAO);
