@@ -38,7 +38,7 @@ private:
     BatchRenderer m_Renderer;
     ResourceManager m_Resource;
     Camera m_debugCamera;
-    OptionsPane m_Options;
+    //OptionsPane m_Options;
 
     /* State variables */
     bool debugMode;

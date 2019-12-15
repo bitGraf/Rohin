@@ -76,8 +76,8 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     EnvironmentMap::InitVAO();
     //m_Scenes.loadScenes(&m_Resource);
     m_Renderer.loadResources(&m_Resource);
-    m_Options.create(&m_MainWindow);
-    m_Options.redraw();
+    //m_Options.create(&m_MainWindow);
+    //m_Options.redraw();
     //m_MainWindow.resize(1200, 900);
 
     m_MainWindow.makeCurrent();
@@ -268,7 +268,7 @@ void Engine::globalHandle(Message msg) {
         if (key == GLFW_KEY_O && action == GLFW_PRESS) {
             Console::logMessage("Toggle Options Pane");
 
-            m_Options.ToggleVisibility();
+            //m_Options.ToggleVisibility();
         }
 
         if (key == GLFW_KEY_M && action == GLFW_PRESS) {
@@ -287,7 +287,7 @@ void Engine::globalHandle(Message msg) {
         dt yPos = msg.data[4];
 
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-            m_Options.click(xPos, yPos);
+            //m_Options.click(xPos, yPos);
 
             if (GLFW_CURSOR_NORMAL == glfwGetInputMode(m_MainWindow.m_glfwWindow, GLFW_CURSOR)) {
                 auto id = m_Renderer.pickObject(xPos, yPos);

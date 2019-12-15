@@ -1,5 +1,6 @@
 #include "OptionsPane.hpp"
 
+/*
 OptionsPane::OptionsPane() {
     Visibility = false;
 }
@@ -129,3 +130,4 @@ void OptionsPane::ToggleVisibility() {
         this->redraw();
     }
 }
+*/

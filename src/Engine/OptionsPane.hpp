@@ -1,6 +1,8 @@
 #ifndef OPTIONS_PANE_H
 #define OPTIONS_PANE_H
 
+/*
+
 #include "Configuration.hpp"
 #include "Window\Window.hpp"
 #include "Render\DynamicFont.hpp"
@@ -58,5 +60,7 @@ private:
     void nextToggleSet();
     bool inBounds(vec4 bounds, vec2 loc);
 };
+
+*/
 
 #endif
