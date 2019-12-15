@@ -34,7 +34,7 @@ target_include_directories(engine PRIVATE
 target_compile_definitions(engine PRIVATE _CRT_SECURE_NO_WARNINGS)
 target_compile_definitions(engine PRIVATE "GLFW_INCLUDE_NONE")
 
-option(ENGINE_CUSTOM_ENTITIES "ayo" ON)
+option(ENGINE_CUSTOM_ENTITIES "ayo" OFF)
 if(ENGINE_CUSTOM_ENTITIES)
     target_compile_definitions(engine PRIVATE "CUSTOM_ENTITIES")
 else()

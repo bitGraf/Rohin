@@ -231,10 +231,10 @@ void Scene::handleMessage(Message msg) {
 #ifndef CUSTOM_ENTITIES
 
 bool Scene::recognizeCustomEntity(std::string entType) {
-    Console::logMessage("No entities defined");
+    //Console::logMessage("No entities defined");
     return false;
 }
-void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss) {
+void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource) {
 
 }
 

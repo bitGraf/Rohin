@@ -17,6 +17,7 @@ void GlobalHandleMessage(Message msg) {
     g_engine.globalHandle(msg);
 }
 
+/*
 bool Scene::recognizeCustomEntity(std::string entType) {
     return false;
 }
@@ -24,3 +25,4 @@ bool Scene::recognizeCustomEntity(std::string entType) {
 void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource) {
     return;
 }
+*/
