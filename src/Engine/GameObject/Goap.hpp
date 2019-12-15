@@ -1,14 +1,16 @@
 #ifndef GOAP_H
 #define GOAP_H
 
+#include "DataTypes.hpp"
+
 #define MaxAtoms 64
 #define MaxActions 64
 class ActionPlanner;
 
 class worldstate_t {
 public:
-	long values; //We want to create essentially an array of boolean values
-	long relevance;
+	u64 values; //We want to create essentially an array of boolean values
+	u64 relevance;
 
 	void Clear();
 	bool Set(ActionPlanner* ap, const char* atm_Name, bool atm_Value);
