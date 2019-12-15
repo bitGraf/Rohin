@@ -2,7 +2,7 @@
 #define LIGHT_OBJECT_H
 
 #include "GameObject.hpp"
-#include "Render\Shadowmap.hpp"
+#include "Render/Shadowmap.hpp"
 
 /// An omnidirectional Pointlight
 class PointLight : public GameObject {

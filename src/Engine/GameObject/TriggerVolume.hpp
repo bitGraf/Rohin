@@ -1,7 +1,7 @@
 #ifndef TRIGGER_VOLUME_H
 #define TRIGGER_VOLUME_H
 
-#include"GameObject\GameObject.hpp"
+#include"GameObject/GameObject.hpp"
 
 class TriggerVolume : public GameObject {
 public:

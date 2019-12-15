@@ -2,7 +2,7 @@
 #define GAME_OBJECT_H
 
 #include "GameMath.hpp"
-#include "Resource\ResourceManager.hpp"
+#include "Resource/ResourceManager.hpp"
 #include "Utils.hpp"
 #include <inttypes.h>
 

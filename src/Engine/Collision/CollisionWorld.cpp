@@ -1,5 +1,5 @@
 #include "CollisionWorld.hpp"
-#include "Resource\ResourceManager.hpp"
+#include "Resource/ResourceManager.hpp"
 
 CollisionWorld cWorld;
 

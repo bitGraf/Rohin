@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Render\Shader.hpp"
+#include "Render/Shader.hpp"
 #include "stb_truetype.hpp"
 
 #include "Console.hpp"

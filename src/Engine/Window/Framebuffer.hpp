@@ -1,7 +1,7 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 
-#include "glad\glad.h"
+#include "glad/glad.h"
 #include "GameMath.hpp"
 
 class Framebuffer {

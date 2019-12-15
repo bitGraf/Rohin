@@ -4,8 +4,8 @@
 #include "RenderableObject.hpp"
 #include "Camera.hpp"
 
-#include "Collision\CollisionHull.hpp"
-#include "Collision\CollisionWorld.hpp"
+#include "Collision/CollisionHull.hpp"
+#include "Collision/CollisionWorld.hpp"
 
 /// CharacterObject. Represents a Renderable Character that can move around.
 class CharacterObject : public RenderableObject {

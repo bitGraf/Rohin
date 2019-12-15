@@ -8,18 +8,18 @@
 
 #include "Message/CoreSystem.hpp"
 #include "Resource/ResourceManager.hpp"
-#include "GLFW\glfw3.h"
-#include "Render\RenderBatch.hpp"
-#include "Render\Shadowmap.hpp"
+#include "GLFW/glfw3.h"
+#include "Render/RenderBatch.hpp"
+#include "Render/Shadowmap.hpp"
 
 #include "EnvironmentMap.hpp"
 #include "Utils.hpp"
 
-#include "GameObject\Player.hpp"
-#include "GameObject\Camera.hpp"
-#include "GameObject\Light.hpp"
-#include "GameObject\AICharacter.hpp"
-#include "GameObject\TriggerVolume.hpp"
+#include "GameObject/Player.hpp"
+#include "GameObject/Camera.hpp"
+#include "GameObject/Light.hpp"
+#include "GameObject/AICharacter.hpp"
+#include "GameObject/TriggerVolume.hpp"
 
 const int MAX_GAME_OBJECTS = 100;
 

@@ -1,5 +1,5 @@
 #include "Character.hpp"
-#include "Scene\Scene.hpp"
+#include "Scene/Scene.hpp"
 const char* CharacterObject::_obj_type_CharacterObject= "Character";
 
 CharacterObject::CharacterObject() :

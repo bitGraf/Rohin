@@ -3,7 +3,7 @@
 
 class Console;
 
-#include "Message\Message.hpp"
+#include "Message/Message.hpp"
 
 #include <sstream>
 #include <iostream>

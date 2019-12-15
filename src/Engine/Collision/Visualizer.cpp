@@ -139,8 +139,8 @@ void Distance3D(gjk_Output* output, gjk_Input& input)
     output->iterations = iter;
     output->m_term = term;
 }
-
-#include "Resource\ResourceManager.hpp"
+// why is there an include here
+#include "Resource/ResourceManager.hpp"
 void Visualizer::Init(ResourceManager* resource) {
 }
 

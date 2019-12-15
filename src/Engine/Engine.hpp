@@ -2,9 +2,9 @@
 #define ENGINE_H_pp
 
 #include "Console.hpp"
-#include "Window\Window.hpp"
-#include "Render\BatchRenderer.hpp"
-#include "Scene\Scene.hpp"
+#include "Window/Window.hpp"
+#include "Render/BatchRenderer.hpp"
+#include "Scene/Scene.hpp"
 #include "OptionsPane.hpp"
 
 #include <thread>

@@ -2,8 +2,8 @@
 #define UI_ELEMENT_H
 
 #include "GameMath.hpp"
-#include "glad\glad.h"
-#include "Resource\Texture.hpp"
+#include "glad/glad.h"
+#include "Resource/Texture.hpp"
 
 using namespace math;
 

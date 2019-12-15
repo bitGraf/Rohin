@@ -4,7 +4,7 @@
 #include "GameObject/Character.hpp"
 #include "GameObject/Camera.hpp"
 #include "Input.hpp"
-#include "GLFW\glfw3.h"
+#include "GLFW/glfw3.h"
 
 /// A Character Object that responds to player input.
 class PlayerObject : public CharacterObject {

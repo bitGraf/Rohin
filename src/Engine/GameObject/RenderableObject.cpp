@@ -1,5 +1,5 @@
 #include "RenderableObject.hpp"
-#include "Resource\ResourceManager.hpp"
+#include "Resource/ResourceManager.hpp"
 const char* RenderableObject::_obj_type_RenderableObject = "Renderable";
 
 RenderableObject::RenderableObject() :
