@@ -1,5 +1,5 @@
 #include "GameObject.hpp"
-#include "Scene/\Scene.hpp"
+#include "Scene/Scene.hpp"
 
 const char* GameObject::_obj_type_GameObject = "GameObject";
 
