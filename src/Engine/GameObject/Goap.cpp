@@ -135,8 +135,8 @@ void ActionPlanner::Description(char* buf, int sz) {
 
 worldstate_t ActionPlanner::DoAction(int Action_Number, worldstate_t Future) {
 	const worldstate_t Past = this->act_Postcond[Action_Number];
-	const long Unaffected = Past.relevance;
-	const long Affected = (Unaffected ^ -1LL);
+	const u64 Unaffected = Past.relevance;
+	const u64 Affected = (Unaffected ^ -1LL);
 
 	Future.values = (Future.values & Unaffected) | (Past.values & Affected);
 	Future.relevance &= Past.relevance;
@@ -149,7 +149,7 @@ int ActionPlanner::PossibleTransitions(worldstate_t fr, worldstate_t* to, const 
 	{
 		// Check if precondition is met
 		const worldstate_t Precond = this->act_Precond[i];
-		const long Relevant = (Precond.relevance^-1LL);
+		const u64 Relevant = (Precond.relevance^-1LL);
 		const bool MetCond = ((Precond.values & Relevant) == (fr.values & Relevant));
 		if (MetCond)
 		{
