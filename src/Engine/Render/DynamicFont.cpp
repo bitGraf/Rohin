@@ -76,7 +76,7 @@ void DynamicFont::create(std::string filename, float fontSize,
         m_fontSize = fontSize;
         initialized = true;
     } else {
-        printf("Failed to open font file [%s]\n", filename);
+        printf("Failed to open font file [%s]\n", filename.c_str());
         //exit(1);
     }
 }
