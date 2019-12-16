@@ -26,12 +26,23 @@ CoreSystem* FileSystem::create() {
         Console::logMessage("Error changing directory.");
     }
 
+#ifdef _WIN32
     if (0 == cd("../../run_tree/")) {
         Console::logMessage("CWD changes to: " + std::string(cwd(currDir, sizeof currDir)));
     }
     else {
         Console::logMessage("Error changing directory.");
     }
+#else
+    if (0 == cd("../run_tree/")) {
+        Console::logMessage("CWD changes to: " + std::string(cwd(currDir, sizeof currDir)));
+    }
+    else {
+        Console::logMessage("Error changing directory.");
+    }
+#endif
+
+
 
     return this;
 }

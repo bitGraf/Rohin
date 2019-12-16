@@ -31,7 +31,7 @@ void BatchRenderer::handleMessage(Message msg) {
             m_toneMap.create("toneMap.vert", "toneMap.frag", "toneMapShader");
             m_gammaCorrect.create("toneMap.vert", "gammaCorrect.frag", "gammaCorrectShader");
             m_debugLineShader.create("DebugLine.vert", "DebugLine.frag", "debugLineShader");
-            m_debugMeshShader.create("DebugMesh.vert", "DebugMesh.frag", "debugMeshShader");
+            m_debugMeshShader.create("debugMesh.vert", "debugMesh.frag", "debugMeshShader");
             m_pickPassShader.create("shadow.vert", "pickPass.frag", "pickPassShader");
             //m_wireframeShader.create("wireframe.vert", "wireframe.frag", "wireframeShader");
         }
@@ -86,7 +86,7 @@ CoreSystem* BatchRenderer::create() {
     m_toneMap.create("toneMap.vert", "toneMap.frag", "toneMapShader");
     m_gammaCorrect.create("toneMap.vert", "gammaCorrect.frag", "gammaCorrectShader");
     m_debugLineShader.create("DebugLine.vert", "DebugLine.frag", "debugLineShader");
-    m_debugMeshShader.create("DebugMesh.vert", "DebugMesh.frag", "debugMeshShader");
+    m_debugMeshShader.create("debugMesh.vert", "debugMesh.frag", "debugMeshShader");
     m_pickPassShader.create("shadow.vert", "pickPass.frag", "pickPassShader");
     //m_wireframeShader.create("wireframe.vert", "wireframe.frag", "wireframeShader");
 

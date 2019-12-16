@@ -24,9 +24,12 @@ void Shader::create(
     Console::logMessage("Building shader(" + ShaderName + "): [" + vShaderPath + "]|[" + fShaderPath + "]");
 
     /* load shader files */
+    errno = 0;
     FILE *f = fopen((ShaderResourcePath + vShaderPath).c_str(), "rb");
     if (f == NULL) {
         Console::logMessage("   Failed to open file: " + vShaderPath);
+        Console::logMessage("   Error: " + std::to_string(errno));
+        Console::logMessage("   Path: " + (ShaderResourcePath + vShaderPath));
         return;
     }
     fseek(f, 0, SEEK_END);

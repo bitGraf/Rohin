@@ -11,7 +11,7 @@
 #include "Scene/Material.hpp"
 #include "GameObject/Light.hpp"
 
-const std::string ShaderResourcePath = "Data/shaders/";
+const std::string ShaderResourcePath = "Data/Shaders/";
 
 class Shader {
 public:
