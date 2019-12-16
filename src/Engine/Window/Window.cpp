@@ -13,7 +13,7 @@ void Window::update(double dt) {
     if (hasResized) {
         Console::logMessage("New window size: %d x %d.", m_width, m_height);
         hasResized = false;
-        MessageBus::sendMessage(Message("NewWindowSize", 2, m_width, m_height));
+        MessageBus::sendMessage(Message("NewWindowSize", 2, (int)m_width, (int)m_height));
     }
 }
 

@@ -38,7 +38,7 @@ Message::Message(std::string msg_type_str, u8 num_args, ...) :
 
         va_start(args, num_args);
         for (u8 n = 0; n < num_args; n++) {
-            data[n] = va_arg(args, Datatype);
+            data[n] = (unsigned short)va_arg(args, int);
         }
         va_end(args);
     }
