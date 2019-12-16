@@ -94,11 +94,6 @@ const char* PlayerObject::GetControlType() {
 void PlayerObject::PostLoad() {
     m_cameraID = GetScene()->getObjectIDByName("MainCamera"); // < Should this REALLY be in here?
     Input::registerGameObject(this);
-
-    Input::watchKeyAxis("MoveForward", GLFW_KEY_W, GLFW_KEY_S);
-    Input::watchKeyAxis("MoveRight", GLFW_KEY_D, GLFW_KEY_A);
-    Input::watchKeyAxis("Rotate", GLFW_KEY_RIGHT, GLFW_KEY_LEFT);
-    Input::watchKey("spacebar", GLFW_KEY_SPACE);
 }
 
 const char* PlayerObject::ObjectTypeString() {

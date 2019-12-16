@@ -565,6 +565,25 @@ void BatchRenderer::renderDebug(
     sprintf(text, "Debug- - - - %-3lld us", dur_debug / scale);
     debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
 
+    // Print gamepad state
+    if (Input::gamepadPresent) {
+        int numAxes;
+        const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &numAxes);
+
+        for (int jj = 0; jj < numAxes; jj++) {
+            sprintf(text, "Gamepad axis %d: %.3f", jj, axes[jj]);
+            debugFont.drawText(5, 100 + jj * 20, white, text);
+        }
+
+        int numButtons;
+        const unsigned char* buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numButtons);
+
+        for (int jj = 0; jj < numButtons; jj++) {
+            sprintf(text, "Gamepad button %d: %s", jj, buttons[jj] == GLFW_PRESS ? "Pressed" : "");
+            debugFont.drawText(5, 100 + numAxes*20 + jj * 20, white, text);
+        }
+    }
+
     ///////////////////////////////////////////////////////////////////////////////////////
     // TEMPORARY VISUALIZATION
     vec3 red = vec3(1, 0, 0);

@@ -13,9 +13,26 @@ math::vec2 Input::m_mouseMove;
 math::vec2 Input::m_mouseAcc;
 bool Input::gamepadPresent = false;
 
-void Input::setupGamepad() {
-    gamepadPresent = glfwJoystickPresent(GLFW_JOYSTICK_1) == 1;
-    std::cout << "Gamepad1 connected" << std::endl;
+void Input::setupBindings() {
+    // Setup axes
+    Input::createAxis("MoveForward", GLFW_KEY_W, GLFW_KEY_S, 1, -1, -1, true);
+    Input::createAxis("MoveRight", GLFW_KEY_D, GLFW_KEY_A, 0, -1, -1);
+    Input::createAxis("Rotate", GLFW_KEY_RIGHT, GLFW_KEY_LEFT, -1, -1, -1);
+
+    // Setup keys
+    Input::watchKey("key_w", GLFW_KEY_W);
+    Input::watchKey("key_a", GLFW_KEY_A);
+    Input::watchKey("key_s", GLFW_KEY_S);
+    Input::watchKey("key_d", GLFW_KEY_D);
+    Input::watchKey("key_space", GLFW_KEY_SPACE);
+    Input::watchKey("key_shift", GLFW_KEY_LEFT_SHIFT);
+
+    Input::watchKey("key_up", GLFW_KEY_UP);
+    Input::watchKey("key_down", GLFW_KEY_DOWN);
+    Input::watchKey("key_left", GLFW_KEY_LEFT);
+    Input::watchKey("key_right", GLFW_KEY_RIGHT);
+    Input::watchKey("key_numpad0", GLFW_KEY_KP_0);
+    Input::watchKey("key_rctrl", GLFW_KEY_RIGHT_CONTROL);
 }
 
 bool Input::getKeyState(std::string key) {
@@ -54,16 +71,45 @@ void Input::watchKey(std::string key, int glfwKeyCode) {
     }
 }
 
-void Input::watchKeyAxis(std::string axisName, int glfwKeyCodePlus, int glfwKeyCodeMinus) {
+void Input::createAxis(std::string axisName, 
+    int glfwKeyCodePlus, int glfwKeyCodeMinus,
+    int glfwGamepadAxis, int glfwGamepadPlus, int glfwGamepadMinus,
+    bool flipAxis) {
+
     if (m_axes.find(axisName) == m_axes.end()) {
         // not already tracked
 
         m_axes[axisName] = 0;
-        m_watchedAxisKeys[axisName] = Axis( glfwKeyCodePlus , glfwKeyCodeMinus );
+        m_watchedAxisKeys[axisName] = 
+            Axis( glfwKeyCodePlus , glfwKeyCodeMinus, 
+                glfwGamepadAxis, glfwGamepadPlus, glfwGamepadMinus,
+                flipAxis );
     }
 }
 
 void Input::pollKeys(GLFWwindow* window, double dt) {
+    // Update GamePad state
+    int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
+    if (present == 1 && !gamepadPresent) {
+        gamepadPresent = true;
+        Console::logMessage("Gamepad Connected");
+    }
+    else if (present == 0 && gamepadPresent) {
+        gamepadPresent = false;
+        Console::logMessage("Gamepad Disconnected");
+    }
+
+    // read gamepad states
+    int numAxes;
+    const float* axes;
+    int numButtons;
+    const unsigned char* buttons;
+    if (gamepadPresent) {
+        axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &numAxes);
+        buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numButtons);
+    }
+
+    // adjust internal representation of axes
     m_mouseMove = m_mouseAcc;
     m_mouseAcc = math::vec2();
     for (auto k : m_watchedKeys) {
@@ -74,33 +120,26 @@ void Input::pollKeys(GLFWwindow* window, double dt) {
         auto key = k.first;
         auto axis = k.second;
 
-        bool keyPlus = glfwGetKey(window, axis.Plus) == GLFW_PRESS;
-        bool keyMinus = glfwGetKey(window, axis.Minus) == GLFW_PRESS;
+        bool keyPlus = glfwGetKey(window, axis.kPlus) == GLFW_PRESS;
+        bool keyMinus = glfwGetKey(window, axis.kMinus) == GLFW_PRESS;
 
         auto keyValue = &m_axes[key];
         
-        double rate = 10.0 * dt;
-        if (keyPlus) {
-            *keyValue += rate;
-
-            if (*keyValue > 1.0)
-                *keyValue = 1.0;
+        if (keyPlus || (gamepadPresent && (axis.gpPlus >= 0) && (buttons[axis.gpPlus] == GLFW_PRESS))) {
+            *keyValue = 1.0;
         }
-        if (keyMinus) {
-            *keyValue -= rate;
-
-            if (*keyValue < -1.0)
-                *keyValue = -1.0;
+        else if (keyMinus || (gamepadPresent && (axis.gpMinus >= 0) && (buttons[axis.gpMinus] == GLFW_PRESS))) {
+            *keyValue = -1.0;
         }
-        if (!keyPlus && !keyMinus) {
-            if (*keyValue > 0.1) {
-                *keyValue -= rate;
-            }
-            else if (m_axes[key] < -.1) {
-                *keyValue += rate;
-            }
-            else {
-                *keyValue = 0;
+        else {
+            *keyValue = 0.0;
+
+            if (gamepadPresent) {
+                if (axis.gpAxis >= 0 && axis.gpAxis < numAxes) {
+                    float currAxis = axes[axis.gpAxis];
+
+                    *keyValue = axis.flipAxis ? -currAxis : currAxis;
+                }
             }
         }
     }
@@ -108,9 +147,6 @@ void Input::pollKeys(GLFWwindow* window, double dt) {
     m_mouseLeft  = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
     m_mouseRight = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
 
-
-    // Update GamePad state
-    gamepadPresent = glfwJoystickPresent(GLFW_JOYSTICK_1) == 1;
     if (gamepadPresent) {
         int axesCount;
         const float* axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &axesCount);

@@ -92,20 +92,7 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     //m_debugCamera.playerControlled = true;
     m_MainWindow.cursorVisible(cursorMode);
 
-
-    Input::watchKey("key_w", GLFW_KEY_W);
-    Input::watchKey("key_a", GLFW_KEY_A);
-    Input::watchKey("key_s", GLFW_KEY_S);
-    Input::watchKey("key_d", GLFW_KEY_D);
-    Input::watchKey("key_space", GLFW_KEY_SPACE);
-    Input::watchKey("key_shift", GLFW_KEY_LEFT_SHIFT);
-
-    Input::watchKey("key_up", GLFW_KEY_UP);
-    Input::watchKey("key_down", GLFW_KEY_DOWN);
-    Input::watchKey("key_left", GLFW_KEY_LEFT);
-    Input::watchKey("key_right", GLFW_KEY_RIGHT);
-    Input::watchKey("key_numpad0", GLFW_KEY_KP_0);
-    Input::watchKey("key_rctrl", GLFW_KEY_RIGHT_CONTROL);
+    Input::setupBindings();
 
     Message::registerMessageType("CollisionEvent");
 
