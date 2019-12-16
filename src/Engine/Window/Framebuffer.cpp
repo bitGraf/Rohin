@@ -1,4 +1,4 @@
-#include "FrameBuffer.hpp"
+#include "Framebuffer.hpp"
 
 Framebuffer::Framebuffer() {
 }

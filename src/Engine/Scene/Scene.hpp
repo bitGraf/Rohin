@@ -45,7 +45,7 @@ public:
     struct GameObjectLists_t {
         void clear() {
             Renderable.clear();
-            Camera.clear();
+            Cameras.clear();
             PointLights.clear();
             SpotLights.clear();
             DirLights.clear();
@@ -54,7 +54,7 @@ public:
         }
 
         std::vector<RenderableObject*> Renderable;
-        std::vector<Camera*> Camera;
+        std::vector<Camera*> Cameras;
         std::vector<PointLight*> PointLights;
         std::vector<SpotLight*> SpotLights;
         std::vector<DirLight*> DirLights;

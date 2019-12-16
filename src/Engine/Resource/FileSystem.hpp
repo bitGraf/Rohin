@@ -8,6 +8,8 @@
 #include "DataTypes.hpp"
 #include "Platform.hpp"
 
+#include <cstring>
+
 
 class FileSystem : public CoreSystem {
 public:

@@ -66,7 +66,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 auto k = resource->reserveDataBlocks<Camera>(1);
 
                 k.data->Create(iss, resource);
-                objectsByType.Camera.push_back(k.data);
+                objectsByType.Cameras.push_back(k.data);
 
                 go = k.data;
             }
@@ -248,7 +248,7 @@ void getRenderBatch(RenderBatch* batch, bool useCull) {
 
     if (CurrentScene) {
         // Set Camera
-        auto camera = CurrentScene->objectsByType.Camera[0];
+        auto camera = CurrentScene->objectsByType.Cameras[0];
         camera->updateViewFrustum(CurrentScene->scr_width, CurrentScene->scr_height);
 
         batch->cameraView = camera->viewMatrix;

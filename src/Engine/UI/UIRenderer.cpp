@@ -155,7 +155,7 @@ void UIRenderer::renderScene(Window* window, Scene* scene) {
 }
 
 void UIRenderer::drawLensFlare(Scene* scene) {
-    auto cam = scene->objectsByType.Camera[0];
+    auto cam = scene->objectsByType.Cameras[0];
 
     vec3 sunPosWorld = scene->objectsByType.DirLights[0]->Position;
     vec4 sunScreenPos = cam->projectionMatrix * cam->viewMatrix * vec4(sunPosWorld, 1);
