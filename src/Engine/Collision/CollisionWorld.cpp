@@ -215,30 +215,30 @@ UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource,
     // Box hull
     vec3Array vBlock = resource->reserveDataBlocks<vec3>(8);
     vBlock.data[0] = vec3(-halfx, -halfy, -halfz);
-    vBlock.data[0] = vec3(-halfx, -halfy, halfz);
-    vBlock.data[0] = vec3(halfx, -halfy, halfz);
-    vBlock.data[0] = vec3(halfx, -halfy, -halfz);
+    vBlock.data[1] = vec3(-halfx, -halfy, halfz);
+    vBlock.data[2] = vec3(halfx, -halfy, halfz);
+    vBlock.data[3] = vec3(halfx, -halfy, -halfz);
 
-    vBlock.data[0] = vec3(-halfx, halfy, -halfz);
-    vBlock.data[0] = vec3(-halfx, halfy, halfz);
-    vBlock.data[0] = vec3(halfx, halfy, halfz);
-    vBlock.data[0] = vec3(halfx, halfy, -halfz);
+    vBlock.data[4] = vec3(-halfx, halfy, -halfz);
+    vBlock.data[5] = vec3(-halfx, halfy, halfz);
+    vBlock.data[6] = vec3(halfx, halfy, halfz);
+    vBlock.data[7] = vec3(halfx, halfy, -halfz);
     hull.vertices = vBlock;
 
     FaceArray fBlock = resource->reserveDataBlocks<Triangle>(12);
     fBlock.data[0] = Triangle(0, 1, 4);
-    fBlock.data[0] = Triangle(4, 1, 5);
-    fBlock.data[0] = Triangle(1, 2, 6);
-    fBlock.data[0] = Triangle(1, 6, 5);
-    fBlock.data[0] = Triangle(2, 3, 7);
-    fBlock.data[0] = Triangle(2, 7, 6);
+    fBlock.data[1] = Triangle(4, 1, 5);
+    fBlock.data[2] = Triangle(1, 2, 6);
+    fBlock.data[3] = Triangle(1, 6, 5);
+    fBlock.data[4] = Triangle(2, 3, 7);
+    fBlock.data[5] = Triangle(2, 7, 6);
 
-    fBlock.data[0] = Triangle(3, 0, 4);
-    fBlock.data[0] = Triangle(3, 4, 7);
-    fBlock.data[0] = Triangle(0, 2, 1);
-    fBlock.data[0] = Triangle(0, 3, 2);
-    fBlock.data[0] = Triangle(4, 5, 7);
-    fBlock.data[0] = Triangle(7, 5, 6);
+    fBlock.data[6] = Triangle(3, 0, 4);
+    fBlock.data[7] = Triangle(3, 4, 7);
+    fBlock.data[8] = Triangle(0, 2, 1);
+    fBlock.data[9] = Triangle(0, 3, 2);
+    fBlock.data[10] = Triangle(4, 5, 7);
+    fBlock.data[11] = Triangle(7, 5, 6);
     hull.faces = fBlock;
 
     hull.bufferData();
@@ -255,8 +255,8 @@ UID_t CollisionWorld::CreateNewCapsule(ResourceManager* resource,
     // Box hull
     vec3Array vBlock = resource->reserveDataBlocks<vec3>(3);
     vBlock.data[0] = vec3(0, 0, 0);
-    vBlock.data[0] = vec3(0, height / 2, 0); // to allow it to render more easily
-    vBlock.data[0] = vec3(0, height, 0);
+    vBlock.data[1] = vec3(0, height / 2, 0); // to allow it to render more easily
+    vBlock.data[2] = vec3(0, height, 0);
     hull.vertices = vBlock;
 
     FaceArray fBlock = resource->reserveDataBlocks<Triangle>(1);
