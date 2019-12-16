@@ -15,6 +15,8 @@ class GameObject;
 class Input {
 public:
 
+    static void setupGamepad();
+
     static bool getKeyState(std::string key);
     static f32 getAxisState(std::string key);
     static bool getLeftMouse();
@@ -29,6 +31,7 @@ public:
 
     static math::vec2 m_mouseMove;
     static math::vec2 m_mouseAcc;
+    static bool gamepadPresent;
 
 private:
     struct Axis {
