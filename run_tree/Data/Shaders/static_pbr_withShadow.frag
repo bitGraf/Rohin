@@ -137,6 +137,8 @@ void main()
     
     FragColor = vec4(color, 1);
 
+	FragColor = vec4(albedo, 1);
+
     //FragColor = vec4(.2, .6, .5, 1);
 }
 

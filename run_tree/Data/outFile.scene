@@ -22,7 +22,11 @@ ENTITY RENDERABLE "Cube.003" "-50.00 15.00 0.00" "-0.00 0.00 -0.00" "1.00 1.00 -
 #ENTITY AICHARACTER "Suzanne.001" "11.51 0.59 -1.92" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Suzanne.003" "Skull" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
 #ENTITY AICHARACTER "Suzanne.002" "9.04 0.59 7.16" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Suzanne.004" "Skull" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
 ENTITY RENDERABLE "low_poly_barrel" "-3.41 -0.00 -0.89" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cylinder.002" "mat_rusted_barrel.001" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
-ENTITY RENDERABLE "shipping_container" "0.00 0.00 -4.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube" "mat_shipping_crate" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+
+ENTITY RENDERABLE "shipping_container1" "0.00 0.00 -4.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube" "mat_shipping_crate" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY RENDERABLE "shipping_container2" "-2.00 0.00 -8.00" "90.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube" "mat_shipping_crate" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY RENDERABLE "shipping_container3" "-2.00 0.00 -6.00" "135.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube" "mat_shipping_crate" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+
 ENTITY RENDERABLE "wood_crate" "-5.42 0.00 1.88" "38.27 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube.002" "mat_wood_crate" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
 ENTITY RENDERABLE "low_poly_barrel.001" "-1.47 -0.00 2.09" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cylinder.002" "mat_rusted_barrel.001" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
 ENTITY COLLISION "Collidor1" "0 2.5 0" "0 0 0" "1 1 1" "" ".75"

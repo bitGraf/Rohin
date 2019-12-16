@@ -386,7 +386,7 @@ scalar CollisionWorld::TimeOfImpact(CollisionHull* hull1, vec3 vel1, CollisionHu
     vec3 v = vel2 - vel1;
 
     int iter = 0;
-    float eps = 1.0e-6f;
+    float eps = 1.0e-4f;
     while (d > eps && t < 1) {
         ++iter;
         vec3 d_vec = (b - a).get_unit();
