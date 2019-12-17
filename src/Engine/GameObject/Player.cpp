@@ -21,6 +21,7 @@ void PlayerObject::Update(double dt) {
         } break;
         case eControlType::Tank: {
             MoveForward(Input::getAxisState("MoveForward"));
+            MoveRight(Input::getAxisState("StrafeRight"));
             Rotate(-Input::getAxisState("MoveRight"));
         } break;
     }

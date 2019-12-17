@@ -12,12 +12,26 @@ bool Input::m_mouseRight;
 math::vec2 Input::m_mouseMove;
 math::vec2 Input::m_mouseAcc;
 bool Input::gamepadPresent = false;
+float Input::axisDeadzone = 0.15f;
 
 void Input::setupBindings() {
     // Setup axes
-    Input::createAxis("MoveForward", GLFW_KEY_W, GLFW_KEY_S, 1, -1, -1, true);
-    Input::createAxis("MoveRight", GLFW_KEY_D, GLFW_KEY_A, 0, -1, -1);
-    Input::createAxis("Rotate", GLFW_KEY_RIGHT, GLFW_KEY_LEFT, -1, -1, -1);
+    Input::createAxis("MoveForward", 
+        GLFW_KEY_W, GLFW_KEY_S, 0, 0, 
+        10, 12, -1, -1, 
+        1, true);
+    Input::createAxis("MoveRight", 
+        GLFW_KEY_D, GLFW_KEY_A, 0, 0,
+        11, 13, -1, -1,
+        0);
+    Input::createAxis("StrafeRight", 
+        GLFW_KEY_E, GLFW_KEY_Q, 0, 0,
+        5, 4, -1, -1,
+        -1);
+    Input::createAxis("Rotate", 
+        GLFW_KEY_RIGHT, GLFW_KEY_LEFT, 0, 0, 
+        -1, -1, -1, -1,
+        -1, -1);
 
     // Setup keys
     Input::watchKey("key_w", GLFW_KEY_W);
@@ -71,19 +85,24 @@ void Input::watchKey(std::string key, int glfwKeyCode) {
     }
 }
 
-void Input::createAxis(std::string axisName, 
+void Input::createAxis(std::string axisName,
     int glfwKeyCodePlus, int glfwKeyCodeMinus,
-    int glfwGamepadAxis, int glfwGamepadPlus, int glfwGamepadMinus,
-    bool flipAxis) {
+    int glfwKeyCodePlus_alt, int glfwKeyCodeMinus_alt,
+    int glfwGamepadPlus, int glfwGamepadMinus,
+    int glfwGamepadPlus_alt, int glfwGamepadMinus_alt,
+    int glfwGamepadAxis, bool flipAxis) {
 
     if (m_axes.find(axisName) == m_axes.end()) {
         // not already tracked
 
         m_axes[axisName] = 0;
         m_watchedAxisKeys[axisName] = 
-            Axis( glfwKeyCodePlus , glfwKeyCodeMinus, 
-                glfwGamepadAxis, glfwGamepadPlus, glfwGamepadMinus,
-                flipAxis );
+            Axis( 
+                glfwKeyCodePlus , glfwKeyCodeMinus, 
+                glfwKeyCodePlus_alt, glfwKeyCodeMinus_alt,
+                glfwGamepadPlus, glfwGamepadMinus,
+                glfwGamepadPlus_alt, glfwGamepadMinus_alt,
+                glfwGamepadAxis, flipAxis );
     }
 }
 
@@ -120,15 +139,19 @@ void Input::pollKeys(GLFWwindow* window, double dt) {
         auto key = k.first;
         auto axis = k.second;
 
-        bool keyPlus = glfwGetKey(window, axis.kPlus) == GLFW_PRESS;
-        bool keyMinus = glfwGetKey(window, axis.kMinus) == GLFW_PRESS;
+        bool keyPlus =  (axis.kPlus    && glfwGetKey(window, axis.kPlus) == GLFW_PRESS) || 
+                        (axis.kPlus_2  && glfwGetKey(window, axis.kPlus_2) == GLFW_PRESS);
+        bool keyMinus = (axis.kMinus   && glfwGetKey(window, axis.kMinus) == GLFW_PRESS) ||
+                        (axis.kMinus_2 && glfwGetKey(window, axis.kMinus_2) == GLFW_PRESS);
 
         auto keyValue = &m_axes[key];
         
-        if (keyPlus || (gamepadPresent && (axis.gpPlus >= 0) && (buttons[axis.gpPlus] == GLFW_PRESS))) {
+        if (keyPlus || (gamepadPresent && (axis.gpPlus >= 0) && 
+            (buttons[axis.gpPlus] == GLFW_PRESS || (buttons[axis.gpPlus_2] == GLFW_PRESS)))) {
             *keyValue = 1.0;
         }
-        else if (keyMinus || (gamepadPresent && (axis.gpMinus >= 0) && (buttons[axis.gpMinus] == GLFW_PRESS))) {
+        else if (keyMinus || (gamepadPresent && (axis.gpMinus >= 0) && 
+            (buttons[axis.gpMinus] == GLFW_PRESS || buttons[axis.gpMinus_2] == GLFW_PRESS))) {
             *keyValue = -1.0;
         }
         else {
@@ -137,6 +160,9 @@ void Input::pollKeys(GLFWwindow* window, double dt) {
             if (gamepadPresent) {
                 if (axis.gpAxis >= 0 && axis.gpAxis < numAxes) {
                     float currAxis = axes[axis.gpAxis];
+
+                    if (abs(currAxis) < axisDeadzone)
+                        currAxis = 0;
 
                     *keyValue = axis.flipAxis ? -currAxis : currAxis;
                 }
