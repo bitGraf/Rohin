@@ -76,7 +76,8 @@ void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
         }
     }
 
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
+    if ((key == GLFW_KEY_SPACE && action == GLFW_PRESS) || 
+        (key == GLFW_GAMEPAD_BUTTON_A && action == GLFW_PRESS)) {
         Jump(5.5);
     }
 }

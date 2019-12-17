@@ -88,6 +88,8 @@ private:
 
     static bool ShouldGameObjectHandleInputEvent;
 
+    static unsigned char gamepadButtons[32];
+
     Input();
 };
 

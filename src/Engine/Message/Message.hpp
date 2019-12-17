@@ -14,7 +14,7 @@ class Message; // Console needs to know what a Message is
 class Message {
 public:
     typedef u32 Type;
-    typedef u16 Datatype;
+    typedef int Datatype;
     static const u8 MAX_ARGS = 6;
 
     Message();

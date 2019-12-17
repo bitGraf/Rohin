@@ -13,6 +13,7 @@ math::vec2 Input::m_mouseMove;
 math::vec2 Input::m_mouseAcc;
 bool Input::gamepadPresent = false;
 float Input::axisDeadzone = 0.15f;
+unsigned char Input::gamepadButtons[32];
 
 void Input::setupBindings() {
     // Setup axes
@@ -47,6 +48,10 @@ void Input::setupBindings() {
     Input::watchKey("key_right", GLFW_KEY_RIGHT);
     Input::watchKey("key_numpad0", GLFW_KEY_KP_0);
     Input::watchKey("key_rctrl", GLFW_KEY_RIGHT_CONTROL);
+
+    Message::registerMessageType("GamepadButton");
+
+    memset(gamepadButtons, 0, 32*sizeof(unsigned char));
 }
 
 bool Input::getKeyState(std::string key) {
@@ -126,6 +131,33 @@ void Input::pollKeys(GLFWwindow* window, double dt) {
     if (gamepadPresent) {
         axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &numAxes);
         buttons = glfwGetJoystickButtons(GLFW_JOYSTICK_1, &numButtons);
+
+        if (gamepadButtons) {
+            for (int b = 0; b < numButtons; b++) {
+                if (buttons[b] == GLFW_PRESS) {
+                    // is currently down
+                    if (gamepadButtons[b] == GLFW_PRESS) {
+                        // is being held down
+                    }
+                    else if (gamepadButtons[b] == GLFW_RELEASE) {
+                        // was just pressed
+                        MessageBus::sendMessage(Message("InputKey", 4, b, 0, GLFW_PRESS, 0));
+                    }
+                }
+                else if (buttons[b] == GLFW_RELEASE) {
+                    // is currently up
+                    if (gamepadButtons[b] == GLFW_PRESS) {
+                        // was just released
+                        MessageBus::sendMessage(Message("InputKey", 4, b, 0, GLFW_RELEASE, 0));
+                    }
+                    else if (gamepadButtons[b] == GLFW_RELEASE) {
+                        // is still released
+                    }
+                }
+
+                gamepadButtons[b] = buttons[b];
+            }
+        }
     }
 
     // adjust internal representation of axes
