@@ -3,12 +3,12 @@
 const char* PlayerObject::_obj_type_PlayerObject = "Player";
 
 PlayerObject::PlayerObject() :
-    m_controlType(eControlType::Normal)
+    m_controlType(eControlType::Tank)
 {
     speed = 6;
     rotateSpeed = 360;
     rotateToMovement = true;
-    m_relativeSource = eRelativeSource::Camera;
+    m_relativeSource = eRelativeSource::Character;
 }
 
 void PlayerObject::Update(double dt) {
@@ -95,6 +95,7 @@ const char* PlayerObject::GetControlType() {
 
 void PlayerObject::PostLoad() {
     m_cameraID = GetScene()->getObjectIDByName("MainCamera"); // < Should this REALLY be in here?
+    static_cast<Camera*>(GetScene()->getObjectByID(m_cameraID))->m_cameraMode = Camera::eCameraMode::ThirdPersonFollow;
     Input::registerGameObject(this);
 }
 
