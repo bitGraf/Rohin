@@ -241,12 +241,10 @@ void Input::registerGameObject(GameObject* obj) {
 void Input::handleMessage(Message msg) {
     if (ShouldGameObjectHandleInputEvent) {
         if (msg.isType("InputKey")) {
-            using dt = Message::Datatype;
-
-            dt key = msg.data[0];
-            dt scancode = msg.data[1];
-            dt action = msg.data[2];
-            dt mods = msg.data[3];
+            s32 key = msg.data[0];
+            s32 scancode = msg.data[1];
+            s32 action = msg.data[2];
+            s32 mods = msg.data[3];
 
             for (GameObject* go : m_GameObjects) {
                 go->InputEvent(key, action);

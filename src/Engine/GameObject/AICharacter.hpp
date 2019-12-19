@@ -11,7 +11,7 @@ public:
     virtual void PostLoad() override;
     virtual void Update(double dt) override;
     virtual void Destroy() override;
-    virtual void InputEvent(Message::Datatype key, Message::Datatype action) override;
+    virtual void InputEvent(s32 key, s32 action) override;
 
     const char* ObjectTypeString() override;
 
@@ -30,7 +30,7 @@ public:
 	virtual void PostLoad() override;
 	virtual void Update(double dt) override;
 	virtual void Destroy() override;
-	virtual void InputEvent(Message::Datatype key, Message::Datatype action) override;
+	virtual void InputEvent(s32 key, s32 action) override;
 
 	const char* ObjectTypeString() override;
 	

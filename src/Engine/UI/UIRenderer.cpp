@@ -14,21 +14,19 @@ void UIRenderer::update(double dt) {
 void UIRenderer::handleMessage(Message msg) {
     if (msg.isType("InputMouseButton")) {
         // int button, int action, int mods
-        using dt = Message::Datatype;
-        dt button   = msg.data[0];
-        dt action   = msg.data[1];
-        dt mods     = msg.data[2];
-        dt xPos     = msg.data[3];
-        dt yPos     = msg.data[4];
+        s32 button   = msg.data[0];
+        s32 action   = msg.data[1];
+        s32 mods     = msg.data[2];
+        s32 xPos     = msg.data[3];
+        s32 yPos     = msg.data[4];
     }
 
     if (msg.isType("InputKey")) {
         // int button, int action, int mods
-        using dt = Message::Datatype;
-        dt key = msg.data[0];
-        dt scancode = msg.data[1];
-        dt action = msg.data[2];
-        dt mods = msg.data[3];
+        s32 key = msg.data[0];
+        s32 scancode = msg.data[1];
+        s32 action = msg.data[2];
+        s32 mods = msg.data[3];
 
         if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS) {
             Console::logMessage("Reloading Shaders");

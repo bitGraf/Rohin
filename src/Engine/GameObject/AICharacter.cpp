@@ -41,7 +41,7 @@ void AICharacter::PostLoad() {
 }
 
 
-void AICharacter::InputEvent(Message::Datatype key, Message::Datatype action) {
+void AICharacter::InputEvent(s32 key, s32 action) {
 
 }
 
@@ -78,7 +78,7 @@ void GoapCharacter::Destroy() {
 
 }
 
-void GoapCharacter::InputEvent(Message::Datatype key, Message::Datatype action) {
+void GoapCharacter::InputEvent(s32 key, s32 action) {
 	
 }
 

@@ -244,7 +244,7 @@ bool Camera::withinFrustum(vec3 location, float radius) {
     return true;
 }
 
-void Camera::InputEvent(Message::Datatype key, Message::Datatype action) {
+void Camera::InputEvent(s32 key, s32 action) {
     if (key == GLFW_KEY_P && action == GLFW_PRESS) {
         switch (m_cameraMode) {
             case eCameraMode::Static: {

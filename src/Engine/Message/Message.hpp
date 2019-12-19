@@ -14,7 +14,6 @@ class Message; // Console needs to know what a Message is
 class Message {
 public:
     typedef u32 Type;
-    typedef int Datatype;
     static const u8 MAX_ARGS = 6;
 
     Message();
@@ -26,7 +25,7 @@ public:
     /* Data */
     Type type;
     u8 numArgs;
-    Datatype data[MAX_ARGS];
+    s32 data[MAX_ARGS];
 
 public:
     static void registerMessageType(std::string msgType);

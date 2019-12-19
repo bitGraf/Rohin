@@ -45,7 +45,7 @@ void PlayerObject::Create(istringstream &iss, ResourceManager* resource) {
     //cWorld.getHullFromID(m_collisionHullId)->rotation.toYawPitchRoll(.001, 0, 0);
 }
 
-void PlayerObject::InputEvent(Message::Datatype key, Message::Datatype action) {
+void PlayerObject::InputEvent(s32 key, s32 action) {
     //if (key == GLFW_KEY_F && action == GLFW_PRESS) {
     //    CameraFollowPlayer = !CameraFollowPlayer;
     //}

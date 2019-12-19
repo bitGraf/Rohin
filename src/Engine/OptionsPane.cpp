@@ -82,7 +82,7 @@ void OptionsPane::redraw() {
     }
 }
 
-void OptionsPane::click(Message::Datatype x, Message::Datatype y) {
+void OptionsPane::click(s32 key, s32 action) {
     if (Visibility) {
         if (m_pane.cursorOver) {
             for (auto ts : toggleSettings) {

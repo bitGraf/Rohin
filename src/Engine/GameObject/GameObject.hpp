@@ -33,7 +33,7 @@ public:
     virtual const char* ObjectTypeString();
 
     /// Gets called when an input message is received. Need to register GameObject with Input class
-    virtual void InputEvent(Message::Datatype key, Message::Datatype action);
+    virtual void InputEvent(s32 key, s32 action);
 
     UID_t getID() const;
     mat4 getTransform() const;

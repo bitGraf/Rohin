@@ -20,14 +20,10 @@ struct DrawCall {
 };
 
 struct RenderBatch {
-    /* Common to all rendering */
-    mat4 cameraViewProjectionMatrix;
+    mat4 cameraView;
+    mat4 cameraProjection;
+    mat4 cameraModelMatrix;
     vec3 camPos;
-
-    mat4 cameraView; // scene camera
-    mat4 cameraProjection; //scene camera
-    mat4 cameraModelMatrix; //scene camera
-    vec3 viewPos; //Where you view from (Scene or debug camera)
 
     mat4 sunViewProjectionMatrix;
 

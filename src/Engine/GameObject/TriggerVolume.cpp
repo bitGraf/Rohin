@@ -33,14 +33,14 @@ void TriggerVolume::Update(double dt) {
             else {
                 // Entered for the first time
                 inside = true;
-                MessageBus::sendMessage(Message("VolumeEnter", 1, static_cast<Message::Datatype>(m_uid)));
+                MessageBus::sendMessage(Message("VolumeEnter", 1, static_cast<s32>(m_uid)));
             }
         }
         else {
             if (inside) {
                 // Just left
                 inside = false;
-                MessageBus::sendMessage(Message("VolumeLeave", 1, static_cast<Message::Datatype>(m_uid)));
+                MessageBus::sendMessage(Message("VolumeLeave", 1, static_cast<s32>(m_uid)));
             }
             else {
                 // Not inside

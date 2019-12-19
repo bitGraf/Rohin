@@ -218,9 +218,8 @@ UID_t Scene::getObjectIDByName(const std::string objectName) const {
 
 void Scene::handleMessage(Message msg) {
     if (msg.isType("NewWindowSize")) {
-        using dt = Message::Datatype;
-        dt newX = msg.data[0];
-        dt newY = msg.data[1];
+        s32 newX = msg.data[0];
+        s32 newY = msg.data[1];
 
         scr_width = newX;
         scr_height = newY;
@@ -253,7 +252,7 @@ void getRenderBatch(RenderBatch* batch, bool useCull) {
 
         batch->cameraView = camera->viewMatrix;
         batch->cameraProjection = camera->projectionMatrix;
-        batch->cameraViewProjectionMatrix = batch->cameraProjection * batch->cameraView;
+        //batch->cameraViewProjectionMatrix = batch->cameraProjection * batch->cameraView;
 
         batch->camPos = camera->Position;
         batch->cameraModelMatrix = (

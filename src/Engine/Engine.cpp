@@ -19,7 +19,6 @@ void Engine::Start() {
             frameStart - frameEnd).count();
         fpsAvg.addSample(lastFrameTime);
         dt = fpsAvg.getCurrentAverage() / 1000000.0;
-        dt = 0.02;
 
         if (m_MainWindow.shouldClose()) {
             done = true;
@@ -163,12 +162,10 @@ void Engine::PreRender() {
     if (debugMode) {
         // inject debug camera values
         m_debugCamera.updateViewFrustum(m_MainWindow.m_width, m_MainWindow.m_height);
-        batch.cameraViewProjectionMatrix = m_debugCamera.projectionMatrix *
-            m_debugCamera.viewMatrix;
-        batch.viewPos = m_debugCamera.Position;
 
-        //batch.cameraView = m_debugCamera.viewMatrix;
         batch.cameraProjection = m_debugCamera.projectionMatrix;
+        batch.cameraView = m_debugCamera.viewMatrix;
+        batch.camPos = m_debugCamera.Position;
     }
 }
 
@@ -193,11 +190,10 @@ void Engine::End() {
 
 void Engine::globalHandle(Message msg) {
     if (msg.isType("InputKey")) {
-        using dt = Message::Datatype;
-        dt key = msg.data[0];
-        dt scancode = msg.data[1];
-        dt action = msg.data[2];
-        dt mods = msg.data[3];
+        s32 key = msg.data[0];
+        s32 scancode = msg.data[1];
+        s32 action = msg.data[2];
+        s32 mods = msg.data[3];
 
         if (key == GLFW_KEY_C && action == GLFW_PRESS) {
             //m_debugCamera.playerControlled = cursorMode;
@@ -270,12 +266,11 @@ void Engine::globalHandle(Message msg) {
 
     if (msg.isType("InputMouseButton")) {
         // int button, int action, int mods
-        using dt = Message::Datatype;
-        dt button = msg.data[0];
-        dt action = msg.data[1];
-        dt mods = msg.data[2];
-        dt xPos = msg.data[3];
-        dt yPos = msg.data[4];
+        s32 button = msg.data[0];
+        s32 action = msg.data[1];
+        s32 mods = msg.data[2];
+        s32 xPos = msg.data[3];
+        s32 yPos = msg.data[4];
 
         if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
             //m_Options.click(xPos, yPos);

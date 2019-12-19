@@ -20,11 +20,10 @@ void Window::update(double dt) {
 void Window::handleMessage(Message msg) {
     if (msg.isType("InputKey")) {
         // int button, int action, int mods
-        using dt = Message::Datatype;
-        dt key = msg.data[0];
-        dt scancode = msg.data[1];
-        dt action = msg.data[2];
-        dt mods = msg.data[3];
+        s32 key = msg.data[0];
+        s32 scancode = msg.data[1];
+        s32 action = msg.data[2];
+        s32 mods = msg.data[3];
 
         if (key == GLFW_KEY_C && action == GLFW_PRESS) {
             //cursorMode = !cursorMode;
@@ -213,9 +212,8 @@ void Window::InputCharMod(unsigned int codepoint, int mods) {
 void Window::InputMouseButton(int button, int action, int mods) {
     double x, y;
     glfwGetCursorPos(m_glfwWindow, &x, &y);
-    using dt = Message::Datatype;
-    dt xpos = static_cast<dt>(floor(x));
-    dt ypos = static_cast<dt>(floor(y));
+    s32 xpos = static_cast<s32>(floor(x));
+    s32 ypos = static_cast<s32>(floor(y));
     sendMessage(Message("InputMouseButton", 5, button, action, mods, xpos, ypos));
 }
 

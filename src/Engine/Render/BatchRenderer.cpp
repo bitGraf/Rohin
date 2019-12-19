@@ -15,11 +15,10 @@ void BatchRenderer::update(double dt) {
 void BatchRenderer::handleMessage(Message msg) {
     if (msg.isType("InputKey")) {
         // int button, int action, int mods
-        using dt = Message::Datatype;
-        dt key = msg.data[0];
-        dt scancode = msg.data[1];
-        dt action = msg.data[2];
-        dt mods = msg.data[3];
+        s32 key = msg.data[0];
+        s32 scancode = msg.data[1];
+        s32 action = msg.data[2];
+        s32 mods = msg.data[3];
 
         if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS) {
             Console::logMessage("Reloading Shaders");
@@ -45,9 +44,8 @@ void BatchRenderer::handleMessage(Message msg) {
     }
 
     if (msg.isType("NewWindowSize")) {
-        using dt = Message::Datatype;
-        dt newX = msg.data[0];
-        dt newY = msg.data[1];
+        s32 newX = msg.data[0];
+        s32 newY = msg.data[1];
 
         fb.resize(newX, newY);
         fb_volume.resize(newX, newY);
@@ -252,7 +250,7 @@ void BatchRenderer::pickPass(RenderBatch* batch) {
     glViewport(0, 0, scr_width/4, scr_height/4); // downsample so its faster i guess
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-    m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+    m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraProjection * batch->cameraView);
     for (int n = 0; n < batch->numCalls; n++) {
         DrawCall* draw = &batch->calls[n];
         glBindVertexArray(draw->VAO); // draw the base mesh for now, might use a simpler mesh later
@@ -283,7 +281,7 @@ void BatchRenderer::staticPass(RenderBatch* batch) {
         batch->spotLights
     );
 
-    m_staticPass.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+    m_staticPass.setMat4("projectionViewMatrix", batch->cameraProjection * batch->cameraView);
     m_staticPass.setVec3("camPos", batch->camPos);
 
     m_staticPass.setInt("material.baseColorTexture", 0);
@@ -472,13 +470,13 @@ void BatchRenderer::renderDebug(
 
         glClear(GL_DEPTH_BUFFER_BIT);
         m_debugMeshShader.use();
-        m_debugMeshShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+        m_debugMeshShader.setMat4("projectionViewMatrix", batch->cameraProjection * batch->cameraView);
         m_debugMeshShader.setMat4("modelMatrix", batch->cameraModelMatrix);
         m_debugMeshShader.setVec3("sun.direction", batch->sun->Direction);
         m_debugMeshShader.setVec3("sun.color", batch->sun->Color);
         m_debugMeshShader.setFloat("sun.strength", batch->sun->Strength);
         m_debugMeshShader.setVec3("objColor", vec3(1, 1, 1));
-        m_debugMeshShader.setVec3("camPos", batch->viewPos); // use viewPos so camera model has correct specular
+        m_debugMeshShader.setVec3("camPos", batch->camPos); // use viewPos so camera model has correct specular
 
         glBindVertexArray(cameraMesh->VAO);
         if (debugMode)
@@ -488,7 +486,7 @@ void BatchRenderer::renderDebug(
         // Draw wireframe things
         glDisable(GL_DEPTH_TEST);
         m_debugLineShader.use();
-        m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+        m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraProjection * batch->cameraView);
 
         for (auto k : GetScene()->m_masterMap) {
             auto go = k.second;
@@ -505,7 +503,7 @@ void BatchRenderer::renderDebug(
             drawLine(vPos, vPos + vUp, vec3(0, 1, 0), vec3(0, 1, 0));
             drawLine(vPos, vPos + vRight, vec3(0, 0, 1), vec3(0, 0, 1));
 
-            vec4 _screenPos = batch->cameraViewProjectionMatrix * vec4(vPos, 1);
+            vec4 _screenPos = batch->cameraProjection * batch->cameraView * vec4(vPos, 1);
             if (_screenPos.w > 0) {
                 vec2 screenPos = (vec2(_screenPos.x / _screenPos.w, _screenPos.y / _screenPos.w) / 2) + vec2(.5);
                 screenPos = vec2(screenPos.x, 1 - screenPos.y);
@@ -591,7 +589,7 @@ void BatchRenderer::renderDebug(
     vec3 green = vec3(.2, .5, .8);
 
     m_debugLineShader.use();
-    m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+    m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraProjection * batch->cameraView);
     for (int n = 0; n < viz.m_lines.size(); n++) {
         drawLine(viz.m_lines[n].a, viz.m_lines[n].b, orange, orange);
         drawPoint(viz.m_lines[n].a, red);
@@ -646,7 +644,7 @@ void BatchRenderer::renderDebug(
 
     // Draw buffered wireframe meshes
     m_pickPassShader.use();
-    m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
+    m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraProjection * batch->cameraView);
     m_pickPassShader.setVec3("idColor", vec3(.7, 0, .6));
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     //glDisable(GL_CULL_FACE);

@@ -15,7 +15,7 @@ public:
     void create(Window* mainWin, bool Show = false);
     void redraw();
 
-    void click(Message::Datatype x, Message::Datatype y);
+    void click(s32 key, s32 action);
     void ToggleVisibility();
 
 private:

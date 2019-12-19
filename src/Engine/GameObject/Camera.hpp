@@ -14,7 +14,7 @@ public:
     virtual void Update(double dt) override;
     virtual const char* ObjectTypeString() override;
     virtual void PostLoad() override;
-    virtual void InputEvent(Message::Datatype key, Message::Datatype action) override;
+    virtual void InputEvent(s32 key, s32 action) override;
 
     void updateViewMatrix();
     //void updateProjectionMatrix(f32 width, f32 height);

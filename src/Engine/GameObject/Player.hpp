@@ -15,7 +15,7 @@ public:
     virtual void PostLoad() override;
     virtual void Create(istringstream &iss, ResourceManager* resource) override;
 
-    virtual void InputEvent(Message::Datatype key, Message::Datatype action) override;
+    virtual void InputEvent(s32 key, s32 action) override;
     virtual const char* ObjectTypeString() override;
 
     const char* GetControlType();

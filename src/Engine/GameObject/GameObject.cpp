@@ -32,7 +32,7 @@ void GameObject::Create(istringstream &iss, ResourceManager* resource) {
 void GameObject::Update(double dt) {}
 void GameObject::Destroy() {}
 void GameObject::PostLoad() {}
-void GameObject::InputEvent(Message::Datatype key, Message::Datatype action) {}
+void GameObject::InputEvent(s32 key, s32 action) {}
 const char* GameObject::ObjectTypeString() {
     return _obj_type_GameObject;
 }
