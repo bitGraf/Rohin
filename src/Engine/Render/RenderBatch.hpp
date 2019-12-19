@@ -25,6 +25,8 @@ struct RenderBatch {
     mat4 cameraModelMatrix;
     vec3 camPos;
 
+    mat4 debugView; // where to draw the camera during debug mode
+
     mat4 sunViewProjectionMatrix;
 
     DirLight *sun;

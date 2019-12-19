@@ -4,6 +4,7 @@
 #include "Console.hpp"
 #include "Window/Window.hpp"
 #include "Render/BatchRenderer.hpp"
+#include "Render/DeferredBatchRenderer.hpp"
 #include "Scene/Scene.hpp"
 #include "OptionsPane.hpp"
 
@@ -35,7 +36,8 @@ private:
 
     /* Core Systems */
     Window m_MainWindow;
-    BatchRenderer m_Renderer;
+    //BatchRenderer m_Renderer;
+    DeferredBatchRenderer m_Renderer;
     ResourceManager m_Resource;
     Camera m_debugCamera;
     //OptionsPane m_Options;

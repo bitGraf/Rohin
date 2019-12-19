@@ -255,6 +255,7 @@ void getRenderBatch(RenderBatch* batch, bool useCull) {
         //batch->cameraViewProjectionMatrix = batch->cameraProjection * batch->cameraView;
 
         batch->camPos = camera->Position;
+        batch->debugView = camera->viewMatrix;
         batch->cameraModelMatrix = (
             mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0),
                 vec4(camera->Position, 1)) *
