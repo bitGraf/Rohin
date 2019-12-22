@@ -3,7 +3,7 @@
 const char* Camera::_obj_type_CameraObject = "Camera";
 
 Camera::Camera() :
-    m_fovVert(75),
+    m_fovVert(60),
     m_zNear(.01),
     m_zFar(100),
     m_cameraMode(eCameraMode::Static),

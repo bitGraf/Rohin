@@ -23,8 +23,8 @@ void GBuffer::create(u32 width, u32 height) {
     // Render target 1
     glGenTextures(1, &rt1);
     glBindTexture(GL_TEXTURE_2D, rt1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-        width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F,
+        width, height, 0, GL_RGBA, GL_FLOAT, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, rt1, 0);
@@ -38,9 +38,20 @@ void GBuffer::create(u32 width, u32 height) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, rt2, 0);
 
+    // Depth target
+    glGenTextures(1, &rtDepth);
+    glBindTexture(GL_TEXTURE_2D, rtDepth);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F,
+        width, height, 0, GL_RED, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, rtDepth, 0);
+
     // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-    unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-    glDrawBuffers(3, attachments);
+    unsigned int attachments[4] = { 
+        GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, 
+        GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+    glDrawBuffers(4, attachments);
 
     //Create framebuffer
     glGenRenderbuffers(1, &rbo);
@@ -61,6 +72,7 @@ void GBuffer::cleanup() {
     glDeleteTextures(1, &rt0);
     glDeleteTextures(1, &rt1);
     glDeleteTextures(1, &rt2);
+    glDeleteTextures(1, &rtDepth);
 }
 
 void GBuffer::bind() {

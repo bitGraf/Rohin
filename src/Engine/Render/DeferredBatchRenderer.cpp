@@ -30,7 +30,7 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
 
         else if (key == GLFW_KEY_V && action == GLFW_PRESS) {
             shaderOutput++;
-            if (shaderOutput > 7)
+            if (shaderOutput > 3)
                 shaderOutput = 0;
 
             switch (shaderOutput) {
@@ -148,8 +148,8 @@ void DeferredBatchRenderer::geometryPass(RenderBatch* batch) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_BLEND);
     m_geometryPassShader.use();
-    m_geometryPassShader.setMat4("projectionViewMatrix", 
-        batch->cameraProjection * batch->cameraView);
+    m_geometryPassShader.setMat4("projectionMatrix", 
+        batch->cameraProjection);
 
     m_geometryPassShader.setInt("material.baseColorTexture", 0);
     m_geometryPassShader.setInt("material.normalTexture", 1);
@@ -183,7 +183,7 @@ void DeferredBatchRenderer::geometryPass(RenderBatch* batch) {
         m_geometryPassShader.setFloat("material.metallicFactor", call->mat->metallicFactor);
         m_geometryPassShader.setFloat("material.roughnessFactor", call->mat->roughnessFactor);
 
-        m_geometryPassShader.setMat4("modelMatrix", call->modelMatrix);
+        m_geometryPassShader.setMat4("modelViewMatrix", batch->cameraView * call->modelMatrix);
 
         glDrawElements(GL_TRIANGLES, call->numVerts, GL_UNSIGNED_SHORT, 0);
     }
@@ -203,21 +203,18 @@ void DeferredBatchRenderer::screenPass(RenderBatch* batch) {
     m_screenShader.setInt("Target0", 0);
     m_screenShader.setInt("Target1", 1);
     m_screenShader.setInt("Target2", 2);
+    m_screenShader.setInt("TargetDepth", 3);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_gBuffer.rt0);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_gBuffer.rt1);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, m_gBuffer.rt2);
+    glActiveTexture(GL_TEXTURE0);glBindTexture(GL_TEXTURE_2D, m_gBuffer.rt0);
+    glActiveTexture(GL_TEXTURE1);glBindTexture(GL_TEXTURE_2D, m_gBuffer.rt1);
+    glActiveTexture(GL_TEXTURE2);glBindTexture(GL_TEXTURE_2D, m_gBuffer.rt2);
+    glActiveTexture(GL_TEXTURE3);glBindTexture(GL_TEXTURE_2D, m_gBuffer.rtDepth);
 
     glBindVertexArray(fullscreenVAO);
 
-    glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
 
     glBindVertexArray(0);
 }
