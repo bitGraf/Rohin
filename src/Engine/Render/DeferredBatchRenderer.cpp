@@ -74,7 +74,7 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
         s32 newY = msg.data[1];
 
         m_gBuffer.resize(newX, newY);
-        ssaoFBO.resize(newX, newY);
+        ssaoFBO.resize(newX / 2.0, newY / 2.0);
         debugFont.resize(newX, newY);
 
         scr_width = newX;
@@ -171,6 +171,7 @@ CoreSystem* DeferredBatchRenderer::create() {
     // Create SSAO FBO
     ssaoFBO.addColorBufferObject("ssao", 0, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
     ssaoFBO.create();
+    ssaoFBO.resize(scr_width / 2.0, scr_height / 2.0);
 
     return this;
 }
@@ -260,7 +261,7 @@ void DeferredBatchRenderer::ssaoPass(RenderBatch* batch) {
     m_ssaoPassShader.setInt("Target1", 1); 
     m_ssaoPassShader.setInt("TargetNoise", 2);
     m_ssaoPassShader.setMat4("projectionMatrix", batch->cameraProjection);
-    m_ssaoPassShader.setVec2("noiseScale", vec2(scr_width, scr_height)/4.0);
+    m_ssaoPassShader.setVec2("noiseScale", vec2(scr_width, scr_height)/2.0);
 
     for (int n = 0; n < Kernel_Size; n++) {
         m_ssaoPassShader.setVec3("Kernel[" + std::to_string(n) + "]", ssaoKernel[n]);
@@ -272,11 +273,15 @@ void DeferredBatchRenderer::ssaoPass(RenderBatch* batch) {
 
     glBindVertexArray(fullscreenVAO);
 
+    glViewport(0, 0, scr_width / 2.0, scr_height / 2.0);
+
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
+
+    glViewport(0, 0, scr_width, scr_height);
 
     glBindVertexArray(0);
 
