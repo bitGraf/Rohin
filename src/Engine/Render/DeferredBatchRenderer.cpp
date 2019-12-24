@@ -3,7 +3,10 @@
 
 DeferredBatchRenderer::DeferredBatchRenderer() :
     shaderOutput(0),
-    soStr("Albedo")
+    soStr("Albedo"),
+    ssaoKernel(Kernel_Size),
+    ssaoFBO(800, 600),
+    m_gBuffer(800, 600)
 {}
 
 DeferredBatchRenderer::~DeferredBatchRenderer() {}
@@ -23,6 +26,7 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
             Console::logMessage("Reloading Shaders");
 
             m_geometryPassShader.create("pipeline/geometryPass.vert", "pipeline/geometryPass.frag", "geometryPassShader");
+            m_ssaoPassShader.create("pipeline/screen.vert", "pipeline/ssao.frag", "ssaoShader");
             m_screenShader.create("pipeline/screen.vert", "pipeline/screen.frag", "screenShader");
 
             m_debugMeshShader.create("debugMesh.vert", "debugMesh.frag", "debugMeshShader");
@@ -81,6 +85,7 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
 void DeferredBatchRenderer::destroy() {}
 CoreSystem* DeferredBatchRenderer::create() {
     m_geometryPassShader.create("pipeline/geometryPass.vert", "pipeline/geometryPass.frag", "geometryPassShader");
+    m_ssaoPassShader.create("pipeline/screen.vert", "pipeline/ssao.frag", "ssaoShader");
     m_screenShader.create("pipeline/screen.vert", "pipeline/screen.frag", "screenShader");
 
     m_debugMeshShader.create("debugMesh.vert", "debugMesh.frag", "debugMeshShader");
@@ -93,7 +98,15 @@ CoreSystem* DeferredBatchRenderer::create() {
     scr_width = DEFAULT_SCREEN_WIDTH;
     scr_height = DEFAULT_SCREEN_HEIGHT;
 
-    m_gBuffer.create(scr_width, scr_height);
+    //m_gBuffer.create(scr_width, scr_height);
+    m_gBuffer.addColorBufferObject("Target0", 0, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE);
+    m_gBuffer.addColorBufferObject("Target1", 1, GL_RGBA16F, GL_RGBA, GL_FLOAT);
+    m_gBuffer.addColorBufferObject("Target2", 2, GL_RGBA16F, GL_RGBA, GL_FLOAT);
+    m_gBuffer.addColorBufferObject("TargetDepth", 3, GL_R32F, GL_RED, GL_FLOAT);
+    m_gBuffer.addColorBufferObject("TargetPos", 4, GL_RGB32F, GL_RGB, GL_FLOAT);
+    m_gBuffer.addRenderBufferObject();
+    m_gBuffer.create();
+    m_gBuffer.resize(scr_width, scr_height);
 
     debugFont.InitTextRendering();
     debugFont.create("UbuntuMono-Regular.ttf", 16, scr_width, scr_height);
@@ -119,6 +132,30 @@ CoreSystem* DeferredBatchRenderer::create() {
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(f32), (void*)0);
     glBindVertexArray(0);
 
+    // Generate SSAO kernel
+    std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between 0.0 - 1.0
+    std::default_random_engine generator;
+    for (unsigned int i = 0; i < Kernel_Size; ++i)
+    {
+        vec3 sample(
+            randomFloats(generator) * 2.0 - 1.0,
+            randomFloats(generator) * 2.0 - 1.0,
+            randomFloats(generator) * 2.0 - 1.0
+        );
+        sample.normalize();
+        sample *= randomFloats(generator);
+        float scale = (float)i / 64.0;
+        scale = lerp(0.1f, 1.0f, scale * scale);
+        sample *= scale;
+        //ssaoKernel.push_back(sample);
+        ssaoKernel[i] = sample;
+    }
+
+    // Create SSAO FBO
+    ssaoFBO.addColorBufferObject("ssao", 0, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
+    ssaoFBO.addRenderBufferObject();
+    ssaoFBO.create();
+
     return this;
 }
 
@@ -133,6 +170,9 @@ void DeferredBatchRenderer::renderBatch(RenderBatch* batch) {
 
         geometryPass(batch);
         dur_geometryPass = profileRenderPass();
+
+        ssaoPass(batch);
+        dur_ssaoPass = profileRenderPass();
 
         screenPass(batch);
         dur_screenPass = profileRenderPass();
@@ -193,6 +233,35 @@ void DeferredBatchRenderer::geometryPass(RenderBatch* batch) {
     glEnable(GL_BLEND);
 }
 
+void DeferredBatchRenderer::ssaoPass(RenderBatch* batch) {
+    ssaoFBO.bind();
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    m_ssaoPassShader.use();
+
+    m_ssaoPassShader.setInt("TargetPos", 0);
+    m_ssaoPassShader.setMat4("projectionMatrix", batch->cameraProjection);
+
+    for (int n = 0; n < Kernel_Size; n++) {
+        m_ssaoPassShader.setVec3("Kernel[" + std::to_string(n) + "]", ssaoKernel[n]);
+    }
+
+    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("TargetPos")); //m_gBuffer.rtPos);
+
+    glBindVertexArray(fullscreenVAO);
+
+    glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+
+    glBindVertexArray(0);
+
+    ssaoFBO.unbind();
+}
+
 void DeferredBatchRenderer::screenPass(RenderBatch* batch) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -204,11 +273,15 @@ void DeferredBatchRenderer::screenPass(RenderBatch* batch) {
     m_screenShader.setInt("Target1", 1);
     m_screenShader.setInt("Target2", 2);
     m_screenShader.setInt("TargetDepth", 3);
+    m_screenShader.setInt("TargetPos", 4);
+    m_screenShader.setInt("SSAO", 5);
 
-    glActiveTexture(GL_TEXTURE0);glBindTexture(GL_TEXTURE_2D, m_gBuffer.rt0);
-    glActiveTexture(GL_TEXTURE1);glBindTexture(GL_TEXTURE_2D, m_gBuffer.rt1);
-    glActiveTexture(GL_TEXTURE2);glBindTexture(GL_TEXTURE_2D, m_gBuffer.rt2);
-    glActiveTexture(GL_TEXTURE3);glBindTexture(GL_TEXTURE_2D, m_gBuffer.rtDepth);
+    glActiveTexture(GL_TEXTURE0);glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("Target0")); //m_gBuffer.rt0);
+    glActiveTexture(GL_TEXTURE1);glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("Target1")); //m_gBuffer.rt1);
+    glActiveTexture(GL_TEXTURE2);glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("Target2")); //m_gBuffer.rt2);
+    glActiveTexture(GL_TEXTURE3);glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("TargetDepth")); //m_gBuffer.rtDepth);
+    glActiveTexture(GL_TEXTURE4);glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("TargetPos")); //m_gBuffer.rtPos);
+    glActiveTexture(GL_TEXTURE5);glBindTexture(GL_TEXTURE_2D, ssaoFBO.getColorBuffer("ssao"));
 
     glBindVertexArray(fullscreenVAO);
 

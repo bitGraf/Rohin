@@ -3,6 +3,7 @@ layout (location = 0) out vec4 Target0;
 layout (location = 1) out vec4 Target1;
 layout (location = 2) out vec4 Target2;
 layout (location = 3) out float TargetDepth;
+layout (location = 4) out vec3 TargetPos;
 
 in vec3 pass_normal;
 in vec3 pass_fragPos;
@@ -46,4 +47,5 @@ void main()
     Target1 = vec4(normal, roughness);
     Target2 = vec4(emission, ao);
 	TargetDepth = gl_FragCoord.z;
+    TargetPos = pass_fragPos; //view-space
 }

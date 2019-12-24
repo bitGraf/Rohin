@@ -18,7 +18,7 @@ void GBuffer::create(u32 width, u32 height) {
         width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt0, 0);    
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt0, 0);
 
     // Render target 1
     glGenTextures(1, &rt1);
@@ -47,11 +47,22 @@ void GBuffer::create(u32 width, u32 height) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, rtDepth, 0);
 
+    // Temp. Position buffer
+    glGenTextures(1, &rtPos);
+    glBindTexture(GL_TEXTURE_2D, rtPos);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F,
+        width, height, 0, GL_RGB, GL_FLOAT, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, rtPos, 0);
+
     // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-    unsigned int attachments[4] = { 
+    unsigned int attachments[5] = { 
         GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, 
-        GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-    glDrawBuffers(4, attachments);
+        GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+        GL_COLOR_ATTACHMENT4
+    };
+    glDrawBuffers(5, attachments);
 
     //Create framebuffer
     glGenRenderbuffers(1, &rbo);

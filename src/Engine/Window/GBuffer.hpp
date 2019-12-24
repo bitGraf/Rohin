@@ -22,7 +22,7 @@ public:
     Target 1:   [     Normal    ][ roughness ] LDR
     Target 2:   [    Emission   ][    ao     ] HDR(ao is LDR)
     */
-    GLuint rt0, rt1, rt2, rtDepth;
+    GLuint rt0, rt1, rt2, rtDepth, rtPos;
 
 protected:
     GLuint fbo;

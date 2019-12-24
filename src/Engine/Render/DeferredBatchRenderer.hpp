@@ -7,10 +7,14 @@
 #include "Shadowmap.hpp"
 #include "Resource/Texture.hpp"
 #include "RenderBatch.hpp"
-#include "Window/GBuffer.hpp"
 #include "DynamicFont.hpp"
 #include "Utils.hpp"
 #include "Resource/ResourceManager.hpp"
+
+#include "Window/GBuffer.hpp"
+#include "Window/Framebuffer.hpp"
+
+#include <random>
 
 class DeferredBatchRenderer : public CoreSystem {
 public:
@@ -31,41 +35,53 @@ public:
     void loadResources(ResourceManager* resource);
 
 private:
-    // Render Passes
-    void geometryPass(RenderBatch* batch);
-    void screenPass(RenderBatch* batch);
-
+    // Profiling
     using _clock = std::chrono::system_clock;
     using _time = std::chrono::system_clock::time_point;
-    _time profileStart;
-
     using _dur = long long;
+
+    _time profileStart;
     _dur dur_fullRenderPass;
     MovingAverage<_dur, 100> avgRenderPass;
-    _dur dur_geometryPass,
-         dur_debug,
-         dur_screenPass;
 
     void beginProfile();
     _dur profileRenderPass();
     void endProfile();
 
-    GBuffer m_gBuffer;
-    Texture blackTex, whiteTex, normalTex, greenTex;
-
-    GLuint fullscreenVAO;
-    DynamicFont debugFont;
-
+    // Geometry Pass
+    void geometryPass(RenderBatch* batch);
     Shader m_geometryPassShader;
+    _dur dur_geometryPass;
+    //GBuffer m_gBuffer;
+    Framebuffer_new m_gBuffer;
+
+    // Screen Pass
+    void screenPass(RenderBatch* batch);
     Shader m_screenShader;
-
-    Shader m_debugMeshShader;
-    TriangleMesh* cameraMesh;
-
-    u16 scr_width, scr_height;
+    _dur dur_screenPass;
 
     std::string soStr;
     u8 shaderOutput;
+
+    // SSAO Pass
+    void ssaoPass(RenderBatch* batch);
+    Shader m_ssaoPassShader;
+    _dur dur_ssaoPass;
+    Framebuffer_new ssaoFBO;
+    const unsigned int Kernel_Size = 16;
+    std::vector<vec3> ssaoKernel;
+
+    // Debug Pass
+    Shader m_debugMeshShader;
+    _dur dur_debug;
+    DynamicFont debugFont;
+    TriangleMesh* cameraMesh;
+
+    // Common vars
+    Texture blackTex, whiteTex, normalTex, greenTex;
+    GLuint fullscreenVAO;
+
+    u16 scr_width, scr_height;
 };
 
 #endif

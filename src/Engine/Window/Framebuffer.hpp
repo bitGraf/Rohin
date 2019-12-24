@@ -25,7 +25,7 @@ public:
     void unbind();
 
     void addRenderBufferObject(ResolutionScale scale = ResolutionScale::One);
-    void addColorBufferObject(std::string name,
+    void addColorBufferObject(std::string name, unsigned int num,
         GLint internalFormat, GLenum format, GLenum type,
         ResolutionScale scale = ResolutionScale::One);
     GLuint getColorBuffer(std::string name);
@@ -39,6 +39,7 @@ private:
         GLenum format;
         GLenum type;
         ResolutionScale scale;
+        GLenum attachment;
 
         GLuint glBuffer;
     };

@@ -150,7 +150,7 @@ void Camera::updateViewFrustum(f32 width, f32 height) {
         vec4(0, 1 / tanHalf, 0, 0),
         vec4(0, 0, -(m_zFar + m_zNear) / (m_zFar - m_zNear), -1),
         vec4(0, 0, -(2 * m_zFar*m_zNear) / (m_zFar - m_zNear), 0)
-    ) * mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1));
+    );
 
     f32 vertFOV = m_fovVert * d2r; //radians
     f32 horizFOV = 2 * atan(m_aspectRatio*tanHalf); //radians
@@ -173,10 +173,12 @@ void Camera::updateViewFrustum(f32 width, f32 height) {
 }
 
 void Camera::updateViewMatrix() {
-    viewMatrix = math::createInverseTransform(Position, YawPitchRoll);
+    viewMatrix = mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1)) * 
+        math::createInverseTransform(Position, YawPitchRoll);
 
     if (m_parent) {
-        mat4 parentTransform = math::createInverseTransform(m_parent->Position, m_parent->YawPitchRoll);
+        mat4 parentTransform = mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1)) * 
+            math::createInverseTransform(m_parent->Position, m_parent->YawPitchRoll);
         viewMatrix = viewMatrix * parentTransform;
     }
 }

@@ -251,6 +251,7 @@ namespace math {
     vec3 createYawPitchRoll_Up(vec3 YawPitchRoll);
 
     void vec4normalizeXYZ_remap(math::vec4 &v);
+    scalar lerp(scalar a, scalar b, scalar f);
 }
 
 #endif

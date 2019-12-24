@@ -36,7 +36,7 @@ GLuint Framebuffer_new::getColorBuffer(std::string name) {
     }
 }
 
-void Framebuffer_new::addColorBufferObject(std::string name,
+void Framebuffer_new::addColorBufferObject(std::string name, unsigned int num,
     GLint internalFormat, GLenum format, GLenum type,
     ResolutionScale scale) {
 
@@ -47,6 +47,7 @@ void Framebuffer_new::addColorBufferObject(std::string name,
     data.internalFormat = internalFormat;
     data.type = type;
     data.glBuffer = 0;
+    data.attachment = GL_COLOR_ATTACHMENT0 + num;
 
     // add to list
     colorBuffers[name] = data;
@@ -57,6 +58,9 @@ void Framebuffer_new::addRenderBufferObject(ResolutionScale scale) {
 }
 
 void Framebuffer_new::create() {
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
     // Create color buffers
     for (auto buff : colorBuffers) {
         math::vec2 res = this->getResolution(buff.second.scale);
@@ -66,15 +70,26 @@ void Framebuffer_new::create() {
         glGenTextures(1, &tex);
         glBindTexture(GL_TEXTURE_2D, tex);
 
+        auto x = (GLsizei)res.x;
+        auto y = (GLsizei)res.y;
+
         glTexImage2D(GL_TEXTURE_2D, 0, buff.second.internalFormat,
             (GLsizei)res.x, (GLsizei)res.y, 0, buff.second.format, 
             buff.second.type, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorBuffers.size(), GL_TEXTURE_2D, tex, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, buff.second.attachment, GL_TEXTURE_2D, tex, 0);
 
         colorBuffers[buff.first].glBuffer = tex;
     }
+
+    // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+    unsigned int attachments[16];
+    for (int n = 0; n < 16; n++) {
+        attachments[n] = GL_COLOR_ATTACHMENT0 + n;
+    }
+   
+    glDrawBuffers(colorBuffers.size(), attachments);
 
     // Create renderbuffer
     if (hasRenderBuffer) {
@@ -89,14 +104,6 @@ void Framebuffer_new::create() {
 
         renderBuffer = rbo;
     }
-
-    // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-    unsigned int attachments[16];
-    for (int n = 0; n < 16; n++) {
-        attachments[n] = GL_COLOR_ATTACHMENT0 + n;
-    }
-    
-    glDrawBuffers(colorBuffers.size(), attachments);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;

@@ -810,6 +810,10 @@ math::vec3 math::createYawPitchRoll_Up(vec3 YawPitchRoll) {
     return m.col2();
 }
 
+math::scalar math::lerp(scalar a, scalar b, scalar f) {
+    return a + f * (b - a);
+}
+
 
 
 
