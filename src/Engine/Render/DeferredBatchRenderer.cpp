@@ -74,7 +74,7 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
         s32 newY = msg.data[1];
 
         m_gBuffer.resize(newX, newY);
-
+        ssaoFBO.resize(newX, newY);
         debugFont.resize(newX, newY);
 
         scr_width = newX;
@@ -140,20 +140,36 @@ CoreSystem* DeferredBatchRenderer::create() {
         vec3 sample(
             randomFloats(generator) * 2.0 - 1.0,
             randomFloats(generator) * 2.0 - 1.0,
-            randomFloats(generator) * 2.0 - 1.0
+            randomFloats(generator)
         );
         sample.normalize();
         sample *= randomFloats(generator);
-        float scale = (float)i / 64.0;
+        float scale = (float)i / (float)Kernel_Size;
         scale = lerp(0.1f, 1.0f, scale * scale);
         sample *= scale;
-        //ssaoKernel.push_back(sample);
         ssaoKernel[i] = sample;
     }
 
+    // create SSAO noise texture
+    std::vector<vec3> ssaoNoise;
+    for (int i = 0; i < 16; i++) {
+        vec3 noise(
+            randomFloats(generator) * 2.0 - 1.0,
+            randomFloats(generator) * 2.0 - 1.0,
+            0.0f
+        );
+        ssaoNoise.push_back(noise);
+    }
+    glGenTextures(1, &noiseTexture);
+    glBindTexture(GL_TEXTURE_2D, noiseTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, 4, 4, 0, GL_RGB, GL_FLOAT, &ssaoNoise[0]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
     // Create SSAO FBO
     ssaoFBO.addColorBufferObject("ssao", 0, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
-    ssaoFBO.addRenderBufferObject();
     ssaoFBO.create();
 
     return this;
@@ -236,18 +252,23 @@ void DeferredBatchRenderer::geometryPass(RenderBatch* batch) {
 void DeferredBatchRenderer::ssaoPass(RenderBatch* batch) {
     ssaoFBO.bind();
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT);
 
     m_ssaoPassShader.use();
 
     m_ssaoPassShader.setInt("TargetPos", 0);
+    m_ssaoPassShader.setInt("Target1", 1); 
+    m_ssaoPassShader.setInt("TargetNoise", 2);
     m_ssaoPassShader.setMat4("projectionMatrix", batch->cameraProjection);
+    m_ssaoPassShader.setVec2("noiseScale", vec2(scr_width, scr_height)/4.0);
 
     for (int n = 0; n < Kernel_Size; n++) {
         m_ssaoPassShader.setVec3("Kernel[" + std::to_string(n) + "]", ssaoKernel[n]);
     }
 
-    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("TargetPos")); //m_gBuffer.rtPos);
+    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("TargetPos"));
+    glActiveTexture(GL_TEXTURE1); glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("Target1"));
+    glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, this->noiseTexture);
 
     glBindVertexArray(fullscreenVAO);
 
@@ -320,6 +341,9 @@ void DeferredBatchRenderer::renderDebug(
 
     if (GetScene() && (debugMode)) {
         sprintf(text, " Geometry Pass.......%-3lld us", dur_geometryPass / scale);
+        debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
+
+        sprintf(text, " SSAO Pass...........%-3lld us", dur_ssaoPass / scale);
         debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
 
         sprintf(text, " Screen Pass.........%-3lld us", dur_screenPass / scale);

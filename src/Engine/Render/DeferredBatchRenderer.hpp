@@ -70,6 +70,7 @@ private:
     Framebuffer_new ssaoFBO;
     const unsigned int Kernel_Size = 16;
     std::vector<vec3> ssaoKernel;
+    GLuint noiseTexture;
 
     // Debug Pass
     Shader m_debugMeshShader;
