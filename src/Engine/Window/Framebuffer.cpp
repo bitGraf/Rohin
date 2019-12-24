@@ -1,5 +1,141 @@
 #include "Framebuffer.hpp"
 
+Framebuffer_new::Framebuffer_new(u32 width, u32 height) :
+    base_width(width),
+    base_height(height),
+    fbo(0),
+    renderBuffer(0),
+    hasRenderBuffer(false)
+{}
+
+void Framebuffer_new::resize( u32 width, u32 height) {
+    if (base_width == width && base_height == height) {
+        //do nothing
+        return;
+    }
+
+    base_width = width;
+    base_height = height;
+    destroy();
+    create();
+}
+
+void Framebuffer_new::bind() {
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+}
+void Framebuffer_new::unbind() {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+GLuint Framebuffer_new::getColorBuffer(std::string name) {
+    auto f = colorBuffers.find(name);
+    if (f == colorBuffers.end()) {
+        return 0;
+    }
+    else {
+        return f->second.glBuffer;
+    }
+}
+
+void Framebuffer_new::addColorBufferObject(std::string name,
+    GLint internalFormat, GLenum format, GLenum type,
+    ResolutionScale scale) {
+
+    Framebuffer_new::ColorAttachmentData data;
+
+    data.scale = scale;
+    data.format = format;
+    data.internalFormat = internalFormat;
+    data.type = type;
+    data.glBuffer = 0;
+
+    // add to list
+    colorBuffers[name] = data;
+}
+
+void Framebuffer_new::addRenderBufferObject(ResolutionScale scale) {
+    hasRenderBuffer = true;
+}
+
+void Framebuffer_new::create() {
+    // Create color buffers
+    for (auto buff : colorBuffers) {
+        math::vec2 res = this->getResolution(buff.second.scale);
+
+        // Temp. Position buffer
+        GLuint tex;
+        glGenTextures(1, &tex);
+        glBindTexture(GL_TEXTURE_2D, tex);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, buff.second.internalFormat,
+            (GLsizei)res.x, (GLsizei)res.y, 0, buff.second.format, 
+            buff.second.type, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + colorBuffers.size(), GL_TEXTURE_2D, tex, 0);
+
+        colorBuffers[buff.first].glBuffer = tex;
+    }
+
+    // Create renderbuffer
+    if (hasRenderBuffer) {
+        math::vec2 res = this->getResolution(ResolutionScale::One);
+
+        //Create framebuffer
+        GLuint rbo;
+        glGenRenderbuffers(1, &rbo);
+        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, (GLsizei)res.x, (GLsizei)res.y);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+        renderBuffer = rbo;
+    }
+
+    // - tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+    unsigned int attachments[16];
+    for (int n = 0; n < 16; n++) {
+        attachments[n] = GL_COLOR_ATTACHMENT0 + n;
+    }
+    
+    glDrawBuffers(colorBuffers.size(), attachments);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Framebuffer_new::destroy() {
+    glDeleteFramebuffers(1, &fbo);
+
+    glDeleteRenderbuffers(1, &renderBuffer);
+    for (auto k : colorBuffers) {
+        glDeleteTextures(1, &k.second.glBuffer);
+    }
+}
+
+math::vec2 Framebuffer_new::getResolution(ResolutionScale scale) {
+    switch (scale) {
+    case ResolutionScale::One:
+        return math::vec2(base_width, base_height);
+    case ResolutionScale::OneHalf:
+        return math::vec2(base_width/2.0f, base_height/2.0f);
+    case ResolutionScale::OneThird:
+        return math::vec2(base_width/3.0f, base_height/3.0f);
+    case ResolutionScale::OneFourth:
+        return math::vec2(base_width/4.0f, base_height/4.0f);
+    case ResolutionScale::Twice:
+        return math::vec2(base_width*2.0f, base_height*2.0f);
+    case ResolutionScale::Triple:
+        return math::vec2(base_width*3.0f, base_height*3.0f);
+    case ResolutionScale::Quadruple:
+        return math::vec2(base_width*4.0f, base_height*4.0f);
+    }
+}
+
+
+
+
+
 Framebuffer::Framebuffer() {
 }
 

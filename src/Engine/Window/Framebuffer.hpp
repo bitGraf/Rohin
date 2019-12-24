@@ -4,6 +4,55 @@
 #include "glad/glad.h"
 #include "GameMath.hpp"
 
+#include <unordered_map>
+
+enum class ResolutionScale {
+    One = 1,
+    OneHalf,
+    OneThird,
+    OneFourth,
+    Twice,
+    Triple,
+    Quadruple
+};
+
+class Framebuffer_new {
+public:
+    Framebuffer_new(u32 width, u32 height);
+
+    void resize(u32 width, u32 height);
+    void bind();
+    void unbind();
+
+    void addRenderBufferObject(ResolutionScale scale = ResolutionScale::One);
+    void addColorBufferObject(std::string name,
+        GLint internalFormat, GLenum format, GLenum type,
+        ResolutionScale scale = ResolutionScale::One);
+    GLuint getColorBuffer(std::string name);
+
+    void create();
+    void destroy();
+
+private:
+    struct ColorAttachmentData {
+        GLint internalFormat;
+        GLenum format;
+        GLenum type;
+        ResolutionScale scale;
+
+        GLuint glBuffer;
+    };
+
+    std::unordered_map<std::string, ColorAttachmentData> colorBuffers;
+    GLuint renderBuffer;
+    bool hasRenderBuffer;
+
+    GLuint fbo;
+    u32 base_width, base_height;
+
+    math::vec2 getResolution(ResolutionScale scale);
+};
+
 class Framebuffer {
 public:
     Framebuffer();
