@@ -22,15 +22,18 @@ public:
 
     void resize(u32 width, u32 height);
     void bind();
+    void setResolution();
+    void resetResolution();
     void unbind();
 
-    void addRenderBufferObject(ResolutionScale scale = ResolutionScale::One);
+    math::vec2 getRenderSize();
+
+    void addRenderBufferObject();
     void addColorBufferObject(std::string name, unsigned int num,
-        GLint internalFormat, GLenum format, GLenum type,
-        ResolutionScale scale = ResolutionScale::One);
+        GLint internalFormat, GLenum format, GLenum type);
     GLuint getColorBuffer(std::string name);
 
-    void create();
+    void create(ResolutionScale scale = ResolutionScale::One);
     void destroy();
 
 private:
@@ -38,7 +41,6 @@ private:
         GLint internalFormat;
         GLenum format;
         GLenum type;
-        ResolutionScale scale;
         GLenum attachment;
 
         GLuint glBuffer;
@@ -49,7 +51,8 @@ private:
     bool hasRenderBuffer;
 
     GLuint fbo;
-    u32 base_width, base_height;
+    u32 base_width, base_height; //screen resolution
+    ResolutionScale scale;
 
     math::vec2 getResolution(ResolutionScale scale);
 };

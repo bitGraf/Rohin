@@ -17,14 +17,26 @@ void Framebuffer_new::resize( u32 width, u32 height) {
     base_width = width;
     base_height = height;
     destroy();
-    create();
+    create(scale);
 }
 
 void Framebuffer_new::bind() {
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    setResolution();
 }
 void Framebuffer_new::unbind() {
+    resetResolution();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+void Framebuffer_new::setResolution() {
+    math::vec2 res = getResolution(scale);
+    glViewport(0, 0, (GLsizei)res.x, (GLsizei)res.y);
+}
+void Framebuffer_new::resetResolution() {
+    glViewport(0, 0, base_width, base_height);
+}
+math::vec2 Framebuffer_new::getRenderSize() {
+    return getResolution(scale);
 }
 GLuint Framebuffer_new::getColorBuffer(std::string name) {
     auto f = colorBuffers.find(name);
@@ -37,12 +49,10 @@ GLuint Framebuffer_new::getColorBuffer(std::string name) {
 }
 
 void Framebuffer_new::addColorBufferObject(std::string name, unsigned int num,
-    GLint internalFormat, GLenum format, GLenum type,
-    ResolutionScale scale) {
+    GLint internalFormat, GLenum format, GLenum type) {
 
     Framebuffer_new::ColorAttachmentData data;
 
-    data.scale = scale;
     data.format = format;
     data.internalFormat = internalFormat;
     data.type = type;
@@ -53,18 +63,19 @@ void Framebuffer_new::addColorBufferObject(std::string name, unsigned int num,
     colorBuffers[name] = data;
 }
 
-void Framebuffer_new::addRenderBufferObject(ResolutionScale scale) {
+void Framebuffer_new::addRenderBufferObject() {
     hasRenderBuffer = true;
 }
 
-void Framebuffer_new::create() {
+void Framebuffer_new::create(ResolutionScale scale) {
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
+    this->scale = scale;
+    math::vec2 res = this->getResolution(scale);
+
     // Create color buffers
     for (auto buff : colorBuffers) {
-        math::vec2 res = this->getResolution(buff.second.scale);
-
         // Temp. Position buffer
         GLuint tex;
         glGenTextures(1, &tex);
@@ -93,8 +104,6 @@ void Framebuffer_new::create() {
 
     // Create renderbuffer
     if (hasRenderBuffer) {
-        math::vec2 res = this->getResolution(ResolutionScale::One);
-
         //Create framebuffer
         GLuint rbo;
         glGenRenderbuffers(1, &rbo);

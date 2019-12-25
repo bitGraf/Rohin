@@ -72,6 +72,9 @@ private:
     std::vector<vec3> ssaoKernel;
     GLuint noiseTexture;
 
+    Shader m_ssaoBlurShader;
+    Framebuffer_new ssaoBlurFBO;
+
     // Debug Pass
     Shader m_debugMeshShader;
     _dur dur_debug;

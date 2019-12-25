@@ -6,7 +6,8 @@ DeferredBatchRenderer::DeferredBatchRenderer() :
     soStr("Albedo"),
     ssaoKernel(Kernel_Size),
     ssaoFBO(800, 600),
-    m_gBuffer(800, 600)
+    m_gBuffer(800, 600),
+    ssaoBlurFBO(800, 600)
 {}
 
 DeferredBatchRenderer::~DeferredBatchRenderer() {}
@@ -170,7 +171,7 @@ CoreSystem* DeferredBatchRenderer::create() {
 
     // Create SSAO FBO
     ssaoFBO.addColorBufferObject("ssao", 0, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
-    ssaoFBO.create();
+    ssaoFBO.create(ResolutionScale::OneHalf);
 
     return this;
 }
@@ -260,7 +261,7 @@ void DeferredBatchRenderer::ssaoPass(RenderBatch* batch) {
     m_ssaoPassShader.setInt("Target1", 1); 
     m_ssaoPassShader.setInt("texNoise", 2);
     m_ssaoPassShader.setMat4("projectionMatrix", batch->cameraProjection);
-    m_ssaoPassShader.setVec2("noiseScale", vec2(scr_width, scr_height)/4.0);
+    m_ssaoPassShader.setVec2("noiseScale", ssaoFBO.getRenderSize()/4.0);
 
     for (int n = 0; n < Kernel_Size; n++) {
         m_ssaoPassShader.setVec3("Kernel[" + std::to_string(n) + "]", ssaoKernel[n]);
