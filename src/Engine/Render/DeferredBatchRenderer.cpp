@@ -28,6 +28,7 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
 
             m_geometryPassShader.create("pipeline/geometryPass.vert", "pipeline/geometryPass.frag", "geometryPassShader");
             m_ssaoPassShader.create("pipeline/screen.vert", "pipeline/ssao.frag", "ssaoShader");
+            m_ssaoBlurShader.create("pipeline/screen.vert", "pipeline/ssaoBlur.frag", "ssaoBlurShader");
             m_screenShader.create("pipeline/screen.vert", "pipeline/screen.frag", "screenShader");
 
             m_debugMeshShader.create("debugMesh.vert", "debugMesh.frag", "debugMeshShader");
@@ -76,6 +77,7 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
 
         m_gBuffer.resize(newX, newY);
         ssaoFBO.resize(newX, newY);
+        ssaoBlurFBO.resize(newX, newY);
         debugFont.resize(newX, newY);
 
         scr_width = newX;
@@ -87,6 +89,7 @@ void DeferredBatchRenderer::destroy() {}
 CoreSystem* DeferredBatchRenderer::create() {
     m_geometryPassShader.create("pipeline/geometryPass.vert", "pipeline/geometryPass.frag", "geometryPassShader");
     m_ssaoPassShader.create("pipeline/screen.vert", "pipeline/ssao.frag", "ssaoShader");
+    m_ssaoBlurShader.create("pipeline/screen.vert", "pipeline/ssaoBlur.frag", "ssaoBlurShader");
     m_screenShader.create("pipeline/screen.vert", "pipeline/screen.frag", "screenShader");
 
     m_debugMeshShader.create("debugMesh.vert", "debugMesh.frag", "debugMeshShader");
@@ -172,6 +175,8 @@ CoreSystem* DeferredBatchRenderer::create() {
     // Create SSAO FBO
     ssaoFBO.addColorBufferObject("ssao", 0, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
     ssaoFBO.create(ResolutionScale::OneHalf);
+    ssaoBlurFBO.addColorBufferObject("ssao", 0, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
+    ssaoBlurFBO.create(ResolutionScale::OneHalf);
 
     return this;
 }
@@ -272,20 +277,34 @@ void DeferredBatchRenderer::ssaoPass(RenderBatch* batch) {
     glActiveTexture(GL_TEXTURE2); glBindTexture(GL_TEXTURE_2D, this->noiseTexture);
 
     glBindVertexArray(fullscreenVAO);
-
-    //glViewport(0, 0, scr_width / 2.0, scr_height / 2.0);
-
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
-
-    //glViewport(0, 0, scr_width, scr_height);
-
     glBindVertexArray(0);
 
     ssaoFBO.unbind();
+
+    // Blur the SSAO values
+    ssaoBlurFBO.bind();
+
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    m_ssaoBlurShader.use();
+
+    m_ssaoBlurShader.setInt("ssaoInput", 0);
+    glActiveTexture(GL_TEXTURE0); glBindTexture(GL_TEXTURE_2D, ssaoFBO.getColorBuffer("ssao"));
+
+    glBindVertexArray(fullscreenVAO);
+    glDisable(GL_BLEND);
+    glDisable(GL_CULL_FACE);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glEnable(GL_CULL_FACE);
+    glEnable(GL_BLEND);
+    glBindVertexArray(0);
+
+    ssaoBlurFBO.unbind();
 }
 
 void DeferredBatchRenderer::screenPass(RenderBatch* batch) {
@@ -307,7 +326,7 @@ void DeferredBatchRenderer::screenPass(RenderBatch* batch) {
     glActiveTexture(GL_TEXTURE2);glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("Target2")); //m_gBuffer.rt2);
     glActiveTexture(GL_TEXTURE3);glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("TargetDepth")); //m_gBuffer.rtDepth);
     glActiveTexture(GL_TEXTURE4);glBindTexture(GL_TEXTURE_2D, m_gBuffer.getColorBuffer("TargetPos")); //m_gBuffer.rtPos);
-    glActiveTexture(GL_TEXTURE5);glBindTexture(GL_TEXTURE_2D, ssaoFBO.getColorBuffer("ssao"));
+    glActiveTexture(GL_TEXTURE5);glBindTexture(GL_TEXTURE_2D, ssaoBlurFBO.getColorBuffer("ssao"));
 
     glBindVertexArray(fullscreenVAO);
 

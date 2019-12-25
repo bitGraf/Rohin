@@ -55,7 +55,7 @@ void main() {
             FragColor = vec4(vec3(ssao), 1);
             break;
         case 2:
-            FragColor = vec4(normal, 1);
+            FragColor = vec4(albedo * ssao, 1);
             break;
         default:
             FragColor = vec4(vec3(LinearizeDepth(depth)/far), 1);
