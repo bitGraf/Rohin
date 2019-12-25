@@ -44,7 +44,7 @@ void main()
     */
 
     Target0 = vec4(albedo, metallic); 
-    Target1 = vec4(normal, roughness);
+    Target1 = vec4(pass_normal, roughness);
     Target2 = vec4(emission, ao);
 	TargetDepth = gl_FragCoord.z;
     TargetPos = pass_fragPos; //view-space

@@ -15,14 +15,17 @@ out mat3 pass_TBN;
 out vec2 pass_tex;
 
 void main() {
-    pass_fragPos = vec3(modelViewMatrix * vec4(vertPos, 1.0));
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(vertPos, 1.0);
+    vec4 viewPos = modelViewMatrix * vec4(vertPos, 1.0);
 
-    vec3 T = normalize(vec3(modelViewMatrix*vec4(vec3(vertTangent), 0.0)));
-    vec3 N = normalize(vec3(modelViewMatrix*vec4(vertNorm, 0.0)));
+    mat3 normalMatrix = transpose(inverse(mat3(modelViewMatrix)));
+    vec3 T = normalize(normalMatrix * vertTangent.xyz);
+    vec3 N = normalize(normalMatrix * vertNorm);
 	vec3 B = cross(N, T);
+
     pass_TBN = mat3(T, B, N);
     pass_normal = N;
-
+    pass_fragPos = viewPos.xyz;
     pass_tex = vertTex;
+
+    gl_Position = projectionMatrix * viewPos;
 }

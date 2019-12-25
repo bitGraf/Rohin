@@ -9,9 +9,9 @@ uniform sampler2D texNoise;
 
 uniform mat4 projectionMatrix;
 
-const int MAX_KERNEL_SIZE = 32;
+const int MAX_KERNEL_SIZE = 16;
 uniform vec3 Kernel[MAX_KERNEL_SIZE];
-const float radius = 0.5;
+const float radius = .15;
 const float bias = 0.025;
 uniform vec2 noiseScale;
 
@@ -40,8 +40,8 @@ void main() {
         occlusion += (sampleDepth >= sample.z + bias ? 1.0 : 0.0) * rangeCheck;
     }
 
-    occlusion = 1.0 - occlusion/MAX_KERNEL_SIZE;
-    //occlusion = pow(occlusion, 2.0);
+    occlusion = 1.0 - (occlusion/MAX_KERNEL_SIZE);
+    //occlusion = pow(occlusion, 1.0);
 
-    FragColor = occlusion;
+    FragColor = occlusion;  
 }

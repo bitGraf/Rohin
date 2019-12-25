@@ -74,7 +74,7 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
         s32 newY = msg.data[1];
 
         m_gBuffer.resize(newX, newY);
-        ssaoFBO.resize(newX / 2.0, newY / 2.0);
+        ssaoFBO.resize(newX, newY);
         debugFont.resize(newX, newY);
 
         scr_width = newX;
@@ -133,7 +133,7 @@ CoreSystem* DeferredBatchRenderer::create() {
     glBindVertexArray(0);
 
     // Generate SSAO kernel
-    std::uniform_real_distribution<float> randomFloats(0.0, 1.0); // random floats between 0.0 - 1.0
+    std::uniform_real_distribution<float> randomFloats(0.05, 1.0); // random floats between 0.0 - 1.0
     std::default_random_engine generator;
     for (unsigned int i = 0; i < Kernel_Size; ++i)
     {
@@ -171,7 +171,6 @@ CoreSystem* DeferredBatchRenderer::create() {
     // Create SSAO FBO
     ssaoFBO.addColorBufferObject("ssao", 0, GL_RED, GL_RED, GL_UNSIGNED_BYTE);
     ssaoFBO.create();
-    ssaoFBO.resize(scr_width / 2.0, scr_height / 2.0);
 
     return this;
 }
@@ -259,9 +258,9 @@ void DeferredBatchRenderer::ssaoPass(RenderBatch* batch) {
 
     m_ssaoPassShader.setInt("TargetPos", 0);
     m_ssaoPassShader.setInt("Target1", 1); 
-    m_ssaoPassShader.setInt("TargetNoise", 2);
+    m_ssaoPassShader.setInt("texNoise", 2);
     m_ssaoPassShader.setMat4("projectionMatrix", batch->cameraProjection);
-    m_ssaoPassShader.setVec2("noiseScale", vec2(scr_width, scr_height)/2.0);
+    m_ssaoPassShader.setVec2("noiseScale", vec2(scr_width, scr_height)/4.0);
 
     for (int n = 0; n < Kernel_Size; n++) {
         m_ssaoPassShader.setVec3("Kernel[" + std::to_string(n) + "]", ssaoKernel[n]);
@@ -273,7 +272,7 @@ void DeferredBatchRenderer::ssaoPass(RenderBatch* batch) {
 
     glBindVertexArray(fullscreenVAO);
 
-    glViewport(0, 0, scr_width / 2.0, scr_height / 2.0);
+    //glViewport(0, 0, scr_width / 2.0, scr_height / 2.0);
 
     glDisable(GL_BLEND);
     glDisable(GL_CULL_FACE);
@@ -281,7 +280,7 @@ void DeferredBatchRenderer::ssaoPass(RenderBatch* batch) {
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
 
-    glViewport(0, 0, scr_width, scr_height);
+    //glViewport(0, 0, scr_width, scr_height);
 
     glBindVertexArray(0);
 
