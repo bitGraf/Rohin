@@ -51,6 +51,7 @@ public:
             DirLights.clear();
             Players.clear();
             Volumes.clear();
+			Actor.clear();
         }
 
         std::vector<RenderableObject*> Renderable;
@@ -61,6 +62,7 @@ public:
         //std::vector<CharacterObject*> Characters;
         std::vector<PlayerObject*> Players;
         std::vector<TriggerVolume*> Volumes;
+		std::vector<AICharacter*> Actor;
     };
     GameObjectLists_t objectsByType;
 

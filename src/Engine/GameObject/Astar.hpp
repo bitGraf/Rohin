@@ -15,7 +15,7 @@ public:
 
 typedef class AstarNode astarnode_t;
 
-extern int Astar_Plan (
+extern int Astar_Plan(
 	ActionPlanner* ap,
 	worldstate_t start,
 	worldstate_t goal,
@@ -23,6 +23,5 @@ extern int Astar_Plan (
 	worldstate_t* worldstates,
 	int* plansize
 );
-
 
 #endif

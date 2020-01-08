@@ -10,7 +10,7 @@ AICharacter::AICharacter() {
 }
 
 void AICharacter::Create(istringstream &iss, ResourceManager* resource) {
-    CharacterObject::Create(iss, resource);
+	CharacterObject::Create(iss, resource);
 }
 
 void AICharacter::Update(double dt) {
@@ -37,7 +37,12 @@ void AICharacter::Destroy() {
 }
 
 void AICharacter::PostLoad() {
-    m_playerID = GetScene()->getObjectIDByName("YaBoy");
+	static ActionPlanner AIap;
+	AIap.Clear();
+	AIap.SetPrecond("scout", "armed", true);
+	AIap.SetPostcond("scout", "enemy visible", true);
+	AIap.SetCost("scout", 1);
+	m_playerID = GetScene()->getObjectIDByName("YaBoy");
 }
 
 

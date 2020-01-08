@@ -117,6 +117,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 k.data->Create(iss, resource);
                 //objectsByType.Players.push_back(k.data);
                 objectsByType.Renderable.push_back(k.data);
+				objectsByType.Actor.push_back(k.data);
 
                 go = k.data;
             }

@@ -2,6 +2,8 @@
 #define AI_CHARACTER_H
 
 #include "Character.hpp"
+#include "Goap.hpp"
+#include "Astar.hpp"
 
 class AICharacter : public CharacterObject {
 public:
