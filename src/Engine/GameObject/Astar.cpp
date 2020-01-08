@@ -1,6 +1,7 @@
 #include "Astar.hpp"
 #include "Goap.hpp"
 #include <limits.h>
+#include <stdio.h>
 
 #define MAXOPEN 1024
 #define MAXCLOS 1024
@@ -39,7 +40,7 @@ static int idxClosed(worldstate_t ws)
 }
 
 // Reconstruct path from last to initial node
-static void planReconstruction(ActionPlanner* ap, astarnode_t* goalNode, const char** plan, worldstate_t worldstates, int* szPlan)
+static void planReconstruction(ActionPlanner* ap, astarnode_t* goalNode, const char** plan, worldstate_t* worldstates, int* szPlan)
 {
 	astarnode_t* curNode = goalNode;
 	int idx = *szPlan - 1;
@@ -65,7 +66,7 @@ static void planReconstruction(ActionPlanner* ap, astarnode_t* goalNode, const c
 			worldstates[i] = worldstates[ i + idx ];
 		}
 	if ( idx < 0 )
-		LOGE( "Plan of size %d cannot be returned in buffer of size %d", numsteps, *szPlan );
+		printf( "Plan of size %d cannot be returned in buffer of size %d", numSteps, *szPlan );
 	
 	*szPlan = numSteps;
 }

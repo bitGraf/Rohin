@@ -1,5 +1,5 @@
 #include "Goap.hpp"
-//#include "Astar.hpp"
+#include "Astar.hpp"
 
 #include <string.h>
 #include <stdio.h>
