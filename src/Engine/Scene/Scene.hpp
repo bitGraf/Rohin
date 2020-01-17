@@ -63,6 +63,7 @@ public:
         std::vector<PlayerObject*> Players;
         std::vector<TriggerVolume*> Volumes;
 		std::vector<AICharacter*> Actor;
+		std::vector<GoapCharacter*> GoapActor;
     };
     GameObjectLists_t objectsByType;
 

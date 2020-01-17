@@ -37,11 +37,6 @@ void AICharacter::Destroy() {
 }
 
 void AICharacter::PostLoad() {
-	static ActionPlanner AIap;
-	AIap.Clear();
-	AIap.SetPrecond("scout", "armed", true);
-	AIap.SetPostcond("scout", "enemy visible", true);
-	AIap.SetCost("scout", 1);
 	m_playerID = GetScene()->getObjectIDByName("YaBoy");
 }
 
@@ -67,6 +62,35 @@ void GoapCharacter::Create(istringstream &iss, ResourceManager* resource) {
 }
 
 void GoapCharacter::PostLoad() {
+	static ActionPlanner AIap;
+	AIap.Clear();
+	AIap.SetPrecond("scout", "armed", true);
+	AIap.SetPostcond("scout", "enemyvisible", true);
+	AIap.SetCost("scout", 1);
+	AIap.SetPrecond("shoot", "enemyvisible", true);
+	AIap.SetPostcond("shoot", "enemyalive", false);
+	AIap.SetCost("shoot", 2);
+
+	worldstate_t start;
+	start.Clear();
+	start.Set(&AIap, "enemyvisible", false);
+	start.Set(&AIap, "armed", true);
+	start.Set(&AIap, "enemyalive", true);
+
+	worldstate_t goal;
+	goal.Clear();
+	goal.Set(&AIap, "enemyalive", false);
+
+	worldstate_t states[16];
+	const char* plan[16];
+	int plansz = 16;
+	const int plancost = Astar_Plan(&AIap, start, goal, plan, states, &plansz);
+	printf("plancost = %d", plancost);
+	//char desc[4096];
+	//AIap.Description(desc, sizeof(plansz));
+	//start.Description(&AIap, desc, sizeof(plansz));
+	//printf("%s", desc);
+
 	m_playerRef = static_cast<CharacterObject*>(GetScene()->getObjectByName("YaBoy"));
 	// Here we will load in available actions, along with pre- and post-conditions
 
