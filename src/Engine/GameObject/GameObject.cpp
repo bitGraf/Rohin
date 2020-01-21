@@ -23,7 +23,7 @@ void GameObject::Create(istringstream &iss, ResourceManager* resource) {
     string parentName = getNextString(iss);
     if (parentName.compare("") != 0) {
         /// Move this to PostLoad()
-        //m_parent = GetScene()->getObjectByName(parentName);
+        //m_parent = GetCurrentScene()->getObjectByName(parentName);
     }
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid) , Name.c_str());

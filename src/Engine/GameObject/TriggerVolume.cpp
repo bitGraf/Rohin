@@ -17,14 +17,14 @@ void TriggerVolume::Create(istringstream &iss, ResourceManager* resource) {
 }
 
 void TriggerVolume::PostLoad() {
-    m_triggerObjectID = GetScene()->getObjectIDByName(m_triggerObjectName);
+    m_triggerObjectID = GetCurrentScene()->getObjectIDByName(m_triggerObjectName);
     Message::registerMessageType("VolumeEnter");
     Message::registerMessageType("VolumeLeave");
 }
 
 void TriggerVolume::Update(double dt) {
     // Check if the triggerObject is inside the volume
-    GameObject* triggerObject = GetScene()->getObjectByID(m_triggerObjectID);
+    GameObject* triggerObject = GetCurrentScene()->getObjectByID(m_triggerObjectID);
     if (triggerObject) {
         if (pointInsideBox(triggerObject->Position)) {
             if (inside) {

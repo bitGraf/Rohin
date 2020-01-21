@@ -1,7 +1,7 @@
 #include "Scene.hpp"
 
 Scene* CurrentScene = nullptr;
-Scene* GetScene() { return CurrentScene; }
+Scene* GetCurrentScene() { return CurrentScene; }
 void SetCurrentScene(Scene* newScene) { CurrentScene = newScene; }
 
 Scene::Scene() {

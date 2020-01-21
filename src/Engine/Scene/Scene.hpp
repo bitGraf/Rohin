@@ -75,7 +75,7 @@ public:
 };
 
 //extern Scene* CurrentScene;
-Scene* GetScene();
+Scene* GetCurrentScene();
 void   SetCurrentScene(Scene* newScene);
 void getRenderBatch(RenderBatch* batch, bool useCull = true);
 

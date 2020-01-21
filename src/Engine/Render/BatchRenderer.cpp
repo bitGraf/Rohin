@@ -166,7 +166,7 @@ void BatchRenderer::renderBatch(RenderBatch* batch) {
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    if (GetScene()) {
+    if (GetCurrentScene()) {
 
         pickPass(batch);
         dur_pickPass = profileRenderPass();
@@ -437,9 +437,9 @@ void BatchRenderer::renderDebug(
         static_cast<long long>(avgRenderPass.getCurrentAverage()) / scale);
     debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
 
-    sprintf(text, "[T] Relative Movement: %s", static_cast<CharacterObject*>(GetScene()->getObjectByName("YaBoy"))->GetRelativeMovementType());
+    sprintf(text, "[T] Relative Movement: %s", static_cast<CharacterObject*>(GetCurrentScene()->getObjectByName("YaBoy"))->GetRelativeMovementType());
     debugFont.drawText(5, scr_height - 18, white, text, ALIGN_BOT_LEFT);
-    sprintf(text, "[Y] Control Type: %s", static_cast<PlayerObject*>(GetScene()->getObjectByName("YaBoy"))->GetControlType());
+    sprintf(text, "[Y] Control Type: %s", static_cast<PlayerObject*>(GetCurrentScene()->getObjectByName("YaBoy"))->GetControlType());
     debugFont.drawText(5, scr_height - 31, white, text, ALIGN_BOT_LEFT);
 
     sprintf(text, "MoveForward: %.2f", Input::getAxisState("MoveForward"));
@@ -447,7 +447,7 @@ void BatchRenderer::renderDebug(
     sprintf(text, "MoveRight: %.2f", Input::getAxisState("MoveRight"));
     debugFont.drawText(scr_width - 5, scr_height - 18, white, text, ALIGN_BOT_RIGHT);
 
-    if (GetScene() && (false || debugMode)) {
+    if (GetCurrentScene() && (false || debugMode)) {
         sprintf(text, " Shadow- - - %-3lld us", dur_shadowPass / scale);
         debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
         sprintf(text, " Static- - - %-3lld us", dur_staticPass / scale);
@@ -488,7 +488,7 @@ void BatchRenderer::renderDebug(
         m_debugLineShader.use();
         m_debugLineShader.setMat4("projectionViewMatrix", batch->cameraProjection * batch->cameraView);
 
-        for (auto k : GetScene()->m_masterMap) {
+        for (auto k : GetCurrentScene()->m_masterMap) {
             auto go = k.second;
             vec3 vPos = go->Position;
             mat3 meshTransform = go->getTransform();
@@ -515,21 +515,21 @@ void BatchRenderer::renderDebug(
 
         glDisable(GL_DEPTH_TEST);
         m_debugLineShader.use();
-        for (auto k : GetScene()->objectsByType.Volumes) {
+        for (auto k : GetCurrentScene()->objectsByType.Volumes) {
             vec3 pos = k->Position;
             drawAABBB(pos, k->bounds_min, k->bounds_max, k->Inside() ? vec3(1, .2, .2) : vec3(1));
         }
-        for (auto k : GetScene()->objectsByType.DirLights) {
+        for (auto k : GetCurrentScene()->objectsByType.DirLights) {
             vec3 pos = k->Position;
             vec3 dir = k->Direction;
             drawLine(pos, pos + dir * 10, k->Color, k->Color);
         }
-        for (auto k : GetScene()->objectsByType.SpotLights) {
+        for (auto k : GetCurrentScene()->objectsByType.SpotLights) {
             vec3 pos = k->Position;
             vec3 dir = k->Direction;
             drawLine(pos, pos + dir * 3, k->Color, k->Color);
         }
-        for (auto k : GetScene()->objectsByType.PointLights) {
+        for (auto k : GetCurrentScene()->objectsByType.PointLights) {
             vec3 pos = k->Position;
             const scalar pointLightLength = .3;
             drawLine(pos, pos + vec3(1, 1, 1) *pointLightLength, k->Color, k->Color);
@@ -549,7 +549,7 @@ void BatchRenderer::renderDebug(
         /*m_pickPassShader.use();
         m_pickPassShader.setMat4("projectionViewMatrix", batch->cameraViewProjectionMatrix);
         m_pickPassShader.setVec3("idColor", vec3(1, .2, .4));
-        for (auto k : GetScene()->objectsByType.Collisions) {
+        for (auto k : GetCurrentScene()->objectsByType.Collisions) {
             auto hull = &k->m_hull;
 
             m_pickPassShader.setMat4("modelMatrix", k->getTransform());
@@ -598,7 +598,7 @@ void BatchRenderer::renderDebug(
     drawLine(viz.res.start, viz.res.end, orange, red);
     drawPoint(viz.res.contactPoint, green);
 
-    auto character = GetScene()->objectsByType.Players[0];// ->getHull();
+    auto character = GetCurrentScene()->objectsByType.Players[0];// ->getHull();
     //drawLine(character->res.start, character->res.end, orange, red);
     //drawPoint(character->res.contactPoint, green);
 

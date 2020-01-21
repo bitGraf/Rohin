@@ -188,7 +188,7 @@ void DeferredBatchRenderer::renderBatch(RenderBatch* batch) {
 
     beginProfile();
 
-    if (GetScene()) {
+    if (GetCurrentScene()) {
 
         geometryPass(batch);
         dur_geometryPass = profileRenderPass();
@@ -363,7 +363,7 @@ void DeferredBatchRenderer::renderDebug(
         static_cast<long long>(avgRenderPass.getCurrentAverage()) / scale);
     debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
 
-    if (GetScene() && (debugMode)) {
+    if (GetCurrentScene() && (debugMode)) {
         sprintf(text, " Geometry Pass.......%-3lld us", dur_geometryPass / scale);
         debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
 

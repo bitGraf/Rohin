@@ -94,8 +94,8 @@ const char* PlayerObject::GetControlType() {
 }
 
 void PlayerObject::PostLoad() {
-    m_cameraID = GetScene()->getObjectIDByName("MainCamera"); // < Should this REALLY be in here?
-    static_cast<Camera*>(GetScene()->getObjectByID(m_cameraID))->m_cameraMode = Camera::eCameraMode::ThirdPersonFollow;
+    m_cameraID = GetCurrentScene()->getObjectIDByName("MainCamera"); // < Should this REALLY be in here?
+    static_cast<Camera*>(GetCurrentScene()->getObjectByID(m_cameraID))->m_cameraMode = Camera::eCameraMode::ThirdPersonFollow;
     Input::registerGameObject(this);
 }
 
