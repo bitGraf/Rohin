@@ -3,7 +3,6 @@ build/
 /.vs
 docs/html/
 docs/Doxyfile
-*.blend
 *.blend1
 blender/other/
 blender/Textures/
