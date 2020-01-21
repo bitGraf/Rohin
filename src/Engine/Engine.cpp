@@ -131,7 +131,7 @@ void Engine::LoadLevel(std::string levelPath) {
     DataBlock<Scene> k = m_Resource.reserveDataBlocks<Scene>(1);
     m_scenes.push_back(k.data);
     SetCurrentScene(k.data);
-    GetScene()->loadFromFile(&m_Resource, levelPath, false);
+    GetCurrentScene()->loadFromFile(&m_Resource, levelPath, false);
 }
 
 void Engine::Update(double dt) {
@@ -150,8 +150,8 @@ void Engine::Update(double dt) {
         else {
             tf = 1;
         }
-        if (GetScene())
-            GetScene()->update(dt * tf); // Update the whole scene
+        if (GetCurrentScene())
+            GetCurrentScene()->update(dt * tf); // Update the whole scene
     }
 }
 
@@ -278,7 +278,7 @@ void Engine::globalHandle(Message msg) {
             if (GLFW_CURSOR_NORMAL == glfwGetInputMode(m_MainWindow.m_glfwWindow, GLFW_CURSOR)) {
                 /*
                 auto id = m_Renderer.pickObject(xPos, yPos);
-                GameObject* go = GetScene()->getObjectByID(id);
+                GameObject* go = GetCurrentScene()->getObjectByID(id);
                 if (go) {
                     Console::logMessage("You clicked on GameObject id [" + std::to_string(id) + "]:{" + go->Name + "}");
                 }
@@ -287,7 +287,7 @@ void Engine::globalHandle(Message msg) {
         }
     }
 
-    if (GetScene()) {
-        GetScene()->handleMessage(msg);
+    if (GetCurrentScene()) {
+        GetCurrentScene()->handleMessage(msg);
     }
 }

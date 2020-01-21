@@ -89,13 +89,13 @@ void Camera::Update(double dt) {
             return;
         } break;
         case eCameraMode::StaticLookAt: {
-            GameObject* followTarget = GetScene()->getObjectByID(m_followTargetID);
+            GameObject* followTarget = GetCurrentScene()->getObjectByID(m_followTargetID);
             if (followTarget) {
                 lookAt(followTarget->Position);
             }
         } break;
         case eCameraMode::ThirdPersonFollow: {
-            GameObject* followTarget = GetScene()->getObjectByID(m_followTargetID);
+            GameObject* followTarget = GetCurrentScene()->getObjectByID(m_followTargetID);
             if (followTarget) {
                 CharacterObject* f = static_cast<CharacterObject*>(followTarget);
                 vec3 forward = vec3(f->getTransform().col1());
@@ -105,7 +105,7 @@ void Camera::Update(double dt) {
             return;
         } break;
         case eCameraMode::OrbitFollow: {
-            GameObject* followTarget = GetScene()->getObjectByID(m_followTargetID);
+            GameObject* followTarget = GetCurrentScene()->getObjectByID(m_followTargetID);
             if (followTarget) {
                 if (Input::getLeftMouse()) {
                     m_followYaw += (Input::m_mouseMove.x * .4);
@@ -128,7 +128,7 @@ const char* Camera::ObjectTypeString() {
 }
 
 void Camera::PostLoad() {
-    m_followTargetID = GetScene()->getObjectIDByName("YaBoy");
+    m_followTargetID = GetCurrentScene()->getObjectIDByName("YaBoy");
     Input::registerGameObject(this);
 
     originalPosition = Position;

@@ -201,7 +201,7 @@ mat3 CharacterObject::getRelativeAxes() {
             );
         } break;
         case eRelativeSource::Camera: {
-            GameObject* camRef = GetScene()->getObjectByID(m_cameraID);
+            GameObject* camRef = GetCurrentScene()->getObjectByID(m_cameraID);
             if (camRef) {
                 vec3 cameraX = vec3(camRef->getTransform().col1());
                 cameraX.y = 0;

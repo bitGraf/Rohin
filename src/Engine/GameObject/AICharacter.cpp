@@ -14,7 +14,7 @@ void AICharacter::Create(istringstream &iss, ResourceManager* resource) {
 }
 
 void AICharacter::Update(double dt) {
-    GameObject* playerRef = GetScene()->getObjectByID(m_playerID);
+    GameObject* playerRef = GetCurrentScene()->getObjectByID(m_playerID);
     if (playerRef) {
         vec3 toPlayer = playerRef->Position - Position;
         toPlayer.y = 0;
@@ -37,7 +37,7 @@ void AICharacter::Destroy() {
 }
 
 void AICharacter::PostLoad() {
-	m_playerID = GetScene()->getObjectIDByName("YaBoy");
+	m_playerID = GetCurrentScene()->getObjectIDByName("YaBoy");
 }
 
 
@@ -91,7 +91,7 @@ void GoapCharacter::PostLoad() {
 	//start.Description(&AIap, desc, sizeof(plansz));
 	//printf("%s", desc);
 
-	m_playerRef = static_cast<CharacterObject*>(GetScene()->getObjectByName("YaBoy"));
+	m_playerRef = static_cast<CharacterObject*>(GetCurrentScene()->getObjectByName("YaBoy"));
 	// Here we will load in available actions, along with pre- and post-conditions
 
 	// We must also check the world state for our conditions
