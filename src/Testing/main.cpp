@@ -1,30 +1,18 @@
-#include "Collision/CollisionWorld.hpp"
-#include "Collision/CollisionHull.hpp"
-#include "Collision/CollisionMath.hpp"
+#include "GameObject\Pathfinding.cpp"
 
-scalar springMassAcc(scalar x) {
-    scalar k = 1.0;
-    scalar m = 1.0;
+PathfindingMap example_graph{ {
+	{ 'A',{ 'B' } },
+	{ 'B',{ 'A', 'C', 'D' } },
+	{ 'C',{ 'A' } },
+	{ 'D',{ 'E', 'A' } },
+	{ 'E',{ 'B' } }
+	} };
 
-    return (-k * x) / m;
-}
 
 int main(int argc, char* argv[]) {
-    double t = 0.0;
-    double dt = .02;
-
-    VerletIntegrator position(4, 0, springMassAcc(4));
-
-    double tEnd = 10.0;
-    do {
-        position.PrintState(t);
-
-        position.Step(dt, springMassAcc);
-
-        t += dt;
-    } while (t <= tEnd+dt);
-
-    system("pause");
-
+	
+	BreadthFirstSearch(example_graph, 'A');
+	
+	system("pause");
     return 0;
 }
