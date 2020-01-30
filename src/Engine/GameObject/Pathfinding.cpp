@@ -1,23 +1,31 @@
 #include "Pathfinding.hpp"
 #include "Scene\Scene.hpp"
 
+#define MAXPATHNODE 1024
+
+static PathNode* pathnodes[MAXPATHNODE];
+static int numPathNodes = 0;
+
 int PathNode::nextId = 0;
-std::vector<PathNode*> PathNode::nodeList;
 
 bool PathNode::operator==(const PathNode& target) {
 	return this->x == target.x && this->y == target.y;
 }
 
 void PathNode::Create(int x, int y) {
-	this->id = PathNode::nextId;
-	PathNode::nextId++;
-	PathNode::nodeList.push_back(*this);
+	this->createId();
 	this->x = x;
 	this->y = y;
 }
 
+void PathNode::createId() {
+	this->id = PathNode::nextId;
+	pathnodes[this->id] = this;
+	PathNode::nextId++;
+}
+
 PathNode* PathNode::getNode(UID_t id) {
-	return nodeList[UID_t];
+	return pathnodes[id];
 }
 
 std::vector<UID_t> PathfindingMap::Neighbors(UID_t id) {

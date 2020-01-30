@@ -10,9 +10,9 @@
 
 class PathNode {
 	static int nextId;
-	static std::vector<PathNode*> nodeList;
 public:	
 	void Create(int x, int y);
+	void createId();
 	PathNode* getNode(UID_t id);
 	int x, y;
 	UID_t id;
