@@ -6,6 +6,7 @@
 #include <unordered_set>
 //Testing outputs
 #include <iostream>
+#include <algorithm>
 #include "GameObject.hpp"
 
 class PathNode {

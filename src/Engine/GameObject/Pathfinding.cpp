@@ -31,33 +31,12 @@ PathNode* PathNode::getNode(UID_t id) {
 std::vector<UID_t> PathfindingMap::Neighbors(UID_t id) {
 	return edges[id];
 }
-/*
-void BreadthFirstSearch(PathfindingMap map, char start) {
-	std::queue<char> frontier;
-	frontier.push(start);
 
-	std::unordered_set<char> visited;
-	visited.insert(start);
-
-	while (!frontier.empty()) {
-		char current = frontier.front();
-		frontier.pop();
-
-		std::cout << "Visiting " << current << '\n';
-		for (char next : map.Neighbors(current)) {
-			if (visited.find(next) == visited.end()) {
-				frontier.push(next);
-				visited.insert(next);
-			}
-		}
-	}
-}
-*/
-void PathSearch(Scene map, UID_t start, UID_t goal) {
+std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID_t goal) {
 	std::queue<UID_t> frontier;
 	frontier.push(start);
 
-	std::unordered_map<UID_t, UID_t> cameFrom;
+	std::unordered_map<UID_t, UID_t> cameFrom; // Possible issue w only allowing one key?
 	cameFrom[start] = start;
 	std::unordered_map<UID_t, int> costSoFar;
 	costSoFar[start] = 0;
@@ -69,6 +48,27 @@ void PathSearch(Scene map, UID_t start, UID_t goal) {
 		if (current == goal) {
 			break;
 		}
-		//for (next : current.Neighbors)
+		for (UID_t next : map.Neighbors(current)) {
+			int newCost = costSoFar[next]; // + current.costToNeighbor(next)
+			if ((costSoFar.count(next) == 0) || (newCost <= costSoFar[next])) {
+				costSoFar[next] = newCost;
+				//priority = newCost + heuristic(goal, next);
+				frontier.push(next);
+				cameFrom[next] = current;
+			}
+		}
+		return cameFrom; // , costSoFar
 	}
+}
+
+std::vector<UID_t> reconstructPath(std::unordered_map<UID_t, UID_t> cameFrom, UID_t start, UID_t goal) {
+	UID_t current = goal;
+	std::vector<UID_t> path;
+	while (current != start) {
+		path.push_back(current);
+		current = cameFrom[current];
+	}
+	path.push_back(start);
+	//std::reverse(path.begin()), path.end());
+	return path;
 }
