@@ -14,10 +14,11 @@ typedef int priority_t;
 class PathNode {
 	static int nextId;
 public:	
-	void Create(int x, int y);
+	void Create(double x, double y);
 	void createId();
 	PathNode* getNode(UID_t id);
-	int x, y;
+	static double heuristic(UID_t pointA, UID_t pointB);
+	double x, y;
 	UID_t id;
 	bool operator==(const PathNode& target);
 };

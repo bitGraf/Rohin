@@ -12,7 +12,7 @@ bool PathNode::operator==(const PathNode& target) {
 	return this->x == target.x && this->y == target.y;
 }
 
-void PathNode::Create(int x, int y) {
+void PathNode::Create(double x, double y) {
 	this->createId();
 	this->x = x;
 	this->y = y;
@@ -28,6 +28,10 @@ PathNode* PathNode::getNode(UID_t id) {
 	return pathnodes[id];
 }
 
+double PathNode::heuristic(UID_t pointA, UID_t pointB) {
+	return std::abs(pathnodes[pointA]->x - pathnodes[pointB]->x) + std::abs(pathnodes[pointA]->y - pathnodes[pointB]->y);
+}
+
 std::vector<UID_t> PathfindingMap::Neighbors(UID_t id) {
 	return edges[id];
 }
@@ -35,9 +39,9 @@ std::vector<UID_t> PathfindingMap::Neighbors(UID_t id) {
 std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID_t goal) {
 	PriorityQueue<UID_t, priority_t> frontier;
 	frontier.put(start, 0);
-	std::unordered_map<UID_t, UID_t> cameFrom; // Possible issue w only allowing one key?
+	std::unordered_map<UID_t, UID_t> cameFrom;
 	cameFrom[start] = start;
-	std::unordered_map<UID_t, int> costSoFar;
+	std::unordered_map<UID_t, double> costSoFar;
 	costSoFar[start] = 0;
 	while (!frontier.empty()) {
 		UID_t current = frontier.get();
@@ -47,18 +51,16 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 		}
 		for (UID_t next : map.Neighbors(current)) {
 			//std::cout << "Trying node " << next << " for current " << current << "\n";
-			int newCost = costSoFar[current] + 1;//current.costToNeighbor(next)
+			double newCost = costSoFar[current] + PathNode::heuristic(current, next);//current.costToNeighbor(next)
 			if (costSoFar.count(next) == 0 || newCost < costSoFar[next]) {
 				costSoFar[next] = newCost;
 				//std::cout << "Cost is " << newCost << "\n";
-				//priority = newCost + heuristic(goal, next);
+				double priority = newCost + PathNode::heuristic(goal, next);
 				cameFrom[next] = current;
-				frontier.put(next, newCost);
+				frontier.put(next, priority);
 				//std::cout << "Next target " << frontier.front() << "\n";
 			}
-
 		}
-		
 	}
 	//std::cout << "Final cost: " << costSoFar[goal] << "\n";
 	return cameFrom; // , costSoFar
