@@ -43,15 +43,14 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 		UID_t current = frontier.get();
 
 		if (current == goal) {
-			std::cout << "You did it!\n";
 			break;
 		}
 		for (UID_t next : map.Neighbors(current)) {
-			std::cout << "Trying node " << next << " for current " << current << "\n";
-			int newCost = costSoFar[next] + 1;//current.costToNeighbor(next)
-			if ((costSoFar.count(next+1) == 0) || (newCost < costSoFar[next])) {
+			//std::cout << "Trying node " << next << " for current " << current << "\n";
+			int newCost = costSoFar[current] + 1;//current.costToNeighbor(next)
+			if (costSoFar.count(next) == 0 || newCost < costSoFar[next]) {
 				costSoFar[next] = newCost;
-				std::cout << "Cost is " << costSoFar[next] << "\n";
+				//std::cout << "Cost is " << newCost << "\n";
 				//priority = newCost + heuristic(goal, next);
 				cameFrom[next] = current;
 				frontier.put(next, newCost);
@@ -61,6 +60,7 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 		}
 		
 	}
+	//std::cout << "Final cost: " << costSoFar[goal] << "\n";
 	return cameFrom; // , costSoFar
 }
 
