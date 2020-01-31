@@ -9,6 +9,8 @@
 #include <algorithm>
 #include "GameObject.hpp"
 
+typedef int priority_t;
+
 class PathNode {
 	static int nextId;
 public:	
@@ -24,5 +26,17 @@ class PathfindingMap {
 public:
 	std::unordered_map<UID_t, std::vector<UID_t> > edges;
 	std::vector<UID_t> Neighbors(UID_t id);
+};
+
+template<typename UID_t, typename priority_t>
+class PriorityQueue {
+	public:
+		typedef std::pair<priority_t, UID_t> PQElement;
+		std::priority_queue<PQElement, std::vector<PQElement>,
+			std::greater<PQElement>> elements;
+		inline bool empty();
+		void put(UID_t, priority_t);
+		UID_t get();
+	
 };
 #endif

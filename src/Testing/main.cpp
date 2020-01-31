@@ -30,12 +30,13 @@ int main(int argc, char* argv[]) {
 		{7, {6,8} },
 		{8, {4,7} },
 		} };
-	
+	pathSearch(exampleMap, 0, 7);
 	std::unordered_map<UID_t, UID_t> cameFrom = pathSearch(exampleMap, 0, 7);
-	std::vector<UID_t> path = reconstructPath(cameFrom, 0, 7);
+	/*std::vector<UID_t> path = reconstructPath(cameFrom, 0, 6);
+	
 	for (int i : path) {
 		std::cout << i << "\n";
-	}
+	}*/
 	system("pause");
     return 0;
 }

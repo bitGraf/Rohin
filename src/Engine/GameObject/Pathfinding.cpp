@@ -33,32 +33,35 @@ std::vector<UID_t> PathfindingMap::Neighbors(UID_t id) {
 }
 
 std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID_t goal) {
-	std::queue<UID_t> frontier;
-	frontier.push(start);
-
+	PriorityQueue<UID_t, priority_t> frontier;
+	frontier.put(start, 0);
 	std::unordered_map<UID_t, UID_t> cameFrom; // Possible issue w only allowing one key?
 	cameFrom[start] = start;
 	std::unordered_map<UID_t, int> costSoFar;
 	costSoFar[start] = 0;
-
 	while (!frontier.empty()) {
-		UID_t current = frontier.front();
-		frontier.pop();
+		UID_t current = frontier.get();
 
 		if (current == goal) {
+			std::cout << "You did it!\n";
 			break;
 		}
 		for (UID_t next : map.Neighbors(current)) {
-			int newCost = costSoFar[next]; // + current.costToNeighbor(next)
-			if ((costSoFar.count(next) == 0) || (newCost <= costSoFar[next])) {
+			std::cout << "Trying node " << next << " for current " << current << "\n";
+			int newCost = costSoFar[next] + 1;//current.costToNeighbor(next)
+			if ((costSoFar.count(next+1) == 0) || (newCost < costSoFar[next])) {
 				costSoFar[next] = newCost;
+				std::cout << "Cost is " << costSoFar[next] << "\n";
 				//priority = newCost + heuristic(goal, next);
-				frontier.push(next);
 				cameFrom[next] = current;
+				frontier.put(next, newCost);
+				//std::cout << "Next target " << frontier.front() << "\n";
 			}
+
 		}
-		return cameFrom; // , costSoFar
+		
 	}
+	return cameFrom; // , costSoFar
 }
 
 std::vector<UID_t> reconstructPath(std::unordered_map<UID_t, UID_t> cameFrom, UID_t start, UID_t goal) {
@@ -71,4 +74,21 @@ std::vector<UID_t> reconstructPath(std::unordered_map<UID_t, UID_t> cameFrom, UI
 	path.push_back(start);
 	//std::reverse(path.begin()), path.end());
 	return path;
+}
+
+template<typename UID_t, typename priority_t>
+bool PriorityQueue<typename UID_t, typename priority_t>::empty() {
+	return elements.empty();
+}
+
+template<typename UID_t, typename priority_t>
+void PriorityQueue<typename UID_t, typename priority_t>::put(UID_t item, priority_t priority) {
+	elements.emplace(priority, item);
+}
+
+template<typename UID_t, typename priority_t>
+UID_t PriorityQueue<typename UID_t, typename priority_t>::get() {
+	UID_t best_item = elements.top().second;
+	elements.pop();
+	return best_item;
 }
