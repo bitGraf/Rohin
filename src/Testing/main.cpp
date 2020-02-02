@@ -20,15 +20,15 @@ int main(int argc, char* argv[]) {
 	h.Create(8, 8);
 	i.Create(4, 8);
 	PathfindingMap exampleMap{ {
-		{0, {1}},
-		{1, {0,2,4}},
-		{2, {1,3}},
-		{3, {2} },
-		{4, {1,5,8} },
-		{5, {4,6} },
-		{6, {5,7} },
-		{7, {6,8} },
-		{8, {4,7} },
+		{a.id, {b.id}},
+		{b.id, {a.id,c.id,4}},
+		{c.id, {b.id,d.id}},
+		{d.id, {c.id} },
+		{e.id, {b.id,f.id,8} },
+		{f.id, {e.id,g.id} },
+		{g.id, {f.id,h.id} },
+		{h.id, {g.id,i.id} },
+		{i.id, {e.id,h.id} },
 		} };
 	pathSearch(exampleMap, 0, 7);
 	std::unordered_map<UID_t, UID_t> cameFrom = pathSearch(exampleMap, 1, 7);
