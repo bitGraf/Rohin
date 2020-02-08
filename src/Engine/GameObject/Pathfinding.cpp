@@ -8,12 +8,17 @@ static int numPathNodes = 0;
 
 int PathNode::nextId = 0;
 
+PathNode::PathNode(double x, double y) {
+	this->x = x;
+	this->y = y;
+	this->createId();
+}
+
 bool PathNode::operator==(const PathNode& target) {
 	return this->x == target.x && this->y == target.y;
 }
 
 void PathNode::Create(double x, double y) {
-	this->createId();
 	this->x = x;
 	this->y = y;
 }

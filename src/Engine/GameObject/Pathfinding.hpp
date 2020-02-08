@@ -14,9 +14,11 @@ typedef int priority_t;
 class PathNode {
 	static int nextId;
 public:	
+	PathNode(double x, double y);
 	void Create(double x, double y);
 	void createId();
 	PathNode* getNode(UID_t id);
+	//PathNode* nearestNode(double x, double y); // this will be overridden in subclass probably, as we have prebaked it 
 	static double heuristic(UID_t pointA, UID_t pointB);
 	double x, y;
 	UID_t id;

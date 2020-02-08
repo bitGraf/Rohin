@@ -1,15 +1,8 @@
 #include "GameObject\Pathfinding.cpp"
-/*
-PathfindingMap example_graph{ {
-	{ 'A',{ 'B' } },
-	{ 'B',{ 'A', 'C', 'D' } },
-	{ 'C',{ 'A' } },
-	{ 'D',{ 'E', 'A' } },
-	{ 'E',{ 'B' } }
-	} };
-	*/
-PathNode a, b, c, d, e, f, g, h, i;
+
+PathNode a(1,1), b(2,5), c(1,8), d(2,9), e(4,5), f(6,1), g(8,5), h(8,8), i(4,8);
 int main(int argc, char* argv[]) {
+	/*
 	a.Create(1, 1);
 	b.Create(2, 5);
 	c.Create(1, 8);
@@ -19,6 +12,7 @@ int main(int argc, char* argv[]) {
 	g.Create(8, 5);
 	h.Create(8, 8);
 	i.Create(4, 8);
+	*/
 	PathfindingMap exampleMap{ {
 		{a.id, {b.id}},
 		{b.id, {a.id,c.id,4}},
