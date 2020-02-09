@@ -1,32 +1,32 @@
 #include "Pathfinding.hpp"
-#include "Scene\Scene.hpp"
+#include "Scene/Scene.hpp"
+
 
 #define MAXPATHNODE 1024
 
 static PathNode* pathnodes[MAXPATHNODE];
 static int numPathNodes = 0;
-
 int PathNode::nextId = 0;
 
-PathNode::PathNode(double x, double y) {
-	this->x = x;
-	this->y = y;
+
+PathNode::PathNode(vec3 position) {
+	this->position = position;
 	this->createId();
 }
 
 bool PathNode::operator==(const PathNode& target) {
-	return this->x == target.x && this->y == target.y;
+	return this->position.x == target.position.x && this->position.y == target.position.y && this->position.z == target.position.z;
 }
 
-void PathNode::Create(double x, double y) {
-	this->x = x;
-	this->y = y;
+void PathNode::Create(vec3 position) {
+	this->position = position; // Currently not needed, but may be expanded
 }
 
 void PathNode::createId() {
 	this->id = PathNode::nextId;
 	pathnodes[this->id] = this;
 	PathNode::nextId++;
+	numPathNodes++;
 }
 
 PathNode* PathNode::getNode(UID_t id) {
@@ -34,11 +34,29 @@ PathNode* PathNode::getNode(UID_t id) {
 }
 
 double PathNode::heuristic(UID_t pointA, UID_t pointB) {
-	return std::abs(pathnodes[pointA]->x - pathnodes[pointB]->x) + std::abs(pathnodes[pointA]->y - pathnodes[pointB]->y);
+	return std::abs(pathnodes[pointA]->position.x - pathnodes[pointB]->position.x) + std::abs(pathnodes[pointA]->position.y - pathnodes[pointB]->position.y) + std::abs(pathnodes[pointA]->position.z - pathnodes[pointB]->position.z);
 }
 
 std::vector<UID_t> PathfindingMap::Neighbors(UID_t id) {
 	return edges[id];
+}
+
+PathNode* PathfindingMap::nearestNode(vec3 position) {
+	scalar minDistance = 1023;
+	PathNode* minNode = pathnodes[0];
+	for (PathNode* curnode = pathnodes[0]; curnode->id < numPathNodes-1; curnode = pathnodes[curnode->id + 1]) {
+		scalar curDistance = std::abs(curnode->position.x - position.x) + std::abs(curnode->position.y - position.y) + std::abs(curnode->position.z - position.z);
+		if (curDistance < minDistance) {
+			minDistance = curDistance;
+			minNode = curnode;
+		}
+		scalar lastDistance = std::abs(pathnodes[numPathNodes - 1]->position.x - position.x) + std::abs(pathnodes[numPathNodes - 1]->position.y - position.y) + std::abs(pathnodes[numPathNodes - 1]->position.y - position.y);
+		if (lastDistance < minDistance) {
+			minDistance = lastDistance;
+			minNode = pathnodes[numPathNodes - 1];
+		}
+	}
+	return minNode;
 }
 
 std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID_t goal) {

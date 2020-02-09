@@ -8,19 +8,21 @@
 #include <iostream>
 #include <algorithm>
 #include "GameObject.hpp"
+#include "GameMath.hpp"
+#include "Pathfinding.hpp"
 
 typedef int priority_t;
 
 class PathNode {
 	static int nextId;
 public:	
-	PathNode(double x, double y);
-	void Create(double x, double y);
+	PathNode(vec3 position);
+	void Create(vec3 position);
 	void createId();
 	PathNode* getNode(UID_t id);
-	//PathNode* nearestNode(double x, double y); // this will be overridden in subclass probably, as we have prebaked it 
 	static double heuristic(UID_t pointA, UID_t pointB);
-	double x, y;
+	scalar x, y, z;
+	vec3 position = vec3(x, y, z);
 	UID_t id;
 	bool operator==(const PathNode& target);
 };
@@ -29,6 +31,7 @@ class PathfindingMap {
 public:
 	std::unordered_map<UID_t, std::vector<UID_t> > edges;
 	std::vector<UID_t> Neighbors(UID_t id);
+	PathNode* nearestNode(vec3 position); // this will be overridden in subclass probably, as we have prebaked it 
 };
 
 template<typename UID_t, typename priority_t>
