@@ -18,15 +18,14 @@ int main(int argc, char* argv[]) {
 	henry.Position = vec3(3, 6, 2);
 	henry.Update(1);
 	std::cout << "The closest node to Henry's position of (" << henry.Position.x << ", " << henry.Position.y << ") is " << henry.lastVisitedNode->id << " at (" << henry.lastVisitedNode->position.x << ", " << henry.lastVisitedNode->position.y << ") \n";
-	/*
+	
 	pathSearch(curMap, 0, 7);
-	std::unordered_map<UID_t, UID_t> cameFrom = pathSearch(curMap, 1, 7);
-	std::vector<UID_t> path = reconstructPath(cameFrom, 1, 7);
+	std::unordered_map<UID_t, UID_t> cameFrom = pathSearch(curMap, henry.lastVisitedNode->id, 7);
+	std::vector<UID_t> path = reconstructPath(cameFrom, henry.lastVisitedNode->id, 7);
 
 	for (int i : path) {
-		std::cout << i << "\n";
+		std::cout << "Path point " << i << "\n";
 	}
-	*/
 	system("pause");
     return 0;
 }
