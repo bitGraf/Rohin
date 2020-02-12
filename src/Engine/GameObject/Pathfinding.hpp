@@ -24,25 +24,31 @@ public:
 	scalar x, y, z;
 	vec3 position = vec3(x, y, z);
 	UID_t id;
+	UID_t cluster;
 	bool operator==(const PathNode& target);
-	UID_t clusterConnection;
+};
+
+class PathfindingMap {
+public:
+	PathfindingMap();
+	std::unordered_map<UID_t, std::vector<UID_t> > connections;
+	std::vector<UID_t> neighbors(UID_t id);
+	PathNode* nearestNode(vec3 position); // this will be overridden in subclass probably, as we have prebaked it 
+	void create(std::unordered_map<UID_t, std::vector<UID_t> > connections, int mapHeight, int mapWidth, int clusterSize);
+	int mapHeight, mapWidth, clusterSize;
 };
 
 class PathfindingCluster {
 public:
-	std::unordered_map<UID_t, std::vector<UID_t> > connections;
-	std::vector<UID_t> Neighbors(UID_t id);
-	PathNode* nearestNode(vec3 position); // this will be overridden in subclass probably, as we have prebaked it 
-	std::vector<UID_t> pathBake;
-	std::unordered_map<UID_t, std::vector<UID_t> > clusterConnections; // This may not be what we need
-};
-/*
-class PathfindingMap : public PathfindingCluster {
 	// So we use the same connections function, but to different effect in our path search. represents connections between clusters
-	std::vector<UID_t> bakedPath; // THis will hold 
-	void pathBake;
+	UID_t id;
+	std::vector<UID_t> nodes;
+	//std:: unordered_map<vec2(UID_t, UID_t),std::vector<UID_t> > bakedPath; // This will hold 
+	//std::vector<UID_t> pathBake;
+	//void create();
+	//void pathBake;
 };
-*/
+
 template<typename UID_t, typename priority_t>
 class PriorityQueue {
 public:
