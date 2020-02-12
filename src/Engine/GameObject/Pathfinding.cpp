@@ -12,6 +12,7 @@ int PathNode::nextId = 0;
 PathNode::PathNode(vec3 position) {
 	this->position = position;
 	this->createId();
+	this->clusterConnection = -1;
 }
 
 bool PathNode::operator==(const PathNode& target) {
@@ -37,11 +38,11 @@ double PathNode::heuristic(UID_t pointA, UID_t pointB) {
 	return std::abs(pathnodes[pointA]->position.x - pathnodes[pointB]->position.x) + std::abs(pathnodes[pointA]->position.y - pathnodes[pointB]->position.y) + std::abs(pathnodes[pointA]->position.z - pathnodes[pointB]->position.z);
 }
 
-std::vector<UID_t> PathfindingMap::Neighbors(UID_t id) {
-	return edges[id];
+std::vector<UID_t> PathfindingCluster::Neighbors(UID_t id) {
+	return connections[id];
 }
 
-PathNode* PathfindingMap::nearestNode(vec3 position) {
+PathNode* PathfindingCluster::nearestNode(vec3 position) {
 	scalar minDistance = 1023;
 	PathNode* minNode = pathnodes[0];
 	for (PathNode* curnode = pathnodes[0]; curnode->id < numPathNodes-1; curnode = pathnodes[curnode->id + 1]) {
@@ -59,13 +60,17 @@ PathNode* PathfindingMap::nearestNode(vec3 position) {
 	return minNode;
 }
 
-std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID_t goal) {
+std::unordered_map<UID_t, UID_t> pathSearch(PathfindingCluster map, UID_t start, UID_t goal) {
 	PriorityQueue<UID_t, priority_t> frontier;
 	frontier.put(start, 0);
 	std::unordered_map<UID_t, UID_t> cameFrom;
 	cameFrom[start] = start;
 	std::unordered_map<UID_t, double> costSoFar;
 	costSoFar[start] = 0;
+	//We check if in the same cluster (start = ebd)
+	//If they do, we do the below function for 
+
+
 	while (!frontier.empty()) {
 		UID_t current = frontier.get();
 

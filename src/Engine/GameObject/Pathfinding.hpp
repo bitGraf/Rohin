@@ -25,24 +25,32 @@ public:
 	vec3 position = vec3(x, y, z);
 	UID_t id;
 	bool operator==(const PathNode& target);
+	UID_t clusterConnection;
 };
 
-class PathfindingMap {
+class PathfindingCluster {
 public:
-	std::unordered_map<UID_t, std::vector<UID_t> > edges;
+	std::unordered_map<UID_t, std::vector<UID_t> > connections;
 	std::vector<UID_t> Neighbors(UID_t id);
 	PathNode* nearestNode(vec3 position); // this will be overridden in subclass probably, as we have prebaked it 
+	std::vector<UID_t> pathBake;
+	std::unordered_map<UID_t, std::vector<UID_t> > clusterConnections; // This may not be what we need
 };
-
+/*
+class PathfindingMap : public PathfindingCluster {
+	// So we use the same connections function, but to different effect in our path search. represents connections between clusters
+	std::vector<UID_t> bakedPath; // THis will hold 
+	void pathBake;
+};
+*/
 template<typename UID_t, typename priority_t>
 class PriorityQueue {
-	public:
-		typedef std::pair<priority_t, UID_t> PQElement;
-		std::priority_queue<PQElement, std::vector<PQElement>,
-			std::greater<PQElement>> elements;
-		inline bool empty();
-		void put(UID_t, priority_t);
-		UID_t get();
+public:
+	typedef std::pair<priority_t, UID_t> PQElement;
+	std::priority_queue<PQElement, std::vector<PQElement>, std::greater<PQElement>> elements;
+	inline bool empty();
+	void put(UID_t, priority_t);
+	UID_t get();
 	
 };
 #endif
