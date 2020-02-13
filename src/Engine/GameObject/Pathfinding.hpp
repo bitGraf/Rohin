@@ -25,6 +25,7 @@ public:
 	vec3 position = vec3(x, y, z);
 	UID_t id;
 	UID_t cluster;
+	std::vector<UID_t> transitionTo;
 	bool operator==(const PathNode& target);
 };
 

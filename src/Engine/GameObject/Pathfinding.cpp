@@ -16,6 +16,7 @@ PathNode::PathNode(vec3 position) {
 	this->position = position;
 	this->createId();
 	this->cluster = -1;
+	this->transitionTo = {};
 }
 
 bool PathNode::operator==(const PathNode& target) {
@@ -52,18 +53,26 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 	this->mapHeight = mapHeight;
 	this->mapWidth = mapWidth;
 	this->clusterSize = clusterSize;
+	//1. Give an id to every cluster, as well as allow us to reference it [x]
 	for (UID_t i = 0; i <= (mapHeight / clusterSize) * (mapWidth / clusterSize); ++i) {
 		clusterNp[i].id = i;
 		clusters[i] =  &clusterNp[i];
 	}
-	//1. Split up grid based on height and width of
+	//2. Place all nodes in the proper cluster [x]
 	for (auto it : connections) {
 		PathNode* curNode = pathnodes[it.first];
 		UID_t curNodesCluster = floor((curNode->position.x) / clusterSize) + ((mapHeight / clusterSize) * floor((curNode->position.y) / clusterSize));
 		curNode->cluster = curNodesCluster;
 		clusters[curNodesCluster]->nodes.push_back(it.first);
-		//std::cout << it.first << " is in cluster number " << curNodesCluster << "\n";
-	}	
+	}
+	//3. Determine which nodes have transitions to at least one node in another
+	for (auto it : connections) {
+		for (auto n_it : it.second) {
+			if (pathnodes[n_it]->cluster != pathnodes[it.first]->cluster) {
+				pathnodes[it.first]->transitionTo.push_back(n_it);
+			}
+		}
+	}
 }
 
 std::vector<UID_t> PathfindingMap::neighbors(UID_t id) {
