@@ -23,10 +23,11 @@ int main(int argc, char* argv[]) {
 	henry.Update(1);
 	std::unordered_map<UID_t, UID_t> cameFrom = pathSearch(curMap, henry.lastVisitedNode->id, 7);
 	std::vector<UID_t> path = reconstructPath(cameFrom, henry.lastVisitedNode->id, 7);
-
-	for (auto i : clusterNp[24].neighboringClusters) {
+	
+	for (auto i : clusterNp[4].neighboringClusters) {
 		std::cout << "Neighbor cluster " << i << "\n";
 	}
+
 	system("pause");
     return 0;
 }

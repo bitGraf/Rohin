@@ -62,9 +62,21 @@ void PathfindingCluster::create(PathfindingMap* map, UID_t id) {
 	}
 	if (fmod(id, maxRight) >= 1) {
 		this->neighboringClusters.push_back(id - 1);
+		if (id >= maxRight) {
+			this->neighboringClusters.push_back(id - maxRight - 1);
+		}
+		if (id < maxUp * (maxRight - 1)) {
+			this->neighboringClusters.push_back(id + maxRight - 1);
+		}
 	}
 	if (fmod(id, maxRight) < (maxRight-1)) {
 		this->neighboringClusters.push_back(id + 1);
+		if (id >= maxRight) {
+			this->neighboringClusters.push_back(id - maxRight + 1);
+		}
+		if (id < maxUp * (maxRight - 1)) {
+			this->neighboringClusters.push_back(id + maxRight + 1);
+		}
 	}
 }
 
