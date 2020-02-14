@@ -6,7 +6,6 @@
 #define MAXCLUSTERS 1024
 
 static PathNode* pathnodes[MAXPATHNODE];
-static PathfindingCluster* clusters[MAXCLUSTERS];
 static PathfindingCluster clusterNp[MAXCLUSTERS];
 static int numPathNodes = 0;
 int PathNode::nextId = 0;
@@ -16,7 +15,6 @@ PathNode::PathNode(vec3 position) {
 	this->position = position;
 	this->createId();
 	this->cluster = -1;
-	this->transitionTo = {};
 }
 
 bool PathNode::operator==(const PathNode& target) {
@@ -42,6 +40,34 @@ double PathNode::heuristic(UID_t pointA, UID_t pointB) {
 	return std::abs(pathnodes[pointA]->position.x - pathnodes[pointB]->position.x) + std::abs(pathnodes[pointA]->position.y - pathnodes[pointB]->position.y) + std::abs(pathnodes[pointA]->position.z - pathnodes[pointB]->position.z);
 }
 
+PathfindingCluster::PathfindingCluster() {
+	this->id = -1;
+	this->neighboringClusters = {};
+	this->nodes = {};
+	this->transitionNodes = {};
+}
+
+void PathfindingCluster::create(PathfindingMap* map, UID_t id) {
+	// 1. We assign our cluster some neighbors, based on location
+	this->id = id;
+	double maxRight = map->mapWidth / map->clusterSize;
+	double maxUp = map->mapHeight / map->clusterSize;
+	double numRight = fmod(id , maxRight);
+	double numUp = (id - numRight) / (maxUp);
+	if (id >= maxRight) {
+		this->neighboringClusters.push_back(id - maxRight);
+	}
+	if (id < maxUp * (maxRight-1)) {
+		this->neighboringClusters.push_back(id + maxRight);
+	}
+	if (fmod(id, maxRight) >= 1) {
+		this->neighboringClusters.push_back(id - 1);
+	}
+	if (fmod(id, maxRight) < (maxRight-1)) {
+		this->neighboringClusters.push_back(id + 1);
+	}
+}
+
 PathfindingMap::PathfindingMap() {
 	this->clusterSize = 10;
 	this->mapHeight = 100;
@@ -54,22 +80,22 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 	this->mapWidth = mapWidth;
 	this->clusterSize = clusterSize;
 	//1. Give an id to every cluster, as well as allow us to reference it [x]
-	for (UID_t i = 0; i <= (mapHeight / clusterSize) * (mapWidth / clusterSize); ++i) {
-		clusterNp[i].id = i;
-		clusters[i] =  &clusterNp[i];
+	for (UID_t i = 0; i < (mapHeight / clusterSize) * (mapWidth / clusterSize); ++i) { // may be <=
+		clusterNp[i].create(this, i);
 	}
 	//2. Place all nodes in the proper cluster [x]
 	for (auto it : connections) {
 		PathNode* curNode = pathnodes[it.first];
-		UID_t curNodesCluster = floor((curNode->position.x) / clusterSize) + ((mapHeight / clusterSize) * floor((curNode->position.y) / clusterSize));
+		UID_t curNodesCluster = floor((curNode->position.x) / clusterSize) + ((mapWidth / clusterSize) * floor((curNode->position.y) / clusterSize));
 		curNode->cluster = curNodesCluster;
-		clusters[curNodesCluster]->nodes.push_back(it.first);
+		clusterNp[curNodesCluster].nodes.push_back(it.first);
 	}
 	//3. Determine which nodes have transitions to at least one node in another
 	for (auto it : connections) {
 		for (auto n_it : it.second) {
 			if (pathnodes[n_it]->cluster != pathnodes[it.first]->cluster) {
-				pathnodes[it.first]->transitionTo.push_back(n_it);
+				// We make a list of neighbors and nodes that connect to them
+				clusterNp[pathnodes[it.first]->cluster].transitionNodes.emplace(pathnodes[n_it]->cluster, it.first);
 			}
 		}
 	}

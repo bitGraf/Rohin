@@ -25,7 +25,6 @@ public:
 	vec3 position = vec3(x, y, z);
 	UID_t id;
 	UID_t cluster;
-	std::vector<UID_t> transitionTo;
 	bool operator==(const PathNode& target);
 };
 
@@ -42,11 +41,14 @@ public:
 class PathfindingCluster {
 public:
 	// So we use the same connections function, but to different effect in our path search. represents connections between clusters
+	PathfindingCluster();
 	UID_t id;
 	std::vector<UID_t> nodes;
+	std::unordered_map<UID_t, std::vector<UID_t> > transitionNodes;
+	std::vector<UID_t> neighboringClusters;
 	//std:: unordered_map<vec2(UID_t, UID_t),std::vector<UID_t> > bakedPath; // This will hold 
 	//std::vector<UID_t> pathBake;
-	//void create();
+	void create(PathfindingMap* map, UID_t id);
 	//void pathBake;
 };
 
