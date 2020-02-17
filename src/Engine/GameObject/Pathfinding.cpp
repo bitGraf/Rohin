@@ -8,7 +8,7 @@
 static PathNode* pathnodes[MAXPATHNODE];
 static PathfindingCluster clusterNp[MAXCLUSTERS];
 static int numPathNodes = 0;
-int PathNode::nextId = 0;
+UID_t PathNode::nextId = 0;
 
 
 PathNode::PathNode(vec3 position) {
@@ -92,22 +92,22 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 	this->mapWidth = mapWidth;
 	this->clusterSize = clusterSize;
 	//1. Give an id to every cluster, as well as allow us to reference it [x]
-	for (UID_t i = 0; i < (mapHeight / clusterSize) * (mapWidth / clusterSize); ++i) { // may be <=
+	for (UID_t i = 0; i < double((mapHeight / clusterSize) * (mapWidth / clusterSize)); ++i) { // may be <=
 		clusterNp[i].create(this, i);
 	}
 	//2. Place all nodes in the proper cluster [x]
 	for (auto it : connections) {
 		PathNode* curNode = pathnodes[it.first];
-		UID_t curNodesCluster = floor((curNode->position.x) / clusterSize) + ((mapWidth / clusterSize) * floor((curNode->position.y) / clusterSize));
+		UID_t curNodesCluster = floor((double(curNode->position.x) / clusterSize)) + ((mapWidth / clusterSize) * floor((double(curNode->position.y) / clusterSize)));
 		curNode->cluster = curNodesCluster;
 		clusterNp[curNodesCluster].nodes.push_back(it.first);
 	}
-	//3. Determine which nodes have transitions to at least one node in another
+	//3. Determine which nodes have transitions to at least one node in another and add it into our unorderedSet
 	for (auto it : connections) {
 		for (auto n_it : it.second) {
 			if (pathnodes[n_it]->cluster != pathnodes[it.first]->cluster) {
 				// We make a list of neighbors and nodes that connect to them
-				clusterNp[pathnodes[it.first]->cluster].transitionNodes.emplace(pathnodes[n_it]->cluster, it.first);
+				clusterNp[pathnodes[it.first]->cluster].transitionNodes[pathnodes[n_it]->cluster].push_back(it.first);
 			}
 		}
 	}
@@ -120,7 +120,7 @@ std::vector<UID_t> PathfindingMap::neighbors(UID_t id) {
 PathNode* PathfindingMap::nearestNode(vec3 position) {
 	scalar minDistance = 1023;
 	PathNode* minNode = pathnodes[0];
-	for (PathNode* curnode = pathnodes[0]; curnode->id < numPathNodes-1; curnode = pathnodes[curnode->id + 1]) {
+	for (PathNode* curnode = pathnodes[0]; curnode->id < double(numPathNodes-1); curnode = pathnodes[curnode->id + 1]) {
 		scalar curDistance = std::abs(curnode->position.x - position.x) + std::abs(curnode->position.y - position.y) + std::abs(curnode->position.z - position.z);
 		if (curDistance < minDistance) {
 			minDistance = curDistance;
@@ -142,26 +142,51 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 	cameFrom[start] = start;
 	std::unordered_map<UID_t, double> costSoFar;
 	costSoFar[start] = 0;
-	//We check if in the same cluster (start = ebd)
+	//We check if in the same cluster (start = goal)
 	//If they do, we do the below function for 
+	if (pathnodes[start]->cluster == pathnodes[goal]->cluster) {
 
+		while (!frontier.empty()) {
+			UID_t current = frontier.get();
 
-	while (!frontier.empty()) {
-		UID_t current = frontier.get();
-
-		if (current == goal) {
-			break;
+			if (current == goal) {
+				break;
+			}
+			for (UID_t next : map.neighbors(current)) {
+				//std::cout << "Trying node " << next << " for current " << current << "\n";
+				double newCost = costSoFar[current] + PathNode::heuristic(current, next);//current.costToNeighbor(next)
+				if (costSoFar.count(next) == 0 || newCost < costSoFar[next]) {
+					costSoFar[next] = newCost;
+					//std::cout << "Cost is " << newCost << "\n";
+					double priority = newCost + PathNode::heuristic(goal, next);
+					cameFrom[next] = current;
+					frontier.put(next, priority);
+					//std::cout << "Next target " << frontier.front() << "\n";
+				}
+			}
 		}
-		for (UID_t next : map.neighbors(current)) {
-			//std::cout << "Trying node " << next << " for current " << current << "\n";
-			double newCost = costSoFar[current] + PathNode::heuristic(current, next);//current.costToNeighbor(next)
-			if (costSoFar.count(next) == 0 || newCost < costSoFar[next]) {
-				costSoFar[next] = newCost;
-				//std::cout << "Cost is " << newCost << "\n";
-				double priority = newCost + PathNode::heuristic(goal, next);
-				cameFrom[next] = current;
-				frontier.put(next, priority);
-				//std::cout << "Next target " << frontier.front() << "\n";
+	}
+	else if ((not pathnodes[start]->cluster == -1) && (not pathnodes[goal]->cluster == -1)) {
+		while (!frontier.empty()) {
+			UID_t current = frontier.get();
+
+			if (current == goal) {
+				break;
+			}
+			if ((pathnodes[current]->cluster == pathnodes[start]->cluster) || (pathnodes[current]->cluster == pathnodes[goal]->cluster)) {
+				for (UID_t next : map.neighbors(current)) {
+					double newCost = costSoFar[current] + PathNode::heuristic(goal, next);
+					if (costSoFar.count(next) == 0 || newCost < costSoFar[next]) {
+						costSoFar[next] = newCost;
+						double priority = newCost + PathNode::heuristic(goal, next);
+						cameFrom[next] = current;
+						frontier.put(next, priority);
+					}
+				}
+			}
+			else {
+				// Add in cluster based movement here
+				double newCost = costSoFar[current];
 			}
 		}
 	}

@@ -16,18 +16,13 @@ int main(int argc, char* argv[]) {
 		{ g.id,{ f.id,h.id } },
 		{ h.id,{ g.id,i.id } },
 		{ i.id,{ e.id,h.id } },
-		} }, 10,10,2);
+		} }, 10,10,5);
 	//	End of stuff that shouldn't be here
 	GoapCharacter henry;
 	henry.Position = vec3(2, 8, 2);
 	henry.Update(1);
 	std::unordered_map<UID_t, UID_t> cameFrom = pathSearch(curMap, henry.lastVisitedNode->id, 7);
 	std::vector<UID_t> path = reconstructPath(cameFrom, henry.lastVisitedNode->id, 7);
-	
-	for (auto i : clusterNp[4].neighboringClusters) {
-		std::cout << "Neighbor cluster " << i << "\n";
-	}
-
 	system("pause");
     return 0;
 }

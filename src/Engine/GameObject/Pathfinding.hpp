@@ -14,7 +14,7 @@
 typedef int priority_t;
 
 class PathNode {
-	static int nextId;
+	static UID_t nextId;
 public:	
 	PathNode(vec3 position);
 	void Create(vec3 position);
