@@ -848,3 +848,19 @@ std::ostream & math::operator<<(std::ostream & os, const mat4 & m)
     os << m._41 << " " << m._42 << " " << m._43 << " " << m._44 << " " << std::endl;
     return os;
 }
+
+namespace std {
+
+    template <>
+    struct hash<math::vec2>
+    {
+        std::size_t operator()(const math::vec2& k) const
+        {
+            using std::size_t;
+            using std::hash;
+            return ((hash<math::scalar>()(k.x)
+                ^ (hash<math::scalar>()(k.y) << 1)) >> 1);
+        }
+    };
+
+}

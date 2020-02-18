@@ -117,6 +117,16 @@ std::vector<UID_t> PathfindingCluster::pathBake(UID_t start, UID_t goal) {
 }
 
 void PathfindingCluster::clusterBake() {
+	for (auto targetNode : this->transitionNodes) {
+		UID_t startNode = targetNode.first;
+		for (auto targetNode2 : this->transitionNodes) {
+			UID_t goalNode = targetNode2.first;
+			std::vector<UID_t> pathResult = this->pathBake(startNode, goalNode);
+			if (startNode <= goalNode) {
+				this->bakedPath[vec2(startNode, goalNode)] = pathResult;
+			}
+		}
+	}
 	return;
 }
 

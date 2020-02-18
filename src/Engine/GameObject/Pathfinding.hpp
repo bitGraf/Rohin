@@ -48,7 +48,7 @@ public:
 	std::vector<UID_t> nodes;
 	std::unordered_map<UID_t, std::vector<UID_t> > transitionNodes;
 	std::vector<UID_t> neighboringClusters;
-	std:: unordered_map<UID_t, std::vector<UID_t> > bakedPath; // This will hold 
+	std:: unordered_map<vec2, std::vector<UID_t> > bakedPath; // This will hold a vec2(min(UID_t), max(UID_t)) and the assosciated path (min to max)
 	std::vector<UID_t> pathBake(UID_t start, UID_t goal);
 	void clusterBake();
 };
