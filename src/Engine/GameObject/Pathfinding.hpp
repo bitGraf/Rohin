@@ -42,14 +42,15 @@ class PathfindingCluster {
 public:
 	// So we use the same connections function, but to different effect in our path search. represents connections between clusters
 	PathfindingCluster();
+	void create(UID_t id, PathfindingMap* pf_map);
 	UID_t id;
+	PathfindingMap* pf_map;
 	std::vector<UID_t> nodes;
 	std::unordered_map<UID_t, std::vector<UID_t> > transitionNodes;
 	std::vector<UID_t> neighboringClusters;
-	//std:: unordered_map<vec2(UID_t, UID_t),std::vector<UID_t> > bakedPath; // This will hold 
-	//std::vector<UID_t> pathBake;
-	void create(PathfindingMap* map, UID_t id);
-	//void pathBake;
+	std:: unordered_map<UID_t, std::vector<UID_t> > bakedPath; // This will hold 
+	std::vector<UID_t> pathBake(UID_t start, UID_t goal);
+	void clusterBake();
 };
 
 template<typename UID_t, typename priority_t>

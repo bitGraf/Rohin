@@ -21,8 +21,8 @@ int main(int argc, char* argv[]) {
 	GoapCharacter henry;
 	henry.Position = vec3(2, 8, 2);
 	henry.Update(1);
-	std::unordered_map<UID_t, UID_t> cameFrom = pathSearch(curMap, henry.lastVisitedNode->id, 7);
-	std::vector<UID_t> path = reconstructPath(cameFrom, henry.lastVisitedNode->id, 7);
+	//std::unordered_map<UID_t, UID_t> cameFrom = pathSearch(curMap, henry.lastVisitedNode->id, 7);
+	//std::vector<UID_t> path = reconstructPath(cameFrom, henry.lastVisitedNode->id, 7);
 	system("pause");
     return 0;
 }
