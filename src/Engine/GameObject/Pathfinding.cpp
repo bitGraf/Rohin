@@ -81,7 +81,7 @@ void PathfindingCluster::create(UID_t id, PathfindingMap* pf_map) {
 	}
 }
 
-std::vector<UID_t> PathfindingCluster::pathBake(UID_t start, UID_t goal) {
+std::pair<std::vector<UID_t>, double> PathfindingCluster::pathBake(UID_t start, UID_t goal) {
 	PriorityQueue<UID_t, priority_t> frontier;
 	frontier.put(start, 0);
 	std::unordered_map<UID_t, UID_t> cameFrom;
@@ -110,10 +110,13 @@ std::vector<UID_t> PathfindingCluster::pathBake(UID_t start, UID_t goal) {
 	while (current != start) {
 		path.push_back(current);
 		current = cameFrom[current];
+		if (current == cameFrom[current])
+			path = {};
+			break;
 	}
 	path.push_back(start);
 	std::reverse(path.begin(), path.end());
-	return path;
+	return std::pair<std::vector<UID_t>, double> (path, costSoFar[goal]);
 }
 
 void PathfindingCluster::clusterBake() {
@@ -121,11 +124,11 @@ void PathfindingCluster::clusterBake() {
 		UID_t startNode = targetNode.first;
 		for (auto targetNode2 : this->transitionNodes) {
 			UID_t goalNode = targetNode2.first;
-			std::vector<UID_t> pathResult = this->pathBake(startNode, goalNode);
-			if (startNode <= goalNode) {
-				// Make sure the pairs dont match, not done rn
-				this->bakedPath[std::pair<UID_t,UID_t>(startNode, goalNode)] = pathResult;
-				return;
+			if (startNode < goalNode && startNode != goalNode) {
+				std::pair<std::vector<UID_t>, double> pathResult = this->pathBake(startNode, goalNode);
+				if (pathResult.first.size() > 1) {
+					this->bakedPath[std::pair<UID_t, UID_t>(startNode, goalNode)] = pathResult;
+				}
 			}
 		}
 	}
@@ -144,7 +147,7 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 	this->mapWidth = mapWidth;
 	this->clusterSize = clusterSize;
 	//1. Give an id to every cluster, as well as allow us to reference it [x]
-	for (UID_t i = 0; i < double((mapHeight / clusterSize) * (mapWidth / clusterSize)); ++i) { // may be <=
+	for (UID_t i = 0; i < (double(mapHeight) / clusterSize) * (double(mapWidth) / clusterSize); ++i) { // may be <=
 		clusterNp[i].create(i, this);
 	}
 	//2. Place all nodes in the proper cluster [x]
@@ -159,7 +162,7 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 		for (auto n_it : it.second) {
 			if (pathnodes[n_it]->cluster != pathnodes[it.first]->cluster) {
 				// We make a list of neighbors and nodes that connect to them
-				clusterNp[pathnodes[it.first]->cluster].transitionNodes[pathnodes[n_it]->cluster].push_back(it.first);
+				clusterNp[pathnodes[it.first]->cluster].transitionNodes[it.first].push_back(n_it);
 			}
 		}
 	}

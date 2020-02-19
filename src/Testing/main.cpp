@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 		{ g.id,{ f.id,h.id } },
 		{ h.id,{ g.id,i.id } },
 		{ i.id,{ e.id,h.id } },
-		} }, 10,10,5);
+		} }, 10, 10, 4);
 	//	End of stuff that shouldn't be here
 	GoapCharacter henry;
 	henry.Position = vec3(2, 8, 2);
