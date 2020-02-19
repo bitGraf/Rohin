@@ -139,6 +139,7 @@ PathfindingMap::PathfindingMap() {
 	this->clusterSize = 10;
 	this->mapHeight = 100;
 	this->mapWidth = 100;
+	this->largestClusterId = 0;
 }
 
 void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > connections, int mapHeight, int mapWidth, int clusterSize) {
@@ -147,7 +148,8 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 	this->mapWidth = mapWidth;
 	this->clusterSize = clusterSize;
 	//1. Give an id to every cluster, as well as allow us to reference it [x]
-	for (UID_t i = 0; i < (double(mapHeight) / clusterSize) * (double(mapWidth) / clusterSize); ++i) { // may be <=
+	for (UID_t i = 0; i < (ceil(double(mapHeight) / clusterSize)) * ceil((double(mapWidth) / clusterSize)); ++i) { // may be <=
+		this->largestClusterId = i;
 		clusterNp[i].create(i, this);
 	}
 	//2. Place all nodes in the proper cluster [x]
@@ -157,7 +159,7 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 		curNode->cluster = curNodesCluster;
 		clusterNp[curNodesCluster].nodes.push_back(it.first);
 	}
-	//3. Determine which nodes have transitions to at least one node in another and add it into our unorderedSet
+	//3. Determine which nodes have transitions to at least one node in another and add it into our unorderedSet [x]
 	for (auto it : connections) {
 		for (auto n_it : it.second) {
 			if (pathnodes[n_it]->cluster != pathnodes[it.first]->cluster) {
@@ -165,6 +167,10 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 				clusterNp[pathnodes[it.first]->cluster].transitionNodes[it.first].push_back(n_it);
 			}
 		}
+	}
+	//4. Bake each cluster to have a complete list of transition paths and costs
+	for (UID_t cur = 0; cur <= this->largestClusterId; ++cur) {
+		clusterNp[cur].clusterBake();
 	}
 	return;
 }
@@ -198,8 +204,6 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 	cameFrom[start] = start;
 	std::unordered_map<UID_t, double> costSoFar;
 	costSoFar[start] = 0;
-	//We check if in the same cluster (start = goal)
-	//If they do, we do the below function for 
 	if (pathnodes[start]->cluster == pathnodes[goal]->cluster) {
 
 		while (!frontier.empty()) {
@@ -209,15 +213,12 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 				break;
 			}
 			for (UID_t next : map.neighbors(current)) {
-				//std::cout << "Trying node " << next << " for current " << current << "\n";
 				double newCost = costSoFar[current] + PathNode::heuristic(current, next);//current.costToNeighbor(next)
 				if (costSoFar.count(next) == 0 || newCost < costSoFar[next]) {
 					costSoFar[next] = newCost;
-					//std::cout << "Cost is " << newCost << "\n";
 					double priority = newCost + PathNode::heuristic(goal, next);
 					cameFrom[next] = current;
 					frontier.put(next, priority);
-					//std::cout << "Next target " << frontier.front() << "\n";
 				}
 			}
 		}
@@ -225,7 +226,6 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 	else if (!pathnodes[start]->cluster == -1 && !pathnodes[goal]->cluster == -1) {
 		while (!frontier.empty()) {
 			UID_t current = frontier.get();
-
 			if (current == goal) {
 				break;
 			}
@@ -247,8 +247,7 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 			}
 		}
 	}
-	//std::cout << "Final cost: " << costSoFar[goal] << "\n";
-	return cameFrom; // , costSoFar
+	return cameFrom;
 }
 
 std::vector<UID_t> reconstructPath(std::unordered_map<UID_t, UID_t> cameFrom, UID_t start, UID_t goal) {

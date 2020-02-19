@@ -45,6 +45,7 @@ public:
 	PathNode* nearestNode(vec3 position); // this will be overridden in subclass probably, as we have prebaked it 
 	void create(std::unordered_map<UID_t, std::vector<UID_t> > connections, int mapHeight, int mapWidth, int clusterSize);
 	int mapHeight, mapWidth, clusterSize;
+	UID_t largestClusterId;
 };
 
 class PathfindingCluster {
