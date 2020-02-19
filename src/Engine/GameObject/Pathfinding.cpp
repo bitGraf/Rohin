@@ -123,7 +123,9 @@ void PathfindingCluster::clusterBake() {
 			UID_t goalNode = targetNode2.first;
 			std::vector<UID_t> pathResult = this->pathBake(startNode, goalNode);
 			if (startNode <= goalNode) {
-				this->bakedPath[vec2(startNode, goalNode)] = pathResult;
+				// Make sure the pairs dont match, not done rn
+				this->bakedPath[std::pair<UID_t,UID_t>(startNode, goalNode)] = pathResult;
+				return;
 			}
 		}
 	}

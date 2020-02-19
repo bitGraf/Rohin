@@ -13,6 +13,15 @@
 
 typedef int priority_t;
 
+struct pair_hash
+{
+	template <class T1, class T2>
+	std::size_t operator() (const std::pair<T1, T2> &pair) const
+	{
+		return std::hash<T1>()(pair.first) ^ std::hash<T2>()(pair.second);
+	}
+};
+
 class PathNode {
 	static UID_t nextId;
 public:	
@@ -48,7 +57,7 @@ public:
 	std::vector<UID_t> nodes;
 	std::unordered_map<UID_t, std::vector<UID_t> > transitionNodes;
 	std::vector<UID_t> neighboringClusters;
-	std:: unordered_map<vec2, std::vector<UID_t> > bakedPath; // This will hold a vec2(min(UID_t), max(UID_t)) and the assosciated path (min to max)
+	std:: unordered_map<std::pair<UID_t, UID_t>, std::vector<UID_t>, pair_hash > bakedPath; // This will hold a vec2(min(UID_t), max(UID_t)) and the assosciated path (min to max)
 	std::vector<UID_t> pathBake(UID_t start, UID_t goal);
 	void clusterBake();
 };
@@ -61,6 +70,5 @@ public:
 	inline bool empty();
 	void put(UID_t, priority_t);
 	UID_t get();
-	
 };
 #endif
