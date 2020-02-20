@@ -14,7 +14,7 @@ UID_t PathNode::nextId = 0;
 PathNode::PathNode(vec3 position) {
 	this->position = position;
 	this->createId();
-	this->cluster = -1;
+	this->cluster = &clusterNp[-1];
 }
 
 bool PathNode::operator==(const PathNode& target) {
@@ -156,7 +156,7 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 	for (auto it : connections) {
 		PathNode* curNode = pathnodes[it.first];
 		UID_t curNodesCluster = floor((double(curNode->position.x) / clusterSize)) + ((mapWidth / clusterSize) * floor((double(curNode->position.y) / clusterSize)));
-		curNode->cluster = curNodesCluster;
+		curNode->cluster = &clusterNp[curNodesCluster];
 		clusterNp[curNodesCluster].nodes.push_back(it.first);
 	}
 	//3. Determine which nodes have transitions to at least one node in another and add it into our unorderedSet [x]
@@ -164,7 +164,7 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 		for (auto n_it : it.second) {
 			if (pathnodes[n_it]->cluster != pathnodes[it.first]->cluster) {
 				// We make a list of neighbors and nodes that connect to them
-				clusterNp[pathnodes[it.first]->cluster].transitionNodes[it.first].push_back(n_it);
+				pathnodes[it.first]->cluster->transitionNodes[it.first].push_back(n_it);
 			}
 		}
 	}
@@ -223,15 +223,16 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 			}
 		}
 	}
-	else if (!pathnodes[start]->cluster == -1 && !pathnodes[goal]->cluster == -1) {
+	else {
 		while (!frontier.empty()) {
 			UID_t current = frontier.get();
+
 			if (current == goal) {
 				break;
 			}
 			if ((pathnodes[current]->cluster == pathnodes[start]->cluster) || (pathnodes[current]->cluster == pathnodes[goal]->cluster)) {
 				for (UID_t next : map.neighbors(current)) {
-					double newCost = costSoFar[current] + PathNode::heuristic(goal, next);
+					double newCost = costSoFar[current] + PathNode::heuristic(current, next);
 					if (costSoFar.count(next) == 0 || newCost < costSoFar[next]) {
 						costSoFar[next] = newCost;
 						double priority = newCost + PathNode::heuristic(goal, next);
@@ -243,7 +244,26 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 			else {
 				// Add in cluster based movement here
 				// First, we need baked costs, consider from node on edge to node on edge and A* through those
-				double newCost = costSoFar[current];
+				std::vector<UID_t> targetedNodes = pathnodes[current]->cluster->transitionNodes[current];
+				for (auto nonCurNode : pathnodes[current]->cluster->transitionNodes) {
+					if (nonCurNode.first != current) {
+						targetedNodes.push_back(nonCurNode.first);
+					}
+				}
+				for (auto next : targetedNodes) {
+					if (pathnodes[current]->cluster->bakedPath.find(std::pair<UID_t, UID_t>(min(current, next), max(current, next))) != pathnodes[current]->cluster->bakedPath.end() || pathnodes[current]->cluster != pathnodes[next]->cluster) {
+						double newCost = costSoFar[current] + pathnodes[current]->cluster->bakedPath[std::pair<UID_t, UID_t>(min(current, next), max(current, next))].second;
+						if (costSoFar.count(next) == 0 || newCost < costSoFar[next]) {
+							costSoFar[next] = newCost;
+							double priority = newCost + PathNode::heuristic(goal, next);
+							cameFrom[next] = current;
+							frontier.put(next, priority);
+						}
+					}
+				}
+				// We also need to do Path Refinement after (turning our transition node -> transition node into low level paths)
+
+				// Path smoothing is done by checking for every node if we can reach a subsequent node 
 			}
 		}
 	}

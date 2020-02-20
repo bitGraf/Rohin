@@ -9,7 +9,6 @@
 #include <algorithm>
 #include "GameObject.hpp"
 #include "GameMath.hpp"
-#include "Pathfinding.hpp"
 
 typedef int priority_t;
 
@@ -22,6 +21,8 @@ struct pair_hash
 	}
 };
 
+class PathfindingCluster;
+
 class PathNode {
 	static UID_t nextId;
 public:	
@@ -33,7 +34,7 @@ public:
 	scalar x, y, z;
 	vec3 position = vec3(x, y, z);
 	UID_t id;
-	UID_t cluster;
+	PathfindingCluster* cluster;
 	bool operator==(const PathNode& target);
 };
 
