@@ -4,21 +4,6 @@
 
 int main(int argc, char* argv[]) {
 	//  Testing Area		!!! This should not be here!
-	/*
-	PathNode a(vec3(1, 1, 0)), b(vec3(2, 5, 0)), c(vec3(1, 8, 0)), d(vec3(2, 9, 0)), e(vec3(4, 5, 0)), f(vec3(6, 1, 0)), g(vec3(8, 5, 0)), h(vec3(8, 8, 0)), i(vec3(4, 8, 0));
-	PathfindingMap curMap;
-	curMap.create({ {
-		{ a.id,{ b.id } },
-		{ b.id,{ a.id,c.id,e.id } },
-		{ c.id,{ b.id,d.id } },
-		{ d.id,{ c.id } },
-		{ e.id,{ b.id,f.id,i.id } },
-		{ f.id,{ e.id,g.id } },
-		{ g.id,{ f.id,h.id } },
-		{ h.id,{ g.id,i.id } },
-		{ i.id,{ e.id,h.id } },
-		} }, 10, 10, 4);
-	*/
 	PathNode n0(vec3(4,1,0)), n1(vec3(6,1,0)), n2(vec3(10,1,0)), 
 		n3(vec3(4,2,0)), n4(vec3(6,3,0)), n5(vec3(1,4,0)), n6(vec3(4,4,0)), 
 		n7(vec3(6,6,0)), n8(vec3(10,6,0)), n9(vec3(1,7,0)), n10(vec3(4,7,0)),

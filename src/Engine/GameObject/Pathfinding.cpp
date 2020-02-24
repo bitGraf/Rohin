@@ -250,8 +250,6 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 			}
 			else {
 				loc++;
-				// Add in cluster based movement here
-				// First, we need baked costs, consider from node on edge to node on edge and A* through those
 				std::vector<UID_t> targetedNodes = pathnodes[current]->cluster->transitionNodes[current];
 				for (auto nonCurNode : pathnodes[current]->cluster->transitionNodes) {
 					if (nonCurNode.first != current) {
@@ -280,8 +278,8 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 					}
 				}
 				// We also need to do Path Refinement after (turning our transition node -> transition node into low level paths)
-
 				// Path smoothing is done by checking for every node if we can reach a subsequent node 
+				// TBD once movement is fleshed out a bit more
 			}
 		}
 	}
