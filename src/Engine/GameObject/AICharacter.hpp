@@ -4,6 +4,7 @@
 #include "Character.hpp"
 #include "Goap.hpp"
 #include "Astar.hpp"
+#include "Pathfinding.hpp"
 
 class AICharacter : public CharacterObject {
 public:
@@ -28,6 +29,7 @@ class GoapCharacter : public CharacterObject {
 public:
 	GoapCharacter();
 
+	PathNode* lastVisitedNode;
 	virtual void Create(istringstream &iss, ResourceManager* resource) override;
 	virtual void PostLoad() override;
 	virtual void Update(double dt) override;
@@ -38,6 +40,7 @@ public:
 	
 protected:
 	CharacterObject * m_playerRef;
+	
 
 private: 
 	static const char* _obj_type_GoapCharacter;

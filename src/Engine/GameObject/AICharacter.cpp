@@ -1,6 +1,8 @@
 #include "AICharacter.hpp"
 #include "Scene/Scene.hpp"
 
+PathfindingMap curMap;
+
 // Begin General AI Character Class
 const char* AICharacter::_obj_type_AICharacter = "AICharacter";
 
@@ -55,6 +57,7 @@ const char* GoapCharacter::_obj_type_GoapCharacter = "GoapCharacter";
 GoapCharacter::GoapCharacter() {
 	m_relativeSource = eRelativeSource::Character;
 	speed = 1.0;
+	this->lastVisitedNode = curMap.nearestNode(this->Position);
 }
 
 void GoapCharacter::Create(istringstream &iss, ResourceManager* resource) {
@@ -100,7 +103,7 @@ void GoapCharacter::PostLoad() {
 }
 
 void GoapCharacter::Update(double dt) {
-
+	this->lastVisitedNode = curMap.nearestNode(this->Position);
 }
 
 void GoapCharacter::Destroy() {
