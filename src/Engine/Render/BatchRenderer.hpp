@@ -9,6 +9,7 @@
 #include "RenderBatch.hpp"
 #include "Window/Framebuffer.hpp"
 #include "DynamicFont.hpp"
+#include "SpriteRenderer.hpp"
 #include "Utils.hpp"
 #include "Resource/ResourceManager.hpp"
 

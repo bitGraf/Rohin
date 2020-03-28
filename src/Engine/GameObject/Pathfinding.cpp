@@ -5,7 +5,7 @@
 #define MAXPATHNODE 1024
 #define MAXCLUSTERS 1024
 
-static PathNode* pathnodes[MAXPATHNODE];
+static PathNode* pathnodes[MAXPATHNODE] = { NULL };
 static PathfindingCluster clusterNp[MAXCLUSTERS];
 static int numPathNodes = 0;
 UID_t PathNode::nextId = 0;
@@ -63,14 +63,14 @@ void PathfindingCluster::create(UID_t id, PathfindingMap* pf_map) {
 	}
 	if (fmod(id, maxRight) >= 1) {
 		this->neighboringClusters.push_back(id - 1);
-if (id >= maxRight) {
-	this->neighboringClusters.push_back(id - maxRight - 1);
-}
-if (id < maxUp * (maxRight - 1)) {
-	this->neighboringClusters.push_back(id + maxRight - 1);
-}
+		if (id >= maxRight) {
+			this->neighboringClusters.push_back(id - maxRight - 1);
+		}
+		if (id < maxUp * (maxRight - 1)) {
+			this->neighboringClusters.push_back(id + maxRight - 1);
+		}
 	}
-	if (fmod(id, maxRight) < (maxRight - 1)) {
+	if (fmod(id, maxRight) < (maxRight-1)) {
 		this->neighboringClusters.push_back(id + 1);
 		if (id >= maxRight) {
 			this->neighboringClusters.push_back(id - maxRight + 1);
@@ -112,11 +112,11 @@ std::pair<std::vector<UID_t>, double> PathfindingCluster::pathBake(UID_t start, 
 		current = cameFrom[current];
 		if (current == cameFrom[current])
 			path = {};
-		break;
+			break;
 	}
 	path.push_back(start);
 	std::reverse(path.begin(), path.end());
-	return std::pair<std::vector<UID_t>, double>(path, costSoFar[goal]);
+	return std::pair<std::vector<UID_t>, double> (path, costSoFar[goal]);
 }
 
 void PathfindingCluster::clusterBake() {
@@ -126,7 +126,7 @@ void PathfindingCluster::clusterBake() {
 			UID_t goalNode = targetNode2.first;
 			if (startNode < goalNode && startNode != goalNode) {
 				std::pair<std::vector<UID_t>, double> pathResult = this->pathBake(startNode, goalNode);
-				if (pathResult.second > 0) {
+				if (pathResult.first.size() > 1) {
 					this->bakedPath[std::pair<UID_t, UID_t>(startNode, goalNode)] = pathResult;
 				}
 			}
@@ -140,6 +140,35 @@ PathfindingMap::PathfindingMap() {
 	this->mapHeight = 100;
 	this->mapWidth = 100;
 	this->largestClusterId = 0;
+}
+
+void PathfindingMap::loadPfMap(ResourceManager* resource, std::string path) {
+	std::ifstream infile(path);
+	std::string line;
+	while (std::getline(infile, line))
+	{
+		if (line.empty()) { continue; }
+		std::istringstream iss(line);
+
+		std::string type;
+		if (!(iss >> type)) { assert(false); break; } // error
+
+		if (type.compare("PATHLENGTH") == 0) {
+			static int numNodes = getNextFloat(iss);
+			//auto k = resource->reserveDataBlocks<PathNode>(numNodes);
+			// Might not need this bc already creating maxnumnodes, but maybe thats redundant now? One or other?
+			//pathnodes[numNodes] = { NULL };
+		}
+		if (type.compare("P") == 0) {
+
+		}
+	}
+	//auto k = resource->reserveDataBlocks<AICharacter>(1);
+
+	//k.data->Create(iss, resource);
+	//objectsByType.Players.push_back(k.data);
+	//objectsByType.Renderable.push_back(k.data);
+	//objectsByType.Actor.push_back(k.data);
 }
 
 void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > connections, int mapHeight, int mapWidth, int clusterSize) {
@@ -156,12 +185,6 @@ void PathfindingMap::create(std::unordered_map<UID_t, std::vector<UID_t> > conne
 	for (auto it : connections) {
 		PathNode* curNode = pathnodes[it.first];
 		UID_t curNodesCluster = floor((double(curNode->position.x) / clusterSize)) + ((mapWidth / clusterSize) * floor((double(curNode->position.y) / clusterSize)));
-		if (curNode->position.x == mapWidth) {
-			curNodesCluster--;
-		}
-		if (curNode->position.y == mapHeight) {
-			curNodesCluster = curNodesCluster - (mapWidth / clusterSize);
-		}
 		curNode->cluster = &clusterNp[curNodesCluster];
 		clusterNp[curNodesCluster].nodes.push_back(it.first);
 	}
@@ -188,7 +211,11 @@ std::vector<UID_t> PathfindingMap::neighbors(UID_t id) {
 PathNode* PathfindingMap::nearestNode(vec3 position) {
 	scalar minDistance = 1023;
 	PathNode* minNode = pathnodes[0];
+	if (pathnodes[0] == NULL) {
+		return NULL;
+	}
 	for (PathNode* curnode = pathnodes[0]; curnode->id < double(numPathNodes-1); curnode = pathnodes[curnode->id + 1]) {
+		std::cout << curnode;
 		scalar curDistance = std::abs(curnode->position.x - position.x) + std::abs(curnode->position.y - position.y) + std::abs(curnode->position.z - position.z);
 		if (curDistance < minDistance) {
 			minDistance = curDistance;
@@ -210,11 +237,11 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 	cameFrom[start] = start;
 	std::unordered_map<UID_t, double> costSoFar;
 	costSoFar[start] = 0;
-	int loc = 0;
 	if (pathnodes[start]->cluster == pathnodes[goal]->cluster) {
 
 		while (!frontier.empty()) {
 			UID_t current = frontier.get();
+
 			if (current == goal) {
 				break;
 			}
@@ -232,13 +259,12 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 	else {
 		while (!frontier.empty()) {
 			UID_t current = frontier.get();
+
 			if (current == goal) {
 				break;
 			}
 			if ((pathnodes[current]->cluster == pathnodes[start]->cluster) || (pathnodes[current]->cluster == pathnodes[goal]->cluster)) {
-				loc++;
 				for (UID_t next : map.neighbors(current)) {
-					loc++;
 					double newCost = costSoFar[current] + PathNode::heuristic(current, next);
 					if (costSoFar.count(next) == 0 || newCost < costSoFar[next]) {
 						costSoFar[next] = newCost;
@@ -249,7 +275,8 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 				}
 			}
 			else {
-				loc++;
+				// Add in cluster based movement here
+				// First, we need baked costs, consider from node on edge to node on edge and A* through those
 				std::vector<UID_t> targetedNodes = pathnodes[current]->cluster->transitionNodes[current];
 				for (auto nonCurNode : pathnodes[current]->cluster->transitionNodes) {
 					if (nonCurNode.first != current) {
@@ -257,19 +284,9 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 					}
 				}
 				for (auto next : targetedNodes) {
-					loc++;
-					if (pathnodes[current]->cluster != pathnodes[next]->cluster) {
-						double newCost = costSoFar[current] + PathNode::heuristic(current, next);
-						if ((costSoFar.count(next) == 0 || (newCost < costSoFar[next])) && newCost != costSoFar[current]) {
-							costSoFar[next] = newCost;
-							double priority = newCost + PathNode::heuristic(goal, next);
-							cameFrom[next] = current;
-							frontier.put(next, priority);
-						}
-					}
-					else if (pathnodes[current]->cluster->bakedPath.find(std::pair<UID_t, UID_t>(min(current, next), max(current, next))) != pathnodes[current]->cluster->bakedPath.end()) {
+					if (pathnodes[current]->cluster->bakedPath.find(std::pair<UID_t, UID_t>(min(current, next), max(current, next))) != pathnodes[current]->cluster->bakedPath.end() || pathnodes[current]->cluster != pathnodes[next]->cluster) {
 						double newCost = costSoFar[current] + pathnodes[current]->cluster->bakedPath[std::pair<UID_t, UID_t>(min(current, next), max(current, next))].second;
-						if ((costSoFar.count(next) == 0 || (newCost < costSoFar[next])) && newCost != costSoFar[current]) {
+						if (costSoFar.count(next) == 0 || newCost < costSoFar[next]) {
 							costSoFar[next] = newCost;
 							double priority = newCost + PathNode::heuristic(goal, next);
 							cameFrom[next] = current;
@@ -278,8 +295,8 @@ std::unordered_map<UID_t, UID_t> pathSearch(PathfindingMap map, UID_t start, UID
 					}
 				}
 				// We also need to do Path Refinement after (turning our transition node -> transition node into low level paths)
+
 				// Path smoothing is done by checking for every node if we can reach a subsequent node 
-				// TBD once movement is fleshed out a bit more
 			}
 		}
 	}

@@ -41,6 +41,7 @@ public:
 class PathfindingMap {
 public:
 	PathfindingMap();
+	void loadPfMap(ResourceManager* resource, std::string path);
 	std::unordered_map<UID_t, std::vector<UID_t> > connections;
 	std::vector<UID_t> neighbors(UID_t id);
 	PathNode* nearestNode(vec3 position); // this will be overridden in subclass probably, as we have prebaked it 

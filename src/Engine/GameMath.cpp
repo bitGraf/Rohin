@@ -269,7 +269,47 @@ void math::mat4::orthoProjection(scalar left, scalar right, scalar bottom, scala
                 1.0));
 }
 
+void math::mat4::translate(math::vec3 translation_vector) {
+	math::vec3 t = translation_vector;
+	math::mat4 translationMat = mat4(
+		vec4(1, 0, 0, 0),
+		vec4(0, 1, 0, 0),
+		vec4(0, 0, 1, 0),
+		vec4(t.x, t.y, t.z, 1));
+	*this =  *this*translationMat;
+}
 
+void math::mat4::rotate(float angle, math::vec3 rotation_axis) {
+	math::vec3 r = rotation_axis;
+	math::mat4 rotationMat = mat4(
+		vec4(cos(angle) + (pow(r.x, 2)*(1 - cos(angle))),
+			(r.y*r.x*(1 - cos(angle))) + (r.z*sin(angle)),
+			(r.z*r.x*(1 - cos(angle))) - (r.y*sin(angle)),
+			0),
+		vec4((r.x*r.y*(1-cos(angle)))-(r.z*sin(angle)),
+			cos(angle)+(pow(r.y,2)*(1-cos(angle))),
+			(r.z*r.y*(1-cos(angle)))+(r.x*sin(angle)),
+			0),
+		vec4((r.x*r.z*(1-cos(angle)))+(r.y*sin(angle)),
+			(r.y*r.z*(1 - cos(angle))) - (r.x*sin(angle)),
+			cos(angle)+(pow(r.z, 2)*(1 - cos(angle))),
+			0),
+		vec4(0,
+			0,
+			0,
+			1));
+	*this = *this*rotationMat;
+}
+
+void math::mat4::scale(math::vec3 scale_vector) {
+	math::vec3 s = scale_vector;
+	math::mat4 scaleMat = mat4(
+		vec4(s.x, 0, 0, 0),
+		vec4(0, s.y, 0, 0),
+		vec4(0, 0, s.z, 0),
+		vec4(0, 0, 0, 1));
+	*this = *this*scaleMat;
+}
 
 /* Define mathematical operations */
 math::vec2 math::operator+ (const vec2& A, const vec2& B) {

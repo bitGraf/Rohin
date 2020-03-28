@@ -8,6 +8,7 @@
 #include "Resource/Texture.hpp"
 #include "RenderBatch.hpp"
 #include "DynamicFont.hpp"
+#include "SpriteRenderer.hpp"
 #include "Utils.hpp"
 #include "Resource/ResourceManager.hpp"
 

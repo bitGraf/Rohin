@@ -1,5 +1,5 @@
-#ifndef HEADER_H
-#define HEADER_H
+#ifndef DYNAMICFONT_H
+#define DYNAMICFONT_H
 
 #include <stdio.h>
 #include <stdlib.h>

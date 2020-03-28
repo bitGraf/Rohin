@@ -35,6 +35,13 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
             // set scene name
             name = sceneName;
         } 
+		else if (type.compare("NAVMAP") == 0){
+			std::cout << "Doing this";
+			//auto k = resource->reserveDataBlocks<PathfindingMap>(1);
+			//std::string navMap = getNextString(iss);
+			//k.data->loadPfMap(resource, navMap);
+		}
+
         else if (type.compare("SETTING") == 0) {
             std::string settingName = getNextString(iss);
             std::string settingValue = getNextString(iss);
@@ -186,7 +193,6 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
         k.second->PostLoad();
     }
 }
-
 
 void Scene::update(double dt) {
     // TODO : Find better way than iterating through a hash map every frame
