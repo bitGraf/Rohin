@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
 
 	Shader shader;
 	shader.create("sprite.vert", "sprite.frag", "spriteRendererShader");
-	SpriteRenderer testRender(shader);
+	SpriteRenderer testRender();
 	system("pause");
 
 	return 0;

@@ -14,17 +14,16 @@ using namespace math;
 class SpriteRenderer
 {
 public:
-	SpriteRenderer(Shader &shader);
+	SpriteRenderer();
 	~SpriteRenderer();
 
 	void DrawSprite(Texture &texture, vec2 position, vec2 size = vec2(10, 10),
 		GLfloat rotate = 0.0f, vec3 color = vec3(1.0f));
+	void initRenderData();
 
 private:
-	Shader shader;
+	Shader spriteShader;
 	GLuint quadVAO;
-
-	void initRenderData();
 };
 
 #endif

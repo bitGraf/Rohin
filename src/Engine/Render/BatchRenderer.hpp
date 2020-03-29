@@ -100,6 +100,8 @@ private:
     Shader m_debugMeshShader;
     TriangleMesh* cameraMesh;
 
+	Shader m_spriteShader;
+
     u16 scr_width, scr_height;
 
     u16 colliderID;

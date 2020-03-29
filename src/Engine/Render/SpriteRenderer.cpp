@@ -1,9 +1,7 @@
 #include "SpriteRenderer.hpp"
 
-SpriteRenderer::SpriteRenderer(Shader &shader)
-{
-	this->shader = shader;
-	this->initRenderData();
+SpriteRenderer::SpriteRenderer() {
+
 }
 
 SpriteRenderer::~SpriteRenderer()
@@ -13,6 +11,13 @@ SpriteRenderer::~SpriteRenderer()
 
 void SpriteRenderer::initRenderData()
 {
+	Console::logMessage("Initializing Text Rendering...");
+
+	spriteShader.create("sprite.vert", "sprite.frag", "spriteShader");
+	spriteShader.use();
+	//spriteShader.setInt("fontTex", 0);
+
+	Console::logMessage("Initializing sprite VAO");
 	// Configure our VAO/VBO
 	GLuint VBO;
 	GLfloat vertices[] = {
@@ -43,7 +48,7 @@ void SpriteRenderer::DrawSprite(Texture &texture, vec2 position, vec2 size,
 	GLfloat rotate, vec3 color)
 {
 	//Prepare transformations
-	this->shader.use();
+	this->spriteShader.use();
 	mat4 model;
 	model.translate(vec3(position,0.0f));
 	model.translate(vec3(0.5f*size.x, 0.5f*size.y, 0.0f));
@@ -51,8 +56,8 @@ void SpriteRenderer::DrawSprite(Texture &texture, vec2 position, vec2 size,
 	model.translate(vec3(-0.5f*size.x, -0.5f*size.y, 0.0f));
 	model.scale(vec3(size,1.0f));
 
-	this->shader.setMat4("model", model);
-	this->shader.setVec3("spriteColor", color);
+	this->spriteShader.setMat4("model", model);
+	this->spriteShader.setVec3("spriteColor", color);
 
 	texture.bind(GL_TEXTURE0);
 

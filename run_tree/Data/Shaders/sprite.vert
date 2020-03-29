@@ -1,13 +1,19 @@
 #version 330 core
-layout (location = 0) in vec4 vertex; <vec2 position, vec2 texCoords>
+layout (location = 0) in vec2 vertPos;
 
-out vec2 TexCoords;
+out vec2 pass_uv;
 
-uniform mat4 model;
-uniform mat4 projection;
+uniform mat4 projectionMatrix;
+uniform vec4 transform;
+uniform vec4 transformUV;
 
-void main()
-{
-    TexCoords = vertex.zw;
-    gl_Position = position * model * vec4(vertex.xy, 0.0, 1.0)
+void main() {
+
+    vec2 newPos = vec2(transform.x   * vertPos.x, transform.y   * vertPos.y) + transform.zw;
+    vec2 newUV  = vec2(transformUV.x * vertPos.x, transformUV.y * vertPos.y) + vec2(transformUV.z, transformUV.w);
+
+    vec4 pos = projectionMatrix * vec4(newPos.x, newPos.y, -1.0, 1.0);
+
+    gl_Position = pos;
+    pass_uv = newUV;
 }

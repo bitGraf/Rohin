@@ -112,6 +112,8 @@ CoreSystem* DeferredBatchRenderer::create() {
     m_gBuffer.create();
     m_gBuffer.resize(scr_width, scr_height);
 
+	spriteRender.initRenderData();
+
     debugFont.InitTextRendering();
     debugFont.create("UbuntuMono-Regular.ttf", 16, scr_width, scr_height);
 
