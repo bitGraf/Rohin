@@ -78,8 +78,8 @@ int main(int argc, char** argv) {
 
     fclose(catalog.fp);
 
-    // now read the file
-    readMeshCatalogFile(outputFilename);
+    // now read the file to test
+    // readMeshCatalogFile(outputFilename);
 
     system("pause");
     return 0;
