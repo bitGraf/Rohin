@@ -1,9 +1,14 @@
 bin/
 build/
-/.vs
+.vs
 docs/html/
 docs/Doxyfile
 *.blend1
 blender/other/
 blender/Textures/
 Tools/CMakeFiles
+edb/edb/
+edb/meshConvert/Debug
+edb/meshConvert/Release
+edb/meshConvert/meshConvert/Debug
+edb/meshConvert/meshConvert/Release
