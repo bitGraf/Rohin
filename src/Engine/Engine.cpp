@@ -66,9 +66,9 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     MessageBus::setGlobalMessageHandleCallback(f);
 
     m_Resource.setRootDirectory(argv[0]);
-    MessageBus::registerSystem(m_Resource.create());
     MessageBus::registerSystem(m_MainWindow.create());
     MessageBus::registerSystem(m_Renderer.create());
+    MessageBus::registerSystem(m_Resource.create());
 
     Message::listMessageTypes();
 

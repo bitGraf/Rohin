@@ -42,13 +42,6 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
             // operate on setting
 
         } 
-        else if (type.compare("RESOURCE") == 0) {
-            std::string resourceFilename = getNextString(iss);
-
-            // load resource pack
-            if (!noGLLoad)
-                resource->loadModelFromFile(resourceFilename, true);
-        } 
         else if (type.compare("ENTITY") == 0) {      
             std::string entType;
             iss >> entType;

@@ -10,6 +10,9 @@
 
 #include <cstring>
 
+#include <dirent.h>
+#include <fstream>
+
 
 class FileSystem : public CoreSystem {
 public:
@@ -36,9 +39,12 @@ public:
 
     /* File IO */
     bool syncReadFile(const char* filepath, u8* buffer, size_t bufferSize, size_t& rBytesRead);
+    char* readAllBytes(std::string filepath, size_t& bytesRead);
 
     /* File System Navigation */
     void setRootDirectory(char* directory);
+
+    std::vector<std::string> getAllFilesOnPath(std::string path);
 
 private:
     //char rootDirectory[MAX_PATH];

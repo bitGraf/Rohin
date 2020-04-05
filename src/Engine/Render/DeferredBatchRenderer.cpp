@@ -225,27 +225,29 @@ void DeferredBatchRenderer::geometryPass(RenderBatch* batch) {
         // Render entity
         glBindVertexArray(call->VAO);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, call->mat->baseColorTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->baseColorTexture.glTexID);
+        if (call->mat) {
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, call->mat->baseColorTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->baseColorTexture.glTexID);
 
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, call->mat->normalTexture.glTexID == 0 ? normalTex.glTextureID : call->mat->normalTexture.glTexID);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, call->mat->normalTexture.glTexID == 0 ? normalTex.glTextureID : call->mat->normalTexture.glTexID);
 
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, call->mat->metallicRoughnessTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->metallicRoughnessTexture.glTexID);
+            glActiveTexture(GL_TEXTURE2);
+            glBindTexture(GL_TEXTURE_2D, call->mat->metallicRoughnessTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->metallicRoughnessTexture.glTexID);
 
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, call->mat->occlusionTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->occlusionTexture.glTexID);
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, call->mat->occlusionTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->occlusionTexture.glTexID);
 
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, call->mat->emissiveTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->emissiveTexture.glTexID);
+            glActiveTexture(GL_TEXTURE4);
+            glBindTexture(GL_TEXTURE_2D, call->mat->emissiveTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->emissiveTexture.glTexID);
 
-        m_geometryPassShader.setVec3("material.emissiveFactor", call->mat->emissiveFactor);
-        m_geometryPassShader.setVec4("material.baseColorFactor", call->mat->baseColorFactor);
-        m_geometryPassShader.setFloat("material.metallicFactor", call->mat->metallicFactor);
-        m_geometryPassShader.setFloat("material.roughnessFactor", call->mat->roughnessFactor);
+            m_geometryPassShader.setVec3("material.emissiveFactor", call->mat->emissiveFactor);
+            m_geometryPassShader.setVec4("material.baseColorFactor", call->mat->baseColorFactor);
+            m_geometryPassShader.setFloat("material.metallicFactor", call->mat->metallicFactor);
+            m_geometryPassShader.setFloat("material.roughnessFactor", call->mat->roughnessFactor);
 
-        m_geometryPassShader.setMat4("modelViewMatrix", batch->cameraView * call->modelMatrix);
+            m_geometryPassShader.setMat4("modelViewMatrix", batch->cameraView * call->modelMatrix);
+        }
 
         glDrawElements(GL_TRIANGLES, call->numVerts, GL_UNSIGNED_SHORT, 0);
     }
@@ -443,7 +445,8 @@ void DeferredBatchRenderer::endProfile() {
 }
 
 void DeferredBatchRenderer::loadResources(ResourceManager* resource) {
-    resource->loadModelFromFile("Data/Models/camera.glb", true);
+    /* FIX_THIS */
+    //resource->loadModelFromFile("Data/Models/camera.glb", true);
 
     cameraMesh = resource->getMesh("Camera");
 }

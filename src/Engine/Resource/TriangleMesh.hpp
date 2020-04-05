@@ -20,7 +20,7 @@ struct Edge {
 typedef DataBlock<math::vec4>   vec4Array;
 typedef DataBlock<math::vec3>   vec3Array;
 typedef DataBlock<math::vec2>   vec2Array;
-typedef DataBlock<index_t>      indexArray;
+typedef DataBlock<int>          indexArray;
 typedef DataBlock<Triangle>     triangleArray;
 typedef DataBlock<Edge>         EdgeArray;
 typedef DataBlock<Triangle>     FaceArray;
@@ -53,6 +53,7 @@ public:
 
     // state
     bool initialized = false;
+    u8 flag;
 };
 
 typedef TriangleMesh*   meshRef;

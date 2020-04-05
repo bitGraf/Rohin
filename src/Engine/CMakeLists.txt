@@ -43,4 +43,3 @@ endif(ENGINE_CUSTOM_ENTITIES)
 
 target_include_directories(engine PRIVATE ${GLAD_DIR}/include/)
 target_include_directories(engine PRIVATE ${GLFW_DIR}/include/)
-target_include_directories(engine PRIVATE ${TINYGLTF_DIR}/)
