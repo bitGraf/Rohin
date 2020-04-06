@@ -31,167 +31,244 @@ CoreSystem* ResourceManager::create() {
 
     m_pool.create();
 
+    // watch resource locations
+    std::vector<std::string> allFiles = m_FileSystem.getAllFilesOnPath("resources");
+    std::vector<std::string> resourceFiles;
+    for (auto file : allFiles) {
+        // check if file is a .mcf
+        auto k = file.find_last_of('.');
+        if (k != std::string::npos) {
+            auto ending = file.data() + k;
+            if (strcmp(ending, ".mcf") == 0) {
+                // this is a mesh catalog file.
+                resourceFiles.push_back(file);
+
+                loadResourceFile(file);
+            }
+        }
+    }
+
     return this;
+}
+
+struct mesh_entry {
+
+};
+
+struct mat_entry {
+
+};
+
+void ResourceManager::loadResourceFile(std::string filename) {
+    printf("Reading resource file [%s]...\n", filename.c_str());
+    size_t bytesRead;
+    char* buffer = m_FileSystem.readAllBytes("resources\\" + filename, bytesRead);
+
+    if (buffer && bytesRead > 0) {
+        printf("Succesfully read %zu bytes\n", bytesRead);
+    }
+    else {
+        return;
+    }
+
+    char correctSig[10] = { 'm', 'c', 'f', 72, 95, 'k', 'j', 0, '\r', '\n' };
+
+    if (strncmp(buffer, correctSig, 10) == 0) {
+        printf("Correct file signature found. Reading...\n");
+
+        char* txt_numMeshes   = buffer + 93;
+        char* txt_numMats     = buffer + 127;
+        char* txt_numEntities = buffer + 159;
+
+        int numMeshes   = atoi(txt_numMeshes);
+        int numMats     = atoi(txt_numMats);
+        int numEntities = atoi(txt_numEntities);
+
+        char* data = buffer + 184;
+        for (int n = 0; n < numMeshes; n++) {
+            if (strncmp(data, "Mesh: ", 6) != 0) {
+                printf("Error reading .mcf file. Expected a mesh entry and didnt get one.\n");
+                break;
+            }
+
+            char* dump = data += 6;
+            size_t end = 0;
+            while (data[end] != 0 && data[end] != 10 && data[end] != 13) {
+                end++;
+            }
+
+            char* mesh_name = (char*)malloc(end+1);
+            memcpy(mesh_name, data, end);
+            mesh_name[end] = 0;
+            printf("Mesh Entry: [%s]\n", mesh_name);
+
+            data += end+2;
+
+            char flag = data[0];
+            data++;
+
+            int numIndices;
+            memcpy(&numIndices, data, 4);
+            data += 4;
+            int* mesh_indices = (int*)malloc(numIndices * sizeof(int));
+            memcpy(mesh_indices, data, numIndices * sizeof(int));
+            data += numIndices * sizeof(int);
+
+            int numVerts;
+            memcpy(&numVerts, data, 4);
+            data += 4;
+            float* mesh_verts = (float*)malloc(numVerts * 3 * sizeof(float));
+            memcpy(mesh_verts, data, numVerts * 3 * sizeof(float));
+            data += numVerts * 3 * sizeof(float);
+
+            bool hasNormals = flag & 1;
+            bool hasUVs = flag & 2;
+            bool hasTangents = flag & 4;
+
+            if (hasNormals) {
+                float* mesh_normals = (float*)malloc(numVerts * 3 * sizeof(float));
+                memcpy(mesh_normals, data, numVerts * 3 * sizeof(float));
+                data += numVerts * 3 * sizeof(float);
+
+                free(mesh_normals);
+            }
+
+            if (hasUVs) {
+                float* mesh_UVs = (float*)malloc(numVerts * 2 * sizeof(float));
+                memcpy(mesh_UVs, data, numVerts * 2 * sizeof(float));
+                data += numVerts * 2 * sizeof(float);
+
+                free(mesh_UVs);
+            }
+
+            if (hasTangents) {
+                float* mesh_tangents = (float*)malloc(numVerts * 4 * sizeof(float));
+                memcpy(mesh_tangents, data, numVerts * 4 * sizeof(float));
+                data += numVerts * 4 * sizeof(float);
+
+                free(mesh_tangents);
+            }
+
+            data += 2;
+
+
+            free(mesh_name);
+            free(mesh_indices);
+            free(mesh_verts);
+        }
+
+        bool end = true;
+
+        /*
+        char dump1[84];
+        fread(dump1, 1, 84, fp);
+        char txt_numMeshes[10];
+        fread(txt_numMeshes, 1, 10, fp);
+        char dump2[23];
+        fread(dump2, 1, 23, fp);
+        char txt_numMaterials[10];
+        fread(txt_numMaterials, 1, 10, fp);
+        char dump3[22];
+        fread(dump3, 1, 22, fp);
+        char txt_numEntities[10];
+        fread(txt_numEntities, 1, 10, fp);
+        char dump4[15];
+        fread(dump3, 1, 15, fp);
+
+        int numMeshes, numMaterials, numEntities;
+        sscanf(txt_numMeshes, "%d", &numMeshes);
+        sscanf(txt_numMaterials, "%d", &numMaterials);
+        sscanf(txt_numEntities, "%d", &numEntities);
+        printf("Reading meshes...\n");
+
+        if (numMeshes > 0) {
+            printf("Catalog contains %d meshes, consisting of %d total verts and %d total indices.\n", numMeshes, numMaterials, numEntities);
+
+            for (int n = 0; n < numMeshes; n++) {
+                char dump5[7];
+                fread(dump5, 1, 6, fp);
+                dump5[6] = 0;
+
+                if (strcmp(dump5, "Mesh: ") == 0) {
+                    printf("Mesh found.\n");
+
+                    char name[64] = { 0 };
+                    fscanf(fp, "%s", name);
+
+                    printf("Name: [%s]\n", name);
+
+                    char dump6[2];
+                    fread(dump6, 1, 2, fp);
+
+                    char flag;
+                    fread(&flag, 1, 1, fp);
+                    printf("Flag: %d\n", flag);
+
+                    int numIndices;
+                    fread(&numIndices, 1, sizeof(int), fp);
+                    printf("%d indices\n", numIndices);
+
+                    int* indices = (int*)malloc(numIndices * sizeof(int));
+                    fread(indices, sizeof(int), numIndices, fp);
+
+                    int numVerts;
+                    fread(&numVerts, 1, sizeof(int), fp);
+                    printf("%d verts\n", numVerts);
+
+                    float* verts = (float*)malloc(numVerts * 3 * sizeof(float));
+                    fread(verts, sizeof(float), numVerts * 3, fp);
+
+
+                    if (flag & 1) {
+                        printf("Has Normals\n");
+
+                        float* normals = (float*)malloc(numVerts * 3 * sizeof(float));
+                        fread(normals, sizeof(float), numVerts * 3, fp);
+
+                        free(normals);
+                    }
+                    if (flag & 2) {
+                        printf("Has UVs\n");
+
+                        float* uvs = (float*)malloc(numVerts * 2 * sizeof(float));
+                        fread(uvs, sizeof(float), numVerts * 2, fp);
+
+                        free(uvs);
+                    }
+                    if (flag & 4) {
+                        printf("Has Tangents\n");
+
+                        float* tangents = (float*)malloc(numVerts * 4 * sizeof(float));
+                        fread(tangents, sizeof(float), numVerts * 4, fp);
+
+                        free(tangents);
+                    }
+
+
+                    free(verts);
+                    free(indices);
+                }
+
+                char dump7[2];
+                fread(dump7, 1, 2, fp);
+            }
+        }
+        else {
+            printf("Could not find any meshes in the file\n");
+        }*/
+
+    }
+
+    free(buffer);
 }
 
 void ResourceManager::setRootDirectory(char* exeLoc) {
     m_FileSystem.setRootDirectory(exeLoc);
 }
 
-void ResourceManager::loadModelFromFile(std::string path, bool binary) {
-
-    for (auto str : loadedResourceFiles) {
-        if (str == path) {
-            // already loaded
-            return;
-        }
-    }
-
-    tinygltf::Model root;
-    std::string err;
-    std::string warn;
-
-    stbi_set_flip_vertically_on_load(false);
-
-    bool ret;
-    if (binary) {
-        ret = loader.LoadBinaryFromFile(&root, &err, &warn, path);
-    } else {
-        ret = loader.LoadASCIIFromFile(&root, &err, &warn, path);
-    }
-
-    if (!warn.empty()) {
-        printf("Warn: %s\n", warn.c_str());
-    }
-
-    if (!err.empty()) {
-        printf("Err: %s\n", err.c_str());
-        return;
-    }
-
-    if (!ret) {
-        printf("Failed to parse glTF\n");
-        return;
-    }
-
-    loadedResourceFiles.push_back(path);
-
-    /* Start parsing file */
-    int defaultScene = root.defaultScene;
-
-    /* For all the scenes in the model */
-    for (tinygltf::Scene currentScene : root.scenes) {
-        std::string sceneName = currentScene.name;
-        
-        /* For all nodes in this scene*/
-        int numNodesInScene = currentScene.nodes.size();
-        for (int currNodeID : currentScene.nodes) {
-            tinygltf::Node currentNode = root.nodes[currNodeID];
-
-            std::string nodeName = currentNode.name;
-            std::vector<double> nodePosition = currentNode.translation;
-            int meshID = currentNode.mesh;
-
-            if (meshID >= 0)
-                processMesh(&root, meshID);
-        }
-    }
-
-    /* Read all materials from file */  
-    for (tinygltf::Material currMat : root.materials) {
-        Material myMat;
-
-        // Material name
-        myMat.name = currMat.name;
-        
-        // Extract texture data
-        myMat.emissiveTexture.index = currMat.emissiveTexture.index;
-        myMat.emissiveTexture.tex_coord = currMat.emissiveTexture.texCoord;
-        initializeTexture(&root, &myMat.emissiveTexture);
-
-        myMat.normalTexture.index = currMat.normalTexture.index;
-        myMat.normalTexture.tex_coord = currMat.normalTexture.texCoord;
-        myMat.normalTexture.value = static_cast<f32>(currMat.normalTexture.scale);
-        initializeTexture(&root, &myMat.normalTexture);
-
-        myMat.occlusionTexture.index = currMat.occlusionTexture.index;
-        myMat.occlusionTexture.tex_coord = currMat.occlusionTexture.texCoord;
-        myMat.occlusionTexture.value = static_cast<f32>(currMat.occlusionTexture.strength);
-        initializeTexture(&root, &myMat.occlusionTexture);
-
-        myMat.baseColorTexture.index = currMat.pbrMetallicRoughness.baseColorTexture.index;
-        myMat.baseColorTexture.tex_coord = currMat.pbrMetallicRoughness.baseColorTexture.texCoord;
-        initializeTexture(&root, &myMat.baseColorTexture);
-
-        myMat.metallicRoughnessTexture.index = currMat.pbrMetallicRoughness.metallicRoughnessTexture.index;
-        myMat.metallicRoughnessTexture.tex_coord = currMat.pbrMetallicRoughness.metallicRoughnessTexture.texCoord;
-        initializeTexture(&root, &myMat.metallicRoughnessTexture);
-
-        // Material Factors
-        myMat.emissiveFactor = math::vec3(currMat.emissiveFactor.data());
-        myMat.baseColorFactor = math::vec4(currMat.pbrMetallicRoughness.baseColorFactor.data());
-        myMat.metallicFactor = currMat.pbrMetallicRoughness.metallicFactor;
-        myMat.roughnessFactor = currMat.pbrMetallicRoughness.roughnessFactor;
-        
-        // Other values
-        myMat.alphaCutoff = currMat.alphaCutoff;
-        myMat.alphaMode = currMat.alphaMode;
-        myMat.doubleSided = currMat.doubleSided;
-
-        materials[myMat.name] = myMat;
-        Console::logMessage("Material loaded: " + myMat.name);
-    }
-}
-
-void ResourceManager::processMesh(tinygltf::Model* root, int id) {
-    tinygltf::Mesh mesh = root->meshes[id];
-
-    std::string name = mesh.name;
-
-    int numPrimitives = mesh.primitives.size();
-    assert(numPrimitives == 1);
-
-    int primID = 0;
-
-    {
-        /* Instance of Engine mesh object */
-        TriangleMesh myMesh;
-
-        /* Get accessor ID for attributes */
-        int attr_posID   = mesh.primitives[primID].attributes["POSITION"];
-        int attr_normID  = mesh.primitives[primID].attributes["NORMAL"];
-        int attr_tanID   = mesh.primitives[primID].attributes["TANGENT"];
-        int attr_texID   = mesh.primitives[primID].attributes["TEXCOORD_0"];
-        int attr_bitanID = mesh.primitives[primID].attributes["BITANGENT"];
-
-        int attr_indexID = mesh.primitives[primID].indices;
-
-        /* Fill out TriMesh struct */
-        myMesh.vertPositions = processAccessor<math::vec3>(root, attr_posID);
-        myMesh.vertNormals = processAccessor<math::vec3>(root, attr_normID);
-        myMesh.vertTexCoords = processAccessor<math::vec2>(root, attr_texID);
-        myMesh.vertTangents = processAccessor<math::vec4>(root, attr_tanID);
-        myMesh.vertBitangents = processAccessor<math::vec3>(root, attr_bitanID);
-
-        myMesh.indices = processAccessor<index_t>(root, attr_indexID);
-
-        /* Process the material info */
-        int materialID = mesh.primitives[primID].material;
-
-        /* Update TriangleMesh information */
-        myMesh.numVerts = myMesh.vertPositions.m_numElements;
-        myMesh.numFaces = myMesh.indices.m_numElements / 3;
-
-        initializeTriangleMesh(&myMesh);
-
-        /* Push to stack */
-        meshes[name] = myMesh;
-        Console::logMessage("Mesh loaded: " + name);
-    }
-}
-
+/*
 void ResourceManager::initializeTriangleMesh(TriangleMesh* mesh) {
-    /* Perform openGL initialization of mesh */
+    // Perform openGL initialization of mesh
     
     glGenVertexArrays(1, &mesh->VAO);
     glBindVertexArray(mesh->VAO);
@@ -238,179 +315,9 @@ void ResourceManager::initializeTriangleMesh(TriangleMesh* mesh) {
 
     glBindVertexArray(0);
 }
+*/
 
-void ResourceManager::initializeTexture(tinygltf::Model* root, Material_Texture* mTex) {
-    if (mTex->index >= 0) {
-        tinygltf::Texture tex = root->textures[mTex->index];
-        std::string texName = tex.name;
-
-        /* Check for sampler info */
-        int texSampler = tex.sampler;
-        if (texSampler >= 0) {
-
-        }
-
-        int texSource = tex.source;
-        if (texSource >= 0) {
-            tinygltf::Image image = root->images[texSource];
-
-            std::string imageName = image.name;
-            std::string imageMimeType = image.mimeType;
-            int bufferViewID = image.bufferView;
-
-            tinygltf::BufferView bv = root->bufferViews[bufferViewID];
-
-            tinygltf::Buffer buffer = root->buffers[bv.buffer];
-            size_t byteLength = bv.byteLength;
-            size_t byteOffset = bv.byteOffset;
-
-            //DataBlock<u8> block = m_pool.allocBlock<u8>(byteLength, true);
-            //memcpy(block.data, buffer.data.data() + byteOffset, byteLength);
-
-            /* now have the texture data in block */
-            mTex->width = image.width;
-            mTex->height = image.height;
-            mTex->channelBits = image.bits;
-            mTex->nrChannels = image.component;
-
-            GLint internalFormat = -1;
-            GLenum format = -1;
-
-            switch (image.component) {
-            case 1: {
-                switch (image.bits) {
-                case 8:  {internalFormat = GL_R8;  } break;
-                case 16: {internalFormat = GL_R16; } break;
-                }
-                format = GL_RED;
-            } break;
-            case 2: {
-                switch (image.bits) {
-                case 8: {internalFormat = GL_RG8;  } break;
-                case 16: {internalFormat = GL_RG16; } break;
-                }
-                format = GL_RG;
-            } break;
-            case 3: {
-                switch (image.bits) {
-                case 8: {internalFormat = GL_RGB8;  } break;
-                case 16: {internalFormat = GL_RGB16; } break;
-                }
-                format = GL_RGB;
-            } break;
-            case 4: {
-                switch (image.bits) {
-                case 8: {internalFormat = GL_RGBA8;  } break;
-                case 16: {internalFormat = GL_RGBA16; } break;
-                }
-                format = GL_RGBA;
-            } break;
-            }
-
-            if (format < 0 || internalFormat < 0) {
-                printf("Failed to decipher pixel format\n");
-                assert(false);
-            }
-
-            mTex->format = format;
-            mTex->internalFormat = internalFormat;
-
-            glGenTextures(1, &mTex->glTexID);
-            glBindTexture(GL_TEXTURE_2D, mTex->glTexID);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, mTex->width, mTex->height, 0, format, GL_UNSIGNED_BYTE, image.image.data());
-            glGenerateMipmap(GL_TEXTURE_2D);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        }
-    }
-}
-
-
-
-template<typename T>
-DataBlock<T> ResourceManager::processAccessor(tinygltf::Model* root, int id) {
-    int bufferViewID = root->accessors[id].bufferView;
-    int compType = root->accessors[id].componentType;
-    size_t count = root->accessors[id].count;
-    //std::vector<double> max = root->accessors[id].maxValues;
-    //std::vector<double> min = root->accessors[id].minValues;
-    int type = root->accessors[id].type;
-
-    // read buffer view
-    tinygltf::BufferView buffView = root->bufferViews[bufferViewID];
-
-    int buffID = buffView.buffer;
-    size_t byteLength = buffView.byteLength;
-    size_t byteOffset = buffView.byteOffset;
-
-    /* read buffer */
-    tinygltf::Buffer buffer = root->buffers[buffID];
-
-    //size_t buffByteLength = buffer.data.size();
-    std::vector<u8> data = buffer.data;
-
-    DataBlock<T> block = m_pool.allocBlock<T>(count, true);
-    memcpy(block.data, data.data()+byteOffset, byteLength);
-
-    return block;
-}
-
-void* ResourceManager::readAccessor(tinygltf::Model* root, int accessorID) {
-    auto bufferViewID   = root->accessors[accessorID].bufferView;
-    auto compType       = root->accessors[accessorID].componentType;
-    auto count          = root->accessors[accessorID].count;
-    auto max            = root->accessors[accessorID].maxValues;
-    auto min            = root->accessors[accessorID].minValues;
-    auto type           = root->accessors[accessorID].type;
-
-    printf("Accessor: %d %d %zu %d\n",
-        bufferViewID, compType, count, type);
-
-    // read buffer view
-    auto buffView = root->bufferViews[bufferViewID];
-
-    auto buffID = buffView.buffer;
-    auto byteLength = buffView.byteLength;
-    auto byteOffset = buffView.byteOffset;
-
-    // read buffer
-    auto buffer = root->buffers[buffID];
-
-    auto buffByteLength = buffer.data.size();
-    auto data = buffer.data;
-
-    // alloc data to raw data <- should get from memoryManager
-    void* out_data = malloc(byteLength);
-    memcpy(out_data, data.data() + byteOffset, byteLength);
-    return out_data;
-}
-
-void* ResourceManager::readImage(tinygltf::Model* root, int imageID) {
-    auto bufferViewID = root->images[imageID].bufferView;
-
-    // read buffer view
-    auto buffView = root->bufferViews[bufferViewID];
-
-    auto buffID = buffView.buffer;
-    auto byteLength = buffView.byteLength;
-    auto byteOffset = buffView.byteOffset;
-
-    // read buffer
-    auto buffer = root->buffers[buffID];
-
-    auto buffByteLength = buffer.data.size();
-    auto data = buffer.data;
-
-    // alloc data to raw data <- should get from memoryManager
-    void* out_data = malloc(byteLength);
-    memcpy(out_data, data.data() + byteOffset, byteLength);
-    return out_data;
-}
-
+/*
 meshRef ResourceManager::getMesh(std::string id) {
     if (meshes.find(id) == meshes.end()) {
         return nullptr;
@@ -427,12 +334,4 @@ materialRef ResourceManager::getMaterial(std::string id) {
         return &materials[id]; //TODO: This might not be safe.
     }
 }
-
-/*template <typename TYPE>
-DataBlock<TYPE> ResourceManager::reserveDataBlocks(int num) {
-    //DataBlock<TYPE> block = m_pool.allocBlock<TYPE>(num);
-
-    DataBlock<TYPE> block;
-
-    return block;
-}*/
+*/

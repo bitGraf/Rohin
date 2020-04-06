@@ -443,7 +443,8 @@ void DeferredBatchRenderer::endProfile() {
 }
 
 void DeferredBatchRenderer::loadResources(ResourceManager* resource) {
-    resource->loadModelFromFile("Data/Models/camera.glb", true);
+    /* FIX_THIS */
+    //resource->loadModelFromFile("Data/Models/camera.glb", true);
 
-    cameraMesh = resource->getMesh("Camera");
+    cameraMesh = nullptr; // resource->getMesh("Camera");
 }

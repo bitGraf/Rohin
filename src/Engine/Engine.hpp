@@ -3,7 +3,6 @@
 
 #include "Console.hpp"
 #include "Window/Window.hpp"
-#include "Render/BatchRenderer.hpp"
 #include "Render/DeferredBatchRenderer.hpp"
 #include "Scene/Scene.hpp"
 #include "OptionsPane.hpp"

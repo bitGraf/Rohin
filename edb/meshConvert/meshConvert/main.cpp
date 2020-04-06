@@ -369,7 +369,16 @@ float* readAccessor_float(tinygltf::Accessor* acc, tinygltf::Model* model, int* 
     float* out = (float*)malloc(numElements * sizeof(float));
 
     for (int n = 0; n < numElements; n++) {
-        out[n] = static_cast<float>((data[n*typesize]));
+        //out[n] = static_cast<float>((data[n*typesize]));
+        switch (typesize) {
+        case 4: {
+            memcpy(out + n, data + (n*typesize), 4); 
+        } break;
+        case 8: {double x;
+            memcpy(&x, data + (n*typesize), 4); 
+            out[n] = x;
+        } break;
+        }
     }
 
     free(data);
