@@ -115,7 +115,7 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 k.data->Create(iss, resource);
                 objectsByType.Players.push_back(k.data);
                 objectsByType.Renderable.push_back(k.data);
-
+				std::cout << k.data->m_uid << " : Loaded ID";
                 go = k.data;
             }
             else if (entType.compare("AICHARACTER") == 0) {

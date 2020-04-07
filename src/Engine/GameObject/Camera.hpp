@@ -35,6 +35,7 @@ public:
         Freefly
     };
     eCameraMode m_cameraMode;
+	void changeFollowTarget(UID_t target);
 
 protected:
     UID_t m_followTargetID;

@@ -49,15 +49,16 @@ void Camera::Update(double dt) {
             f32 horizSens = 0.12; // Mouse based sensitivities
             f32 vertSens = 0.12;
 
-            vec3 forward = vec3(viewMatrix.row1()).get_unit();
+			// These should be 1 2 3 but instead need to be 3 2 1 with the vel changes for fwd/back reversed
+            vec3 forward = vec3(viewMatrix.row3()).get_unit();
             vec3 up = vec3(viewMatrix.row2()).get_unit();
-            vec3 right = vec3(viewMatrix.row3()).get_unit();
+            vec3 right = vec3(viewMatrix.row1()).get_unit();
 
             if (Input::getKeyState("key_w")) {
-                vel += forward;
+                vel -= forward;
             }
             if (Input::getKeyState("key_s")) {
-                vel -= forward;
+                vel += forward;
             }
             if (Input::getKeyState("key_a")) {
                 vel -= right;
@@ -134,10 +135,6 @@ void Camera::PostLoad() {
     originalPosition = Position;
     originalYPR = YawPitchRoll;
 }
-
-
-
-
 
 void Camera::updateViewFrustum(f32 width, f32 height) {
     updateViewMatrix();
@@ -269,4 +266,8 @@ void Camera::InputEvent(s32 key, s32 action) {
             } break;
         }
     }
+}
+
+void Camera::changeFollowTarget(UID_t target) {
+	this->m_followTargetID = target;
 }
