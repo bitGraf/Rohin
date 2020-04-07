@@ -7,7 +7,7 @@ Engine g_engine;
 int main(int argc, char* argv[]) {
     g_engine.InitEngine(GlobalHandleMessage, argc, argv);
     // load level
-    //g_engine.LoadLevel("Data/outFile.scene");
+    g_engine.LoadLevel("Data/outFile.scene");
 
     g_engine.Start();
 

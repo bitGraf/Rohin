@@ -189,6 +189,102 @@ void ResourceManager::loadResourceFile(std::string filename) {
             data += 2;
         }
 
+        // Now do materials
+        for (int n = 0; n < numMats; n++) {
+            if (strncmp(data, "Material: ", 10) != 0) {
+                printf("Error reading .mcf file. Expected a material entry and didnt get one.\n");
+                break;
+            }
+
+            Material mat;
+
+            char* dump = data += 10;
+            size_t end = 0;
+            while (data[end] != 0 && data[end] != 10 && data[end] != 13) {
+                end++;
+            }
+
+            char* mat_name = (char*)malloc(end + 1);
+            memcpy(mat_name, data, end);
+            mat_name[end] = 0;
+
+            data += end + 2;
+
+            char flag = data[0];
+            data++;
+
+            float diffuseColor[4], metallicFactor, roughnessFactor;
+            memcpy(diffuseColor, data, 4 * sizeof(float)); data += 4 * sizeof(float);
+            memcpy(&metallicFactor, data, sizeof(float));  data += sizeof(float);
+            memcpy(&roughnessFactor, data, sizeof(float)); data += sizeof(float);
+
+            bool hasDiffuse = flag & 1;
+            bool hasNormal  = flag & 2;
+            bool hasAMR     = flag & 4;
+
+            if (hasDiffuse) {
+                int numBytes;
+                memcpy(&numBytes, data, sizeof(int)); data += sizeof(int);
+                unsigned char* tex_data = (unsigned char*)malloc(numBytes);
+                memcpy(tex_data, data, numBytes); data += numBytes;
+
+                free(tex_data);
+            }
+
+            if (hasNormal) {
+                int numBytes;
+                memcpy(&numBytes, data, sizeof(int)); data += sizeof(int);
+                unsigned char* tex_data = (unsigned char*)malloc(numBytes);
+                memcpy(tex_data, data, numBytes); data += numBytes;
+
+                free(tex_data);
+            }
+
+            if (hasAMR) {
+                int numBytes;
+                memcpy(&numBytes, data, sizeof(int)); data += sizeof(int);
+                unsigned char* tex_data = (unsigned char*)malloc(numBytes);
+                memcpy(tex_data, data, numBytes); data += numBytes;
+
+                free(tex_data);
+            }
+
+            data += 2;
+
+            /*int numIndices;
+            memcpy(&numIndices, data, 4);
+            data += 4;
+            mesh.numFaces = numIndices * 3;
+            mesh.indices = reserveDataBlocks<int>(numIndices);
+            memcpy(mesh.indices.data, data, numIndices * sizeof(int));
+            //int* mesh_indices = (int*)malloc(numIndices * sizeof(int));
+            //memcpy(mesh_indices, data, numIndices * sizeof(int));
+            data += numIndices * sizeof(int);*/
+
+            /*bool hasNormals = flag & 1;
+            bool hasUVs = flag & 2;
+            bool hasTangents = flag & 4;
+            bool hasBitangents = flag & 8;
+
+            if (hasNormals) {
+                mesh.vertNormals = reserveDataBlocks<math::vec3>(numVerts);
+                memcpy(mesh.vertNormals.data, data, numVerts * 3 * sizeof(float));
+                //float* mesh_normals = (float*)malloc(numVerts * 3 * sizeof(float));
+                //memcpy(mesh_normals, data, numVerts * 3 * sizeof(float));
+                data += numVerts * 3 * sizeof(float);
+            }*/
+
+            //mat.flag = flag;
+            //mat.initialized = false;
+
+            if (materials.find(mat_name) == materials.end()) {
+                printf("    Material Entry: [%s] flag: %d...", mat_name, (int)flag);
+                initializeMaterial(&mat);
+                printf("Initialized\n");
+                materials[mat_name] = mat;
+            }
+        }
+
         bool end = true;
     }
     else {
@@ -245,6 +341,10 @@ void ResourceManager::initializeTriangleMesh(TriangleMesh* mesh) {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh->numFaces * mesh->indices.m_elementSize * 3, &mesh->indices.data[0], GL_STATIC_DRAW);
 
     glBindVertexArray(0);
+}
+
+void ResourceManager::initializeMaterial(Material* mat) {
+    // TODO: create openGL textures based on the data in the Material
 }
 
 void ResourceManager::setRootDirectory(char* exeLoc) {

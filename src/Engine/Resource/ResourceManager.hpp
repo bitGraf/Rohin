@@ -45,7 +45,7 @@ private:
     std::unordered_map<std::string, Material> materials;
 
     void initializeTriangleMesh(TriangleMesh* mesh);
-    //void initializeTexture(tinygltf::Model* root, Material_Texture* mTex);
+    void initializeMaterial(Material* mat);
 };
 
 #endif
