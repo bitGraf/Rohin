@@ -130,7 +130,6 @@ char* FileSystem::readAllBytes(std::string filepath, size_t& bytesRead) {
 
         if (infile) {
             // successful read
-            printf("Success: %zu bytes read\n", infile.gcount());
             bytesRead = length;
             return buffer;
         }

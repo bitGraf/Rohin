@@ -12,7 +12,6 @@ void Engine::Start() {
     auto frameEnd = frameStart + Framerate{ 1 };
 
     Console::logMessage("Starting message loop.");
-    done = true;
     while (!done) {
         frameStart = engine_clock::now();
 
@@ -67,15 +66,15 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
     MessageBus::setGlobalMessageHandleCallback(f);
 
     m_Resource.setRootDirectory(argv[0]);
-    MessageBus::registerSystem(m_Resource.create());
     MessageBus::registerSystem(m_MainWindow.create());
     MessageBus::registerSystem(m_Renderer.create());
+    MessageBus::registerSystem(m_Resource.create());
 
     Message::listMessageTypes();
 
     EnvironmentMap::InitVAO();
     //m_Scenes.loadScenes(&m_Resource);
-    //m_Renderer.loadResources(&m_Resource);
+    m_Renderer.loadResources(&m_Resource);
     //m_Options.create(&m_MainWindow);
     //m_Options.redraw();
     //m_MainWindow.resize(1200, 900);

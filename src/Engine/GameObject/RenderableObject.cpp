@@ -15,11 +15,8 @@ RenderableObject::RenderableObject() :
 void RenderableObject::Create(istringstream &iss, ResourceManager* resource) {
     GameObject::Create(iss, resource);
 
-    /* FIX_THIS */
-    getNextString(iss);
-    getNextString(iss);
-    //m_mesh = resource->getMesh(getNextString(iss));
-    //m_material = resource->getMaterial(getNextString(iss));
+    m_mesh = resource->getMesh(getNextString(iss));
+    m_material = resource->getMaterial(getNextString(iss));
     mesh_Position = getNextVec3(iss);
     mesh_YawPitchRoll = getNextVec3(iss);
     mesh_Scale = getNextVec3(iss);
@@ -33,9 +30,8 @@ mat4 RenderableObject::getModelTransform() {
 }
 
 void RenderableObject::setModel(ResourceManager* resource) {
-    /* FIX_THIS */
-    m_mesh = nullptr; // resource->getMesh("Sphere");
-    m_material = nullptr; // resource->getMaterial("Woodball");
+    resource->getMesh("Sphere");
+    resource->getMaterial("Woodball");
 }
 
 mat4 RenderableObject::getMeshTransform() {

@@ -34,9 +34,18 @@ public:
         return m_pool.allocBlock<TYPE>(num);
     }
 
+    meshRef getMesh(std::string);
+    materialRef getMaterial(std::string);
+
 private:
     FileSystem m_FileSystem;
     PoolAllocator m_pool;
+
+    std::unordered_map<std::string, TriangleMesh> meshes;
+    std::unordered_map<std::string, Material> materials;
+
+    void initializeTriangleMesh(TriangleMesh* mesh);
+    //void initializeTexture(tinygltf::Model* root, Material_Texture* mTex);
 };
 
 #endif
