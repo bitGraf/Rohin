@@ -46,6 +46,7 @@ private:
 
     void initializeTriangleMesh(TriangleMesh* mesh);
     void initializeMaterial(Material* mat);
+    void genTextureFromData(Material_Texture* tex);
 };
 
 #endif

@@ -233,10 +233,10 @@ void DeferredBatchRenderer::geometryPass(RenderBatch* batch) {
             glBindTexture(GL_TEXTURE_2D, call->mat->normalTexture.glTexID == 0 ? normalTex.glTextureID : call->mat->normalTexture.glTexID);
 
             glActiveTexture(GL_TEXTURE2);
-            glBindTexture(GL_TEXTURE_2D, call->mat->metallicRoughnessTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->metallicRoughnessTexture.glTexID);
+            glBindTexture(GL_TEXTURE_2D, call->mat->amrTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->amrTexture.glTexID);
 
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D, call->mat->occlusionTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->occlusionTexture.glTexID);
+            //glActiveTexture(GL_TEXTURE3);
+            //glBindTexture(GL_TEXTURE_2D, call->mat->occlusionTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->occlusionTexture.glTexID);
 
             glActiveTexture(GL_TEXTURE4);
             glBindTexture(GL_TEXTURE_2D, call->mat->emissiveTexture.glTexID == 0 ? whiteTex.glTextureID : call->mat->emissiveTexture.glTexID);

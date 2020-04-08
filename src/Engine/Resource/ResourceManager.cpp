@@ -3,7 +3,7 @@
 //ResourceManager g_ResourceManager;
 
 ResourceManager::ResourceManager() :
-    m_pool(4 * MEGABYTE)
+    m_pool(64 * MEGABYTE)
 {
 }
 
@@ -51,17 +51,12 @@ CoreSystem* ResourceManager::create() {
         }
     }
     printf("Loaded %d resources files\n", numLoaded);
+    u32 left = m_pool.getBytesLeft();
+    u32 total = m_pool.getTotalBytes();
+    printf("Memory pool: %.1fmB/%.1fmB (%.2f%%)\n", (float)left/MEGABYTE, (float)total/MEGABYTE, (float)left/total * 100);
 
     return this;
 }
-
-struct mesh_entry {
-
-};
-
-struct mat_entry {
-
-};
 
 void ResourceManager::loadResourceFile(std::string filename) {
     printf("  Reading resource file [%s]...", filename.c_str());
@@ -218,70 +213,71 @@ void ResourceManager::loadResourceFile(std::string filename) {
             memcpy(&metallicFactor, data, sizeof(float));  data += sizeof(float);
             memcpy(&roughnessFactor, data, sizeof(float)); data += sizeof(float);
 
-            bool hasDiffuse = flag & 1;
-            bool hasNormal  = flag & 2;
-            bool hasAMR     = flag & 4;
+            bool hasDiffuse  = flag & 1;
+            bool hasNormal   = flag & 2;
+            bool hasAMR      = flag & 4;
+            bool hasEmissive = flag & 8;
+
+            mat.baseColorTexture.data = reserveDataBlocks<unsigned char>(1);
+            mat.normalTexture.data = reserveDataBlocks<unsigned char>(1);
+            mat.amrTexture.data = reserveDataBlocks<unsigned char>(1);
+            mat.emissiveTexture.data = reserveDataBlocks<unsigned char>(1);
 
             if (hasDiffuse) {
                 int numBytes;
                 memcpy(&numBytes, data, sizeof(int)); data += sizeof(int);
-                unsigned char* tex_data = (unsigned char*)malloc(numBytes);
-                memcpy(tex_data, data, numBytes); data += numBytes;
+                memcpy(&mat.baseColorTexture.nrChannels, data, sizeof(int)); data += sizeof(int);
+                memcpy(&mat.baseColorTexture.width, data, sizeof(int)); data += sizeof(int);
+                memcpy(&mat.baseColorTexture.height, data, sizeof(int)); data += sizeof(int);
 
-                free(tex_data);
+                mat.baseColorTexture.data = reserveDataBlocks<unsigned char>(numBytes);
+                memcpy(mat.baseColorTexture.data.data, data, numBytes); data += numBytes;
             }
 
             if (hasNormal) {
                 int numBytes;
                 memcpy(&numBytes, data, sizeof(int)); data += sizeof(int);
-                unsigned char* tex_data = (unsigned char*)malloc(numBytes);
-                memcpy(tex_data, data, numBytes); data += numBytes;
-
-                free(tex_data);
+                memcpy(&mat.normalTexture.nrChannels, data, sizeof(int)); data += sizeof(int);
+                memcpy(&mat.normalTexture.width, data, sizeof(int)); data += sizeof(int);
+                memcpy(&mat.normalTexture.height, data, sizeof(int)); data += sizeof(int);
+                
+                mat.normalTexture.data = reserveDataBlocks<unsigned char>(numBytes);
+                memcpy(mat.normalTexture.data.data, data, numBytes); data += numBytes;
             }
 
             if (hasAMR) {
                 int numBytes;
                 memcpy(&numBytes, data, sizeof(int)); data += sizeof(int);
-                unsigned char* tex_data = (unsigned char*)malloc(numBytes);
-                memcpy(tex_data, data, numBytes); data += numBytes;
-
-                free(tex_data);
+                memcpy(&mat.amrTexture.nrChannels, data, sizeof(int)); data += sizeof(int);
+                memcpy(&mat.amrTexture.width, data, sizeof(int)); data += sizeof(int);
+                memcpy(&mat.amrTexture.height, data, sizeof(int)); data += sizeof(int);
+                
+                mat.amrTexture.data = reserveDataBlocks<unsigned char>(numBytes);
+                memcpy(mat.amrTexture.data.data, data, numBytes); data += numBytes;
             }
+
+            if (hasEmissive) {
+                int numBytes;
+                memcpy(&numBytes, data, sizeof(int)); data += sizeof(int);
+                memcpy(&mat.emissiveTexture.nrChannels, data, sizeof(int)); data += sizeof(int);
+                memcpy(&mat.emissiveTexture.width, data, sizeof(int)); data += sizeof(int);
+                memcpy(&mat.emissiveTexture.height, data, sizeof(int)); data += sizeof(int);
+
+                mat.emissiveTexture.data = reserveDataBlocks<unsigned char>(numBytes);
+                memcpy(mat.emissiveTexture.data.data, data, numBytes); data += numBytes;
+            }
+
+            mat.flag = flag;
+            mat.initialised = false;
 
             data += 2;
 
-            /*int numIndices;
-            memcpy(&numIndices, data, 4);
-            data += 4;
-            mesh.numFaces = numIndices * 3;
-            mesh.indices = reserveDataBlocks<int>(numIndices);
-            memcpy(mesh.indices.data, data, numIndices * sizeof(int));
-            //int* mesh_indices = (int*)malloc(numIndices * sizeof(int));
-            //memcpy(mesh_indices, data, numIndices * sizeof(int));
-            data += numIndices * sizeof(int);*/
-
-            /*bool hasNormals = flag & 1;
-            bool hasUVs = flag & 2;
-            bool hasTangents = flag & 4;
-            bool hasBitangents = flag & 8;
-
-            if (hasNormals) {
-                mesh.vertNormals = reserveDataBlocks<math::vec3>(numVerts);
-                memcpy(mesh.vertNormals.data, data, numVerts * 3 * sizeof(float));
-                //float* mesh_normals = (float*)malloc(numVerts * 3 * sizeof(float));
-                //memcpy(mesh_normals, data, numVerts * 3 * sizeof(float));
-                data += numVerts * 3 * sizeof(float);
-            }*/
-
-            //mat.flag = flag;
-            //mat.initialized = false;
-
             if (materials.find(mat_name) == materials.end()) {
                 printf("    Material Entry: [%s] flag: %d...", mat_name, (int)flag);
-                initializeMaterial(&mat);
+                //initializeMaterial(&mat);
                 printf("Initialized\n");
                 materials[mat_name] = mat;
+                bool done = true;
             }
         }
 
@@ -343,8 +339,55 @@ void ResourceManager::initializeTriangleMesh(TriangleMesh* mesh) {
     glBindVertexArray(0);
 }
 
+void ResourceManager::genTextureFromData(Material_Texture* tex) {
+    GLuint texID;
+
+    //Generate OpenGL Texture
+    glGenTextures(1, &texID);
+    glBindTexture(GL_TEXTURE_2D, texID);
+    // set the texture wrapping/filtering options
+
+    // image data
+
+    if (tex->data.data) {
+        GLenum format;
+        if (tex->nrChannels == 1)
+            format = GL_RED;
+        else if (tex->nrChannels == 3)
+            format = GL_RGB;
+        else if (tex->nrChannels == 4)
+            format = GL_RGBA;
+        tex->format = format;
+
+        glTexImage2D(GL_TEXTURE_2D, 0, format, tex->width, tex->height, 0, format, GL_UNSIGNED_BYTE, tex->data.data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    else {
+        texID = 0;
+    }
+
+    tex->glTexID = texID;
+}
+
 void ResourceManager::initializeMaterial(Material* mat) {
     // TODO: create openGL textures based on the data in the Material
+    if (mat->flag & 1) {
+        genTextureFromData(&mat->baseColorTexture);
+    }
+    if (mat->flag & 2) {
+        genTextureFromData(&mat->normalTexture);
+    }
+    if (mat->flag & 4) {
+        genTextureFromData(&mat->amrTexture);
+    }
+    if (mat->flag & 8) {
+        genTextureFromData(&mat->emissiveTexture);
+    }
 }
 
 void ResourceManager::setRootDirectory(char* exeLoc) {
