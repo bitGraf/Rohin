@@ -115,14 +115,12 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 k.data->Create(iss, resource);
                 objectsByType.Players.push_back(k.data);
                 objectsByType.Renderable.push_back(k.data);
-				std::cout << k.data->m_uid << " : Loaded ID";
                 go = k.data;
             }
             else if (entType.compare("AICHARACTER") == 0) {
                 auto k = resource->reserveDataBlocks<AICharacter>(1);
 
                 k.data->Create(iss, resource);
-                //objectsByType.Players.push_back(k.data);
                 objectsByType.Renderable.push_back(k.data);
 				objectsByType.Actor.push_back(k.data);
 
@@ -132,7 +130,6 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
 				auto k = resource->reserveDataBlocks<GoapCharacter>(1);
 
 				k.data->Create(iss, resource);
-				//objectsByType.Players.push_back(k.data);
 				objectsByType.Renderable.push_back(k.data);
 				objectsByType.GoapActor.push_back(k.data);
 
