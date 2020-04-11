@@ -39,7 +39,8 @@ void PlayerObject::Update(double dt) {
 
 void PlayerObject::Create(istringstream &iss, ResourceManager* resource) {
     CharacterObject::Create(iss, resource);
-    Position = vec3(0, 2, 0);
+    //Position = vec3(0, 2, 0);
+	Position = vec3(Position.x, Position.y + 2, Position.z);
     Velocity = vec3(0, 0, 0);
     m_hullOffset = vec3(0, .5, 0);
     m_collisionHullId = cWorld.CreateNewCapsule(resource, Position + m_hullOffset, 1, 0.5f);
