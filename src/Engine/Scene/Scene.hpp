@@ -20,6 +20,7 @@
 #include "GameObject/Light.hpp"
 #include "GameObject/AICharacter.hpp"
 #include "GameObject/TriggerVolume.hpp"
+#include "GameObject/Pathfinding.hpp"
 
 const int MAX_GAME_OBJECTS = 100;
 

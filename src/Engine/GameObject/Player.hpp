@@ -20,6 +20,8 @@ public:
 
     const char* GetControlType();
 
+	bool activeState = false;
+
 protected:
     enum class eControlType {
         Normal,
@@ -29,6 +31,7 @@ protected:
 
 private:
     static const char* _obj_type_PlayerObject;
+	void switchActivePlayer();
 };
 
 #endif

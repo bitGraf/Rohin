@@ -9,6 +9,7 @@
 #include "RenderBatch.hpp"
 #include "Window/Framebuffer.hpp"
 #include "DynamicFont.hpp"
+#include "SpriteRenderer.hpp"
 #include "Utils.hpp"
 #include "Resource/ResourceManager.hpp"
 
@@ -98,6 +99,8 @@ private:
 
     Shader m_debugMeshShader;
     TriangleMesh* cameraMesh;
+
+	Shader m_spriteShader;
 
     u16 scr_width, scr_height;
 

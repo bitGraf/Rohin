@@ -8,6 +8,7 @@
 #include "Resource/Texture.hpp"
 #include "RenderBatch.hpp"
 #include "DynamicFont.hpp"
+#include "SpriteRenderer.hpp"
 #include "Utils.hpp"
 #include "Resource/ResourceManager.hpp"
 
@@ -74,6 +75,11 @@ private:
 
     Shader m_ssaoBlurShader;
     Framebuffer_new ssaoBlurFBO;
+
+	// Sprite Pass
+	Shader m_spriteShader;
+	_dur dur_spritePass;
+	SpriteRenderer spriteRender;
 
     // Debug Pass
     Shader m_debugMeshShader;

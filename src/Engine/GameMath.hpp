@@ -144,6 +144,9 @@ namespace math {
 
         void lookAt(vec3 pos, vec3 targ, vec3 Up);
         void orthoProjection(scalar left, scalar right, scalar bottom, scalar top, scalar znear, scalar zfar);
+		void translate(math::vec3 translation_vector);
+		void rotate(float angle, math::vec3 rotation_axis);
+		void scale(math::vec3 scale_vector);
 
         friend std::ostream& operator<<(std::ostream& os, const mat4& m); ///< Stream operator overload
 

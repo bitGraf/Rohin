@@ -1,4 +1,5 @@
 #include "MessageBus.hpp"
+#include "g_GameObject/PlayerManager.hpp"
 
 std::queue<Message> MessageBus::mq;
 bool MessageBus::hasMessages = true;
@@ -63,6 +64,8 @@ void MessageBus::processMessage(Message msg) {
 
     Console::handleMessage(msg);
     Input::handleMessage(msg);
+	PlayerManager::handleMessage(msg);
+	
     for (auto system : m_systems) {
         system->handleMessage(msg);
     }

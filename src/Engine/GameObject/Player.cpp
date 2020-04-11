@@ -1,5 +1,6 @@
 #include "Player.hpp"
 #include "Scene/Scene.hpp"
+#include "g_GameObject/PlayerManager.hpp"
 const char* PlayerObject::_obj_type_PlayerObject = "Player";
 
 PlayerObject::PlayerObject() :
@@ -12,19 +13,20 @@ PlayerObject::PlayerObject() :
 }
 
 void PlayerObject::Update(double dt) {
-
-    switch (m_controlType) {
-        case eControlType::Normal: {
-            MoveForward(Input::getAxisState("MoveForward"));
-            MoveRight(Input::getAxisState("MoveRight"));
-            Rotate(-Input::getAxisState("Rotate"));
-        } break;
-        case eControlType::Tank: {
-            MoveForward(Input::getAxisState("MoveForward"));
-            MoveRight(Input::getAxisState("StrafeRight"));
-            Rotate(-Input::getAxisState("MoveRight"));
-        } break;
-    }
+	if (this->activeState == true) {
+		switch (m_controlType) {
+			case eControlType::Normal: {
+				MoveForward(Input::getAxisState("MoveForward"));
+				MoveRight(Input::getAxisState("MoveRight"));
+				Rotate(-Input::getAxisState("Rotate"));
+			} break;
+			case eControlType::Tank: {
+				MoveForward(Input::getAxisState("MoveForward"));
+				MoveRight(Input::getAxisState("StrafeRight"));
+				Rotate(-Input::getAxisState("MoveRight"));
+			} break;
+		}
+	}
 
     CharacterObject::Update(dt);
 
@@ -37,7 +39,8 @@ void PlayerObject::Update(double dt) {
 
 void PlayerObject::Create(istringstream &iss, ResourceManager* resource) {
     CharacterObject::Create(iss, resource);
-    Position = vec3(0, 2, 0);
+    //Position = vec3(0, 2, 0);
+	Position = vec3(Position.x, Position.y + 2, Position.z);
     Velocity = vec3(0, 0, 0);
     m_hullOffset = vec3(0, .5, 0);
     m_collisionHullId = cWorld.CreateNewCapsule(resource, Position + m_hullOffset, 1, 0.5f);
@@ -49,37 +52,42 @@ void PlayerObject::InputEvent(s32 key, s32 action) {
     //if (key == GLFW_KEY_F && action == GLFW_PRESS) {
     //    CameraFollowPlayer = !CameraFollowPlayer;
     //}
+	if (this->activeState == true) {
+		if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+			switch (m_relativeSource) {
+			case eRelativeSource::World: {
+				m_relativeSource = eRelativeSource::Camera;
+			} break;
+			case eRelativeSource::Camera: {
+				m_relativeSource = eRelativeSource::Character;
+			} break;
+			case eRelativeSource::Character: {
+				m_relativeSource = eRelativeSource::World;
+			} break;
+			}
+		}
 
-    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-        switch (m_relativeSource) {
-            case eRelativeSource::World: {
-                m_relativeSource = eRelativeSource::Camera;
-            } break;
-            case eRelativeSource::Camera: {
-                m_relativeSource = eRelativeSource::Character;
-            } break;
-            case eRelativeSource::Character: {
-                m_relativeSource = eRelativeSource::World;
-            } break;
-        }
-    }
+		if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
+			switch (m_controlType) {
+			case eControlType::Normal: {
+				m_controlType = eControlType::Tank;
+				m_relativeSource = eRelativeSource::Character;
+			} break;
+			case eControlType::Tank: {
+				m_controlType = eControlType::Normal;
+			} break;
+			}
+		}
 
-    if (key == GLFW_KEY_Y && action == GLFW_PRESS) {
-        switch (m_controlType) {
-            case eControlType::Normal: {
-                m_controlType = eControlType::Tank;
-                m_relativeSource = eRelativeSource::Character;
-            } break;
-            case eControlType::Tank: {
-                m_controlType = eControlType::Normal;
-            } break;
-        }
-    }
+		if ((key == GLFW_KEY_SPACE && action == GLFW_PRESS) ||
+			(key == GLFW_GAMEPAD_BUTTON_A && action == GLFW_PRESS)) {
+			Jump(5.5);
+		}
 
-    if ((key == GLFW_KEY_SPACE && action == GLFW_PRESS) || 
-        (key == GLFW_GAMEPAD_BUTTON_A && action == GLFW_PRESS)) {
-        Jump(5.5);
-    }
+		if (key == GLFW_KEY_L && action == GLFW_PRESS) {
+			switchActivePlayer();
+		}
+	}
 }
 
 const char* PlayerObject::GetControlType() {
@@ -94,11 +102,26 @@ const char* PlayerObject::GetControlType() {
 }
 
 void PlayerObject::PostLoad() {
-    m_cameraID = GetCurrentScene()->getObjectIDByName("MainCamera"); // < Should this REALLY be in here?
+    m_cameraID = GetCurrentScene()->getObjectIDByName("MainCamera"); // TODO: Should this REALLY be in here?
     static_cast<Camera*>(GetCurrentScene()->getObjectByID(m_cameraID))->m_cameraMode = Camera::eCameraMode::ThirdPersonFollow;
+	if (this->Name == "YaBoy") {
+		this->activeState = true;
+	}
+	Message::registerMessageType("ActivePlayerSwitch");
     Input::registerGameObject(this);
 }
 
 const char* PlayerObject::ObjectTypeString() {
     return _obj_type_PlayerObject;
+}
+
+void PlayerObject::switchActivePlayer() {
+	// TODO: Note that there should maybe be a redundant second check here to prevent multiple active players
+	//static_cast<Camera*>(GetCurrentScene()->getObjectByID(m_cameraID))->changeFollowTarget(playerList[(thisID + 1) % size(playerList)]->getID());
+	this->activeState = false;
+	auto it = std::find(GetCurrentScene()->objectsByType.Players.begin(), GetCurrentScene()->objectsByType.Players.end(), this);
+	// TODO: Find the next element after this but not using getID() + 1
+	int index = std::distance(GetCurrentScene()->objectsByType.Players.begin(), it);
+	std::cout << GetCurrentScene()->objectsByType.Players[(index + 1) % GetCurrentScene()->objectsByType.Players.size()]->m_uid << " : Pre-Message ID\n";
+	MessageBus::sendMessage(Message("ActivePlayerSwitch", 1, GetCurrentScene()->objectsByType.Players[(index + 1) % GetCurrentScene()->objectsByType.Players.size()]->m_uid));
 }
