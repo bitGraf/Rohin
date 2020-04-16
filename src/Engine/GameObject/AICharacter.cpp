@@ -103,7 +103,8 @@ void GoapCharacter::PostLoad() {
 }
 
 void GoapCharacter::Update(double dt) {
-	this->lastVisitedNode = curMap.nearestNode(this->Position);
+	//this->lastVisitedNode = curMap.nearestNode(this->Position);
+
 }
 
 void GoapCharacter::Destroy() {
