@@ -90,8 +90,8 @@ void GoapCharacter::PostLoad() {
 	const int plancost = Astar_Plan(&AIap, start, goal, plan, states, &plansz);
 	printf("plancost = %d", plancost);
 	//char desc[4096];
-	//AIap.Description(desc, sizeof(plansz));
-	//start.Description(&AIap, desc, sizeof(plansz));
+	//AIap.Description(desc, sizeof(desc));
+	//start.Description(&AIap, desc, sizeof(desc));
 	//printf("%s", desc);
 
 	m_playerRef = static_cast<CharacterObject*>(GetCurrentScene()->getObjectByName("YaBoy"));
