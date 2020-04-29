@@ -4,7 +4,6 @@
 #define MAX_CALLS 1000
 
 #include "glad/glad.h"
-#include "openal/al.h"
 #include "GameMath.hpp"
 #include "Scene/EnvironmentMap.hpp"
 #include "Scene/Material.hpp"
