@@ -1,5 +1,5 @@
 #include "DeferredBatchRenderer.hpp"
-#include "Scene\Scene.hpp"
+#include "Scene/Scene.hpp"
 
 DeferredBatchRenderer::DeferredBatchRenderer() :
     shaderOutput(0),
