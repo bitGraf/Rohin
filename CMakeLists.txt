@@ -43,7 +43,6 @@ endfunction(assign_source_group)
 set(GLFW_DIR ${LIB_DIR}/glfw)
 set(GLAD_DIR ${LIB_DIR}/glad)
 set(TINYGLTF_DIR ${LIB_DIR}/tinygltf)
-set(OPENAL_DIR ${LIB_DIR}/openal)
 
 # Engine
 set(ENGINE_DIR ${SRC_DIR}/Engine)
@@ -70,18 +69,6 @@ set(TINYGLTF_FILES
 add_library(tinygltf STATIC ${TINYGLTF_FILES})
 set_target_properties(tinygltf PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(tinygltf PRIVATE ${TINYGLTF_DIR}/)
-
-# openAL-soft
-set(OPENAL_FILES
-    ${OPENAL_DIR}/include/AL/al.h
-    ${OPENAL_DIR}/include/AL/alc.h
-    ${OPENAL_DIR}/include/AL/alext.h
-    ${OPENAL_DIR}/include/AL/efx.h
-    ${OPENAL_DIR}/include/AL/efx-creative.h
-    ${OPENAL_DIR}/include/AL/efx-presets.h)
-add_library(openal STATIC ${OPENAL_FILES})
-set_target_properties(openal PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(openal PRIVATE ${OPENAL_DIR}/include/AL/)
 
 # Doxygen
 option(BUILD_DOC "Build documentation" OFF)
@@ -123,14 +110,12 @@ target_include_directories(Game PRIVATE ${GLFW_DIR}/include) #GLFW includes
 target_compile_definitions(Game PRIVATE "GLFW_INCLUDE_NONE") # don't have glfw include openGL bindings, use GLAD instead
 target_include_directories(Game PRIVATE ${GLAD_DIR}/include/) # openGL bindings
 target_include_directories(Game PRIVATE ${TINYGLTF_DIR}/) # tinyGLTF headers
-target_include_directories(Game PRIVATE ${OPENAL_DIR}/include/AL/) # openAL headers
 
 # Link libraries
 target_link_libraries(Game engine ${CMAKE_DL_LIBS})
 target_link_libraries(Game glfw ${GLFW_LIBRARIES})
 target_link_libraries(Game glad ${CMAKE_DL_LIBS})
 target_link_libraries(Game tinygltf ${CMAKE_DL_LIBS})
-target_link_libraries(Game openal ${CMAKE_DL_LIBS})
 target_link_libraries(Game ${OPENGL_LIBRARIES})
 
 
@@ -150,14 +135,12 @@ target_include_directories(TestGame PRIVATE ${GLFW_DIR}/include) #GLFW includes
 target_compile_definitions(TestGame PRIVATE "GLFW_INCLUDE_NONE") # don't have glfw include openGL bindings, use GLAD instead
 target_include_directories(TestGame PRIVATE ${GLAD_DIR}/include/) # openGL bindings
 target_include_directories(TestGame PRIVATE ${TINYGLTF_DIR}/) # tinyGLTF headers
-target_include_directories(TestGame PRIVATE ${OPENAL_DIR}/include/AL/) # openAL headers
 
 # Link libraries
 target_link_libraries(TestGame engine ${CMAKE_DL_LIBS})
 target_link_libraries(TestGame glfw ${GLFW_LIBRARIES})
 target_link_libraries(TestGame glad ${CMAKE_DL_LIBS})
 target_link_libraries(TestGame tinygltf ${CMAKE_DL_LIBS})
-target_link_libraries(TestGame openal ${CMAKE_DL_LIBS})
 target_link_libraries(TestGame ${OPENGL_LIBRARIES})
 
 
@@ -165,7 +148,7 @@ target_link_libraries(TestGame ${OPENGL_LIBRARIES})
 
 
 # Assign Visual Studio folders
-set_target_properties(tinygltf glad glfw openal PROPERTIES FOLDER Libraries)
+set_target_properties(tinygltf glad glfw PROPERTIES FOLDER Libraries)
 set_target_properties(Game TestGame engine PROPERTIES FOLDER Rohin)
 #set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Game)
 set(VS_STARTUP_PROJECT Rohin/Game)

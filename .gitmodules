@@ -4,6 +4,3 @@
 [submodule "deps/tinygltf"]
 	path = deps/tinygltf
 	url = https://github.com/syoyo/tinygltf.git
-[submodule "deps/openal"]
-	path = deps/openal
-	url = https://github.com/kcat/openal-soft.git
