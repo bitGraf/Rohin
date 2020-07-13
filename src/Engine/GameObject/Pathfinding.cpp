@@ -316,17 +316,17 @@ std::vector<UID_t> reconstructPath(std::unordered_map<UID_t, UID_t> cameFrom, UI
 }
 
 template<typename UID_t, typename priority_t>
-bool PriorityQueue<typename UID_t, typename priority_t>::empty() {
+bool PriorityQueue<UID_t, priority_t>::empty() {
 	return elements.empty();
 }
 
 template<typename UID_t, typename priority_t>
-void PriorityQueue<typename UID_t, typename priority_t>::put(UID_t item, priority_t priority) {
+void PriorityQueue<UID_t, priority_t>::put(UID_t item, priority_t priority) {
 	elements.emplace(priority, item);
 }
 
 template<typename UID_t, typename priority_t>
-UID_t PriorityQueue<typename UID_t, typename priority_t>::get() {
+UID_t PriorityQueue<UID_t, priority_t>::get() {
 	UID_t best_item = elements.top().second;
 	elements.pop();
 	return best_item;
