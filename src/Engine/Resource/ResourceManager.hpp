@@ -3,6 +3,7 @@
 
 #include <cassert>
 #include <unordered_map>
+#include <dirent.h>
 
 #include "Scene/Material.hpp"
 #include "Message/CoreSystem.hpp"
@@ -10,8 +11,7 @@
 #include "MemoryManager.hpp"
 #include "TriangleMesh.hpp"
 
-#include "tiny_gltf.h"
-#include "stb_image.h"
+//#include "stb_image.h"
 
 const u32 KILOBYTE = 1024;              // 1 KB worth of bytes
 const u32 MEGABYTE = 1024 * KILOBYTE;   // 1 MB worth of bytes
@@ -27,7 +27,7 @@ public:
     CoreSystem* create();
     void setRootDirectory(char* exeLoc);
 
-    void loadModelFromFile(std::string path, bool binary);
+    void loadResourceFile(std::string);
 
     template <typename TYPE>
     DataBlock<TYPE> reserveDataBlocks(int num) {
@@ -39,24 +39,14 @@ public:
 
 private:
     FileSystem m_FileSystem;
-    //MemoryManager*  m_memoryManager;
     PoolAllocator m_pool;
-
-    tinygltf::TinyGLTF loader;
-
-    void* readAccessor(tinygltf::Model* root, int accessorID);
-    void* readImage(tinygltf::Model* root, int imageID);
 
     std::unordered_map<std::string, TriangleMesh> meshes;
     std::unordered_map<std::string, Material> materials;
-    std::vector<std::string> loadedResourceFiles;
 
-    void processMesh(tinygltf::Model* root, int id);
-
-    template<typename T>
-    DataBlock<T> processAccessor(tinygltf::Model* root, int id);
     void initializeTriangleMesh(TriangleMesh* mesh);
-    void initializeTexture(tinygltf::Model* root, Material_Texture* mTex);
+    void initializeMaterial(Material* mat);
+    void genTextureFromData(Material_Texture* tex);
 };
 
 #endif

@@ -30,8 +30,8 @@ mat4 RenderableObject::getModelTransform() {
 }
 
 void RenderableObject::setModel(ResourceManager* resource) {
-    m_mesh = resource->getMesh("Sphere");
-    m_material = resource->getMaterial("Woodball");
+    resource->getMesh("Sphere");
+    resource->getMaterial("Woodball");
 }
 
 mat4 RenderableObject::getMeshTransform() {

@@ -28,7 +28,7 @@ struct DataBlock {
     DataBlock<dataType>& operator=(const DataBlock<dataType>& db) {
         assert(this->m_elementSize == db.m_elementSize);
         assert(db.data != nullptr);
-        assert(db.m_numElements > 0);
+        assert(db.m_numElements >= 0);
 
         this->m_numElements = db.m_numElements;
         this->data = db.data;

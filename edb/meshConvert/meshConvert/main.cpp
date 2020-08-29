@@ -285,7 +285,7 @@ struct MeshEntry {
 };
 
 struct tex_info {
-    int width, height, nrComponents;
+    int width, height, nrComponents, bits;
     int bytelength;
 };
 
@@ -297,7 +297,7 @@ struct texture_header {
 struct MatEntry {
     std::string name;
 
-    bool hasDiffuseTexture, hasNormalTexture, hasAMRTexture;
+    bool hasDiffuseTexture, hasNormalTexture, hasAMRTexture, hasEmissiveTexture;
 
     float diffuseColor[4];
     float metallicFactor, roughnessFactor;
@@ -305,6 +305,7 @@ struct MatEntry {
     texture_header normalTexture;
     texture_header diffuseTexture;
     texture_header amrTexture;
+    texture_header emissiveTexture;
 };
 
 /* This allocates memory. Need to free it later */
@@ -369,7 +370,16 @@ float* readAccessor_float(tinygltf::Accessor* acc, tinygltf::Model* model, int* 
     float* out = (float*)malloc(numElements * sizeof(float));
 
     for (int n = 0; n < numElements; n++) {
-        out[n] = static_cast<float>((data[n*typesize]));
+        //out[n] = static_cast<float>((data[n*typesize]));
+        switch (typesize) {
+        case 4: {
+            memcpy(out + n, data + (n*typesize), 4); 
+        } break;
+        case 8: {double x;
+            memcpy(&x, data + (n*typesize), 4); 
+            out[n] = x;
+        } break;
+        }
     }
 
     free(data);
@@ -498,19 +508,16 @@ void writeMeshEntry(MeshCatalog* catalog, MeshEntry meshEntry) {
 texture_header readTextureData(int index, tinygltf::Model* model) {
     auto texture = model->textures[index];
     auto image = model->images[texture.source];
-    auto bufferView = model->bufferViews[image.bufferView];
-    auto buffer = model->buffers[bufferView.buffer];
+    image.image.size();
 
-    unsigned char* data = (unsigned char*)malloc(bufferView.byteLength);
-    memcpy(data, buffer.data.data() + bufferView.byteOffset, bufferView.byteLength);
+    unsigned char* data = (unsigned char*)malloc(image.image.size());
+    memcpy(data, image.image.data(), image.image.size());
 
     texture_header out;
     out.info.height = image.height;
     out.info.width = image.width;
     out.info.nrComponents = image.component;
-    out.info.bytelength = bufferView.byteLength;
-    //int bitSize = GetComponentSizeInBytes(image.pixel_type) * 8;
-    //int totalBits = image.bits;
+    out.info.bytelength = image.image.size();
     out.tex_data = data;
 
     return out;
@@ -526,6 +533,7 @@ MatEntry processMat(tinygltf::Material* mat, tinygltf::Model* model) {
     matEntry.hasAMRTexture = mat->pbrMetallicRoughness.metallicRoughnessTexture.index >= 0 && 
                              mat->occlusionTexture.index >= 0 && 
                              (mat->pbrMetallicRoughness.metallicRoughnessTexture.index == mat->occlusionTexture.index);
+    matEntry.hasEmissiveTexture = mat->emissiveTexture.index >= 0;
 
     matEntry.diffuseColor[0] = mat->pbrMetallicRoughness.baseColorFactor[0];
     matEntry.diffuseColor[1] = mat->pbrMetallicRoughness.baseColorFactor[1];
@@ -553,6 +561,12 @@ MatEntry processMat(tinygltf::Material* mat, tinygltf::Model* model) {
     else
         matEntry.amrTexture.tex_data = nullptr;
 
+    // read emissive texture
+    if (matEntry.hasEmissiveTexture)
+        matEntry.emissiveTexture = readTextureData(mat->emissiveTexture.index, model);
+    else
+        matEntry.emissiveTexture.tex_data = nullptr;
+
     // Read data from tinygltf material
     printf("Material name: %s\n", mat->name.c_str());
     if (matEntry.hasDiffuseTexture)
@@ -561,6 +575,8 @@ MatEntry processMat(tinygltf::Material* mat, tinygltf::Model* model) {
         printf("  has normal texture\n");
     if (matEntry.hasAMRTexture)
         printf("  has AMR texture\n");
+    if (matEntry.hasEmissiveTexture)
+        printf("  has emissive texture\n");
 
     return matEntry;
 }
@@ -588,18 +604,30 @@ void writeMatEntry(MeshCatalog* catalog, MatEntry matEntry) {
     fwrite(&matEntry.roughnessFactor, sizeof(float), 1, catalog->fp); // 1 * 4 = 4 bytes
 
     if (matEntry.hasDiffuseTexture) {
-        size_t numWritten = fwrite(&matEntry.diffuseTexture.info.bytelength, 1, sizeof(int), catalog->fp);
-        numWritten = fwrite(matEntry.diffuseTexture.tex_data, 1, matEntry.diffuseTexture.info.bytelength, catalog->fp);
+        texture_header tex = matEntry.diffuseTexture;
+        fwrite(&tex.info.bytelength, 1, sizeof(int), catalog->fp);
+        fwrite(&tex.info.nrComponents, 1, sizeof(int), catalog->fp);
+        fwrite(&tex.info.width, 1, sizeof(int), catalog->fp);
+        fwrite(&tex.info.height, 1, sizeof(int), catalog->fp);
+        fwrite(tex.tex_data, 1, tex.info.bytelength, catalog->fp);
     }
 
     if (matEntry.hasNormalTexture) {
-        fwrite(&matEntry.normalTexture.info.bytelength, 1, sizeof(int), catalog->fp);
-        fwrite(matEntry.normalTexture.tex_data, 1, matEntry.normalTexture.info.bytelength, catalog->fp);
+        texture_header tex = matEntry.normalTexture;
+        fwrite(&tex.info.bytelength, 1, sizeof(int), catalog->fp);
+        fwrite(&tex.info.nrComponents, 1, sizeof(int), catalog->fp);
+        fwrite(&tex.info.width, 1, sizeof(int), catalog->fp);
+        fwrite(&tex.info.height, 1, sizeof(int), catalog->fp);
+        fwrite(tex.tex_data, 1, tex.info.bytelength, catalog->fp);
     }
 
     if (matEntry.hasAMRTexture) {
-        fwrite(&matEntry.amrTexture.info.bytelength, 1, sizeof(int), catalog->fp);
-        fwrite(matEntry.amrTexture.tex_data, 1, matEntry.amrTexture.info.bytelength, catalog->fp);
+        texture_header tex = matEntry.amrTexture;
+        fwrite(&tex.info.bytelength, 1, sizeof(int), catalog->fp);
+        fwrite(&tex.info.nrComponents, 1, sizeof(int), catalog->fp);
+        fwrite(&tex.info.width, 1, sizeof(int), catalog->fp);
+        fwrite(&tex.info.height, 1, sizeof(int), catalog->fp);
+        fwrite(tex.tex_data, 1, tex.info.bytelength, catalog->fp);
     }
 
     if (matEntry.diffuseTexture.tex_data)

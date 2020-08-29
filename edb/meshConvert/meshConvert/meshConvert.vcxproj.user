@@ -6,7 +6,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerCommandArguments>../../testing.gltf ../../testCatalog.mcf</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>level1.glb ../../testCatalog.mcf</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerWorkingDirectory>$(ProjectDir)..\Debug</LocalDebuggerWorkingDirectory>
   </PropertyGroup>

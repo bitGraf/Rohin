@@ -7,6 +7,7 @@
 //Testing outputs
 #include <iostream>
 #include <algorithm>
+#include <functional>
 #include "GameObject.hpp"
 #include "GameMath.hpp"
 
