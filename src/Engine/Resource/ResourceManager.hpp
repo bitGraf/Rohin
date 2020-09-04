@@ -10,9 +10,6 @@
 #include "MemoryManager.hpp"
 #include "TriangleMesh.hpp"
 
-const u32 KILOBYTE = 1024;              // 1 KB worth of bytes
-const u32 MEGABYTE = 1024 * KILOBYTE;   // 1 MB worth of bytes
-
 class ResourceManager {
 public:
     ResourceManager();
@@ -34,7 +31,7 @@ public:
 
 private:
     FileSystem m_FileSystem;
-    PoolAllocator m_pool;
+    MemoryPool m_pool;
 
     std::unordered_map<std::string, TriangleMesh> meshes;
     std::unordered_map<std::string, Material> materials;

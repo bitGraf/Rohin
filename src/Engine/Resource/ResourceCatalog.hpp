@@ -6,10 +6,10 @@
 #include "Message/EMS.hpp"
 #include "Resource/FileSystem.hpp"
 
-#include <unordered_map>
+#include "TriangleMesh.hpp"
+#include "Scene/Material.hpp"
 
-const u32 KILOBYTE = 1024;              // 1 KB worth of bytes
-const u32 MEGABYTE = 1024 * KILOBYTE;   // 1 MB worth of bytes
+#include <unordered_map>
 
 enum ResourceEntryType {
     resMesh,
@@ -32,10 +32,10 @@ public:
     ResourceCatalog();
     ~ResourceCatalog();
 
-    static ResourceCatalog* GetInstance();
-
     bool Init();
     void Destroy();
+
+    bool loadResourceFile(std::string filename);
 
     void createNewResource(char* name, ResourceEntryType type, bool empty = false);
     bool getResource(std::string name, ResourceEntry& ent);
@@ -45,6 +45,17 @@ public:
 private:
     std::unordered_map<std::string, ResourceEntry> resources;
 
+    std::unordered_map<std::string, TriangleMesh> meshes;
+    std::unordered_map<std::string, Material> materials;
+
+    bool initializeTriangleMesh(TriangleMesh* mesh);
+    bool initializeMaterial(Material* mat);
+    bool genTextureFromData(Material_Texture* tex);
+
+
+public:
+    static ResourceCatalog* GetInstance();
+private:
     static ResourceCatalog* _singleton;
 };
 

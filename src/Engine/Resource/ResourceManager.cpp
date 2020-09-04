@@ -16,7 +16,7 @@ void ResourceManager::update(double dt) {
 }
 
 void ResourceManager::destroy() {
-    m_pool.destroy();
+    m_pool.Destroy();
     m_FileSystem.Destroy();
 }
 

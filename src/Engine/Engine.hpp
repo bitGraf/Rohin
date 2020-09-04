@@ -9,6 +9,7 @@
 #include "Resource/FileSystem.hpp"
 #include "Resource/ResourceCatalog.hpp"
 #include "Window/WindowManager.hpp"
+#include "Resource/MemoryManager.hpp"
 
 #include <thread>
 
@@ -38,6 +39,7 @@ private:
     FileSystem* fileSystem;
     ResourceCatalog* catalog;
     WindowManager* windowManager;
+    MemoryPool* memory;
 
     /* Frame Timing */
     using engine_clock = std::chrono::steady_clock;

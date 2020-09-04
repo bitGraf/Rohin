@@ -6,6 +6,9 @@
 #include <stdio.h>
 #include <cassert>
 
+const u32 KILOBYTE = 1024;              // 1 KB worth of bytes
+const u32 MEGABYTE = 1024 * KILOBYTE;   // 1 MB worth of bytes
+
 template<typename dataType>
 struct DataBlock {
     const size_t m_elementSize;
@@ -80,7 +83,11 @@ struct DataBlock {
  * 
  * }
  */
-class PoolAllocator {
+class MemoryPool {
+public:
+    static MemoryPool* GetInstance();
+private:
+    static MemoryPool* _singleton;
 public:
     /**
      * @brief Construct PoolAllocator
@@ -91,8 +98,8 @@ public:
      * @warning Does not initialize data of pool, must call {@link create} first
      * @param howManyBytes u32 Size of the memory pool. Must be non-zero. Constant once set
      */
-    PoolAllocator(const u32 howManyBytes);
-    ~PoolAllocator(); ///< Empty destructor
+    MemoryPool(const u32 howManyBytes);
+    ~MemoryPool(); ///< Empty destructor
     
     /**
      * @brief Initaize the allocator
@@ -102,7 +109,7 @@ public:
      * 
      * @todo possible return error code if failed
      */
-    void create();
+    bool Init();
 
     /**
      * @brief Destroys the whole pool, freeing all memory in the process
@@ -112,7 +119,7 @@ public:
      * 
      * @todo put in a check to make sure all blocks are not referenced anymore
      */
-    void destroy();
+    void Destroy();
 
     /**
      * @brief Request a raw chunk of data (void pointer)
@@ -241,14 +248,6 @@ private:
      * @return void* Returns the offset pointer
      */
     void* byteOffset(void* start, s32 numBytes);
-};
-
-class MemoryManager {
-public:
-
-private:
-    PoolAllocator allocator;
-
 };
 
 #endif

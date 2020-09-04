@@ -9,6 +9,7 @@ Engine::Engine() {
     ems = 0;
     fileSystem = 0;
     catalog = 0;
+    windowManager = 0;
 
     timeAcc = 0;
     gameTime = 0;
@@ -28,6 +29,12 @@ bool Engine::Init(int argc, char* argv[]) {
         return false;
     }
 
+    memory = MemoryPool::GetInstance();
+    if (!memory || !memory->Init()) {
+        Console::logError("Failed to create MemoryPool instance");
+        return false;
+    }
+
     catalog = ResourceCatalog::GetInstance();
     if (!catalog || !catalog->Init()) {
         Console::logError("Failed to create ResourceCatalog instance");
@@ -43,6 +50,8 @@ bool Engine::Init(int argc, char* argv[]) {
     /* free to use systems now */
     catalog->createNewResource("Data/Shaders/pipeline/ssao.frag", resShader, true);
     fileSystem->checkForFileUpdates();
+
+    catalog->loadResourceFile("level.mcf");
 
     return true;
 }
@@ -66,6 +75,7 @@ void Engine::Start() {
         }
 
         if (windowManager->ShouldClose()) {
+            Console::logMessage("Main window closed");
             done = true;
             break;
         }
@@ -92,8 +102,6 @@ void Engine::Start() {
         }
         frameEnd = frameStart;
     }
-
-    Console::logMessage("Game loop done, quitting...");
 
     End();
 }
