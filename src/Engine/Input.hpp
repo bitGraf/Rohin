@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "GameMath.hpp"
-#include "Message/Message.hpp"
 
 class GameObject;
 
@@ -31,7 +30,6 @@ public:
         int glfwGamepadAxis, bool flipAxis = false);
     static void pollKeys(GLFWwindow* window, double dt);
     static void registerGameObject(GameObject* obj);
-    static void handleMessage(Message msg);
     static void setHandleInput(bool val);
 
     static math::vec2 m_mouseMove;

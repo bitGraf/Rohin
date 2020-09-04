@@ -41,7 +41,7 @@ void main() {
     }
 
     occlusion = 1.0 - (occlusion/MAX_KERNEL_SIZE);
-    //occlusion = pow(occlusion, 1.0);
+    // occlusion = pow(occlusion, 1.0);
 
     FragColor = occlusion;  
 }

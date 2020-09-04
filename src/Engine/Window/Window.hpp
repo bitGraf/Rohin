@@ -4,23 +4,19 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-#include "Message/CoreSystem.hpp"
 #include "GameMath.hpp"
 #include "Input.hpp"
+#include "Console.hpp"
+#include "Message/EMS.hpp"
 
-/// acting as WindowManager for now
-class Window : public CoreSystem {
+class Window {
 public:
     Window();
 
     /* Initialization functions*/
     void update(double dt);
-    void handleMessage(Message msg);
-    void destroy();
-    CoreSystem* create();
-
-    void InitGLFW();
-    void create_window(const char* title = "Window", int width = DEFAULT_SCREEN_WIDTH, int height = DEFAULT_SCREEN_HEIGHT, bool hidden = false);
+    bool Init(const char* title, int width, int height, bool hidden = false);
+    void Destroy();
 
     /* Window functions */
     bool shouldClose();
@@ -68,8 +64,7 @@ private:
         int error,
         const char* description) {
 
-        //TODO change to console log?
-        printf("GLFW Error: [%d] %s\n", error, description);
+        Console::logError("GLFW Error: [%d] %s\n", error, description);
     }
     /* Window Callbacks */
     inline static void WindowPosCallback(

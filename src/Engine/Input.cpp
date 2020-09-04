@@ -49,8 +49,6 @@ void Input::setupBindings() {
     Input::watchKey("key_numpad0", GLFW_KEY_KP_0);
     Input::watchKey("key_rctrl", GLFW_KEY_RIGHT_CONTROL);
 
-    Message::registerMessageType("GamepadButton");
-
     memset(gamepadButtons, 0, 32*sizeof(unsigned char));
 }
 
@@ -141,14 +139,12 @@ void Input::pollKeys(GLFWwindow* window, double dt) {
                     }
                     else if (gamepadButtons[b] == GLFW_RELEASE) {
                         // was just pressed
-                        MessageBus::sendMessage(Message("InputKey", 4, b, 0, GLFW_PRESS, 0));
                     }
                 }
                 else if (buttons[b] == GLFW_RELEASE) {
                     // is currently up
                     if (gamepadButtons[b] == GLFW_PRESS) {
                         // was just released
-                        MessageBus::sendMessage(Message("InputKey", 4, b, 0, GLFW_RELEASE, 0));
                     }
                     else if (gamepadButtons[b] == GLFW_RELEASE) {
                         // is still released
@@ -235,21 +231,6 @@ void Input::pollKeys(GLFWwindow* window, double dt) {
 void Input::registerGameObject(GameObject* obj) {
     if (obj) {
         m_GameObjects.push_back(obj);
-    }
-}
-
-void Input::handleMessage(Message msg) {
-    if (ShouldGameObjectHandleInputEvent) {
-        if (msg.isType("InputKey")) {
-            s32 key = msg.data[0];
-            s32 scancode = msg.data[1];
-            s32 action = msg.data[2];
-            s32 mods = msg.data[3];
-
-            for (GameObject* go : m_GameObjects) {
-                go->InputEvent(key, action);
-            }
-        }
     }
 }
 

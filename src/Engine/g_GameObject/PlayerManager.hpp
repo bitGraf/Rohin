@@ -7,7 +7,6 @@
 
 class PlayerManager {
 public:
-	static void handleMessage(Message msg);
 	static void updateActivePlayer(UID_t targetID);
 
 private:

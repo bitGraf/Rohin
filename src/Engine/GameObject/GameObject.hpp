@@ -5,6 +5,7 @@
 #include "Resource/ResourceManager.hpp"
 #include "Utils.hpp"
 #include <inttypes.h>
+#include "Console.hpp"
 
 using namespace math;
 using namespace std;

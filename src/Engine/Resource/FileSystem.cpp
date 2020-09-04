@@ -1,21 +1,46 @@
 #include "FileSystem.hpp"
 
-FileSystem::FileSystem() {
+FileSystem::FileSystem() : exeLoc{ 0 }
+{
 }
 
 FileSystem::~FileSystem() {
 }
 
-void FileSystem::update(double dt) {
+FileSystem* FileSystem::_singleton = 0;
+
+FileSystem* FileSystem::GetInstance() {
+    if (!_singleton) {
+        _singleton = new FileSystem;
+    }
+    return _singleton;
 }
 
-void FileSystem::handleMessage(Message msg) {
+bool FileSystem::Destroy() {
+    fileList.clear();
+
+    if (_singleton) {
+        delete _singleton;
+        _singleton = 0;
+    }
+    return true;
 }
 
-void FileSystem::destroy() {
-}
+bool FileSystem::Init(char* directory) {
+    /* Strip the executeable name off the end */
+    auto L = strlen(directory) - 1;
 
-CoreSystem* FileSystem::create() {
+    char c = directory[L];
+    while (c != '\\' && c != '/') {
+        if (L == 0) {
+            L = strlen(directory) - 1;
+            break;
+        }
+        c = directory[--L];
+    }
+
+    memcpy(exeLoc, directory, L + 1);
+
     char currDir[128];
     Console::logMessage("CWD: " + std::string(cwd(currDir, sizeof currDir)));
 
@@ -23,28 +48,57 @@ CoreSystem* FileSystem::create() {
         Console::logMessage("CWD changes to: " + std::string(cwd(currDir, sizeof currDir)));
     }
     else {
-        Console::logMessage("Error changing directory.");
+        Console::logError("Error changing directory.");
+        return false;
     }
 
 #ifdef _WIN32
-    if (0 == cd("../../run_tree/")) {
+    if (0 == cd("../run_tree/")) {
         Console::logMessage("CWD changes to: " + std::string(cwd(currDir, sizeof currDir)));
     }
     else {
-        Console::logMessage("Error changing directory.");
+        Console::logError("Error changing directory.");
+        return false;
     }
 #else
     if (0 == cd("../run_tree/")) {
         Console::logMessage("CWD changes to: " + std::string(cwd(currDir, sizeof currDir)));
     }
     else {
-        Console::logMessage("Error changing directory.");
+        Console::logError("Error changing directory.");
+        return false;
     }
 #endif
 
+    /* Register for events */
+    Register(eveCheckFileMod, this, (Callback)&FileSystem::checkForFileUpdates);
 
+    return true;
+}
 
-    return this;
+void FileSystem::checkForFileUpdates(void*, u32) {
+    for (int n = 0; n < fileList.size(); n++) {
+        fileList[n];
+        
+        struct _stat buf;
+        int result = _stat(fileList[n].filename, &buf);
+
+        if (result != 0) {
+        Console::logError("stat failed: Error code (%d)", result);
+        }
+        else {
+            if (buf.st_mtime > fileList[n].time
+                ||
+                buf.st_size != fileList[n].size) {
+
+                /* File has been modified */
+                fileList[n].time = buf.st_mtime;
+                fileList[n].size = buf.st_size;
+
+                Post(Events::eveFileUpdate, fileList[n].filename, strlen(fileList[n].filename));
+            }
+        }
+    }
 }
 
 std::vector<std::string> FileSystem::getAllFilesOnPath(std::string searchPath) {
@@ -79,46 +133,17 @@ std::vector<std::string> FileSystem::getAllFilesOnPath(std::string searchPath) {
     return files;
 }
 
-
-
-/* File IO */
-bool FileSystem::syncReadFile(
-    const char* filepath, 
-    u8* buffer, 
-    size_t bufferSize, 
-    size_t& out_bytesRead) {
-    
-    // read all data, blocking the current thread
-    FILE* handle = fopen(filepath, "rb");
-
-    if (handle) {
-        size_t bytesRead = fread(buffer, 1, bufferSize, handle);
-        fclose(handle);
-
-        int err = ferror(handle);
-
-        if (err == 0) {
-            out_bytesRead = bytesRead;
-            buffer[bytesRead] = 0;
-            return true;
-        }
-    }
-
-    out_bytesRead = 0;
-    return false;
-}
-
-// This allocates memory
-char* FileSystem::readAllBytes(std::string filepath, size_t& bytesRead) {
+// This allocates memory. Returns nullptr and 0 bytes read if failure to load
+char* FileSystem::readAllBytes(std::string filepath, size_t& bytesRead, bool shouldWatchFile) {
     //open file
     std::ifstream infile(filepath, std::ifstream::binary);
 
     //get length of file
     if (!infile.seekg(0, std::ios::end))
-        printf("Error\n");
+        Console::logError("Failed to seek to eof");
     size_t length = infile.tellg();
     if (!infile.seekg(0, std::ios::beg))
-        printf("Error\n");
+        Console::logError("Failed to seek to bof");
 
     if (length > 0 && length != std::string::npos) {
         //create buffer
@@ -126,15 +151,19 @@ char* FileSystem::readAllBytes(std::string filepath, size_t& bytesRead) {
 
         //read file
         if (!infile.read(buffer, length))
-            printf("Error\n");
+            Console::logError("Failed to read the file");
 
         if (infile) {
             // successful read
             bytesRead = length;
+
+            if (shouldWatchFile) {
+                watchFile(filepath);
+            }
             return buffer;
         }
         else {
-            printf("Error: %zu/%zu bytes read\n", infile.gcount(), length);
+            Console::logError("Error: %zu/%zu bytes read\n", infile.gcount(), length);
             bytesRead = 0;
             return nullptr;
         }
@@ -145,14 +174,29 @@ char* FileSystem::readAllBytes(std::string filepath, size_t& bytesRead) {
     }
 }
 
-/* File System Navigation */
-void FileSystem::setRootDirectory(char* directory) {
-    auto L = strlen(directory) - 1;
-    
-    char c = directory[L];
-    while (c != '\\' && c != '/') {
-        c = directory[--L];
-    }
+void FileSystem::watchFile(std::string filepath, bool empty) {
+    // Create file registry to track updates
+    FileEntry fe;
+    strcpy(fe.filename, filepath.c_str());
 
-    memcpy(exeLoc, directory, L+1);
+    if (empty) {
+        // placeholder entry
+        fe.time = 0;
+        fe.size = 0;
+        fileList.push_back(fe);
+    }
+    else {
+        struct _stat buf;
+        int result = _stat(fe.filename, &buf);
+
+        if (result != 0) {
+            Console::logError("stat failed: Error code (%d)", result);
+        }
+        else {
+            fe.time = buf.st_mtime;
+            fe.size = buf.st_size;
+
+            fileList.push_back(fe);
+        }
+    }
 }

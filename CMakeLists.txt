@@ -16,19 +16,25 @@ set(CMAKE_BINARY_DIR ${CMAKE_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR})
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Find all source files
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
-file(GLOB_RECURSE  source_list_game "src/Game/*.?pp")
-file(GLOB_RECURSE  source_list_test "src/Testing/*.?pp")
+file(GLOB_RECURSE  source_list "src/*.?pp")
 
 function(assign_source_group)
     foreach(_source IN ITEMS ${ARGN})
         if (IS_ABSOLUTE "${_source}")
-            file(RELATIVE_PATH _source_rel "${CMAKE_CURRENT_SOURCE_DIR}/src/Game/" "${_source}")
+            file(RELATIVE_PATH _source_rel "${CMAKE_CURRENT_SOURCE_DIR}/src/" "${_source}")
         else()
             set(_source_rel "${_source}")
         endif()
@@ -40,10 +46,6 @@ endfunction(assign_source_group)
 
 set(GLFW_DIR ${LIB_DIR}/glfw)
 set(GLAD_DIR ${LIB_DIR}/glad)
-
-# Engine
-set(ENGINE_DIR ${SRC_DIR}/Engine)
-add_subdirectory(${ENGINE_DIR})
 
 # GLFW
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
@@ -57,55 +59,38 @@ add_library(glad ${GLAD_DIR}/src/glad.c)
 target_include_directories(glad PRIVATE ${GLAD_DIR}/include/)
 
 # Executable definition for Game
-add_executable(Game ${source_list_game})
+add_executable(Game ${source_list})
 target_include_directories(Game PRIVATE ${SRC_DIR}/Game/)
 set_property(TARGET Game PROPERTY CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-# assign_source_group(${source_list_game})
-source_group(${source_list_game})
+assign_source_group(${source_list})
 
 # Point to Headers
-target_include_directories(Game PRIVATE ${ENGINE_DIR})  # Engine library includes
+target_include_directories(Game PRIVATE ${SRC_DIR}/Engine)  # Engine library includes
+target_include_directories(Game PRIVATE ${SRC_DIR}/Game)  # Game library includes
 target_include_directories(Game PRIVATE ${GLFW_DIR}/include) #GLFW includes
 target_compile_definitions(Game PRIVATE "GLFW_INCLUDE_NONE") # don't have glfw include openGL bindings, use GLAD instead
 target_include_directories(Game PRIVATE ${GLAD_DIR}/include/) # openGL bindings
 
 # Link libraries
-target_link_libraries(Game engine ${CMAKE_DL_LIBS})
 target_link_libraries(Game glfw ${GLFW_LIBRARIES})
 target_link_libraries(Game glad ${CMAKE_DL_LIBS})
 target_link_libraries(Game ${OPENGL_LIBRARIES})
 
-
-
-# Executable definition for Testing Zone
-add_executable(TestGame ${source_list_test})
-target_include_directories(TestGame PRIVATE ${SRC_DIR}/Testing/)
-set_property(TARGET TestGame PROPERTY CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-# assign_source_group(${source_list_test})
-source_group(${source_list_test})
-
-# Point to Headers
-target_include_directories(TestGame PRIVATE ${ENGINE_DIR})  # Engine library includes
-target_include_directories(TestGame PRIVATE ${GLFW_DIR}/include) #GLFW includes
-target_compile_definitions(TestGame PRIVATE "GLFW_INCLUDE_NONE") # don't have glfw include openGL bindings, use GLAD instead
-target_include_directories(TestGame PRIVATE ${GLAD_DIR}/include/) # openGL bindings
-
-# Link libraries
-target_link_libraries(TestGame engine ${CMAKE_DL_LIBS})
-target_link_libraries(TestGame glfw ${GLFW_LIBRARIES})
-target_link_libraries(TestGame glad ${CMAKE_DL_LIBS})
-target_link_libraries(TestGame ${OPENGL_LIBRARIES})
-
-
-
-
-
 # Assign Visual Studio folders
 set_target_properties(glad glfw PROPERTIES FOLDER Libraries)
-set_target_properties(Game TestGame engine PROPERTIES FOLDER Rohin)
-#set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Game)
-set(VS_STARTUP_PROJECT Rohin/Game)
+set_target_properties(Game PROPERTIES FOLDER Rohin)
+set(VS_STARTUP_PROJECT Game)
+
+# Install rules
+set(RUN_TREE_PATH ${CMAKE_SOURCE_DIR}/run_tree)
+install(FILES ${CMAKE_BINARY_DIR}/Game.exe DESTINATION ${RUN_TREE_PATH})
+install(FILES ${CMAKE_BINARY_DIR}/glad.lib DESTINATION ${RUN_TREE_PATH})
+install(FILES ${CMAKE_BINARY_DIR}/glfw3.lib DESTINATION ${RUN_TREE_PATH})
+
+#add_custom_command(
+#    TARGET Game
+#    POST_BUILD
+#    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target INSTALL
+#    )

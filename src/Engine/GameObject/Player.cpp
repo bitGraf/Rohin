@@ -107,7 +107,6 @@ void PlayerObject::PostLoad() {
 	if (this->Name == "YaBoy") {
 		this->activeState = true;
 	}
-	Message::registerMessageType("ActivePlayerSwitch");
     Input::registerGameObject(this);
 }
 
@@ -123,5 +122,4 @@ void PlayerObject::switchActivePlayer() {
 	// TODO: Find the next element after this but not using getID() + 1
 	int index = std::distance(GetCurrentScene()->objectsByType.Players.begin(), it);
 	std::cout << GetCurrentScene()->objectsByType.Players[(index + 1) % GetCurrentScene()->objectsByType.Players.size()]->m_uid << " : Pre-Message ID\n";
-	MessageBus::sendMessage(Message("ActivePlayerSwitch", 1, GetCurrentScene()->objectsByType.Players[(index + 1) % GetCurrentScene()->objectsByType.Players.size()]->m_uid));
 }

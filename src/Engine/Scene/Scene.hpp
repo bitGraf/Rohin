@@ -6,7 +6,6 @@
 #include <sstream>
 #include <string>
 
-#include "Message/CoreSystem.hpp"
 #include "Resource/ResourceManager.hpp"
 #include "GLFW/glfw3.h"
 #include "Render/RenderBatch.hpp"
@@ -30,7 +29,6 @@ public:
 
     void loadFromFile(ResourceManager* resource, std::string path, bool noGLLoad);
     void update(double dt);
-    void handleMessage(Message msg);
 
     bool recognizeCustomEntity(std::string entType);
     void processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource);

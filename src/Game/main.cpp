@@ -1,29 +1,19 @@
-#include "Scene/Scene.hpp"
 #include "Engine.hpp"
 
-void GlobalHandleMessage(Message msg);
-Engine g_engine;
-
 int main(int argc, char* argv[]) {
-    g_engine.InitEngine(GlobalHandleMessage, argc, argv);
-    // load level
-    g_engine.LoadLevel("Data/outFile.scene");
+    Engine engine;
+    if (!engine.Init(argc, argv)) {
+        Console::logMessage("Failed to initialize Engine");
 
-    g_engine.Start();
+        system("pause");
+        return 0;
+    }
+
+    Console::logMessage("Starting Engine loop...");
+    engine.Start();
+    Console::logMessage("Engine loop finished...");
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
 
     return 0;
 }
-
-void GlobalHandleMessage(Message msg) {
-    g_engine.globalHandle(msg);
-}
-
-/*
-bool Scene::recognizeCustomEntity(std::string entType) {
-    return false;
-}
-
-void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource) {
-    return;
-}
-*/

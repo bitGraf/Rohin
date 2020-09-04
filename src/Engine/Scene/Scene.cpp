@@ -5,8 +5,8 @@ Scene* GetCurrentScene() { return CurrentScene; }
 void SetCurrentScene(Scene* newScene) { CurrentScene = newScene; }
 
 Scene::Scene() {
-    scr_width = DEFAULT_SCREEN_WIDTH;
-    scr_height = DEFAULT_SCREEN_HEIGHT;
+    scr_width = 800;
+    scr_height = 600;
 }
 
 
@@ -221,16 +221,6 @@ UID_t Scene::getObjectIDByName(const std::string objectName) const {
         }
     }
     return 0; // Object not found with ObjectName
-}
-
-void Scene::handleMessage(Message msg) {
-    if (msg.isType("NewWindowSize")) {
-        s32 newX = msg.data[0];
-        s32 newY = msg.data[1];
-
-        scr_width = newX;
-        scr_height = newY;
-    }
 }
 
 

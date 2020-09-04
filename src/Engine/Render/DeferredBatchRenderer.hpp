@@ -2,7 +2,6 @@
 #define DEFERRED_RENDER_MANAGER_H
 
 #include "GLFW/glfw3.h"
-#include "Message/CoreSystem.hpp"
 #include "Shader.hpp"
 #include "Shadowmap.hpp"
 #include "Resource/Texture.hpp"
@@ -17,15 +16,13 @@
 
 #include <random>
 
-class DeferredBatchRenderer : public CoreSystem {
+class DeferredBatchRenderer {
 public:
     DeferredBatchRenderer();
     ~DeferredBatchRenderer();
 
     void update(double dt);
-    void handleMessage(Message msg);
     void destroy();
-    CoreSystem* create();
 
     /* System Unique functions */
     void renderBatch(RenderBatch* batch);

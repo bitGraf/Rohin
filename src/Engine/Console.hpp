@@ -3,15 +3,15 @@
 
 class Console;
 
-#include "Message/Message.hpp"
-
 #include <sstream>
 #include <iostream>
+#include <stdarg.h>
 
 class Console
 {
 public:
-    static void handleMessage(Message msg);
+    static void logError(std::string text);
+    static void logError(char const* const _Format, ...);
     static void logMessage(std::string text);
     static void logMessage(char const* const _Format, ...);
 

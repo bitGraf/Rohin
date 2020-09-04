@@ -18,8 +18,6 @@ void TriggerVolume::Create(istringstream &iss, ResourceManager* resource) {
 
 void TriggerVolume::PostLoad() {
     m_triggerObjectID = GetCurrentScene()->getObjectIDByName(m_triggerObjectName);
-    Message::registerMessageType("VolumeEnter");
-    Message::registerMessageType("VolumeLeave");
 }
 
 void TriggerVolume::Update(double dt) {
@@ -33,14 +31,12 @@ void TriggerVolume::Update(double dt) {
             else {
                 // Entered for the first time
                 inside = true;
-                MessageBus::sendMessage(Message("VolumeEnter", 1, static_cast<s32>(m_uid)));
             }
         }
         else {
             if (inside) {
                 // Just left
                 inside = false;
-                MessageBus::sendMessage(Message("VolumeLeave", 1, static_cast<s32>(m_uid)));
             }
             else {
                 // Not inside

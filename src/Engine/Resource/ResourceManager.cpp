@@ -15,17 +15,12 @@ void ResourceManager::update(double dt) {
 
 }
 
-void ResourceManager::handleMessage(Message msg) {
-
-
-    m_FileSystem.handleMessage(msg);
-}
-
 void ResourceManager::destroy() {
     m_pool.destroy();
-    m_FileSystem.destroy();
+    m_FileSystem.Destroy();
 }
 
+/*
 CoreSystem* ResourceManager::create() {
     m_FileSystem.create();
 
@@ -57,6 +52,7 @@ CoreSystem* ResourceManager::create() {
 
     return this;
 }
+*/
 
 void ResourceManager::loadResourceFile(std::string filename) {
     printf("  Reading resource file [%s]...", filename.c_str());
@@ -391,7 +387,7 @@ void ResourceManager::initializeMaterial(Material* mat) {
 }
 
 void ResourceManager::setRootDirectory(char* exeLoc) {
-    m_FileSystem.setRootDirectory(exeLoc);
+    //m_FileSystem.setRootDirectory(exeLoc);
 }
 
 meshRef ResourceManager::getMesh(std::string id) {

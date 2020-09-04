@@ -2,25 +2,26 @@
 #define ENGINE_H_pp
 
 #include "Console.hpp"
-#include "Window/Window.hpp"
-#include "Render/DeferredBatchRenderer.hpp"
-#include "Scene/Scene.hpp"
-#include "OptionsPane.hpp"
+#include "Utils.hpp"
+
+/* Singleton Systems */
+#include "Message/EMS.hpp"
+#include "Resource/FileSystem.hpp"
+#include "Resource/ResourceCatalog.hpp"
+#include "Window/WindowManager.hpp"
 
 #include <thread>
 
-const bool BUSY_LOOP = true;
+const bool BUSY_LOOP = false;
 const int FPS_NORMAL = 50;
 const int FPS_HIGH = 250;
 
-class Engine {
+class Engine : public MessageReceiver {
 public:
     Engine();
 
-    void InitEngine(handleMessageFnc f, int argc, char* argv[]);
+    bool Init(int argc, char* argv[]);
     void Start();
-    void LoadLevel(std::string levelPath);
-    void globalHandle(Message msg);
 
 private:
     void End();
@@ -29,24 +30,14 @@ private:
     void Render();
 
     bool done;
-    bool userQuit;
 
-    RenderBatch batch;
+    double timeAcc, gameTime;
 
-    /* Core Systems */
-    Window m_MainWindow;
-    //BatchRenderer m_Renderer;
-    DeferredBatchRenderer m_Renderer;
-    ResourceManager m_Resource;
-    Camera m_debugCamera;
-    //OptionsPane m_Options;
-
-    /* State variables */
-    bool debugMode;
-    bool cursorMode;
-
-    /* Loaded levels */
-    std::vector<Scene*> m_scenes;
+    /* Core System Singletons */
+    EMS* ems;
+    FileSystem* fileSystem;
+    ResourceCatalog* catalog;
+    WindowManager* windowManager;
 
     /* Frame Timing */
     using engine_clock = std::chrono::steady_clock;
@@ -55,6 +46,7 @@ private:
     MovingAverage<long long, FPS_NORMAL> fpsAvg;
     long long lastFrameTime;
     double dt;
+    bool limitFramerate, highFramerate;
 };
 
 #endif

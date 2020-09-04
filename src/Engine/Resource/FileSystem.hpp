@@ -3,8 +3,6 @@
 
 #include <stdio.h>
 
-#include "Message/CoreSystem.hpp"
-
 #include "DataTypes.hpp"
 #include "Platform.hpp"
 
@@ -12,43 +10,49 @@
 
 #include <dirent.h>
 #include <fstream>
+#include <vector>
+
+#include <time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <stdio.h>
+#include <errno.h>
+
+#include "Message\EMS.hpp"
 
 
-class FileSystem : public CoreSystem {
+struct FileEntry {
+    char filename[128];
+    __time64_t time;
+    _off_t size;
+
+    FileEntry() : filename{ 0 }, time(0), size(0) {}
+};
+
+class FileSystem : MessageReceiver {
 public:
-    /* 
-    Plans and Features:
-    -create a FileSystem object that "sits" somewhere on the disk. 
-     Will probably change this to be mostly a static class that 
-     just tracks the filesystem of the whole engine
-    -Resource manager will always go through the Filesystem, all paths
-     are relative to where the FileSystem is
-    -Can track all the files in the system and notify if any 
-     are updated during runtime (for hot-swapping)
-    -Eventually will be made into its own thread to do asynchronus 
-     fileIO
-    */
+    static FileSystem* GetInstance();
+
     FileSystem();
     ~FileSystem();
 
-    /* Virtuals */
-    void update(double dt);
-    void handleMessage(Message msg);
-    void destroy();
-    CoreSystem* create();
+    bool Init(char* directory);
+    bool Destroy();
+
 
     /* File IO */
-    bool syncReadFile(const char* filepath, u8* buffer, size_t bufferSize, size_t& rBytesRead);
-    char* readAllBytes(std::string filepath, size_t& bytesRead);
+    char* readAllBytes(std::string filepath, size_t& bytesRead, bool shouldWatchFile = false);
 
-    /* File System Navigation */
-    void setRootDirectory(char* directory);
+    void watchFile(std::string filepath, bool empty = false);
+    void checkForFileUpdates(void* data = 0, u32 size = 0);
 
     std::vector<std::string> getAllFilesOnPath(std::string path);
 
 private:
-    //char rootDirectory[MAX_PATH];
     char exeLoc[1024];
+    std::vector<FileEntry> fileList;
+
+    static FileSystem* _singleton;
 };
 
 #endif

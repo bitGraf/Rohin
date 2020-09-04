@@ -15,77 +15,8 @@ DeferredBatchRenderer::~DeferredBatchRenderer() {}
 void DeferredBatchRenderer::update(double dt) {
 }
 
-void DeferredBatchRenderer::handleMessage(Message msg) {
-    if (msg.isType("InputKey")) {
-        // int button, int action, int mods
-        s32 key = msg.data[0];
-        s32 scancode = msg.data[1];
-        s32 action = msg.data[2];
-        s32 mods = msg.data[3];
-
-        if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS) {
-            Console::logMessage("Reloading Shaders");
-
-            m_geometryPassShader.create("pipeline/geometryPass.vert", "pipeline/geometryPass.frag", "geometryPassShader");
-            m_ssaoPassShader.create("pipeline/screen.vert", "pipeline/ssao.frag", "ssaoShader");
-            m_ssaoBlurShader.create("pipeline/screen.vert", "pipeline/ssaoBlur.frag", "ssaoBlurShader");
-            m_screenShader.create("pipeline/screen.vert", "pipeline/screen.frag", "screenShader");
-
-            m_debugMeshShader.create("debugMesh.vert", "debugMesh.frag", "debugMeshShader");
-        }
-
-        else if (key == GLFW_KEY_V && action == GLFW_PRESS) {
-            shaderOutput++;
-            if (shaderOutput > 3)
-                shaderOutput = 0;
-
-            switch (shaderOutput) {
-            case 0:
-                soStr = "Albedo";
-                break;
-            case 1:
-                soStr = "Normal";
-                break;
-            case 2:
-                soStr = "Emission";
-                break;
-            case 3:
-                soStr = "Ambient Occlusion";
-                break;
-            case 4:
-                soStr = "Metallic";
-                break;
-            case 5:
-                soStr = "Roughness";
-                break;
-            case 6:
-                soStr = "Albedo + Ambient Occlusion";
-                break;
-            case 7:
-                soStr = "Albedo + Ambient Occlusion + Emission";
-                break;
-            }
-
-            Console::logMessage("Toggling shader output: " + std::to_string(shaderOutput) 
-                + ": " + soStr);
-        }
-    }
-
-    if (msg.isType("NewWindowSize")) {
-        s32 newX = msg.data[0];
-        s32 newY = msg.data[1];
-
-        m_gBuffer.resize(newX, newY);
-        ssaoFBO.resize(newX, newY);
-        ssaoBlurFBO.resize(newX, newY);
-        debugFont.resize(newX, newY);
-
-        scr_width = newX;
-        scr_height = newY;
-    }
-}
-
 void DeferredBatchRenderer::destroy() {}
+/*
 CoreSystem* DeferredBatchRenderer::create() {
     m_geometryPassShader.create("pipeline/geometryPass.vert", "pipeline/geometryPass.frag", "geometryPassShader");
     m_ssaoPassShader.create("pipeline/screen.vert", "pipeline/ssao.frag", "ssaoShader");
@@ -182,6 +113,7 @@ CoreSystem* DeferredBatchRenderer::create() {
 
     return this;
 }
+*/
 
 void DeferredBatchRenderer::renderBatch(RenderBatch* batch) {
     /* Use list of draw calls to render the scene in multiple passes
@@ -358,8 +290,8 @@ void DeferredBatchRenderer::renderDebug(
 
     sprintf(text, "FPS: %-2.1lf [%lld us]", 1000000.0 / static_cast<double>(frameCount), lastFrame);
     debugFont.drawText(scr_width - 5, 5, white, text, ALIGN_TOP_RIGHT);
-    sprintf(text, "FPS Lock: %s",
-        g_options.limitFramerate ? (g_options.highFramerate ? "250" : "50") : "NONE");
+    //sprintf(text, "FPS Lock: %s",
+    //    g_options.limitFramerate ? (g_options.highFramerate ? "250" : "50") : "NONE");
     debugFont.drawText(scr_width - 5, 23, white, text, ALIGN_TOP_RIGHT);
 
     sprintf(text, "Render......%-3lld us (%-3lld us avg.)",
