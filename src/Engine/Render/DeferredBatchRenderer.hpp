@@ -9,7 +9,7 @@
 #include "DynamicFont.hpp"
 #include "SpriteRenderer.hpp"
 #include "Utils.hpp"
-#include "Resource/ResourceManager.hpp"
+#include "Resource/ResourceCatalog.hpp"
 
 #include "Window/GBuffer.hpp"
 #include "Window/Framebuffer.hpp"
@@ -30,7 +30,7 @@ public:
         double frameCount, long long lastFrame,
         bool debugMode);
 
-    void loadResources(ResourceManager* resource);
+    void loadResources();
 
 private:
     // Profiling

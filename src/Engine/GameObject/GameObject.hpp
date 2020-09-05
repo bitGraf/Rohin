@@ -2,7 +2,7 @@
 #define GAME_OBJECT_H
 
 #include "GameMath.hpp"
-#include "Resource/ResourceManager.hpp"
+#include "Resource/ResourceCatalog.hpp"
 #include "Utils.hpp"
 #include <inttypes.h>
 #include "Console.hpp"
@@ -27,7 +27,7 @@ public:
     GameObject();
 
     /* Overridable functions */
-    virtual void Create(istringstream &iss, ResourceManager* resource); /// Gets called when the Scene is loaded
+    virtual void Create(istringstream &iss); /// Gets called when the Scene is loaded
     virtual void PostLoad(); /// Gets called after the entire Scene is loaded
     virtual void Update(double dt); /// Gets called every frame to update
     virtual void Destroy(); /// Gets called when the Scene is destroyed

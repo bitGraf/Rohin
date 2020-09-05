@@ -10,6 +10,7 @@ Engine::Engine() {
     fileSystem = 0;
     catalog = 0;
     windowManager = 0;
+    sceneManager = 0;
 
     timeAcc = 0;
     gameTime = 0;
@@ -43,7 +44,13 @@ bool Engine::Init(int argc, char* argv[]) {
 
     windowManager = WindowManager::GetInstance();
     if (!windowManager || !windowManager->Init()) {
-        Console::logError("Failed to initialize Window class");
+        Console::logError("Failed to create WindowManager instance");
+        return false;
+    }
+
+    sceneManager = SceneManager::GetInstance();
+    if (!sceneManager || !sceneManager->Init()) {
+        Console::logError("Failed to create SceneManager instance");
         return false;
     }
 
@@ -52,6 +59,8 @@ bool Engine::Init(int argc, char* argv[]) {
     fileSystem->checkForFileUpdates();
 
     catalog->loadResourceFile("level.mcf");
+
+    sceneManager->AddSceneToList("Data/Levels/test.scene");
 
     return true;
 }

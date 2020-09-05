@@ -3,6 +3,8 @@
 
 #include <string>
 #include <sstream>
+#include <algorithm>
+#include <vector>
 
 #include "GameMath.hpp"
 
@@ -17,6 +19,10 @@ u32 hash_djb2(unsigned char* str);
 
 /// Convert character string to Unsigned 32-bit Hash
 stringID operator"" _sid(const char *input, size_t s);
+
+
+/// Strip string of all line comments (#) as well as block comments (/* */)
+char* StripComments(char* inputBuf, size_t inputBufSize, size_t& newBufSize);
 
 
 /// Moving Average class. SIZE is number of samples to average over.
@@ -58,6 +64,23 @@ public:
 
         return 0;
     }
+};
+
+
+/* Key-Value heirarchy */
+class KVH {
+public:
+    KVH();
+    ~KVH();
+
+    void Destroy();
+    void CreateAsRoot(char* buffer, size_t bufferSize);
+
+    void AddChild(u32 num);
+    
+    u32 numChildren;
+    KVH** children;
+private:
 };
 
 #endif

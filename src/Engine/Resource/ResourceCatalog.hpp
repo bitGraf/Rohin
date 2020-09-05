@@ -42,6 +42,9 @@ public:
 
     void updateResourceFromFile(void* data, u32 size);
 
+    meshRef getMesh(std::string);
+    materialRef getMaterial(std::string);
+
 private:
     std::unordered_map<std::string, ResourceEntry> resources;
 

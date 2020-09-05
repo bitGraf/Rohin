@@ -10,11 +10,11 @@ class RenderableObject : public GameObject {
 public:
     RenderableObject();
 
-    virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual void Create(istringstream &iss) override;
     virtual const char* ObjectTypeString() override;
 
     mat4 getModelTransform();
-    void setModel(ResourceManager* resource);
+    void setModel();
     mat4 getMeshTransform();
 
     meshRef getMesh() { return m_mesh; }

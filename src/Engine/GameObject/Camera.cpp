@@ -20,8 +20,8 @@ void Camera::set(float fovVert, float z_near, float z_far) {
     m_zFar = z_far;
 }
 
-void Camera::Create(istringstream &iss, ResourceManager* resource) {
-    GameObject::Create(iss, resource);
+void Camera::Create(istringstream &iss) {
+    GameObject::Create(iss);
 
     auto fovHoriz = getNextFloat(iss);
     auto ne = getNextFloat(iss);
@@ -90,35 +90,35 @@ void Camera::Update(double dt) {
             return;
         } break;
         case eCameraMode::StaticLookAt: {
-            GameObject* followTarget = GetCurrentScene()->getObjectByID(m_followTargetID);
-            if (followTarget) {
-                lookAt(followTarget->Position);
-            }
+            //GameObject* followTarget = GetCurrentScene()->getObjectByID(m_followTargetID);
+            //if (followTarget) {
+            //    lookAt(followTarget->Position);
+            //}
         } break;
         case eCameraMode::ThirdPersonFollow: {
-            GameObject* followTarget = GetCurrentScene()->getObjectByID(m_followTargetID);
-            if (followTarget) {
-                CharacterObject* f = static_cast<CharacterObject*>(followTarget);
-                vec3 forward = vec3(f->getTransform().col1());
-                Position = followTarget->Position + vec3(0, 7, 0) - (forward.get_unit() * 8);
-                lookAt(followTarget->Position);
-            }
+            //GameObject* followTarget = GetCurrentScene()->getObjectByID(m_followTargetID);
+            //if (followTarget) {
+            //    CharacterObject* f = static_cast<CharacterObject*>(followTarget);
+            //    vec3 forward = vec3(f->getTransform().col1());
+            //    Position = followTarget->Position + vec3(0, 7, 0) - (forward.get_unit() * 8);
+            //    lookAt(followTarget->Position);
+            //}
             return;
         } break;
         case eCameraMode::OrbitFollow: {
-            GameObject* followTarget = GetCurrentScene()->getObjectByID(m_followTargetID);
-            if (followTarget) {
-                if (Input::getLeftMouse()) {
-                    m_followYaw += (Input::m_mouseMove.x * .4);
-                }
-                if (Input::getLeftMouse()) {
-                    m_followPitch -= (Input::m_mouseMove.y * .08);
-                }
-
-                vec3 camDir = vec3(-cos(m_followYaw*d2r)*cos(m_followPitch*d2r), sin(m_followPitch*d2r), -sin(m_followYaw*d2r)*cos(m_followPitch*d2r));
-                Position = followTarget->Position + (camDir * m_followDistance);
-                lookAt(followTarget->Position);
-            }
+            //GameObject* followTarget = GetCurrentScene()->getObjectByID(m_followTargetID);
+            //if (followTarget) {
+            //    if (Input::getLeftMouse()) {
+            //        m_followYaw += (Input::m_mouseMove.x * .4);
+            //    }
+            //    if (Input::getLeftMouse()) {
+            //        m_followPitch -= (Input::m_mouseMove.y * .08);
+            //    }
+            //
+            //    vec3 camDir = vec3(-cos(m_followYaw*d2r)*cos(m_followPitch*d2r), sin(m_followPitch*d2r), -sin(m_followYaw*d2r)*cos(m_followPitch*d2r));
+            //    Position = followTarget->Position + (camDir * m_followDistance);
+            //    lookAt(followTarget->Position);
+            //}
             return;
         } break;
     }
@@ -129,7 +129,7 @@ const char* Camera::ObjectTypeString() {
 }
 
 void Camera::PostLoad() {
-    m_followTargetID = GetCurrentScene()->getObjectIDByName("YaBoy");
+    //m_followTargetID = GetCurrentScene()->getObjectIDByName("YaBoy");
     Input::registerGameObject(this);
 
     originalPosition = Position;

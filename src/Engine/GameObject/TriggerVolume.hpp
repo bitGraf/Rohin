@@ -7,7 +7,7 @@ class TriggerVolume : public GameObject {
 public:
     TriggerVolume();
 
-    virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual void Create(istringstream &iss) override;
     virtual void PostLoad() override;
     virtual void Update(double dt) override;
 

@@ -1,16 +1,12 @@
 #include "Scene.hpp"
 
-Scene* CurrentScene = nullptr;
-Scene* GetCurrentScene() { return CurrentScene; }
-void SetCurrentScene(Scene* newScene) { CurrentScene = newScene; }
-
 Scene::Scene() {
     scr_width = 800;
     scr_height = 600;
 }
 
 
-void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLLoad) {
+void Scene::loadFromFile(std::string path, bool noGLLoad) {
     std::ifstream infile(path);
 
     u32 numSpotLightsLoaded = 0;
@@ -56,88 +52,88 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
             GameObject* go = nullptr;
 
             if (entType.compare("GAMEOBJECT") == 0) {
-                auto k = resource->reserveDataBlocks<GameObject>(1);
+                auto k = MemoryPool::GetInstance()->allocBlock<GameObject>(1);
                 
-                k.data->Create(iss, resource);
+                k.data->Create(iss);
 
                 go = k.data;
             }
             else if (entType.compare("CAMERA") == 0) {
-                auto k = resource->reserveDataBlocks<Camera>(1);
+                auto k = MemoryPool::GetInstance()->allocBlock<Camera>(1);
 
-                k.data->Create(iss, resource);
+                k.data->Create(iss);
                 objectsByType.Cameras.push_back(k.data);
 
                 go = k.data;
             }
             else if (entType.compare("RENDERABLE") == 0) {
-                auto k = resource->reserveDataBlocks<RenderableObject>(1);
+                auto k = MemoryPool::GetInstance()->allocBlock<RenderableObject>(1);
 
-                k.data->Create(iss, resource);
+                k.data->Create(iss);
                 objectsByType.Renderable.push_back(k.data);
                 
                 go = k.data;
             }
             else if (entType.compare("DIR") == 0) {
-                auto k = resource->reserveDataBlocks<DirLight>(1);
+                auto k = MemoryPool::GetInstance()->allocBlock<DirLight>(1);
 
-                k.data->Create(iss, resource);
+                k.data->Create(iss);
                 objectsByType.DirLights.push_back(k.data);
 
                 go = k.data;
             }
             else if (entType.compare("SPOT") == 0) {
-                auto k = resource->reserveDataBlocks<SpotLight>(1);
+                auto k = MemoryPool::GetInstance()->allocBlock<SpotLight>(1);
 
-                k.data->Create(iss, resource);
+                k.data->Create(iss);
                 objectsByType.SpotLights.push_back(k.data);
 
                 go = k.data;
             }
             else if (entType.compare("POINT") == 0) {
-                auto k = resource->reserveDataBlocks<PointLight>(1);
+                auto k = MemoryPool::GetInstance()->allocBlock<PointLight>(1);
 
-                k.data->Create(iss, resource);
+                k.data->Create(iss);
                 objectsByType.PointLights.push_back(k.data);
 
                 go = k.data;
             }
             else if (entType.compare("PLAYER") == 0) {
-                auto k = resource->reserveDataBlocks<PlayerObject>(1);
+                auto k = MemoryPool::GetInstance()->allocBlock<PlayerObject>(1);
 
-                k.data->Create(iss, resource);
+                k.data->Create(iss);
                 objectsByType.Players.push_back(k.data);
                 objectsByType.Renderable.push_back(k.data);
                 go = k.data;
             }
             else if (entType.compare("AICHARACTER") == 0) {
-                auto k = resource->reserveDataBlocks<AICharacter>(1);
+                auto k = MemoryPool::GetInstance()->allocBlock<AICharacter>(1);
 
-                k.data->Create(iss, resource);
+                k.data->Create(iss);
                 objectsByType.Renderable.push_back(k.data);
 				objectsByType.Actor.push_back(k.data);
 
                 go = k.data;
             }
 			else if (entType.compare("GOAPCHARACTER") == 0) {
-				auto k = resource->reserveDataBlocks<GoapCharacter>(1);
+				auto k = MemoryPool::GetInstance()->allocBlock<GoapCharacter>(1);
 
-				k.data->Create(iss, resource);
+				k.data->Create(iss);
 				objectsByType.Renderable.push_back(k.data);
 				objectsByType.GoapActor.push_back(k.data);
 
 				go = k.data;
 			}
             else if (entType.compare("VOLUME") == 0) {
-                auto k = resource->reserveDataBlocks<TriggerVolume>(1);
+                auto k = MemoryPool::GetInstance()->allocBlock<TriggerVolume>(1);
 
-                k.data->Create(iss, resource);
+                k.data->Create(iss);
                 objectsByType.Volumes.push_back(k.data);
 
                 go = k.data;
             }
             else if (recognizeCustomEntity(entType)) {
-                processCustomEntityLoad(entType, iss, resource);
+                processCustomEntityLoad(entType, iss);
             } 
             else {
                 Console::logMessage("Don't recognize entity type: [" 
@@ -230,7 +226,7 @@ bool Scene::recognizeCustomEntity(std::string entType) {
     //Console::logMessage("No entities defined");
     return false;
 }
-void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource) {
+void Scene::processCustomEntityLoad(std::string entType, std::istringstream &iss) {
 
 }
 
@@ -242,6 +238,7 @@ void getRenderBatch(RenderBatch* batch, bool useCull) {
     if (batch == nullptr)
         return;
 
+    /*
     if (CurrentScene) {
         // Set Camera
         auto camera = CurrentScene->objectsByType.Cameras[0];
@@ -308,4 +305,5 @@ void getRenderBatch(RenderBatch* batch, bool useCull) {
             }
         }
     }
+    */
 }

@@ -3,6 +3,7 @@
 
 #include "CollisionHull.hpp"
 #include "CollisionMath.hpp"
+#include "Resource/MemoryManager.hpp"
 
 #include <vector>
 
@@ -119,11 +120,11 @@ public:
         vec3* point1, vec3* point2,
         float feather_radius);
 
-    UID_t CreateNewCubeHull(ResourceManager* resource, 
+    UID_t CreateNewCubeHull( 
         vec3 position, scalar size);
-    UID_t CreateNewCubeHull(ResourceManager* resource,
+    UID_t CreateNewCubeHull(
         vec3 position, scalar xSize, scalar ySize, scalar zSize);
-    UID_t CreateNewCapsule(ResourceManager* resource, 
+    UID_t CreateNewCapsule(
         vec3 position, scalar height, scalar radius);
     CollisionHull* getHullFromID(UID_t id);
 

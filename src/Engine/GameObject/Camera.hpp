@@ -9,7 +9,7 @@ class Camera : public GameObject {
 public:
     Camera();
 
-    void Create(istringstream &iss, ResourceManager* resource);
+    void Create(istringstream &iss);
 
     virtual void Update(double dt) override;
     virtual const char* ObjectTypeString() override;

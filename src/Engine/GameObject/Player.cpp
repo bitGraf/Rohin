@@ -37,13 +37,13 @@ void PlayerObject::Update(double dt) {
     }
 }
 
-void PlayerObject::Create(istringstream &iss, ResourceManager* resource) {
-    CharacterObject::Create(iss, resource);
+void PlayerObject::Create(istringstream &iss) {
+    CharacterObject::Create(iss);
     //Position = vec3(0, 2, 0);
 	Position = vec3(Position.x, Position.y + 2, Position.z);
     Velocity = vec3(0, 0, 0);
     m_hullOffset = vec3(0, .5, 0);
-    m_collisionHullId = cWorld.CreateNewCapsule(resource, Position + m_hullOffset, 1, 0.5f);
+    m_collisionHullId = cWorld.CreateNewCapsule(Position + m_hullOffset, 1, 0.5f);
     //m_collisionHullId = cWorld.CreateNewCubeHull(resource, Position+vec3(0,1,0), .75, 2, .75);
     //cWorld.getHullFromID(m_collisionHullId)->rotation.toYawPitchRoll(.001, 0, 0);
 }
@@ -102,8 +102,8 @@ const char* PlayerObject::GetControlType() {
 }
 
 void PlayerObject::PostLoad() {
-    m_cameraID = GetCurrentScene()->getObjectIDByName("MainCamera"); // TODO: Should this REALLY be in here?
-    static_cast<Camera*>(GetCurrentScene()->getObjectByID(m_cameraID))->m_cameraMode = Camera::eCameraMode::ThirdPersonFollow;
+    //m_cameraID = GetCurrentScene()->getObjectIDByName("MainCamera"); // TODO: Should this REALLY be in here?
+    //static_cast<Camera*>(GetCurrentScene()->getObjectByID(m_cameraID))->m_cameraMode = Camera::eCameraMode::ThirdPersonFollow;
 	if (this->Name == "YaBoy") {
 		this->activeState = true;
 	}
@@ -118,8 +118,8 @@ void PlayerObject::switchActivePlayer() {
 	// TODO: Note that there should maybe be a redundant second check here to prevent multiple active players
 	//static_cast<Camera*>(GetCurrentScene()->getObjectByID(m_cameraID))->changeFollowTarget(playerList[(thisID + 1) % size(playerList)]->getID());
 	this->activeState = false;
-	auto it = std::find(GetCurrentScene()->objectsByType.Players.begin(), GetCurrentScene()->objectsByType.Players.end(), this);
+	//auto it = std::find(GetCurrentScene()->objectsByType.Players.begin(), GetCurrentScene()->objectsByType.Players.end(), this);
 	// TODO: Find the next element after this but not using getID() + 1
-	int index = std::distance(GetCurrentScene()->objectsByType.Players.begin(), it);
-	std::cout << GetCurrentScene()->objectsByType.Players[(index + 1) % GetCurrentScene()->objectsByType.Players.size()]->m_uid << " : Pre-Message ID\n";
+	//int index = std::distance(GetCurrentScene()->objectsByType.Players.begin(), it);
+	//std::cout << GetCurrentScene()->objectsByType.Players[(index + 1) % GetCurrentScene()->objectsByType.Players.size()]->m_uid << " : Pre-Message ID\n";
 }

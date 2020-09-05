@@ -1,0 +1,18 @@
+/* Test scene file
+ * Goals:
+ * 1. properly ignore comments and newlines when parsing text
+ * 2. allow scope-based property definition and retrieval
+ * 3. be able to handle strings, numbers, and bools
+ * 3. be easy to write, read, and generate
+ */
+
+Scene: {
+    name: "Scene Name",
+    gravity: -9.81,
+    raining: false
+},
+
+GameObject: {
+    type: 1,
+    name: "obj1"
+}

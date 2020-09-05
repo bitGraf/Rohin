@@ -1,5 +1,4 @@
 #include "CollisionHull.hpp"
-#include "Resource/ResourceManager.hpp"
 
 CollisionHull::CollisionHull() :
     m_hullID(getNextUID()),

@@ -40,7 +40,7 @@ public:
     bool Destroy();
 
 
-    /* File IO */
+    /* Allocates Memory */
     char* readAllBytes(std::string filepath, size_t& bytesRead, bool shouldWatchFile = false);
 
     void watchFile(std::string filepath, bool empty = false);

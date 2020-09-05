@@ -10,6 +10,7 @@
 #include "Resource/ResourceCatalog.hpp"
 #include "Window/WindowManager.hpp"
 #include "Resource/MemoryManager.hpp"
+#include "Scene/SceneManager.hpp"
 
 #include <thread>
 
@@ -40,6 +41,7 @@ private:
     ResourceCatalog* catalog;
     WindowManager* windowManager;
     MemoryPool* memory;
+    SceneManager* sceneManager;
 
     /* Frame Timing */
     using engine_clock = std::chrono::steady_clock;

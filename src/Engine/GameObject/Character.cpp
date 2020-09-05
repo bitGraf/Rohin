@@ -128,8 +128,8 @@ void CharacterObject::Update(double dt) {
     }
 }
 
-void CharacterObject::Create(istringstream &iss, ResourceManager* resource) {
-    RenderableObject::Create(iss, resource);
+void CharacterObject::Create(istringstream &iss) {
+    RenderableObject::Create(iss);
 }
 
 void CharacterObject::PostLoad() {
@@ -201,7 +201,7 @@ mat3 CharacterObject::getRelativeAxes() {
             );
         } break;
         case eRelativeSource::Camera: {
-            GameObject* camRef = GetCurrentScene()->getObjectByID(m_cameraID);
+            GameObject* camRef = nullptr; // GetCurrentScene()->getObjectByID(m_cameraID);
             if (camRef) {
                 vec3 cameraX = vec3(camRef->getTransform().col1());
                 cameraX.y = 0;

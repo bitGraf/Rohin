@@ -1,5 +1,4 @@
 #include "RenderableObject.hpp"
-#include "Resource/ResourceManager.hpp"
 const char* RenderableObject::_obj_type_RenderableObject = "Renderable";
 
 RenderableObject::RenderableObject() :
@@ -12,11 +11,11 @@ RenderableObject::RenderableObject() :
     m_type = GameObjectType::Renderable;
 }
 
-void RenderableObject::Create(istringstream &iss, ResourceManager* resource) {
-    GameObject::Create(iss, resource);
+void RenderableObject::Create(istringstream &iss) {
+    GameObject::Create(iss);
 
-    m_mesh = resource->getMesh(getNextString(iss));
-    m_material = resource->getMaterial(getNextString(iss));
+    m_mesh = ResourceCatalog::GetInstance()->getMesh(getNextString(iss));
+    m_material = ResourceCatalog::GetInstance()->getMaterial(getNextString(iss));
     mesh_Position = getNextVec3(iss);
     mesh_YawPitchRoll = getNextVec3(iss);
     mesh_Scale = getNextVec3(iss);
@@ -29,9 +28,9 @@ mat4 RenderableObject::getModelTransform() {
     return objectTransform * getMeshTransform();
 }
 
-void RenderableObject::setModel(ResourceManager* resource) {
-    resource->getMesh("Sphere");
-    resource->getMaterial("Woodball");
+void RenderableObject::setModel() {
+    ResourceCatalog::GetInstance()->getMesh("Sphere");
+    ResourceCatalog::GetInstance()->getMaterial("Woodball");
 }
 
 mat4 RenderableObject::getMeshTransform() {

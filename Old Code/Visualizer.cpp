@@ -1,5 +1,6 @@
 #include "Visualizer.hpp"
 
+/*
 // Compute the distance between two polygons using the GJK algorithm.
 void Distance3D(gjk_Output* output, gjk_Input& input)
 {
@@ -158,3 +159,4 @@ void Visualizer::Step() {
 
     res = cWorld.Raycast(cWorld.m_dynamic[0].position, vec3(0,-1,0), 0.5f);
 }
+*/

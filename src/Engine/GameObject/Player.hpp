@@ -13,7 +13,7 @@ public:
 
     virtual void Update(double dt) override;
     virtual void PostLoad() override;
-    virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual void Create(istringstream &iss) override;
 
     virtual void InputEvent(s32 key, s32 action) override;
     virtual const char* ObjectTypeString() override;

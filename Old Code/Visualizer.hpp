@@ -63,6 +63,7 @@ struct gjk_Input {
     CollisionHull* polygon2;
 };*/
 
+/*
 void Distance3D(gjk_Output* output, gjk_Input& input);
 
 struct Line {
@@ -82,3 +83,4 @@ struct Visualizer {
     gjk_Input in;
 
 };
+*/

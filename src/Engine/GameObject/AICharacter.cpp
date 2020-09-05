@@ -11,12 +11,12 @@ AICharacter::AICharacter() {
     speed = 2.5;
 }
 
-void AICharacter::Create(istringstream &iss, ResourceManager* resource) {
-	CharacterObject::Create(iss, resource);
+void AICharacter::Create(istringstream &iss) {
+	CharacterObject::Create(iss);
 }
 
 void AICharacter::Update(double dt) {
-    GameObject* playerRef = GetCurrentScene()->getObjectByID(m_playerID);
+    GameObject* playerRef = nullptr;// GetCurrentScene()->getObjectByID(m_playerID);
     if (playerRef) {
         vec3 toPlayer = playerRef->Position - Position;
         toPlayer.y = 0;
@@ -39,7 +39,7 @@ void AICharacter::Destroy() {
 }
 
 void AICharacter::PostLoad() {
-	m_playerID = GetCurrentScene()->getObjectIDByName("YaBoy");
+    m_playerID = 0; // GetCurrentScene()->getObjectIDByName("YaBoy");
 }
 
 
@@ -60,8 +60,8 @@ GoapCharacter::GoapCharacter() {
 	this->lastVisitedNode = curMap.nearestNode(this->Position);
 }
 
-void GoapCharacter::Create(istringstream &iss, ResourceManager* resource) {
-	CharacterObject::Create(iss, resource);
+void GoapCharacter::Create(istringstream &iss) {
+	CharacterObject::Create(iss);
 }
 
 void GoapCharacter::PostLoad() {
@@ -94,7 +94,7 @@ void GoapCharacter::PostLoad() {
 	//start.Description(&AIap, desc, sizeof(desc));
 	//printf("%s", desc);
 
-	m_playerRef = static_cast<CharacterObject*>(GetCurrentScene()->getObjectByName("YaBoy"));
+	//m_playerRef = static_cast<CharacterObject*>(GetCurrentScene()->getObjectByName("YaBoy"));
 	// Here we will load in available actions, along with pre- and post-conditions
 
 	// We must also check the world state for our conditions

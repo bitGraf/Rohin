@@ -6,7 +6,7 @@ const char* TriggerVolume::_obj_type_TriggerVolume = "Trigger";
 TriggerVolume::TriggerVolume() : inside(false)
 {}
 
-void TriggerVolume::Create(istringstream &iss, ResourceManager* resource) {
+void TriggerVolume::Create(istringstream &iss) {
     //GameObject::Create(iss, resource);
 
     Name = getNextString(iss);
@@ -17,12 +17,12 @@ void TriggerVolume::Create(istringstream &iss, ResourceManager* resource) {
 }
 
 void TriggerVolume::PostLoad() {
-    m_triggerObjectID = GetCurrentScene()->getObjectIDByName(m_triggerObjectName);
+    //m_triggerObjectID = GetCurrentScene()->getObjectIDByName(m_triggerObjectName);
 }
 
 void TriggerVolume::Update(double dt) {
     // Check if the triggerObject is inside the volume
-    GameObject* triggerObject = GetCurrentScene()->getObjectByID(m_triggerObjectID);
+    /*GameObject* triggerObject = GetCurrentScene()->getObjectByID(m_triggerObjectID);
     if (triggerObject) {
         if (pointInsideBox(triggerObject->Position)) {
             if (inside) {
@@ -43,6 +43,7 @@ void TriggerVolume::Update(double dt) {
             }
         }
     }
+    */
 }
 
 const char* TriggerVolume::ObjectTypeString() {

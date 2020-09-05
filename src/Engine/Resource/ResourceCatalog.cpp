@@ -299,8 +299,6 @@ bool ResourceCatalog::loadResourceFile(std::string filename) {
                 }
             }
         }
-
-        bool end = true;
     }
     else {
         Console::logError(" Incorrect file signature found...");
@@ -420,5 +418,24 @@ bool ResourceCatalog::genTextureFromData(Material_Texture* tex) {
         texID = 0;
         tex->glTexID = texID;
         return false;
+    }
+}
+
+
+meshRef ResourceCatalog::getMesh(std::string id) {
+    if (meshes.find(id) == meshes.end()) {
+        return nullptr;
+    }
+    else {
+        return &meshes[id]; //TODO: This might not be safe.
+    }
+}
+
+materialRef ResourceCatalog::getMaterial(std::string id) {
+    if (materials.find(id) == materials.end()) {
+        return nullptr;
+    }
+    else {
+        return &materials[id]; //TODO: This might not be safe.
     }
 }

@@ -1,12 +1,12 @@
-#ifndef SCENE_MANAGER_H
-#define SCENE_MANAGER_H
+#ifndef SCENE_H_
+#define SCENE_H_
 
 #include <vector>
 #include <fstream>
 #include <sstream>
 #include <string>
 
-#include "Resource/ResourceManager.hpp"
+#include "Resource/ResourceCatalog.hpp"
 #include "GLFW/glfw3.h"
 #include "Render/RenderBatch.hpp"
 #include "Render/Shadowmap.hpp"
@@ -27,11 +27,11 @@ class Scene {
 public:
     Scene();
 
-    void loadFromFile(ResourceManager* resource, std::string path, bool noGLLoad);
+    void loadFromFile(std::string path, bool noGLLoad);
     void update(double dt);
 
     bool recognizeCustomEntity(std::string entType);
-    void processCustomEntityLoad(std::string entType, std::istringstream &iss, ResourceManager* resource);
+    void processCustomEntityLoad(std::string entType, std::istringstream &iss);
 
     GameObject* getObjectByName(const std::string objectName) const;
     GameObject* getObjectByID(const UID_t id) const;
@@ -72,10 +72,5 @@ public:
 
     std::string name;
 };
-
-//extern Scene* CurrentScene;
-Scene* GetCurrentScene();
-void   SetCurrentScene(Scene* newScene);
-void getRenderBatch(RenderBatch* batch, bool useCull = true);
 
 #endif

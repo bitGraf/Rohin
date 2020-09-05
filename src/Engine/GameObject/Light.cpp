@@ -3,7 +3,7 @@ const char* PointLight::_obj_type_PointLightObject = "PointLight";
 const char* SpotLight::_obj_type_SpotLightObject = "SpotLight";
 const char* DirLight::_obj_type_DirLightObject = "DirLight";
 
-void PointLight::Create(istringstream &iss, ResourceManager* resource) {
+void PointLight::Create(istringstream &iss) {
     Color = getNextVec3(iss);
     Strength = getNextFloat(iss);
     Position = getNextVec3(iss);
@@ -15,7 +15,7 @@ const char* PointLight::ObjectTypeString() {
     return _obj_type_PointLightObject;
 }
 
-void SpotLight::Create(istringstream &iss, ResourceManager* resource) {
+void SpotLight::Create(istringstream &iss) {
     Color = getNextVec3(iss);
     Strength = getNextFloat(iss);
     Position = getNextVec3(iss);
@@ -33,7 +33,7 @@ const char* SpotLight::ObjectTypeString() {
     return _obj_type_SpotLightObject;
 }
 
-void DirLight::Create(istringstream &iss, ResourceManager* resource) {
+void DirLight::Create(istringstream &iss) {
     Color = getNextVec3(iss);
     Strength = getNextFloat(iss);
     Position = getNextVec3(iss);

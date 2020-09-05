@@ -10,7 +10,7 @@ class AICharacter : public CharacterObject {
 public:
     AICharacter();
 
-    virtual void Create(istringstream &iss, ResourceManager* resource) override;
+    virtual void Create(istringstream &iss) override;
     virtual void PostLoad() override;
     virtual void Update(double dt) override;
     virtual void Destroy() override;
@@ -30,7 +30,7 @@ public:
 	GoapCharacter();
 
 	PathNode* lastVisitedNode;
-	virtual void Create(istringstream &iss, ResourceManager* resource) override;
+	virtual void Create(istringstream &iss) override;
 	virtual void PostLoad() override;
 	virtual void Update(double dt) override;
 	virtual void Destroy() override;

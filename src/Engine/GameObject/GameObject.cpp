@@ -14,7 +14,7 @@ GameObject::GameObject() :
     bool k = false;
 }
 
-void GameObject::Create(istringstream &iss, ResourceManager* resource) {
+void GameObject::Create(istringstream &iss) {
     Name = getNextString(iss);
     Position = getNextVec3(iss);
     YawPitchRoll = getNextVec3(iss);

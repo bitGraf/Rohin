@@ -5,7 +5,6 @@
 #include "Resource/TriangleMesh.hpp"
 
 using namespace math;
-class ResourceManager;
 typedef u64 UID_t;
 
 class CollisionHull {

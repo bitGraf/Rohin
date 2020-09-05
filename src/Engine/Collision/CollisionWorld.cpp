@@ -1,5 +1,4 @@
 #include "CollisionWorld.hpp"
-#include "Resource/ResourceManager.hpp"
 
 CollisionWorld cWorld;
 
@@ -163,13 +162,13 @@ RaycastResult CollisionWorld::Raycast(UID_t target, vec3 start, vec3 end) {
     return res;
 }
 
-UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource, vec3 position, scalar size) {
+UID_t CollisionWorld::CreateNewCubeHull(vec3 position, scalar size) {
     CollisionHull hull;
 
     scalar halfSize = size / 2.0f;
 
     // Box hull
-    vec3Array vblock = resource->reserveDataBlocks<vec3>(8);
+    vec3Array vblock = MemoryPool::GetInstance()->allocBlock<vec3>(8);
     vblock.data[0] = vec3(-halfSize, -halfSize, -halfSize);
     vblock.data[1] = vec3(-halfSize, -halfSize, halfSize);
     vblock.data[2] = vec3(halfSize, -halfSize, halfSize);
@@ -181,7 +180,7 @@ UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource, vec3 position
     vblock.data[7] = vec3(halfSize, halfSize, -halfSize);
     hull.vertices = vblock;
 
-    FaceArray fblock = resource->reserveDataBlocks<Triangle>(12);
+    FaceArray fblock = MemoryPool::GetInstance()->allocBlock<Triangle>(12);
     fblock.data[0] = Triangle(0, 1, 4);
     fblock.data[1] = Triangle(4, 1, 5);
     fblock.data[2] = Triangle(1, 2, 6);
@@ -204,7 +203,7 @@ UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource, vec3 position
     return hull.m_hullID;
 }
 
-UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource, 
+UID_t CollisionWorld::CreateNewCubeHull(
     vec3 position, scalar xSize, scalar ySize, scalar zSize) {
     CollisionHull hull;
 
@@ -213,7 +212,7 @@ UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource,
     scalar halfz = zSize / 2.0f;
 
     // Box hull
-    vec3Array vBlock = resource->reserveDataBlocks<vec3>(8);
+    vec3Array vBlock = MemoryPool::GetInstance()->allocBlock<vec3>(8);
     vBlock.data[0] = vec3(-halfx, -halfy, -halfz);
     vBlock.data[1] = vec3(-halfx, -halfy, halfz);
     vBlock.data[2] = vec3(halfx, -halfy, halfz);
@@ -225,7 +224,7 @@ UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource,
     vBlock.data[7] = vec3(halfx, halfy, -halfz);
     hull.vertices = vBlock;
 
-    FaceArray fBlock = resource->reserveDataBlocks<Triangle>(12);
+    FaceArray fBlock = MemoryPool::GetInstance()->allocBlock<Triangle>(12);
     fBlock.data[0] = Triangle(0, 1, 4);
     fBlock.data[1] = Triangle(4, 1, 5);
     fBlock.data[2] = Triangle(1, 2, 6);
@@ -248,18 +247,17 @@ UID_t CollisionWorld::CreateNewCubeHull(ResourceManager* resource,
     return hull.m_hullID;
 }
 
-UID_t CollisionWorld::CreateNewCapsule(ResourceManager* resource, 
-    vec3 position, scalar height, scalar radius) {
+UID_t CollisionWorld::CreateNewCapsule(vec3 position, scalar height, scalar radius) {
     CollisionHull hull;
 
     // Box hull
-    vec3Array vBlock = resource->reserveDataBlocks<vec3>(3);
+    vec3Array vBlock = MemoryPool::GetInstance()->allocBlock<vec3>(3);
     vBlock.data[0] = vec3(0, 0, 0);
     vBlock.data[1] = vec3(0, height / 2, 0); // to allow it to render more easily
     vBlock.data[2] = vec3(0, height, 0);
     hull.vertices = vBlock;
 
-    FaceArray fBlock = resource->reserveDataBlocks<Triangle>(1);
+    FaceArray fBlock = MemoryPool::GetInstance()->allocBlock<Triangle>(1);
     fBlock.data[0] = Triangle(0, 1, 2);
     hull.faces = fBlock;
 

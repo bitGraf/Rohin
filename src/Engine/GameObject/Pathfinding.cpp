@@ -142,7 +142,7 @@ PathfindingMap::PathfindingMap() {
 	this->largestClusterId = 0;
 }
 
-void PathfindingMap::loadPfMap(ResourceManager* resource, std::string path) {
+void PathfindingMap::loadPfMap(std::string path) {
 	std::ifstream infile(path);
 	std::string line;
 	while (std::getline(infile, line))

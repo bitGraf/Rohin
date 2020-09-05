@@ -122,7 +122,7 @@ void DeferredBatchRenderer::renderBatch(RenderBatch* batch) {
 
     beginProfile();
 
-    if (GetCurrentScene()) {
+    if (false /*GetCurrentScene()*/) {
 
         geometryPass(batch);
         dur_geometryPass = profileRenderPass();
@@ -299,7 +299,7 @@ void DeferredBatchRenderer::renderDebug(
         static_cast<long long>(avgRenderPass.getCurrentAverage()) / scale);
     debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
 
-    if (GetCurrentScene() && (debugMode)) {
+    if (false /*GetCurrentScene()*/ && (debugMode)) {
         sprintf(text, " Geometry Pass.......%-3lld us", dur_geometryPass / scale);
         debugFont.drawText(5, y += 18, white, text, ALIGN_TOP_LEFT);
 
@@ -378,9 +378,9 @@ void DeferredBatchRenderer::endProfile() {
     avgRenderPass.addSample(dur_fullRenderPass);
 }
 
-void DeferredBatchRenderer::loadResources(ResourceManager* resource) {
+void DeferredBatchRenderer::loadResources() {
     /* FIX_THIS */
     //resource->loadModelFromFile("Data/Models/camera.glb", true);
 
-    cameraMesh = resource->getMesh("Camera");
+    cameraMesh = ResourceCatalog::GetInstance()->getMesh("Camera");
 }
