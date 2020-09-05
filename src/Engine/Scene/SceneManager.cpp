@@ -64,13 +64,31 @@ bool SceneManager::AddSceneToList(std::string filename) {
     char* buffer = StripComments(data, bytesRead, bufSize);
     free(data);
 
-    // now that all the useful information is collected in one line, parse it into useful blocks
-    KVH kvh;
-    kvh.CreateAsRoot(nullptr, 0);
-    kvh.Destroy();
-
     printf("New Buffer: (%d)[%s]\n", (int)bufSize, buffer);
+    // now that all the useful information is collected in one line
+    // parse it into a useful form
+    DataNode root;
+    root.CreateAsRoot(buffer, bufSize);
+
     free(buffer);
+
+    // free to use root for all scene needs
+    Console::logMessage("Root Node:");
+    Console::logMessage(" Data: %d", root.data.size());
+    Console::logMessage(" Children: %d", root.children.size());
+
+    Console::logMessage(" Scene Node:");
+    Console::logMessage("  Data: %d",       root.getChild("Scene").data.size());
+    Console::logMessage("   name: %s",      root.getChild("Scene").getData("name").asString().c_str());
+    Console::logMessage("   gravity: %.2f", root.getChild("Scene").getData("gravity").asFloat());
+    Console::logMessage("   raining: %s",   root.getChild("Scene").getData("raining").asBool() ? "true" : "false");
+    Console::logMessage("  Children: %d",   root.getChild("Scene").children.size());
+
+    Console::logMessage(" GameObject Node:");
+    Console::logMessage("  Data: %d",       root.getChild("GameObject").data.size());
+    Console::logMessage("   type: %d",      root.getChild("GameObject").getData("type").asInt());
+    Console::logMessage("   name: %s",      root.getChild("GameObject").getData("name").asString().c_str());
+    Console::logMessage("  Children: %d",   root.getChild("GameObject").children.size());
 
     return true;
 }

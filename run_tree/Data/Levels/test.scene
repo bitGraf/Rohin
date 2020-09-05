@@ -3,16 +3,18 @@
  * 1. properly ignore comments and newlines when parsing text
  * 2. allow scope-based property definition and retrieval
  * 3. be able to handle strings, numbers, and bools
- * 3. be easy to write, read, and generate
+ * 4. data need not be in a specific order
+ * 5. be easy to write, read, and generate
  */
 
+# Line comments like this are ignored
 Scene: {
     name: "Scene Name",
-    gravity: -9.81,
-    raining: false
-},
+    gravity: -9.81, # end of line comments are also ignored
+    raining: true
+}
 
 GameObject: {
     type: 1,
-    name: "obj1"
+    name: "obj1",
 }

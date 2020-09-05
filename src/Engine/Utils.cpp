@@ -100,7 +100,26 @@ char* StripComments(char* inputBuf, size_t inputBufSize, size_t& newBufSize) {
             while (ptr[off] == ' ')
                 off++;
 
-            lines.push_back(ptr+off);
+            // find any trailing comments
+            if (stringContainsChar(ptr + off, '#')) {
+                // theres a trailing comment on this line
+                // find where it is and mark it as the end
+                size_t eol = strlen(ptr);
+                size_t end = off;
+                while (end < eol && ptr[end] != '#') {
+                    end++;
+                }
+                if (ptr[end - 1] == ' ') {
+                    end--;
+                }
+                ptr[end] = 0;
+                lines.push_back(ptr + off);
+                ptr += eol;
+            }
+            else {
+                // Add the whole line
+                lines.push_back(ptr + off);
+            }
         }
 
         ptr = strtok(NULL, "\r\n");
@@ -128,48 +147,127 @@ char* StripComments(char* inputBuf, size_t inputBufSize, size_t& newBufSize) {
 }
 
 
-KVH::KVH() {
-    numChildren = 0;
-    children = nullptr;
+bool stringContainsChar(char* str, char ch) {
+    for (int n = 0; n < strlen(str); n++) {
+        if (str[n] == ch)
+            return true;
+    }
+
+    return false;
 }
 
-KVH::~KVH() {
+
+MultiData DataNode::getData(std::string key) {
+    MultiData blank;
+    if (data.find(key) == data.end()) {
+        Console::logError("DataNode [%s] tried to get data [%s] but could not find one...",
+            name.c_str(), key.c_str());
+        return blank;
+    }
+    return data[key];
 }
 
-void KVH::Destroy() {
-    // recursively destroy children from the bottom up
-    if (numChildren > 0 && children) {
-        for (int n = 0; n < numChildren; n++) {
-            if (children[n]) {
-                children[n]->Destroy();
-                free(children[n]);
-                children[n] = 0;
+DataNode DataNode::getChild(std::string key) {
+    DataNode blank;
+    if (children.find(key) == children.end()) {
+        Console::logError("DataNode [%s] tried to get child [%s] but could not find one...",
+            name.c_str(), key.c_str());
+        return blank;
+    }
+    return children[key];
+}
+
+void DataNode::CreateAsRoot(char* buffer, size_t bufSize) {
+    name = "root";
+
+    DataNode newNode;
+
+    bool node = true;
+    char* token = strtok(buffer, "{}");
+    while (token != NULL) {
+        if (node) {
+            // clean out the shared newNode variable
+            newNode.children.clear();
+            newNode.data.clear();
+
+            size_t nodeNameLength = strlen(token) - 2;
+            newNode.name = std::string(token, nodeNameLength);
+        }
+        else {
+            if (stringContainsChar(token, '{')) {
+                // need to be go on layer deeper
+                // currently not possible though...
+            }
+            else {
+                // split string into multiple multiData blocks
+                size_t nameStart = 0, nameEnd = 0, dataStart = 0, dataEnd = 0;
+                std::string currName;
+                std::string currData;
+
+                size_t len = strlen(token);
+                for (int n = 0; n < len; n++) {
+                    if (token[n] == ':') {
+                        nameEnd = n;
+                        dataStart = nameEnd + 2;
+
+                        currName = std::string(token + nameStart, nameEnd - nameStart);
+                    }
+
+                    if (dataStart > 0 && (n == len - 1 || token[n] == ',')) {
+                        dataEnd = n;
+                        nameStart = dataEnd + 1;
+
+                        currData = std::string(token + dataStart, dataEnd - dataStart);
+
+                        // TODO: currently store everything as a string, need to decode
+                        newNode.data[currName] = MultiData(currData);
+                    }
+                }
+                children[newNode.name] = newNode;
             }
         }
-        numChildren = 0;
+
+        node = !node;
+        token = strtok(NULL, "{}");
     }
 
-    free(children);
-    children = 0;
+    decodeMultiDataStrings();
+
+    bool donezo = true;
 }
 
-void KVH::CreateAsRoot(char* buffer, size_t bufferSize) {
-    AddChild(2);
-
-    children[0]->AddChild(3);
-    children[1]->AddChild(1);
-}
-
-void KVH::AddChild(u32 num) {
-    children = (KVH**)realloc(children, (numChildren+num) * sizeof(KVH*));
-
-    for (int n = numChildren; n < numChildren + num; n++) {
-        // initialize the new children
-        children[n] = (KVH*)malloc(sizeof(KVH));
-        
-        children[n]->numChildren = 0;
-        children[n]->children = 0;
+void DataNode::decodeMultiDataStrings() {
+    for (auto datum : data) {
+        if (datum.second.asString().at(0) == '\"') {
+            // starts with ", is a string
+            size_t len = datum.second.asString().size();
+            if (datum.second.asString().at(len-1) == '\"') {
+                // check that it ends in a " as well
+                data[datum.first] = MultiData(std::string(datum.second.asString(), 1, len - 2));
+            }
+        }
+        else if (datum.second.asString().at(0) == 't' ||
+            datum.second.asString().at(0) == 'T') {
+            // starts with t, is true
+            data[datum.first] = MultiData(true);
+        }
+        else if (datum.second.asString().at(0) == 'f' ||
+            datum.second.asString().at(0) == 'F') {
+            // starts with f, is false
+            data[datum.first] = MultiData(false);
+        }
+        else  {
+            // its a number (either int or float)
+            // assume its supposed to be a float, 
+            // then set both int and float values
+            float val = std::stof(datum.second.asString());
+            data[datum.first] = MultiData(val);
+            data[datum.first].intVal = (int)val;
+        }
     }
 
-    numChildren += num;
+    for (auto child : children) {
+        child.second.decodeMultiDataStrings();
+        children[child.first] = child.second;
+    }
 }

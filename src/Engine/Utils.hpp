@@ -5,8 +5,10 @@
 #include <sstream>
 #include <algorithm>
 #include <vector>
+#include <unordered_map>
 
 #include "GameMath.hpp"
+#include "Console.hpp"
 
 std::string getNextString(std::istringstream& iss); /// Read next tokenized string from input string stream
 math::scalar getNextFloat(std::istringstream& iss); /// Read next tokenized float from input string stream
@@ -66,21 +68,42 @@ public:
     }
 };
 
+bool stringContainsChar(char* str, char ch);
 
-/* Key-Value heirarchy */
-class KVH {
-public:
-    KVH();
-    ~KVH();
 
-    void Destroy();
-    void CreateAsRoot(char* buffer, size_t bufferSize);
+struct MultiData {
+    s32 intVal;
+    f32 floatVal;
+    bool boolVal;
+    std::string strVal;
 
-    void AddChild(u32 num);
-    
-    u32 numChildren;
-    KVH** children;
+    MultiData() : intVal(0), floatVal(0), boolVal(false) {}
+    MultiData(s32 v) : intVal(v), floatVal(0), boolVal(false) {}
+    MultiData(f32 v) : intVal(0), floatVal(v), boolVal(false) {}
+    MultiData(f64 v) : intVal(0), floatVal(v), boolVal(false) {}
+    MultiData(bool v) : intVal(0), floatVal(0), boolVal(v) {}
+    MultiData(char* v) : intVal(0), floatVal(0), boolVal(false), strVal(v) {}
+    MultiData(char* v, size_t l) : intVal(0), floatVal(0), boolVal(false), strVal(v, l) {}
+    MultiData(std::string v) : intVal(0), floatVal(0), boolVal(false), strVal(v) {}
+
+    s32 asInt() { return intVal; }
+    f32 asFloat() { return floatVal; }
+    bool asBool() { return boolVal; }
+    std::string asString() { return strVal; }
+};
+
+struct DataNode {
+    std::string name;
+
+    MultiData getData(std::string key);
+    DataNode getChild(std::string key);
+    void CreateAsRoot(char* buffer, size_t bufSize);
+
+    std::unordered_map<std::string, MultiData> data;
+    std::unordered_map<std::string, DataNode> children;
+
 private:
+    void decodeMultiDataStrings();
 };
 
 #endif
