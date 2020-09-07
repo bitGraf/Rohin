@@ -5,6 +5,8 @@
 #include "Message/EMS.hpp"
 #include "Resource/FileSystem.hpp"
 
+#include <thread>
+
 class SceneManager : public MessageReceiver {
 public:
     SceneManager();
@@ -16,14 +18,13 @@ public:
     void Update(double dt);
     void GetRenderBatch();
 
-    bool AddSceneToList(std::string filename);
-    void ChangeScene(u32 newScene);
-    //Scene* GetCurrentScene();
+    bool LoadNewScene(std::string filename);
 
 private:
-    std::vector<Scene> sceneList;
+    bool LoadSceneFromFile(std::string filename, DataNode* root);
+    void CreateGameObjects(DataNode* root);
 
-    u32 currentScene;
+    std::unordered_map<UID_t, GameObject*> gameObjectList;
 
 public:
     static SceneManager* GetInstance();

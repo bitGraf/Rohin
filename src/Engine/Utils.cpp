@@ -71,8 +71,10 @@ char* StripComments(char* inputBuf, size_t inputBufSize, size_t& newBufSize) {
             erasing = true;
         }
 
-        if (erasing && inputBuf[n] == '/' && inputBuf[n - 1] == '\7') {
+        if (erasing && inputBuf[n] == '*' && inputBuf[n + 1] == '/') {
             erasing = false;
+            inputBuf[n] = '\7';
+            n++;
             inputBuf[n] = '\7';
         }
 
@@ -177,6 +179,32 @@ DataNode DataNode::getChild(std::string key) {
     return children[key];
 }
 
+MultiData DataNode::getDataFromPath(std::string path) {
+    std::string delimiter = ".";
+
+    std::vector<std::string> tokens;
+
+    size_t pos = 0;
+    std::string token;
+    while ((pos = path.find(delimiter)) != std::string::npos) {
+        token = path.substr(0, pos);
+        tokens.push_back(token);
+        path.erase(0, pos + delimiter.length());
+    }
+    tokens.push_back(path);
+
+    if (tokens.size() == 1) {
+        return getData(token);
+    }
+    else if (tokens.size() == 2) {
+        return getChild(tokens[0]).getData(tokens[1]);
+    }
+    else {
+        Console::logError("Error getting data from path");
+        return MultiData();
+    }
+}
+
 void DataNode::CreateAsRoot(char* buffer, size_t bufSize) {
     name = "root";
 
@@ -270,4 +298,19 @@ void DataNode::decodeMultiDataStrings() {
         child.second.decodeMultiDataStrings();
         children[child.first] = child.second;
     }
+}
+
+math::vec3 DataNode::getVec3(std::string path1, std::string path2, std::string path3) {
+    return math::vec3(
+        getData(path1).asFloat(),
+        getData(path2).asFloat(),
+        getData(path3).asFloat()
+    );
+}
+
+math::vec2 DataNode::getVec2(std::string path1, std::string path2) {
+    return math::vec2(
+        getData(path1).asFloat(),
+        getData(path2).asFloat()
+    );
 }

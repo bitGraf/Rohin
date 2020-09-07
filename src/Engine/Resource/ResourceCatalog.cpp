@@ -30,10 +30,10 @@ void ResourceCatalog::Destroy() {
     }
 }
 
-void ResourceCatalog::createNewResource(char* name, ResourceEntryType type, bool empty) {
+void ResourceCatalog::createNewResource(std::string name, ResourceEntryType type, bool empty) {
     ResourceEntry ent;
 
-    ent.filename = std::string(name);
+    ent.filename = name;
     ent.data = 0;
     ent.size = 0;
     ent.type = type;
@@ -72,6 +72,9 @@ void ResourceCatalog::updateResourceFromFile(void* data, u32 size) {
             break;
         case resShader:
             Console::logMessage("Updating Shader Resource from %s", ent.filename.c_str());
+            break;
+        case resLevel:
+            Console::logMessage("Reloading Level resource from %s", ent.filename.c_str());
             break;
         case resOther:
             Console::logMessage("Updating Other Resource from %s", ent.filename.c_str());

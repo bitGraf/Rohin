@@ -60,7 +60,7 @@ bool Engine::Init(int argc, char* argv[]) {
 
     catalog->loadResourceFile("level.mcf");
 
-    sceneManager->AddSceneToList("Data/Levels/test.scene");
+    sceneManager->LoadNewScene("Data/Levels/outFile.scene");
 
     return true;
 }

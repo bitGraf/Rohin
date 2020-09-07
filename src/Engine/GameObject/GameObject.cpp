@@ -7,24 +7,16 @@ GameObject::GameObject() :
     Position(),
     YawPitchRoll(),
     m_uid(getNextUID()),
-    m_debugMesh(nullptr),
-    m_type(GameObjectType::NONE),
-    m_parent(nullptr)
+    m_debugMesh(nullptr)
 {
     bool k = false;
 }
 
-void GameObject::Create(istringstream &iss) {
-    Name = getNextString(iss);
-    Position = getNextVec3(iss);
-    YawPitchRoll = getNextVec3(iss);
-    vec3 _Scale = getNextVec3(iss);
-
-    string parentName = getNextString(iss);
-    if (parentName.compare("") != 0) {
-        /// Move this to PostLoad()
-        //m_parent = GetCurrentScene()->getObjectByName(parentName);
-    }
+void GameObject::Create(DataNode* node) {
+    Name = node->getData("name").asString();
+    Position = node->getVec3("posx", "posy", "posz");
+    YawPitchRoll = node->getVec3("yaw", "pitch", "roll");
+    vec3 _Scale = node->getVec3("scalex", "scaley", "scalez");
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid) , Name.c_str());
 }
@@ -46,13 +38,7 @@ mat4 GameObject::getTransform() const {
         mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(Position, 1)) *
         mat4(createYawPitchRollMatrix(YawPitchRoll.x, YawPitchRoll.y, YawPitchRoll.z)));
 
-    if (m_parent) {
-        // This will recursively apply all of the parent's transformations
-        return m_parent->getTransform() * transform;
-    }
-    else {
-        return transform;
-    }
+    return transform;
 }
 
 

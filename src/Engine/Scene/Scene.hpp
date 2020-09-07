@@ -27,6 +27,8 @@ class Scene {
 public:
     Scene();
 
+    //void CreateFromDataNode(DataNode* root);
+
     void loadFromFile(std::string path, bool noGLLoad);
     void update(double dt);
 

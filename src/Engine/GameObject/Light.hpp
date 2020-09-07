@@ -11,7 +11,7 @@ public:
         Strength = 0; 
     }
 
-    virtual void Create(istringstream &iss) override;
+    virtual void Create(DataNode* node) override;
     virtual const char* ObjectTypeString() override;
 
 //protected:
@@ -31,7 +31,7 @@ public:
         outer_cutoff = 0;
     }
 
-    virtual void Create(istringstream &iss) override;
+    virtual void Create(DataNode* node) override;
     virtual const char* ObjectTypeString() override;
 
 //protected:
@@ -52,7 +52,7 @@ public:
         Strength = 0; 
     }
 
-    virtual void Create(istringstream &iss) override;
+    virtual void Create(DataNode* node) override;
     virtual const char* ObjectTypeString() override;
 
 //protected:

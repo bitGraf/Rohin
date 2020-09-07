@@ -3,10 +3,10 @@ const char* PointLight::_obj_type_PointLightObject = "PointLight";
 const char* SpotLight::_obj_type_SpotLightObject = "SpotLight";
 const char* DirLight::_obj_type_DirLightObject = "DirLight";
 
-void PointLight::Create(istringstream &iss) {
-    Color = getNextVec3(iss);
-    Strength = getNextFloat(iss);
-    Position = getNextVec3(iss);
+void PointLight::Create(DataNode* node) {
+    Color = node->getVec3("color_r", "color_g", "color_b");
+    Strength = node->getData("strength").asFloat();
+    Position = node->getVec3("posx", "posy", "posz");
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid), Name.c_str());
 }
@@ -15,14 +15,14 @@ const char* PointLight::ObjectTypeString() {
     return _obj_type_PointLightObject;
 }
 
-void SpotLight::Create(istringstream &iss) {
-    Color = getNextVec3(iss);
-    Strength = getNextFloat(iss);
-    Position = getNextVec3(iss);
+void SpotLight::Create(DataNode* node) {
+    Color = node->getVec3("color_r", "color_g", "color_b");
+    Strength = node->getData("strength").asFloat();
+    Position = node->getVec3("posx", "posy", "posz");
 
-    Direction = getNextVec3(iss).normalize();
+    Direction = node->getVec3("dirx", "diry", "dirz").normalize();
 
-    vec2 cutoff = getNextVec2(iss);
+    vec2 cutoff = node->getVec2("cutoff_inner", "cutoff_outer");
     inner_cutoff = cos(cutoff.x * d2r);
     outer_cutoff = cos(cutoff.y * d2r);
 
@@ -33,12 +33,12 @@ const char* SpotLight::ObjectTypeString() {
     return _obj_type_SpotLightObject;
 }
 
-void DirLight::Create(istringstream &iss) {
-    Color = getNextVec3(iss);
-    Strength = getNextFloat(iss);
-    Position = getNextVec3(iss);
+void DirLight::Create(DataNode* node) {
+    Color = node->getVec3("color_r", "color_g", "color_b");
+    Strength = node->getData("strength").asFloat();
+    Position = node->getVec3("posx", "posy", "posz");
 
-    Direction = getNextVec3(iss).get_unit().normalize();
+    Direction = node->getVec3("dirx", "diry", "dirz").normalize();
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid), Name.c_str());
 }

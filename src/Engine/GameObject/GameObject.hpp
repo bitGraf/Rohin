@@ -15,19 +15,10 @@ typedef u64 UID_t;
 /// A generic 'Game Object' -> Any object in the world that has a position needs functionality. Override for more specific capabilities.
 class GameObject {
 public:
-    enum class GameObjectType {
-        NONE = -1,
-        Renderable,
-        Camera,
-        RenderObject,
-        Volume,
-
-        Count
-    };
     GameObject();
 
     /* Overridable functions */
-    virtual void Create(istringstream &iss); /// Gets called when the Scene is loaded
+    virtual void Create(DataNode* node); /// Gets called when the Scene is loaded
     virtual void PostLoad(); /// Gets called after the entire Scene is loaded
     virtual void Update(double dt); /// Gets called every frame to update
     virtual void Destroy(); /// Gets called when the Scene is destroyed
@@ -38,9 +29,6 @@ public:
 
     UID_t getID() const;
     mat4 getTransform() const;
-    void setParent(GameObject* newParent) { 
-        m_parent = newParent; 
-    }
 
     /* World Transform */
     vec3 Position;
@@ -53,12 +41,6 @@ public:
 protected:
     /* Debug Mesh - UNUSED */
     TriangleMesh* m_debugMesh;
-
-    /* Type identifier */
-    GameObjectType m_type;
-
-    /* Parent Object */
-    GameObject* m_parent; // < Should definitely be a UID_t if we plan on keeping parents.
 
 private:
     /// Get the next globally unique ID

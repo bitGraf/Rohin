@@ -77,23 +77,33 @@ struct MultiData {
     bool boolVal;
     std::string strVal;
 
-    MultiData() : intVal(0), floatVal(0), boolVal(false) {}
-    MultiData(s32 v) : intVal(v), floatVal(0), boolVal(false) {}
-    MultiData(f32 v) : intVal(0), floatVal(v), boolVal(false) {}
-    MultiData(f64 v) : intVal(0), floatVal(v), boolVal(false) {}
-    MultiData(bool v) : intVal(0), floatVal(0), boolVal(v) {}
-    MultiData(char* v) : intVal(0), floatVal(0), boolVal(false), strVal(v) {}
-    MultiData(char* v, size_t l) : intVal(0), floatVal(0), boolVal(false), strVal(v, l) {}
-    MultiData(std::string v) : intVal(0), floatVal(0), boolVal(false), strVal(v) {}
+    MultiData() : intVal(0), floatVal(0), boolVal(false), valid(false) {}
+    MultiData(s32 v) : intVal(v), floatVal(0), boolVal(false), valid(true) {}
+    MultiData(f32 v) : intVal(0), floatVal(v), boolVal(false), valid(true) {}
+    MultiData(f64 v) : intVal(0), floatVal(v), boolVal(false), valid(true) {}
+    MultiData(bool v) : intVal(0), floatVal(0), boolVal(v), valid(true) {}
+    MultiData(char* v) : intVal(0), floatVal(0), boolVal(false), strVal(v), valid(true) {}
+    MultiData(char* v, size_t l) : intVal(0), floatVal(0), boolVal(false), strVal(v, l), valid(true) {}
+    MultiData(std::string v) : intVal(0), floatVal(0), boolVal(false), strVal(v), valid(true) {}
 
     s32 asInt() { return intVal; }
     f32 asFloat() { return floatVal; }
     bool asBool() { return boolVal; }
     std::string asString() { return strVal; }
+    bool isValid() { return valid; }
+
+private:
+    bool valid;
 };
 
 struct DataNode {
     std::string name;
+
+    MultiData getDataFromPath(std::string path);
+
+    /* super temprary helper functions */
+    math::vec2 getVec2(std::string path1, std::string path2);
+    math::vec3 getVec3(std::string path1, std::string path2, std::string path3);
 
     MultiData getData(std::string key);
     DataNode getChild(std::string key);

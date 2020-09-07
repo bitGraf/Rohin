@@ -7,19 +7,19 @@ RenderableObject::RenderableObject() :
     m_cullRadius(1),
     mesh_Scale(1),
     noCull(true)
-{
-    m_type = GameObjectType::Renderable;
-}
+{}
 
-void RenderableObject::Create(istringstream &iss) {
-    GameObject::Create(iss);
+void RenderableObject::Create(DataNode* node) {
+    GameObject::Create(node);
 
-    m_mesh = ResourceCatalog::GetInstance()->getMesh(getNextString(iss));
-    m_material = ResourceCatalog::GetInstance()->getMaterial(getNextString(iss));
-    mesh_Position = getNextVec3(iss);
-    mesh_YawPitchRoll = getNextVec3(iss);
-    mesh_Scale = getNextVec3(iss);
-    m_cullRadius = getNextFloat(iss);
+    m_mesh = ResourceCatalog::GetInstance()->getMesh(
+        node->getData("mesh").asString());
+    m_material = ResourceCatalog::GetInstance()->getMaterial(
+        node->getData("material").asString());
+    mesh_Position = node->getVec3("mesh_posx", "mesh_posy", "mesh_posz");
+    mesh_YawPitchRoll = node->getVec3("mesh_yaw", "mesh_pitch", "mesh_roll");
+    mesh_Scale = node->getVec3("mesh_scalex", "mesh_scaley", "mesh_scalez");
+    m_cullRadius = node->getData("mesh_cullRadius").asFloat();
 }
 
 mat4 RenderableObject::getModelTransform() {

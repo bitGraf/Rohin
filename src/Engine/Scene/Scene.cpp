@@ -54,14 +54,14 @@ void Scene::loadFromFile(std::string path, bool noGLLoad) {
             if (entType.compare("GAMEOBJECT") == 0) {
                 auto k = MemoryPool::GetInstance()->allocBlock<GameObject>(1);
                 
-                k.data->Create(iss);
+                //k.data->Create(iss);
 
                 go = k.data;
             }
             else if (entType.compare("CAMERA") == 0) {
                 auto k = MemoryPool::GetInstance()->allocBlock<Camera>(1);
 
-                k.data->Create(iss);
+                //k.data->Create(iss);
                 objectsByType.Cameras.push_back(k.data);
 
                 go = k.data;
@@ -69,15 +69,15 @@ void Scene::loadFromFile(std::string path, bool noGLLoad) {
             else if (entType.compare("RENDERABLE") == 0) {
                 auto k = MemoryPool::GetInstance()->allocBlock<RenderableObject>(1);
 
-                k.data->Create(iss);
+                //k.data->Create(iss);
                 objectsByType.Renderable.push_back(k.data);
                 
                 go = k.data;
             }
             else if (entType.compare("DIR") == 0) {
                 auto k = MemoryPool::GetInstance()->allocBlock<DirLight>(1);
-
-                k.data->Create(iss);
+                
+                //k.data->Create(iss);
                 objectsByType.DirLights.push_back(k.data);
 
                 go = k.data;
@@ -85,7 +85,7 @@ void Scene::loadFromFile(std::string path, bool noGLLoad) {
             else if (entType.compare("SPOT") == 0) {
                 auto k = MemoryPool::GetInstance()->allocBlock<SpotLight>(1);
 
-                k.data->Create(iss);
+                //k.data->Create(iss);
                 objectsByType.SpotLights.push_back(k.data);
 
                 go = k.data;
@@ -93,7 +93,7 @@ void Scene::loadFromFile(std::string path, bool noGLLoad) {
             else if (entType.compare("POINT") == 0) {
                 auto k = MemoryPool::GetInstance()->allocBlock<PointLight>(1);
 
-                k.data->Create(iss);
+                //k.data->Create(iss);
                 objectsByType.PointLights.push_back(k.data);
 
                 go = k.data;
@@ -101,7 +101,7 @@ void Scene::loadFromFile(std::string path, bool noGLLoad) {
             else if (entType.compare("PLAYER") == 0) {
                 auto k = MemoryPool::GetInstance()->allocBlock<PlayerObject>(1);
 
-                k.data->Create(iss);
+                //k.data->Create(iss);
                 objectsByType.Players.push_back(k.data);
                 objectsByType.Renderable.push_back(k.data);
                 go = k.data;
@@ -109,7 +109,7 @@ void Scene::loadFromFile(std::string path, bool noGLLoad) {
             else if (entType.compare("AICHARACTER") == 0) {
                 auto k = MemoryPool::GetInstance()->allocBlock<AICharacter>(1);
 
-                k.data->Create(iss);
+                //k.data->Create(iss);
                 objectsByType.Renderable.push_back(k.data);
 				objectsByType.Actor.push_back(k.data);
 
@@ -118,7 +118,7 @@ void Scene::loadFromFile(std::string path, bool noGLLoad) {
 			else if (entType.compare("GOAPCHARACTER") == 0) {
 				auto k = MemoryPool::GetInstance()->allocBlock<GoapCharacter>(1);
 
-				k.data->Create(iss);
+				//k.data->Create(iss);
 				objectsByType.Renderable.push_back(k.data);
 				objectsByType.GoapActor.push_back(k.data);
 
@@ -127,7 +127,7 @@ void Scene::loadFromFile(std::string path, bool noGLLoad) {
             else if (entType.compare("VOLUME") == 0) {
                 auto k = MemoryPool::GetInstance()->allocBlock<TriggerVolume>(1);
 
-                k.data->Create(iss);
+                //k.data->Create(iss);
                 objectsByType.Volumes.push_back(k.data);
 
                 go = k.data;

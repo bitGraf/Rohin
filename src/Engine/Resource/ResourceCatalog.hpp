@@ -16,6 +16,7 @@ enum ResourceEntryType {
     resImage,
     resFont,
     resShader,
+    resLevel,
     resOther
 };
 
@@ -37,7 +38,7 @@ public:
 
     bool loadResourceFile(std::string filename);
 
-    void createNewResource(char* name, ResourceEntryType type, bool empty = false);
+    void createNewResource(std::string name, ResourceEntryType type, bool empty = false);
     bool getResource(std::string name, ResourceEntry& ent);
 
     void updateResourceFromFile(void* data, u32 size);

@@ -6,14 +6,13 @@ const char* TriggerVolume::_obj_type_TriggerVolume = "Trigger";
 TriggerVolume::TriggerVolume() : inside(false)
 {}
 
-void TriggerVolume::Create(istringstream &iss) {
-    //GameObject::Create(iss, resource);
+void TriggerVolume::Create(DataNode* node) {
+    Name = node->getData("name").asString();
+    Position = node->getVec3("posx", "posy", "posz");
 
-    Name = getNextString(iss);
-    Position = getNextVec3(iss);
-    bounds_min = getNextVec3(iss);
-    bounds_max = getNextVec3(iss);
-    m_triggerObjectName = getNextString(iss);
+    bounds_min = node->getVec3("bounds_minx", "bounds_miny", "bounds_minz");
+    bounds_max = node->getVec3("bounds_maxx", "bounds_maxy", "bounds_maxz");
+    m_triggerObjectName = node->getData("triggerObject").asString();
 }
 
 void TriggerVolume::PostLoad() {

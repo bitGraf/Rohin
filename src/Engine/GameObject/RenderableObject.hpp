@@ -10,7 +10,7 @@ class RenderableObject : public GameObject {
 public:
     RenderableObject();
 
-    virtual void Create(istringstream &iss) override;
+    virtual void Create(DataNode* node) override;
     virtual const char* ObjectTypeString() override;
 
     mat4 getModelTransform();

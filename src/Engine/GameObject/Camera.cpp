@@ -10,9 +10,7 @@ Camera::Camera() :
     m_followYaw(0),
     m_followPitch(45),
     m_followDistance(14)
-{
-    m_type = GameObjectType::Camera;
-}
+{}
 
 void Camera::set(float fovVert, float z_near, float z_far) {
     m_fovVert = fovVert; //horizontal fov
@@ -20,13 +18,13 @@ void Camera::set(float fovVert, float z_near, float z_far) {
     m_zFar = z_far;
 }
 
-void Camera::Create(istringstream &iss) {
-    GameObject::Create(iss);
+void Camera::Create(DataNode* node) {
+    GameObject::Create(node);
 
-    auto fovHoriz = getNextFloat(iss);
-    auto ne = getNextFloat(iss);
-    auto fa = getNextFloat(iss);
-    std::string followTarget = getNextString(iss);
+    auto fovHoriz = node->getData("fovHoriz").asFloat();
+    auto ne = node->getData("near").asFloat();
+    auto fa = node->getData("far").asFloat();
+    std::string followTarget = node->getData("followTarget").asString();
 
     //h = 2 * atan(AR*tan(v/2))
     //tan(h/2) = AR*tan(v/2)
@@ -173,11 +171,11 @@ void Camera::updateViewMatrix() {
     viewMatrix = mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1)) * 
         math::createInverseTransform(Position, YawPitchRoll);
 
-    if (m_parent) {
+    /*if (m_parent) {
         mat4 parentTransform = mat4(vec4(0, 0, -1, 0), vec4(0, 1, 0, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1)) * 
             math::createInverseTransform(m_parent->Position, m_parent->YawPitchRoll);
         viewMatrix = viewMatrix * parentTransform;
-    }
+    }*/
 }
 
 /*void Camera::updateProjectionMatrix(f32 width, f32 height) {

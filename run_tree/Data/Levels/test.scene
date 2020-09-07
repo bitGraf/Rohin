@@ -11,7 +11,8 @@
 Scene: {
     name: "Scene Name",
     gravity: -9.81, # end of line comments are also ignored
-    raining: true
+    raining: true,
+    size: 1.25,
 }
 
 GameObject: {

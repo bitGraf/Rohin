@@ -11,8 +11,8 @@ AICharacter::AICharacter() {
     speed = 2.5;
 }
 
-void AICharacter::Create(istringstream &iss) {
-	CharacterObject::Create(iss);
+void AICharacter::Create(DataNode* node) {
+	CharacterObject::Create(node);
 }
 
 void AICharacter::Update(double dt) {
@@ -60,8 +60,8 @@ GoapCharacter::GoapCharacter() {
 	this->lastVisitedNode = curMap.nearestNode(this->Position);
 }
 
-void GoapCharacter::Create(istringstream &iss) {
-	CharacterObject::Create(iss);
+void GoapCharacter::Create(DataNode* node) {
+	CharacterObject::Create(node);
 }
 
 void GoapCharacter::PostLoad() {

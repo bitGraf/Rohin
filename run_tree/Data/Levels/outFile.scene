@@ -1,0 +1,159 @@
+/* Recreating outFile.scene to test out the new format and start building the new SceneClass loading */
+
+# Global scene data
+Scene: {
+    name: "level1",
+    gravity: -9.81, # end of line comments are also ignored
+    raining: true,
+    size: 1.25,
+
+    numRenderable: 3,
+}
+
+Renderable[0]: {
+    name: "Plane",
+    
+    posx: 0.00,
+    posy: 0.00,
+    posz: 0.00,
+
+    yaw: 0.00,
+    pitch: 0.00,
+    roll: 0.00,
+
+    scalex: 1.00,
+    scaley: 1.00,
+    scalez: -1.00,
+
+    parent: " ",
+
+    mesh: "Plane",
+    material: "mat_WoodPlank",
+
+    mesh_posx: 0.00,
+    mesh_posy: 0.00,
+    mesh_posz: 0.00,
+
+    mesh_yaw: 0.00,
+    mesh_pitch: 0.00,
+    mesh_roll: 0.00,
+
+    mesh_scalex: 1.00,
+    mesh_scaley: 1.00,
+    mesh_scalez: 1.00,
+
+    mesh_cullRadius: 0.25,
+}
+
+Renderable[1]: {
+    name: "low_poly_barrel2",
+    
+    posx: -3.41,
+    posy: 0.00,
+    posz: -0.89,
+
+    yaw: 0.00,
+    pitch: 0.00,
+    roll: 0.00,
+
+    scalex: 1.00,
+    scaley: 1.00,
+    scalez: -1.00,
+
+    mesh: "Cylinder.002",
+    material: "mat_rusted_barrel",
+
+    mesh_posx: 0.00,
+    mesh_posy: 0.00,
+    mesh_posz: 0.00,
+
+    mesh_yaw: 0.00,
+    mesh_pitch: 0.00,
+    mesh_roll: 0.00,
+
+    mesh_scalex: 1.00,
+    mesh_scaley: 1.00,
+    mesh_scalez: 1.00,
+
+    mesh_cullRadius: 0.25,
+}
+
+Renderable[2]: {
+    name: "Cube",
+    
+    posx: 0.00,
+    posy: 15.00,
+    posz: -50.00,
+
+    yaw: 0.00,
+    pitch: 0.00,
+    roll: 0.00,
+
+    scalex: 1.00,
+    scaley: 1.00,
+    scalez: -1.00,
+
+    parent: " ",
+
+    mesh: "Cube.007",
+    material: "mat_brick",
+
+    mesh_posx: 0.00,
+    mesh_posy: 0.00,
+    mesh_posz: 0.00,
+
+    mesh_yaw: 0.00,
+    mesh_pitch: 0.00,
+    mesh_roll: 0.00,
+
+    mesh_scalex: 1.00,
+    mesh_scaley: 1.00,
+    mesh_scalez: 1.00,
+
+    mesh_cullRadius: 0.25,
+}
+
+# "Plane" "0.00 0.00 -0.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Plane" "mat_WoodPlank" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+# "low_poly_barrel" "-3.41 -0.00 -0.89" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cylinder.002" "mat_rusted_barrel.001" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+# "Cube" "-0.00 15.00 -50.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube.007" "mat_brick" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+
+/*
+SCENE "level1" 
+NAVNODES "level1"
+RESOURCE "Data/Models/level1.glb"
+RESOURCE "Data/Models/Guard.glb" 
+SKYBOX HDR "carpentry_shop_02_4k.hdr"
+ENTITY VOLUME "New Trigger Volume.001" "-2.40 1.00 -8.23" "-1.00 -1.00 -3.11" "2.05 3.70 2.07" "YaBoy" 
+ENTITY DIR "1.00 1.00 1.00  0.00" "1.50" "47.94 63.44 -8.40" "-0.43 -0.78 0.45" 
+ENTITY SPOT "1.00 0.59 0.43  0.00" "571.43" "0.00 29.00 -0.00" "-0.00 -1.00 0.00" "9.93 10.00" 
+ENTITY SPOT "1.00 0.59 0.43  0.00" "571.43" "0.00 29.00 15.00" "-0.00 -1.00 0.00" "9.93 10.00" 
+ENTITY SPOT "1.00 0.59 0.43  0.00" "571.43" "0.00 29.00 -15.00" "-0.00 -1.00 0.00" "9.93 10.00" 
+ENTITY SPOT "1.00 0.59 0.43  0.00" "571.43" "30.00 29.00 15.00" "-0.00 -1.00 0.00" "9.93 10.00" 
+ENTITY SPOT "1.00 0.59 0.43  0.00" "571.43" "-30.00 29.00 15.00" "-0.00 -1.00 0.00" "9.93 10.00" 
+ENTITY SPOT "1.00 0.59 0.43  0.00" "571.43" "30.00 29.00 -15.00" "-0.00 -1.00 0.00" "9.93 10.00" 
+ENTITY SPOT "1.00 0.59 0.43  0.00" "571.43" "-30.00 29.00 -15.00" "-0.00 -1.00 0.00" "9.93 10.00" 
+ENTITY CAMERA "MainCamera" "4.59 3.36 4.56" "135.00 -11.16 -0.00" "1.00 1.00 -1.00" "" "75.00" "0.010" "100.00" 
+ENTITY RENDERABLE "Plane" "0.00 0.00 -0.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Plane" "mat_WoodPlank" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY PLAYER "YaBoy" "0.00 0.00 0.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Guard_msh" "Guard_mat" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY PLAYER "YaBoy.001" "4.00 0.00 4.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Guard_msh" "Guard_mat" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY RENDERABLE "Cube.004" "-0.00 30.00 -0.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube.006" "mat_WoodPlank" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY RENDERABLE "Cube" "-0.00 15.00 -50.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube.007" "mat_brick" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY RENDERABLE "Cube.001" "0.00 15.00 50.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube.008" "mat_brick" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY RENDERABLE "Cube.002" "50.00 15.00 -0.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube.009" "mat_brick" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY RENDERABLE "Cube.003" "-50.00 15.00 0.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube.010" "mat_brick" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+#ENTITY GOAPCHARACTER "Suzanne" "5.92 0.59 -5.73" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Suzanne" "Skull" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+#ENTITY AICHARACTER "Suzanne.001" "11.51 0.59 -1.92" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Suzanne.003" "Skull" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+#ENTITY AICHARACTER "Suzanne.002" "9.04 0.59 7.16" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Suzanne.004" "Skull" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+#ENTITY GOAPCHARACTER "Guard" "5.92 0.00 -5.73" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Guard_msh" "Guard_mat" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25"
+ENTITY RENDERABLE "low_poly_barrel" "-3.41 -0.00 -0.89" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cylinder.002" "mat_rusted_barrel.001" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+
+ENTITY RENDERABLE "shipping_container1" "0.00 0.00 -4.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube" "mat_shipping_crate" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY RENDERABLE "shipping_container2" "-2.00 0.00 -8.00" "90.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube" "mat_shipping_crate" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY RENDERABLE "shipping_container3" "-2.00 0.00 -6.00" "135.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube" "mat_shipping_crate" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+
+ENTITY RENDERABLE "wood_crate" "-5.42 0.00 1.88" "38.27 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube.002" "mat_wood_crate" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY RENDERABLE "low_poly_barrel.001" "-1.47 -0.00 2.09" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cylinder.002" "mat_rusted_barrel.001" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+ENTITY COLLISION "Collidor1" "0 2.5 0" "0 0 0" "1 1 1" "" ".75"
+ENTITY COLLISION "Collidor2" "1 2.5 0" "0 0 0" "1 1 1" "" ".5"
+
+*/

@@ -128,8 +128,8 @@ void CharacterObject::Update(double dt) {
     }
 }
 
-void CharacterObject::Create(istringstream &iss) {
-    RenderableObject::Create(iss);
+void CharacterObject::Create(DataNode* node) {
+    RenderableObject::Create(node);
 }
 
 void CharacterObject::PostLoad() {
