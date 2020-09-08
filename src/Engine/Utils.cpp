@@ -300,17 +300,21 @@ void DataNode::decodeMultiDataStrings() {
     }
 }
 
-math::vec3 DataNode::getVec3(std::string path1, std::string path2, std::string path3) {
+math::vec3 DataNode::getVec3(
+    std::string path1, std::string path2, std::string path3,
+    math::vec3 defaultVal) {
     return math::vec3(
-        getData(path1).asFloat(),
-        getData(path2).asFloat(),
-        getData(path3).asFloat()
+        getData(path1).asFloat(defaultVal.x),
+        getData(path2).asFloat(defaultVal.y),
+        getData(path3).asFloat(defaultVal.z)
     );
 }
 
-math::vec2 DataNode::getVec2(std::string path1, std::string path2) {
+math::vec2 DataNode::getVec2(
+    std::string path1, std::string path2,
+    math::vec2 defaultVal) {
     return math::vec2(
-        getData(path1).asFloat(),
-        getData(path2).asFloat()
+        getData(path1).asFloat(defaultVal.x),
+        getData(path2).asFloat(defaultVal.y)
     );
 }

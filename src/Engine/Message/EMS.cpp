@@ -64,6 +64,7 @@ bool EMS::Init() {
 }
 
 bool EMS::Destroy() {
+    BENCHMARK_FUNCTION();
     while (pEventsHead) {
         pEventsTail = pEventsHead;
         pEventsHead = pEventsHead->pNext;

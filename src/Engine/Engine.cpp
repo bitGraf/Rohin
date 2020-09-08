@@ -5,6 +5,7 @@ Engine::Engine() {
     done = false;
     limitFramerate = true;
     highFramerate = false;
+    runtimeProfile = false;
 
     ems = 0;
     fileSystem = 0;
@@ -29,6 +30,9 @@ bool Engine::Init(int argc, char* argv[]) {
         Console::logError("Failed to create FileSystem instance");
         return false;
     }
+
+    // Put after FSys init so path is correct
+    BENCHMARK_START_SESSION("Initialization", "init.json");
 
     memory = MemoryPool::GetInstance();
     if (!memory || !memory->Init()) {
@@ -62,6 +66,31 @@ bool Engine::Init(int argc, char* argv[]) {
 
     sceneManager->LoadNewScene("Data/Levels/outFile.scene");
 
+    {
+        BENCHMARK_SCOPE("ErrorLogCheck");
+        // Test what objects need what params
+        Console::OpenLogFile("errorlog.log");
+        Console::EnableFileLogging();
+        DataNode node;
+
+        // intentionally give the object an empty node so errors for each param it asks for
+        node.name = "GameObject";   GameObject go; go.Create(&node);
+        node.name = "AICharacter";  AICharacter ai; ai.Create(&node);
+        node.name = "Camera";       Camera ca; ca.Create(&node);
+        node.name = "Character";    CharacterObject co; co.Create(&node);
+        node.name = "GOAPCharacter"; GoapCharacter gc; gc.Create(&node);
+        node.name = "PointLight";   PointLight pl; pl.Create(&node);
+        node.name = "SpotLight";    SpotLight sl; sl.Create(&node);
+        node.name = "DirLight";     DirLight dl; dl.Create(&node);
+        node.name = "Player";       PlayerObject po; po.Create(&node);
+        node.name = "Renderable";   RenderableObject ro; ro.Create(&node);
+        node.name = "Trigger";      TriggerVolume tv; tv.Create(&node);
+
+        Console::CloseLogFile();
+    }
+
+    BENCHMARK_END_SESSION();
+
     return true;
 }
 
@@ -70,12 +99,16 @@ void Engine::Start() {
     auto frameEnd = frameStart + Framerate{ 1 };
 
     while (!done) {
+        BENCHMARK_SCOPE("Frame");
         frameStart = engine_clock::now();
 
-        lastFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(
-            frameStart - frameEnd).count();
-        fpsAvg.addSample(lastFrameTime);
-        dt = fpsAvg.getCurrentAverage() / 1000000.0;
+        {
+            BENCHMARK_SCOPE("FPS Calc");
+            lastFrameTime = std::chrono::duration_cast<std::chrono::microseconds>(
+                frameStart - frameEnd).count();
+            fpsAvg.addSample(lastFrameTime);
+            dt = fpsAvg.getCurrentAverage() / 1000000.0;
+        }
 
         if (!ems->Exec()) {
             Console::logError("Failed to process event queue");
@@ -95,27 +128,31 @@ void Engine::Start() {
 
         Render();
 
-        if (limitFramerate) {
-            if (highFramerate)
-                frameEnd = frameStart + Framerate_MAX{ 1 };
-            else
-                frameEnd = frameStart + Framerate{ 1 };
+        {
+            BENCHMARK_SCOPE("FPS Limiting");
+            if (limitFramerate) {
+                if (highFramerate)
+                    frameEnd = frameStart + Framerate_MAX{ 1 };
+                else
+                    frameEnd = frameStart + Framerate{ 1 };
 
-            // sleep until next loop starts
-            if (BUSY_LOOP) {
-                while (engine_clock::now() < frameEnd) { ; }
+                // sleep until next loop starts
+                if (BUSY_LOOP) {
+                    while (engine_clock::now() < frameEnd) { ; }
+                }
+                else {
+                    std::this_thread::sleep_until(frameEnd);
+                }
             }
-            else {
-                std::this_thread::sleep_until(frameEnd);
-            }
+            frameEnd = frameStart;
         }
-        frameEnd = frameStart;
     }
 
     End();
 }
 
 void Engine::Update(double dt) {
+    BENCHMARK_FUNCTION();
     // Don't send input events to GameObjects while in debug mode
     gameTime += dt;
     timeAcc += dt;
@@ -127,20 +164,49 @@ void Engine::Update(double dt) {
         Console::logMessage("Checking Files");
         Post(eveCheckFileMod);
     }
+
+    /* 4 seconds into running, start profiling */
+    if (!runtimeProfile && gameTime > 4.0 && gameTime < 5.0) {
+        Console::logMessage("Starting runtime benchmark");
+
+        BENCHMARK_START_SESSION("runtime", "runtime.json");
+        runtimeProfile = true;
+    }
+
+    /* 2 seconds later, stop profiling */
+    if (runtimeProfile && gameTime > 6.0) {
+        Console::logMessage("Ending runtime benchmark");
+
+        BENCHMARK_END_SESSION();
+
+        runtimeProfile = false;
+    }
 }
 
 void Engine::PreRender() {
+    BENCHMARK_FUNCTION();
     // Interrogate the SceneManager for a list of draw calls to make this frame.
 }
 
 void Engine::Render() {
+    BENCHMARK_FUNCTION();
     windowManager->SwapAndPoll();
 }
 
 void Engine::End() {
-    ems->Destroy();
-    fileSystem->Destroy();
-    windowManager->Destroy();
+    BENCHMARK_START_SESSION("Shutdown", "shutdown.json");
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    sceneManager->Destroy();
+    windowManager->Destroy();
+    catalog->Destroy();
+    memory->Destroy();
+    fileSystem->Destroy();
+    ems->Destroy();
+
+    {
+        BENCHMARK_SCOPE("wait 1.5seconds");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1500));
+    }
+
+    BENCHMARK_END_SESSION();
 }

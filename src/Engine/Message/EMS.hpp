@@ -7,7 +7,7 @@
 
 #include "Console.hpp"
 #include "DataTypes.hpp"
-
+#include "Utils.hpp"
 
 enum Events {
     eveCheckFileMod,

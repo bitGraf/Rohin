@@ -6,9 +6,11 @@
 #include <algorithm>
 #include <vector>
 #include <unordered_map>
+#include <thread>
 
 #include "GameMath.hpp"
 #include "Console.hpp"
+#include "Benchmark.hpp"
 
 std::string getNextString(std::istringstream& iss); /// Read next tokenized string from input string stream
 math::scalar getNextFloat(std::istringstream& iss); /// Read next tokenized float from input string stream
@@ -86,10 +88,11 @@ struct MultiData {
     MultiData(char* v, size_t l) : intVal(0), floatVal(0), boolVal(false), strVal(v, l), valid(true) {}
     MultiData(std::string v) : intVal(0), floatVal(0), boolVal(false), strVal(v), valid(true) {}
 
-    s32 asInt() { return intVal; }
-    f32 asFloat() { return floatVal; }
-    bool asBool() { return boolVal; }
-    std::string asString() { return strVal; }
+    s32 asInt(int defaultVal = 0) { return valid ? intVal : defaultVal; }
+    f32 asFloat(f32 defaultVal = 0.0f) { return valid ? floatVal : defaultVal; }
+    bool asBool(bool defaultVal = false) { return valid ? boolVal : defaultVal; }
+    std::string asString(std::string defaultVal = " ") { return valid ? strVal : defaultVal; }
+
     bool isValid() { return valid; }
 
 private:
@@ -102,8 +105,8 @@ struct DataNode {
     MultiData getDataFromPath(std::string path);
 
     /* super temprary helper functions */
-    math::vec2 getVec2(std::string path1, std::string path2);
-    math::vec3 getVec3(std::string path1, std::string path2, std::string path3);
+    math::vec2 getVec2(std::string path1, std::string path2, math::vec2 defaultVal = math::vec2());
+    math::vec3 getVec3(std::string path1, std::string path2, std::string path3, math::vec3 defaultVal = math::vec3());
 
     MultiData getData(std::string key);
     DataNode getChild(std::string key);

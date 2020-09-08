@@ -23,6 +23,7 @@ public:
 private:
     bool LoadSceneFromFile(std::string filename, DataNode* root);
     void CreateGameObjects(DataNode* root);
+    void UnloadCurrentScene();
 
     std::unordered_map<UID_t, GameObject*> gameObjectList;
 

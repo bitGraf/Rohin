@@ -13,6 +13,7 @@ WindowManager* WindowManager::GetInstance() {
 }
 
 void WindowManager::Destroy() {
+    BENCHMARK_FUNCTION();
     window.Destroy();
 
     if (_singleton) {
@@ -22,6 +23,7 @@ void WindowManager::Destroy() {
 }
 
 bool WindowManager::Init() {
+    BENCHMARK_FUNCTION();
     // Register GLFW error callback first
     glfwSetErrorCallback(ErrorCallback);
 

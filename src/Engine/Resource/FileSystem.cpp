@@ -17,6 +17,7 @@ FileSystem* FileSystem::GetInstance() {
 }
 
 bool FileSystem::Destroy() {
+    BENCHMARK_FUNCTION();
     fileList.clear();
 
     if (_singleton) {
@@ -77,6 +78,7 @@ bool FileSystem::Init(char* directory) {
 }
 
 void FileSystem::checkForFileUpdates(void*, u32) {
+    BENCHMARK_FUNCTION();
     for (int n = 0; n < fileList.size(); n++) {
         fileList[n];
         

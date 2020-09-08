@@ -8,6 +8,7 @@
 #include "Console.hpp"
 #include "Message/EMS.hpp"
 #include "Window/Window.hpp"
+#include "Utils.hpp"
 
 class WindowManager : public MessageReceiver {
 public:

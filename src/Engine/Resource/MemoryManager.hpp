@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <cassert>
+#include "Utils.hpp"
 
 const u32 KILOBYTE = 1024;              // 1 KB worth of bytes
 const u32 MEGABYTE = 1024 * KILOBYTE;   // 1 MB worth of bytes

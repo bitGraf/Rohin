@@ -14,10 +14,12 @@ SceneManager* SceneManager::GetInstance() {
 }
 
 bool SceneManager::Init() {
+    BENCHMARK_FUNCTION();
     return true;
 }
 
 void SceneManager::Destroy() {
+    BENCHMARK_FUNCTION();
     if (_singleton) {
         delete _singleton;
         _singleton = 0;
@@ -42,6 +44,7 @@ bool containsChar(char* str, char character) {
 }
 
 bool SceneManager::LoadNewScene(std::string filename) {
+    BENCHMARK_FUNCTION();
     // TODO: make this multithreaded? prob using events
     // queue up a FILE IO operation
     DataNode root;
@@ -50,13 +53,7 @@ bool SceneManager::LoadNewScene(std::string filename) {
     //LoadSceneFromFile(filename, &root);
 
     // Unload current scene in the meantime
-    for (auto go : gameObjectList) {
-        UID_t id = go.first;
-        GameObject* obj = go.second;
-
-        obj->Destroy();
-    }
-    gameObjectList.clear(); // just remove eveything
+    UnloadCurrentScene();
 
     // wait for fileIO to end
     t1.join();
@@ -67,7 +64,21 @@ bool SceneManager::LoadNewScene(std::string filename) {
     return true;
 }
 
+void SceneManager::UnloadCurrentScene() {
+    BENCHMARK_FUNCTION();
+
+    for (auto go : gameObjectList) {
+        UID_t id = go.first;
+        GameObject* obj = go.second;
+        int k = 0;
+
+        obj->Destroy();
+    }
+    gameObjectList.clear(); // just remove eveything
+}
+
 bool SceneManager::LoadSceneFromFile(std::string filename, DataNode* root) {
+    BENCHMARK_FUNCTION();
     FileSystem* fs = FileSystem::GetInstance();
 
     size_t bytesRead = 0;
@@ -92,6 +103,7 @@ bool SceneManager::LoadSceneFromFile(std::string filename, DataNode* root) {
 }
 
 void SceneManager::CreateGameObjects(DataNode* root) {
+    BENCHMARK_FUNCTION();
     std::string name = root->getDataFromPath("Scene.name").asString();
     int numRenderable = root->getDataFromPath("Scene.numRenderable").asInt();
 
@@ -110,65 +122,5 @@ void SceneManager::CreateGameObjects(DataNode* root) {
         if (go) {
             gameObjectList.insert(std::unordered_map<UID_t, GameObject*>::value_type(go->getID(), go));
         }
-
-        /*
-        go->Name = node.getData("name").asString();
-
-        float posx = node.getData("posx").asFloat();
-        float posy = node.getData("posy").asFloat();
-        float posz = node.getData("posz").asFloat();
-        go.Position = math::vec3(posx, posy, posz);
-
-        float yaw = node.getData("yaw").asFloat();
-        float pitch = node.getData("pitch").asFloat();
-        float roll = node.getData("roll").asFloat();
-        go.YawPitchRoll = math::vec3(yaw, pitch, roll);
-
-        float scalex = node.getData("scalex").asFloat();
-        float scaley = node.getData("scaley").asFloat();
-        float scalez = node.getData("scalez").asFloat();
-        //go.scale= math::vec3(posx, posy, posz);
-
-        std::string parent = node.getData("parent").asString();
-        //go.setParent();
-
-        std::string mesh = node.getData("mesh").asString();
-        //go.setMesh(mesh)
-
-        std::string material = node.getData("material").asString();
-        //go.setMaterial(material)
-
-        float mesh_posx = node.getData("mesh_posx").asFloat();
-        float mesh_posy = node.getData("mesh_posy").asFloat();
-        float mesh_posz = node.getData("mesh_posz").asFloat();
-        //go.mesh_pos = vec3();
-
-        float mesh_yaw = node.getData("mesh_yaw").asFloat();
-        float mesh_pitch = node.getData("mesh_pitch").asFloat();
-        float mesh_roll = node.getData("mesh_roll").asFloat();
-        //go.mesh_ypr = vec3();
-
-        float mesh_scalex = node.getData("mesh_scalex").asFloat();
-        float mesh_scaley = node.getData("mesh_scaley").asFloat();
-        float mesh_scalez = node.getData("mesh_scalez").asFloat();
-        //go.mesh_scale = vec3();
-
-        float mesh_cullradius = node.getData("mesh_cullRadius").asFloat();
-        //go.setCull(mesh_cullradius);
-        */
-
-        /*
-        auto k = MemoryPool::GetInstance()->allocBlock<RenderableObject>(1);
-
-        k.data->Create(iss);
-        objectsByType.Renderable.push_back(k.data);
-
-        go = k.data;
-
-        if (go) {
-        // Insert the created GameObject into the hash map, keyed by its unique ID
-        m_masterMap.insert(std::unordered_map<UID_t, GameObject*>::value_type(go->getID(), go));
-        }
-        */
     }
 }

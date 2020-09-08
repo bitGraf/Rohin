@@ -19,6 +19,7 @@
 #include <errno.h>
 
 #include "Message\EMS.hpp"
+#include "Utils.hpp"
 
 
 struct FileEntry {

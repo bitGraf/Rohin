@@ -13,10 +13,10 @@ GameObject::GameObject() :
 }
 
 void GameObject::Create(DataNode* node) {
-    Name = node->getData("name").asString();
+    Name = node->getData("name").asString("_gameObject_");
     Position = node->getVec3("posx", "posy", "posz");
     YawPitchRoll = node->getVec3("yaw", "pitch", "roll");
-    vec3 _Scale = node->getVec3("scalex", "scaley", "scalez");
+    vec3 _Scale = node->getVec3("scalex", "scaley", "scalez", vec3(1));
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid) , Name.c_str());
 }

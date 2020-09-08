@@ -11,6 +11,7 @@
 #include "Window/WindowManager.hpp"
 #include "Resource/MemoryManager.hpp"
 #include "Scene/SceneManager.hpp"
+#include "Benchmark.hpp"
 
 #include <thread>
 
@@ -34,13 +35,14 @@ private:
     bool done;
 
     double timeAcc, gameTime;
+    bool runtimeProfile;
 
     /* Core System Singletons */
     EMS* ems;
     FileSystem* fileSystem;
+    MemoryPool* memory;
     ResourceCatalog* catalog;
     WindowManager* windowManager;
-    MemoryPool* memory;
     SceneManager* sceneManager;
 
     /* Frame Timing */

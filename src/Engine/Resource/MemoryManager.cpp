@@ -23,6 +23,7 @@ MemoryPool::~MemoryPool() {
 }
 
 bool MemoryPool::Init() {
+    BENCHMARK_FUNCTION();
     m_rawData = malloc(m_totalBytesInPool);
 
     if (m_rawData) {
@@ -40,6 +41,7 @@ bool MemoryPool::Init() {
 }
 
 void MemoryPool::Destroy() {
+    BENCHMARK_FUNCTION();
     if (m_rawData) {
         free(m_rawData);
     }

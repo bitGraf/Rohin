@@ -18,8 +18,8 @@ void RenderableObject::Create(DataNode* node) {
         node->getData("material").asString());
     mesh_Position = node->getVec3("mesh_posx", "mesh_posy", "mesh_posz");
     mesh_YawPitchRoll = node->getVec3("mesh_yaw", "mesh_pitch", "mesh_roll");
-    mesh_Scale = node->getVec3("mesh_scalex", "mesh_scaley", "mesh_scalez");
-    m_cullRadius = node->getData("mesh_cullRadius").asFloat();
+    mesh_Scale = node->getVec3("mesh_scalex", "mesh_scaley", "mesh_scalez", vec3(1));
+    m_cullRadius = node->getData("mesh_cullRadius").asFloat(0.25);
 }
 
 mat4 RenderableObject::getModelTransform() {

@@ -18,12 +18,14 @@ ResourceCatalog* ResourceCatalog::GetInstance() {
 }
 
 bool ResourceCatalog::Init() {
+    BENCHMARK_FUNCTION();
     Register(eveFileUpdate, this, (Callback)&ResourceCatalog::updateResourceFromFile);
 
     return true;
 }
 
 void ResourceCatalog::Destroy() {
+    BENCHMARK_FUNCTION();
     if (_singleton) {
         delete _singleton;
         _singleton = 0;
@@ -31,6 +33,7 @@ void ResourceCatalog::Destroy() {
 }
 
 void ResourceCatalog::createNewResource(std::string name, ResourceEntryType type, bool empty) {
+    BENCHMARK_FUNCTION();
     ResourceEntry ent;
 
     ent.filename = name;

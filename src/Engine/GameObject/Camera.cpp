@@ -21,10 +21,10 @@ void Camera::set(float fovVert, float z_near, float z_far) {
 void Camera::Create(DataNode* node) {
     GameObject::Create(node);
 
-    auto fovHoriz = node->getData("fovHoriz").asFloat();
-    auto ne = node->getData("near").asFloat();
-    auto fa = node->getData("far").asFloat();
-    std::string followTarget = node->getData("followTarget").asString();
+    auto fovHoriz = node->getData("fovHoriz").asFloat(75);
+    auto ne = node->getData("near").asFloat(.01);
+    auto fa = node->getData("far").asFloat(100);
+    std::string followTarget = node->getData("followTarget").asString("_FollowTarget_");
 
     //h = 2 * atan(AR*tan(v/2))
     //tan(h/2) = AR*tan(v/2)
