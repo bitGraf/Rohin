@@ -1,69 +1,86 @@
-/* Recreating outFile.scene to test out the new format and start building the new SceneClass loading */
+/* Testing recursive node creation */
 
 # Global scene data
 Scene: {
     name: "level 1",
     gravity: -9.81, # end of line comments are also ignored
     raining: true,
-    size: 1.25,
-
-    numRenderable: 3
+    size: 1.25
 },
 
-Renderable[0]: {
-    name: "Plane",
-    
-    position: [0.00, 0.00, 0.00],
-    yawPitchRoll: [0.00, 0.00, 0.00],
-    scale: [1.00, 1.00, -1.00],
+GameObjects: {
+    numRenderable: 3,
 
-    mesh: "Plane",
-    material: "mat_WoodPlank",
+    Renderable[0]: {
+        name: "Plane",
+        
+        position: [0.00, 0.00, 0.00],
+        yawPitchRoll: [0.00, 0.00, 0.00],
+        scale: [1.00, 1.00, -1.00],
 
-    mesh_position: [0.00, 0.00, 0.00],
-    mesh_yawPitchRoll: [0.00, 0.00, 0.00],
-    mesh_scale: [1.00, 1.00, 1.00],
+        mesh: "Plane",
+        material: "mat_WoodPlank",
 
-    mesh_cullRadius: 0.25
-},
+        mesh_position: [0.00, 0.00, 0.00],
+        mesh_yawPitchRoll: [0.00, 0.00, 0.00],
+        mesh_scale: [1.00, 1.00, 1.00],
 
-Renderable[1]: {
-    name: "low_poly_barrel2",
-    
-    position: [-3.41, 0.00, -0.89],
-    yawPitchRoll: [0.00, 0.00, 0.00],
-    scale: [1.00, 1.00, -1.00],
+        mesh_cullRadius: 0.25
+    },
 
-    mesh: "Cylinder.002",
-    material: "mat_rusted_barrel",
+    Renderable[1]: {
+        name: "low_poly_barrel2",
+        
+        position: [-3.41, 0.00, -0.89],
+        yawPitchRoll: [0.00, 0.00, 0.00],
+        scale: [1.00, 1.00, -1.00],
 
-    mesh_position: [0.00, 0.00, 0.00],
-    mesh_yawPitchRoll: [0.00, 0.00, 0.00],
-    mesh_scale: [1.00, 1.00, 1.00],
+        mesh: "Cylinder.002",
+        material: "mat_rusted_barrel",
 
-    mesh_cullRadius: 0.25
-},
+        mesh_position: [0.00, 0.00, 0.00],
+        mesh_yawPitchRoll: [0.00, 0.00, 0.00],
+        mesh_scale: [1.00, 1.00, 1.00],
 
-Renderable[2]: {
-    name: "Cube",
-    
-    position: [0.00, 15.0, -50.0],
-    yawPitchRoll: [0.00, 0.00, 0.00],
-    scale: [1.00, 1.00, -1.00],
+        mesh_cullRadius: 0.25
+    },
 
-    mesh: "Cube.007",
-    material: "mat_brick",
+    Renderable[2]: {
+        name: "Cube",
+        
+        position: [0.00, 15.0, -50.0],
+        yawPitchRoll: [0.00, 0.00, 0.00],
+        scale: [1.00, 1.00, -1.00],
+        
+        mesh: "Cube.007",
+        material: "mat_brick",
 
-    mesh_position: [0.00, 0.00, 0.00],
-    mesh_yawPitchRoll: [0.00, 0.00, 0.00],
-    mesh_scale: [1.00, 1.00, 1.00],
+        mesh_position: [0.00, 0.00, 0.00],
+        mesh_yawPitchRoll: [0.00, 0.00, 0.00],
+        mesh_scale: [1.00, 1.00, 1.00],
 
-    mesh_cullRadius: 0.25
+        mesh_cullRadius: 0.25
+    },
+
+    Camera: {
+        name: "Maincamera",
+            
+        position: [4.59, 3.36, 4.56],
+        yawPitchRoll: [135.00, -11.16, -0.00],
+        scale: [1.00, 1.00, -1.00],
+
+        fovHoriz: 75,
+        near: 0.01,
+        far: 100.0,
+
+        followTarget: "Cube"
+    }
 }
 
 # "Plane" "0.00 0.00 -0.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Plane" "mat_WoodPlank" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
 # "low_poly_barrel" "-3.41 -0.00 -0.89" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cylinder.002" "mat_rusted_barrel.001" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
 # "Cube" "-0.00 15.00 -50.00" "-0.00 0.00 -0.00" "1.00 1.00 -1.00" "" "Cube.007" "mat_brick" "0.00 0.00 0.00" "0.00 0.00 0.00" "1.00 1.00 1.00" "0.25" 
+# ENTITY CAMERA "MainCamera" "4.59 3.36 4.56" "135.00 -11.16 -0.00" "1.00 1.00 -1.00" "" "75.00" "0.010" "100.00" 
 
 /*
 SCENE "level1" 

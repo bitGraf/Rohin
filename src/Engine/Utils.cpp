@@ -254,7 +254,7 @@ MultiData DataNode::getDataFromPath(std::string path) {
     }
 }
 
-void DataNode::CreateAsRoot(char* buffer, size_t bufSize) {
+/*void DataNode::OLD__CreateAsRoot(char* buffer, size_t bufSize) {
     name = "root";
 
     DataNode newNode;
@@ -312,6 +312,7 @@ void DataNode::CreateAsRoot(char* buffer, size_t bufSize) {
 
     bool donezo = true;
 }
+*/
 
 void DataNode::decodeMultiDataStrings() {
     for (auto datum : data) {
@@ -358,5 +359,37 @@ void DataNode::decodeMultiDataStrings() {
     for (auto child : children) {
         child.second.decodeMultiDataStrings();
         children[child.first] = child.second;
+    }
+}
+
+void createNode(DataNode* me, DataNode* parent, std::string buffer) {
+    Tokenizer cb(buffer);
+
+    bool done = false;
+    while (!done) {
+        std::string token = cb.SplitByComma(&done);
+
+        if (token.find('{') == std::string::npos) {
+            // no subvalues here
+            Tokenizer val(token);
+
+            std::string k = val.NextToken(":");
+            std::string v = val.NextToken(":");
+
+            me->data[k] = MultiData(v);
+            continue;
+        }
+        else {
+            Tokenizer sub(token);
+
+            std::string nodeName = sub.SplitByColon();
+            std::string subBuf = sub.SplitByColon();
+            subBuf = std::string(subBuf, 1, subBuf.size() - 2); // strip first and last chars {}
+
+            DataNode newNode;
+            newNode.name = nodeName;
+            createNode(&newNode, me, subBuf);
+            me->children[nodeName] = newNode;
+        }
     }
 }

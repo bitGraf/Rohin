@@ -113,13 +113,115 @@ struct DataNode {
 
     MultiData getData(std::string key);
     DataNode getChild(std::string key);
-    void CreateAsRoot(char* buffer, size_t bufSize);
+    //void OLD__CreateAsRoot(char* buffer, size_t bufSize);
 
     std::unordered_map<std::string, MultiData> data;
     std::unordered_map<std::string, DataNode> children;
 
-private:
     void decodeMultiDataStrings();
 };
+
+class Tokenizer {
+public:
+    Tokenizer(const char* _buffer) {
+        fullSize = strlen(_buffer);
+        __buffer = (char*)malloc(fullSize + 1);
+        strcpy(__buffer, _buffer);
+        __buffer[fullSize] = 0;
+
+        ptr = __buffer;
+    }
+    Tokenizer(const std::string& str) {
+        fullSize = str.size();
+        __buffer = (char*)malloc(fullSize + 1);
+        strcpy(__buffer, str.data());
+        __buffer[fullSize] = 0;
+
+        ptr = __buffer;
+    }
+    std::string NextToken(char* delim) {
+        size_t loc = 0, len = strlen(ptr);
+        for (size_t n = 0; n < len; n++) {
+            for (size_t c = 0; c < strlen(delim); c++) {
+                if (ptr[n] == delim[c]) {
+                    std::string token(ptr, n);
+
+                    ptr = ptr + n + 1;
+                    return token;
+                }
+            }
+        }
+        return std::string(ptr);
+    }
+
+    std::string SplitByComma(bool* done) {
+        size_t pos = 0, len = strlen(ptr);
+        int count = -1;
+        while (pos < len && count != 0) {
+            if (ptr[pos] == '{') {
+                if (count == -1)
+                    count = 0;
+                count++;
+            }
+            if (ptr[pos] == '}') {
+                count--;
+            }
+
+            if (ptr[pos] == ',' && count == -1) {
+                break;
+            }
+
+            pos++;
+        }
+
+        std::string group(ptr, pos);
+        ptr = ptr + pos + 1;
+
+        *done = pos == len;
+
+        return group;
+    }
+
+    std::string SplitByColon() {
+        // node1:{awk:ada,awk:ada}
+        size_t pos = 0, len = strlen(ptr);
+        int count = -1;
+        while (pos < len && count != 0) {
+            if (ptr[pos] == '{') {
+                if (count == -1)
+                    count = 0;
+                count++;
+            }
+            if (ptr[pos] == '}') {
+                count--;
+            }
+
+            if (ptr[pos] == ':' && count == -1) {
+                break;
+            }
+
+            pos++;
+        }
+
+        std::string group(ptr, pos);
+        ptr = ptr + pos + 1;
+
+        return group;
+    }
+
+    ~Tokenizer() {
+        ptr = __buffer;
+        free(__buffer);
+        __buffer = 0;
+        fullSize = 0;
+    }
+
+private:
+    char* __buffer;
+    char* ptr;
+    size_t fullSize;
+};
+
+void createNode(DataNode* me, DataNode* parent, std::string buffer);
 
 #endif

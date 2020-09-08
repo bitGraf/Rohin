@@ -96,13 +96,45 @@ bool SceneManager::LoadSceneFromFile(std::string filename, DataNode* root) {
     //printf("New Buffer: (%d)[%s]\n", (int)bufSize, buffer);
     // now that all the useful information is collected in one line
     // parse it into a useful form
-    root->CreateAsRoot(buffer, bufSize);
+    //root->OLD__CreateAsRoot(buffer, bufSize);
+    createNode(root, nullptr, std::string(buffer, bufSize));
     free(buffer);
+
+    root->decodeMultiDataStrings();
 
     return true;
 }
 
 void SceneManager::CreateGameObjects(DataNode* root) {
+    // Heirarchy capable
+    BENCHMARK_FUNCTION();
+
+    std::string name = root->getDataFromPath("Scene.name").asString();
+
+    DataNode gameObjects = root->getChild("GameObjects");
+    int numRenderable = gameObjects.getData("numRenderable").asInt();
+
+    for (int n = 0; n < numRenderable; n++) {
+        std::string path = "Renderable[" + std::to_string(n) + "]";
+
+        DataNode node = gameObjects.getChild(path);
+
+        GameObject* go = nullptr;
+        auto k = MemoryPool::GetInstance()->allocBlock<RenderableObject>(1);
+
+        k.data->Create(&node);
+        //objectsByType.Renderable.push_back(k.data);
+        go = k.data;
+
+        if (go) {
+            gameObjectList.insert(std::unordered_map<UID_t, GameObject*>::value_type(go->getID(), go));
+        }
+    }
+
+    Camera cam;
+    cam.Create(&gameObjects.getChild("Camera"));
+
+    /* // Flat Declaration
     BENCHMARK_FUNCTION();
     std::string name = root->getDataFromPath("Scene.name").asString();
     int numRenderable = root->getDataFromPath("Scene.numRenderable").asInt();
@@ -123,4 +155,5 @@ void SceneManager::CreateGameObjects(DataNode* root) {
             gameObjectList.insert(std::unordered_map<UID_t, GameObject*>::value_type(go->getID(), go));
         }
     }
+    */
 }

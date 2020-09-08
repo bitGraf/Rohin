@@ -64,9 +64,10 @@ bool Engine::Init(int argc, char* argv[]) {
 
     catalog->loadResourceFile("level.mcf");
 
-    sceneManager->LoadNewScene("Data/Levels/outFile.scene");
+    //sceneManager->LoadNewScene("Data/Levels/outFile.scene");
+    sceneManager->LoadNewScene("Data/Levels/sceneHeirarchy.scene");
 
-    {
+    /*{
         BENCHMARK_SCOPE("ErrorLogCheck");
         // Test what objects need what params
         Console::OpenLogFile("errorlog.log");
@@ -87,7 +88,7 @@ bool Engine::Init(int argc, char* argv[]) {
         node.name = "Trigger";      TriggerVolume tv; tv.Create(&node);
 
         Console::CloseLogFile();
-    }
+    }*/
 
     BENCHMARK_END_SESSION();
 
