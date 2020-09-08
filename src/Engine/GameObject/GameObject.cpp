@@ -14,9 +14,9 @@ GameObject::GameObject() :
 
 void GameObject::Create(DataNode* node) {
     Name = node->getData("name").asString("_gameObject_");
-    Position = node->getVec3("posx", "posy", "posz");
-    YawPitchRoll = node->getVec3("yaw", "pitch", "roll");
-    vec3 _Scale = node->getVec3("scalex", "scaley", "scalez", vec3(1));
+    Position = node->getData("position").asVec3(vec3());
+    YawPitchRoll = node->getData("yawPitchRoll").asVec3(vec3());
+    vec3 _Scale = node->getData("scale").asVec3(vec3(1));
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid) , Name.c_str());
 }

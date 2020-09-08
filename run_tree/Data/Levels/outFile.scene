@@ -2,7 +2,7 @@
 
 # Global scene data
 Scene: {
-    name: "level1",
+    name: "level 1",
     gravity: -9.81, # end of line comments are also ignored
     raining: true,
     size: 1.25,
@@ -13,34 +13,16 @@ Scene: {
 Renderable[0]: {
     name: "Plane",
     
-    posx: 0.00,
-    posy: 0.00,
-    posz: 0.00,
-
-    yaw: 0.00,
-    pitch: 0.00,
-    roll: 0.00,
-
-    scalex: 1.00,
-    scaley: 1.00,
-    scalez: -1.00,
-
-    parent: " ",
+    position: [0.00, 0.00, 0.00],
+    yawPitchRoll: [0.00, 0.00, 0.00],
+    scale: [1.00, 1.00, -1.00],
 
     mesh: "Plane",
     material: "mat_WoodPlank",
 
-    mesh_posx: 0.00,
-    mesh_posy: 0.00,
-    mesh_posz: 0.00,
-
-    mesh_yaw: 0.00,
-    mesh_pitch: 0.00,
-    mesh_roll: 0.00,
-
-    mesh_scalex: 1.00,
-    mesh_scaley: 1.00,
-    mesh_scalez: 1.00,
+    mesh_position: [0.00, 0.00, 0.00],
+    mesh_yawPitchRoll: [0.00, 0.00, 0.00],
+    mesh_scale: [1.00, 1.00, 1.00],
 
     mesh_cullRadius: 0.25,
 }
@@ -48,32 +30,16 @@ Renderable[0]: {
 Renderable[1]: {
     name: "low_poly_barrel2",
     
-    posx: -3.41,
-    posy: 0.00,
-    posz: -0.89,
-
-    yaw: 0.00,
-    pitch: 0.00,
-    roll: 0.00,
-
-    scalex: 1.00,
-    scaley: 1.00,
-    scalez: -1.00,
+    position: [-3.41, 0.00, -0.89],
+    yawPitchRoll: [0.00, 0.00, 0.00],
+    scale: [1.00, 1.00, -1.00],
 
     mesh: "Cylinder.002",
     material: "mat_rusted_barrel",
 
-    mesh_posx: 0.00,
-    mesh_posy: 0.00,
-    mesh_posz: 0.00,
-
-    mesh_yaw: 0.00,
-    mesh_pitch: 0.00,
-    mesh_roll: 0.00,
-
-    mesh_scalex: 1.00,
-    mesh_scaley: 1.00,
-    mesh_scalez: 1.00,
+    mesh_position: [0.00, 0.00, 0.00],
+    mesh_yawPitchRoll: [0.00, 0.00, 0.00],
+    mesh_scale: [1.00, 1.00, 1.00],
 
     mesh_cullRadius: 0.25,
 }
@@ -81,34 +47,16 @@ Renderable[1]: {
 Renderable[2]: {
     name: "Cube",
     
-    posx: 0.00,
-    posy: 15.00,
-    posz: -50.00,
-
-    yaw: 0.00,
-    pitch: 0.00,
-    roll: 0.00,
-
-    scalex: 1.00,
-    scaley: 1.00,
-    scalez: -1.00,
-
-    parent: " ",
-
+    position: [0.00, 15.0, -50.0],
+    yawPitchRoll: [0.00, 0.00, 0.00],
+    scale: [1.00, 1.00, -1.00],
+    
     mesh: "Cube.007",
     material: "mat_brick",
 
-    mesh_posx: 0.00,
-    mesh_posy: 0.00,
-    mesh_posz: 0.00,
-
-    mesh_yaw: 0.00,
-    mesh_pitch: 0.00,
-    mesh_roll: 0.00,
-
-    mesh_scalex: 1.00,
-    mesh_scaley: 1.00,
-    mesh_scalez: 1.00,
+    mesh_position: [0.00, 0.00, 0.00],
+    mesh_yawPitchRoll: [0.00, 0.00, 0.00],
+    mesh_scale: [1.00, 1.00, 1.00],
 
     mesh_cullRadius: 0.25,
 }

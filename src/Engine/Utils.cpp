@@ -142,10 +142,51 @@ char* StripComments(char* inputBuf, size_t inputBufSize, size_t& newBufSize) {
 
     // temp free for now
     free(tmp);
-    
-    // send outputs
-    newBufSize = bufLength + 1;
-    return newBuffer;
+
+    bool inQuotes = false;
+    size_t numSpaces = 0;
+    for (size_t n = 0; n < strlen(newBuffer); n++) {
+        if (newBuffer[n] == '\"') {
+            inQuotes = !inQuotes;
+        }
+
+        if (!inQuotes) {
+            if (newBuffer[n] == ' ' ||
+                newBuffer[n] == '\t'
+                )
+                numSpaces++;
+        }
+    }
+
+    // there are X spaces in the buffer
+    if (numSpaces > 0) {
+        // realloc a new buffer
+        bufLength -= numSpaces;
+        char* spacelessBuf = (char*)malloc(bufLength + 1);
+        size_t loc = 0;
+        inQuotes = false;
+        for (size_t n = 0; n < strlen(newBuffer); n++) {
+            if (newBuffer[n] == '\"') {
+                inQuotes = !inQuotes;
+            }
+
+            if (inQuotes) {
+                spacelessBuf[loc++] = newBuffer[n];
+            } else if (newBuffer[n] != ' ' && newBuffer[n] != '\t') {
+                spacelessBuf[loc++] = newBuffer[n];
+            }
+        }
+        spacelessBuf[bufLength] = 0;
+        free(newBuffer);
+
+        newBufSize = bufLength + 1;
+        return spacelessBuf;
+    }
+    else {
+        // no whitespace to remove
+        newBufSize = bufLength + 1;
+        return newBuffer;
+    }
 }
 
 
@@ -156,6 +197,14 @@ bool stringContainsChar(char* str, char ch) {
     }
 
     return false;
+}
+
+size_t findChar(char* buffer, char ch) {
+    for (int n = 0; n < strlen(buffer); n++) {
+        if (buffer[n] == ch)
+            return n;
+    }
+    return strlen(buffer);
 }
 
 
@@ -218,7 +267,7 @@ void DataNode::CreateAsRoot(char* buffer, size_t bufSize) {
             newNode.children.clear();
             newNode.data.clear();
 
-            size_t nodeNameLength = strlen(token) - 2;
+            size_t nodeNameLength = findChar(token, ':'); // strlen(token) - 2;
             newNode.name = std::string(token, nodeNameLength);
         }
         else {
@@ -236,7 +285,7 @@ void DataNode::CreateAsRoot(char* buffer, size_t bufSize) {
                 for (int n = 0; n < len; n++) {
                     if (token[n] == ':') {
                         nameEnd = n;
-                        dataStart = nameEnd + 2;
+                        dataStart = nameEnd + 1;
 
                         currName = std::string(token + nameStart, nameEnd - nameStart);
                     }
@@ -284,6 +333,18 @@ void DataNode::decodeMultiDataStrings() {
             // starts with f, is false
             data[datum.first] = MultiData(false);
         }
+        else if (datum.second.asString().at(0) == '[') {
+            // starts with [, is a vector
+            size_t len = datum.second.asString().size();
+            if (datum.second.asString().at(len - 1) == ']') {
+                // check that it ends in a " as well
+                std::string s(datum.second.asString(), 1, len - 2);
+                std::stringstream ss(s);
+                math::vec4 v; char c;
+                ss >> v.x >> c >> v.y >> c >> v.z >> c >> v.w;
+                data[datum.first] = MultiData(v);
+            }
+        }
         else  {
             // its a number (either int or float)
             // assume its supposed to be a float, 
@@ -298,23 +359,4 @@ void DataNode::decodeMultiDataStrings() {
         child.second.decodeMultiDataStrings();
         children[child.first] = child.second;
     }
-}
-
-math::vec3 DataNode::getVec3(
-    std::string path1, std::string path2, std::string path3,
-    math::vec3 defaultVal) {
-    return math::vec3(
-        getData(path1).asFloat(defaultVal.x),
-        getData(path2).asFloat(defaultVal.y),
-        getData(path3).asFloat(defaultVal.z)
-    );
-}
-
-math::vec2 DataNode::getVec2(
-    std::string path1, std::string path2,
-    math::vec2 defaultVal) {
-    return math::vec2(
-        getData(path1).asFloat(defaultVal.x),
-        getData(path2).asFloat(defaultVal.y)
-    );
 }

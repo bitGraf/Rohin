@@ -4,9 +4,9 @@ const char* SpotLight::_obj_type_SpotLightObject = "SpotLight";
 const char* DirLight::_obj_type_DirLightObject = "DirLight";
 
 void PointLight::Create(DataNode* node) {
-    Color = node->getVec3("color_r", "color_g", "color_b", vec3(1));
+    Color = node->getData("color").asVec3(vec3(1));
     Strength = node->getData("strength").asFloat(1);
-    Position = node->getVec3("posx", "posy", "posz");
+    Position = node->getData("position").asVec3(vec3());
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid), Name.c_str());
 }
@@ -16,13 +16,13 @@ const char* PointLight::ObjectTypeString() {
 }
 
 void SpotLight::Create(DataNode* node) {
-    Color = node->getVec3("color_r", "color_g", "color_b", vec3(1));
+    Color = node->getData("color").asVec3(vec3(1));
     Strength = node->getData("strength").asFloat(1);
-    Position = node->getVec3("posx", "posy", "posz");
+    Position = node->getData("position").asVec3(vec3());
 
-    Direction = node->getVec3("dirx", "diry", "dirz").normalize();
+    Direction = node->getData("direction").asVec3(vec3());
 
-    vec2 cutoff = node->getVec2("cutoff_inner", "cutoff_outer", vec2(.1, .2));
+    vec2 cutoff = node->getData("cutoff").asVec2(vec2(.1, .2));
     inner_cutoff = cos(cutoff.x * d2r);
     outer_cutoff = cos(cutoff.y * d2r);
 
@@ -34,11 +34,11 @@ const char* SpotLight::ObjectTypeString() {
 }
 
 void DirLight::Create(DataNode* node) {
-    Color = node->getVec3("color_r", "color_g", "color_b", vec3(1));
+    Color = node->getData("color").asVec3(vec3(1));
     Strength = node->getData("strength").asFloat(1);
-    Position = node->getVec3("posx", "posy", "posz");
+    Position = node->getData("position").asVec3(vec3());
 
-    Direction = node->getVec3("dirx", "diry", "dirz", vec3(1,0,0)).normalize();
+    Direction = node->getData("direction").asVec3(vec3(1,0,0)).normalize();
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid), Name.c_str());
 }

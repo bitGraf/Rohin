@@ -8,10 +8,10 @@ TriggerVolume::TriggerVolume() : inside(false)
 
 void TriggerVolume::Create(DataNode* node) {
     Name = node->getData("name").asString("_TriggerVolume_");
-    Position = node->getVec3("posx", "posy", "posz");
+    Position = node->getData("position").asVec3(vec3());
 
-    bounds_min = node->getVec3("bounds_minx", "bounds_miny", "bounds_minz", vec3(-1));
-    bounds_max = node->getVec3("bounds_maxx", "bounds_maxy", "bounds_maxz", vec3(1));
+    bounds_min = node->getData("bounds_min").asVec3(vec3(-1));
+    bounds_max = node->getData("bounds_max").asVec3(vec3(-1));
     m_triggerObjectName = node->getData("triggerObject").asString("_TriggerObject_");
 }
 

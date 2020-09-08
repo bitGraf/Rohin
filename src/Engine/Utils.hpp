@@ -28,6 +28,9 @@ stringID operator"" _sid(const char *input, size_t s);
 /// Strip string of all line comments (#) as well as block comments (/* */)
 char* StripComments(char* inputBuf, size_t inputBufSize, size_t& newBufSize);
 
+bool stringContainsChar(char* str, char ch);
+
+size_t findChar(char* buffer, char ch);
 
 /// Moving Average class. SIZE is number of samples to average over.
 template<typename TYPE, int SIZE>
@@ -70,14 +73,13 @@ public:
     }
 };
 
-bool stringContainsChar(char* str, char ch);
-
 
 struct MultiData {
     s32 intVal;
     f32 floatVal;
     bool boolVal;
     std::string strVal;
+    math::vec4 vecVal;
 
     MultiData() : intVal(0), floatVal(0), boolVal(false), valid(false) {}
     MultiData(s32 v) : intVal(v), floatVal(0), boolVal(false), valid(true) {}
@@ -87,11 +89,16 @@ struct MultiData {
     MultiData(char* v) : intVal(0), floatVal(0), boolVal(false), strVal(v), valid(true) {}
     MultiData(char* v, size_t l) : intVal(0), floatVal(0), boolVal(false), strVal(v, l), valid(true) {}
     MultiData(std::string v) : intVal(0), floatVal(0), boolVal(false), strVal(v), valid(true) {}
+    MultiData(math::vec4 v) : intVal(0), floatVal(0), boolVal(false), valid(true), vecVal(v) {}
 
     s32 asInt(int defaultVal = 0) { return valid ? intVal : defaultVal; }
     f32 asFloat(f32 defaultVal = 0.0f) { return valid ? floatVal : defaultVal; }
     bool asBool(bool defaultVal = false) { return valid ? boolVal : defaultVal; }
     std::string asString(std::string defaultVal = " ") { return valid ? strVal : defaultVal; }
+
+    math::vec2 asVec2(math::vec2 defaultVal) { return valid ? math::vec2(vecVal.x, vecVal.y) : defaultVal; }
+    math::vec3 asVec3(math::vec3 defaultVal) { return valid ? math::vec3(vecVal.x, vecVal.y, vecVal.z) : defaultVal; }
+    math::vec4 asVec4(math::vec4 defaultVal) { return valid ? vecVal : defaultVal; }
 
     bool isValid() { return valid; }
 
@@ -103,10 +110,6 @@ struct DataNode {
     std::string name;
 
     MultiData getDataFromPath(std::string path);
-
-    /* super temprary helper functions */
-    math::vec2 getVec2(std::string path1, std::string path2, math::vec2 defaultVal = math::vec2());
-    math::vec3 getVec3(std::string path1, std::string path2, std::string path3, math::vec3 defaultVal = math::vec3());
 
     MultiData getData(std::string key);
     DataNode getChild(std::string key);

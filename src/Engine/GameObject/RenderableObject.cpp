@@ -16,9 +16,9 @@ void RenderableObject::Create(DataNode* node) {
         node->getData("mesh").asString());
     m_material = ResourceCatalog::GetInstance()->getMaterial(
         node->getData("material").asString());
-    mesh_Position = node->getVec3("mesh_posx", "mesh_posy", "mesh_posz");
-    mesh_YawPitchRoll = node->getVec3("mesh_yaw", "mesh_pitch", "mesh_roll");
-    mesh_Scale = node->getVec3("mesh_scalex", "mesh_scaley", "mesh_scalez", vec3(1));
+    Position = node->getData("mesh_position").asVec3(vec3());
+    YawPitchRoll = node->getData("mesh_yawPitchRoll").asVec3(vec3());
+    vec3 _Scale = node->getData("mesh_scale").asVec3(vec3(1));
     m_cullRadius = node->getData("mesh_cullRadius").asFloat(0.25);
 }
 
