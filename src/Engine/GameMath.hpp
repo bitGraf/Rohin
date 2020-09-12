@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "DataTypes.hpp"
-#include "picojson.hpp"
+#include "picojson.h"
 
 namespace math {
     typedef f32 scalar;

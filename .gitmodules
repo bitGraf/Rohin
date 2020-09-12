@@ -1,3 +1,6 @@
 [submodule "deps/glfw"]
 	path = deps/glfw
 	url = https://github.com/glfw/glfw
+[submodule "deps\\picojson"]
+	path = deps\\picojson
+	url = git@github.com:bitGraf/picojson.git

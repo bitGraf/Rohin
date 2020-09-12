@@ -46,6 +46,7 @@ endfunction(assign_source_group)
 
 set(GLFW_DIR ${LIB_DIR}/glfw)
 set(GLAD_DIR ${LIB_DIR}/glad)
+set(PICO_DIR ${LIB_DIR}/picojson)
 
 # GLFW
 set(GLFW_BUILD_EXAMPLES OFF CACHE INTERNAL "Build the GLFW example programs")
@@ -57,6 +58,11 @@ add_subdirectory(${GLFW_DIR})
 # glad
 add_library(glad ${GLAD_DIR}/src/glad.c)
 target_include_directories(glad PRIVATE ${GLAD_DIR}/include/)
+
+# picojson
+#add_subdirectory(${PICO_DIR})
+add_library(picojson INTERFACE)
+target_include_directories(picojson INTERFACE ${PICO_DIR}/)
 
 # Executable definition for Game
 add_executable(Game ${source_list})
@@ -72,11 +78,13 @@ target_include_directories(Game PRIVATE ${SRC_DIR}/Game)  # Game library include
 target_include_directories(Game PRIVATE ${GLFW_DIR}/include) #GLFW includes
 target_compile_definitions(Game PRIVATE "GLFW_INCLUDE_NONE") # don't have glfw include openGL bindings, use GLAD instead
 target_include_directories(Game PRIVATE ${GLAD_DIR}/include/) # openGL bindings
+target_include_directories(Game PRIVATE ${PICO}) # openGL bindings
 
 # Link libraries
 target_link_libraries(Game glfw ${GLFW_LIBRARIES})
 target_link_libraries(Game glad ${CMAKE_DL_LIBS})
 target_link_libraries(Game ${OPENGL_LIBRARIES})
+target_link_libraries(Game picojson ${CMAKE_DL_LIBS})
 
 # Assign Visual Studio folders
 set_target_properties(glad glfw PROPERTIES FOLDER Libraries)
@@ -88,6 +96,7 @@ set(RUN_TREE_PATH ${CMAKE_SOURCE_DIR}/run_tree)
 install(FILES ${CMAKE_BINARY_DIR}/Game.exe DESTINATION ${RUN_TREE_PATH})
 install(FILES ${CMAKE_BINARY_DIR}/glad.lib DESTINATION ${RUN_TREE_PATH})
 install(FILES ${CMAKE_BINARY_DIR}/glfw3.lib DESTINATION ${RUN_TREE_PATH})
+#install(FILES ${CMAKE_BINARY_DIR}/picojson.lib DESTINATION ${RUN_TREE_PATH})
 
 #add_custom_command(
 #    TARGET Game

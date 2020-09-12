@@ -12,7 +12,7 @@
 #include "Console.hpp"
 #include "Benchmark.hpp"
 
-#include "picojson.hpp"
+#include "picojson.h"
 
 typedef picojson::object& jsonObj;
 
