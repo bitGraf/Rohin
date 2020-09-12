@@ -5,6 +5,12 @@ math::vec2::vec2() : x(0), y(0) {}
 math::vec2::vec2(math::scalar v) : x(v), y(v) {}
 math::vec2::vec2(math::scalar a, math::scalar b) : x(a), y(b) {}
 math::vec2::vec2(double* data) : x(data[0]), y(data[1]) {}
+math::vec2::vec2(picojson::array& arr) {
+    if (arr.size() > 0)
+        x = arr[0].get<double>();
+    if (arr.size() > 1)
+        y = arr[1].get<double>();
+}
 
 /* vec3 constructors */
 math::vec3::vec3() : x(0), y(0), z(0) {}
@@ -13,6 +19,14 @@ math::vec3::vec3(math::scalar a, math::scalar b, math::scalar c) : x(a), y(b), z
 math::vec3::vec3(double* data) : x(data[0]), y(data[1]), z(data[2]) {}
 math::vec3::vec3(math::vec2 v, math::scalar c) : x(v.x), y(v.y), z(c) {}
 math::vec3::vec3(math::vec4 v) : x(v.x), y(v.y), z(v.z) {}
+math::vec3::vec3(picojson::array& arr) {
+    if (arr.size() > 0)
+        x = arr[0].get<double>();
+    if (arr.size() > 1)
+        y = arr[1].get<double>();
+    if (arr.size() > 2)
+        z = arr[2].get<double>();
+}
 
 /* vec4 constructors */
 math::vec4::vec4() : x(0), y(0), z(0), w(0) {}
@@ -20,6 +34,16 @@ math::vec4::vec4(math::scalar v) : x(v), y(v), z(v), w(v) {}
 math::vec4::vec4(math::scalar a, math::scalar b, math::scalar c, math::scalar d) : x(a), y(b), z(c), w(d) {}
 math::vec4::vec4(double* data) : x(data[0]), y(data[1]), z(data[2]), w(data[3]) {}
 math::vec4::vec4(math::vec3 v, math::scalar d) : x(v.x), y(v.y), z(v.z), w(d) {}
+math::vec4::vec4(picojson::array& arr) {
+    if (arr.size() > 0)
+        x = arr[0].get<double>();
+    if (arr.size() > 1)
+        y = arr[1].get<double>();
+    if (arr.size() > 2)
+        z = arr[2].get<double>();
+    if (arr.size() > 3)
+        w = arr[3].get<double>();
+}
 
 /* length operator */
 math::scalar math::vec2::length() { return sqrt(x*x + y*y); }

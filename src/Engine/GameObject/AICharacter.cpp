@@ -11,7 +11,7 @@ AICharacter::AICharacter() {
     speed = 2.5;
 }
 
-void AICharacter::Create(DataNode* node) {
+void AICharacter::Create(jsonObj node) {
 	CharacterObject::Create(node);
 }
 
@@ -60,7 +60,7 @@ GoapCharacter::GoapCharacter() {
 	this->lastVisitedNode = curMap.nearestNode(this->Position);
 }
 
-void GoapCharacter::Create(DataNode* node) {
+void GoapCharacter::Create(jsonObj node) {
 	CharacterObject::Create(node);
 }
 

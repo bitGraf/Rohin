@@ -7,7 +7,7 @@ class TriggerVolume : public GameObject {
 public:
     TriggerVolume();
 
-    virtual void Create(DataNode* node) override;
+    virtual void Create(jsonObj node) override;
     virtual void PostLoad() override;
     virtual void Update(double dt) override;
 

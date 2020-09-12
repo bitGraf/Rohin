@@ -13,7 +13,7 @@ public:
 
     virtual void Update(double dt) override;
     virtual void PostLoad() override;
-    virtual void Create(DataNode* node) override;
+    virtual void Create(jsonObj node) override;
 
     virtual void InputEvent(s32 key, s32 action) override;
     virtual const char* ObjectTypeString() override;

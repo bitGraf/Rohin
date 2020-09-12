@@ -13,7 +13,7 @@ public:
     CharacterObject();
 
     virtual void Update(double dt) override;
-    virtual void Create(DataNode* node) override;
+    virtual void Create(jsonObj node) override;
     virtual void PostLoad() override;
     virtual const char* ObjectTypeString() override;
 

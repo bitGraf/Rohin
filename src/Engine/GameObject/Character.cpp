@@ -128,7 +128,7 @@ void CharacterObject::Update(double dt) {
     }
 }
 
-void CharacterObject::Create(DataNode* node) {
+void CharacterObject::Create(jsonObj node) {
     RenderableObject::Create(node);
 }
 

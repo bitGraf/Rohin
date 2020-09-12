@@ -18,7 +18,7 @@ public:
     GameObject();
 
     /* Overridable functions */
-    virtual void Create(DataNode* node); /// Gets called when the Scene is loaded
+    virtual void Create(jsonObj node); /// Gets called when the Scene is loaded
     virtual void PostLoad(); /// Gets called after the entire Scene is loaded
     virtual void Update(double dt); /// Gets called every frame to update
     virtual void Destroy(); /// Gets called when the Scene is destroyed

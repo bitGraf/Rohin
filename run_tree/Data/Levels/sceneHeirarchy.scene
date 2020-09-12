@@ -8,6 +8,11 @@ Scene: {
     size: 1.25
 },
 
+Resources: {
+    num: 1,
+    file[0]: "resources/level.mcf"
+},
+
 GameObjects: {
     numRenderable: 3,
 

@@ -6,13 +6,13 @@ const char* TriggerVolume::_obj_type_TriggerVolume = "Trigger";
 TriggerVolume::TriggerVolume() : inside(false)
 {}
 
-void TriggerVolume::Create(DataNode* node) {
-    Name = node->getData("name").asString("_TriggerVolume_");
-    Position = node->getData("position").asVec3(vec3());
+void TriggerVolume::Create(jsonObj node) {
+    Name = safeAccess<std::string>(node, "name", "_triggerVolume_");
+    Position = safeAccessVec<vec3>(node, "position", vec3());
 
-    bounds_min = node->getData("bounds_min").asVec3(vec3(-1));
-    bounds_max = node->getData("bounds_max").asVec3(vec3(-1));
-    m_triggerObjectName = node->getData("triggerObject").asString("_TriggerObject_");
+    bounds_min = safeAccessVec<vec3>(node, "bounds_min", vec3());
+    bounds_max = safeAccessVec<vec3>(node, "bounds_max", vec3());
+    m_triggerObjectName = safeAccess<std::string>(node, "triggerObject", "_triggerObjectName_");
 }
 
 void TriggerVolume::PostLoad() {

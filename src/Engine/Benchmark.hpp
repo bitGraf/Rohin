@@ -6,6 +6,7 @@
 #include <fstream>
 #include <algorithm>
 #include <string>
+#include <iostream>
 
 #define BENCHMARK_ENABLE 0
 #if BENCHMARK_ENABLE
@@ -19,6 +20,19 @@
 #define BENCHMARK_START_SESSION(name,filepath) 
 #define BENCHMARK_END_SESSION()
 #endif
+
+class ScopeTimer {
+public:
+    ScopeTimer(const char* _name);
+    ~ScopeTimer();
+
+    void Stop();
+
+private:
+    const char* name;
+    std::chrono::time_point<std::chrono::steady_clock> startTime;
+    bool done;
+};
 
 class BenchmarkTimer {
 public:

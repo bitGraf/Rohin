@@ -9,7 +9,7 @@ class Camera : public GameObject {
 public:
     Camera();
 
-    void Create(DataNode* node);
+    virtual void Create(jsonObj node) override;
 
     virtual void Update(double dt) override;
     virtual const char* ObjectTypeString() override;

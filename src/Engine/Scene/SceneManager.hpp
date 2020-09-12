@@ -5,6 +5,8 @@
 #include "Message/EMS.hpp"
 #include "Resource/FileSystem.hpp"
 
+#include "picojson.hpp"
+
 #include <thread>
 
 class SceneManager : public MessageReceiver {
@@ -20,9 +22,11 @@ public:
 
     bool LoadNewScene(std::string filename);
 
+    std::string currentSceneName;
+
 private:
-    bool LoadSceneFromFile(std::string filename, DataNode* root);
-    void CreateGameObjects(DataNode* root);
+    bool LoadSceneFromFile(std::string filename, picojson::value& v);
+    void CreateGameObjects(picojson::object& root);
     void UnloadCurrentScene();
 
     std::unordered_map<UID_t, GameObject*> gameObjectList;

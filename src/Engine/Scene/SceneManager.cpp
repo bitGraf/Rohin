@@ -45,21 +45,18 @@ bool containsChar(char* str, char character) {
 
 bool SceneManager::LoadNewScene(std::string filename) {
     BENCHMARK_FUNCTION();
-    // TODO: make this multithreaded? prob using events
-    // queue up a FILE IO operation
-    DataNode root;
-    std::thread t1(&SceneManager::LoadSceneFromFile, this, filename, &root);
-    ResourceCatalog::GetInstance()->createNewResource(filename, resLevel, true);
+    //DataNode root;
     //LoadSceneFromFile(filename, &root);
+    //ResourceCatalog::GetInstance()->createNewResource(filename, resLevel, true);
+
+    picojson::value v;
+    LoadSceneFromFile(filename, v);
 
     // Unload current scene in the meantime
     UnloadCurrentScene();
 
-    // wait for fileIO to end
-    t1.join();
-
     // Load new data into scene
-    CreateGameObjects(&root);
+    //CreateGameObjects(&root);
 
     return true;
 }
@@ -77,83 +74,96 @@ void SceneManager::UnloadCurrentScene() {
     gameObjectList.clear(); // just remove eveything
 }
 
-bool SceneManager::LoadSceneFromFile(std::string filename, DataNode* root) {
+bool SceneManager::LoadSceneFromFile(std::string filename, picojson::value& v) {
     BENCHMARK_FUNCTION();
     FileSystem* fs = FileSystem::GetInstance();
 
-    size_t bytesRead = 0;
-    char* data = fs->readAllBytes(filename, bytesRead, true);
+    size_t rawBytesRead = 0;
+    char* rawData = fs->readAllBytes(filename, rawBytesRead, true);
 
-    if (!bytesRead || !data) {
+    if (!rawBytesRead || !rawData) {
         Console::logError("Failed to open level file '%s'", filename.c_str());
         return false;
     }
 
-    size_t bufSize = 0;
-    char* buffer = StripComments(data, bytesRead, bufSize);
-    free(data);
+    size_t bufSize;
+    char* buffer = StripComments(rawData, rawBytesRead, bufSize);
 
-    //printf("New Buffer: (%d)[%s]\n", (int)bufSize, buffer);
-    // now that all the useful information is collected in one line
-    // parse it into a useful form
-    //root->OLD__CreateAsRoot(buffer, bufSize);
-    createNode(root, nullptr, std::string(buffer, bufSize));
+    std::string json(buffer, bufSize);
+    std::string err = picojson::parse(v, json);
     free(buffer);
+    free(rawData);
 
-    root->decodeMultiDataStrings();
+    if (!err.empty()) {
+        std::cerr << err << std::endl;
+        return false;
+    }
+
+    picojson::value::object& root = v.get<picojson::object>();
+    CreateGameObjects(root);
 
     return true;
 }
 
-void SceneManager::CreateGameObjects(DataNode* root) {
-    // Heirarchy capable
+void SceneManager::CreateGameObjects(picojson::object& root) {
     BENCHMARK_FUNCTION();
 
-    std::string name = root->getDataFromPath("Scene.name").asString();
+    /* Get major nodes */
+    using jo = picojson::object;
+    using ja = picojson::array;
 
-    DataNode gameObjects = root->getChild("GameObjects");
-    int numRenderable = gameObjects.getData("numRenderable").asInt();
+    /* Scene Data */
+    if (root.find("Scene") != root.end()) {
+        jo& sceneNode = root["Scene"].get<jo>();
 
-    for (int n = 0; n < numRenderable; n++) {
-        std::string path = "Renderable[" + std::to_string(n) + "]";
+        currentSceneName = sceneNode["name"].get<std::string>();
+    }
 
-        DataNode node = gameObjects.getChild(path);
+    /* Load resources */
+    if (root.find("Resources") != root.end()) {
+        jo& resourcesNode = root["Resources"].get<jo>();
 
-        GameObject* go = nullptr;
-        auto k = MemoryPool::GetInstance()->allocBlock<RenderableObject>(1);
+        int numResources = (int)resourcesNode["num"].get<double>();
 
-        k.data->Create(&node);
-        //objectsByType.Renderable.push_back(k.data);
-        go = k.data;
+        ja& files = resourcesNode["files"].get<ja>();
 
-        if (go) {
-            gameObjectList.insert(std::unordered_map<UID_t, GameObject*>::value_type(go->getID(), go));
+        for (auto it : files) {
+            std::string str = it.get<std::string>();
+
+            ResourceCatalog::GetInstance()->loadResourceFile(str);
         }
     }
 
-    Camera cam;
-    cam.Create(&gameObjects.getChild("Camera"));
+    /* Load Game Objects */
+    if (root.find("GameObjects") != root.end())
+    {
+        jo& gameObjectsNode = root["GameObjects"].get<jo>();
 
-    /* // Flat Declaration
-    BENCHMARK_FUNCTION();
-    std::string name = root->getDataFromPath("Scene.name").asString();
-    int numRenderable = root->getDataFromPath("Scene.numRenderable").asInt();
 
-    for (int n = 0; n < numRenderable; n++) {
-        std::string path = "Renderable[" + std::to_string(n) + "]";
+        /* Renderables */
+        int numRenderable = (int)gameObjectsNode["numRenderable"].get<double>();
 
-        DataNode node = root->getChild(path);
+        for (int n = 0; n < numRenderable; n++) {
+            ja& renderables = gameObjectsNode["Renderables"].get<ja>();
 
-        GameObject* go = nullptr;
-        auto k = MemoryPool::GetInstance()->allocBlock<RenderableObject>(1);
+            for (auto it : renderables) {
+                jo& ro = it.get<jo>();
 
-        k.data->Create(&node);
-        //objectsByType.Renderable.push_back(k.data);
-        go = k.data;
+                GameObject* go = nullptr;
+                auto k = MemoryPool::GetInstance()->allocBlock<RenderableObject>(1);
 
-        if (go) {
-            gameObjectList.insert(std::unordered_map<UID_t, GameObject*>::value_type(go->getID(), go));
+                k.data->Create(ro);
+                //objectsByType.Renderable.push_back(k.data);
+                go = k.data;
+
+                if (go) {
+                    gameObjectList.insert(std::unordered_map<UID_t, GameObject*>::value_type(go->getID(), go));
+                }
+            }
         }
-    }
-    */
+
+        jo& camObj = gameObjectsNode["Camera"].get<jo>();
+        Camera cam;
+        cam.Create(camObj);
+    }    
 }

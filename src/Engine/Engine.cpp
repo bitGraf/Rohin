@@ -65,30 +65,13 @@ bool Engine::Init(int argc, char* argv[]) {
     catalog->loadResourceFile("level.mcf");
 
     //sceneManager->LoadNewScene("Data/Levels/outFile.scene");
-    sceneManager->LoadNewScene("Data/Levels/sceneHeirarchy.scene");
+    //sceneManager->LoadNewScene("Data/Levels/sceneHeirarchy.scene");
+    sceneManager->LoadNewScene("Data/Levels/jsTest.scene");
 
-    /*{
-        BENCHMARK_SCOPE("ErrorLogCheck");
-        // Test what objects need what params
-        Console::OpenLogFile("errorlog.log");
-        Console::EnableFileLogging();
-        DataNode node;
-
-        // intentionally give the object an empty node so errors for each param it asks for
-        node.name = "GameObject";   GameObject go; go.Create(&node);
-        node.name = "AICharacter";  AICharacter ai; ai.Create(&node);
-        node.name = "Camera";       Camera ca; ca.Create(&node);
-        node.name = "Character";    CharacterObject co; co.Create(&node);
-        node.name = "GOAPCharacter"; GoapCharacter gc; gc.Create(&node);
-        node.name = "PointLight";   PointLight pl; pl.Create(&node);
-        node.name = "SpotLight";    SpotLight sl; sl.Create(&node);
-        node.name = "DirLight";     DirLight dl; dl.Create(&node);
-        node.name = "Player";       PlayerObject po; po.Create(&node);
-        node.name = "Renderable";   RenderableObject ro; ro.Create(&node);
-        node.name = "Trigger";      TriggerVolume tv; tv.Create(&node);
-
-        Console::CloseLogFile();
-    }*/
+    /* print out memory usage */
+    u32 left = memory->getBytesLeft();
+    u32 total = memory->getTotalBytes();
+    Console::logMessage("Using %zu/%zu mb (%.2f percent)", left/MEGABYTE, total/MEGABYTE, (float)left/total*100);
 
     BENCHMARK_END_SESSION();
 

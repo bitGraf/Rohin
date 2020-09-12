@@ -142,10 +142,10 @@ char* FileSystem::readAllBytes(std::string filepath, size_t& bytesRead, bool sho
 
     //get length of file
     if (!infile.seekg(0, std::ios::end))
-        Console::logError("Failed to seek to eof");
+        return nullptr;
     size_t length = infile.tellg();
     if (!infile.seekg(0, std::ios::beg))
-        Console::logError("Failed to seek to bof");
+        return nullptr;
 
     if (length > 0 && length != std::string::npos) {
         //create buffer
@@ -153,7 +153,7 @@ char* FileSystem::readAllBytes(std::string filepath, size_t& bytesRead, bool sho
 
         //read file
         if (!infile.read(buffer, length))
-            Console::logError("Failed to read the file");
+            return nullptr;
 
         if (infile) {
             // successful read

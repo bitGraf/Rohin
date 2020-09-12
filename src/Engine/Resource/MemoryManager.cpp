@@ -4,7 +4,7 @@ MemoryPool* MemoryPool::_singleton = 0;
 
 MemoryPool* MemoryPool::GetInstance() {
     if (!_singleton) {
-        _singleton = new MemoryPool(64 * MEGABYTE);
+        _singleton = new MemoryPool(256 * MEGABYTE);
     }
     return _singleton;
 }

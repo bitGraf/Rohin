@@ -37,8 +37,9 @@ void PlayerObject::Update(double dt) {
     }
 }
 
-void PlayerObject::Create(DataNode* node) {
+void PlayerObject::Create(jsonObj node) {
     CharacterObject::Create(node);
+
     //Position = vec3(0, 2, 0);
 	Position = vec3(Position.x, Position.y + 2, Position.z);
     Velocity = vec3(0, 0, 0);

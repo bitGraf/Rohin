@@ -9,17 +9,18 @@ RenderableObject::RenderableObject() :
     noCull(true)
 {}
 
-void RenderableObject::Create(DataNode* node) {
+void RenderableObject::Create(jsonObj node) {
     GameObject::Create(node);
 
     m_mesh = ResourceCatalog::GetInstance()->getMesh(
-        node->getData("mesh").asString());
+        safeAccess<std::string>(node, "mesh", "_meshName_"));
     m_material = ResourceCatalog::GetInstance()->getMaterial(
-        node->getData("material").asString());
-    Position = node->getData("mesh_position").asVec3(vec3());
-    YawPitchRoll = node->getData("mesh_yawPitchRoll").asVec3(vec3());
-    vec3 _Scale = node->getData("mesh_scale").asVec3(vec3(1));
-    m_cullRadius = node->getData("mesh_cullRadius").asFloat(0.25);
+        safeAccess<std::string>(node, "material", "_materialName_"));
+
+    Position = safeAccessVec<vec3>(node, "mesh_position", vec3());
+    YawPitchRoll = safeAccessVec<vec3>(node, "mesh_yawPitchRoll", vec3());
+    vec3 _Scale = safeAccessVec<vec3>(node, "mesh_scale", vec3());
+    m_cullRadius = safeAccess<double>(node, "mesh_cullRadius", 1.0);
 }
 
 mat4 RenderableObject::getModelTransform() {

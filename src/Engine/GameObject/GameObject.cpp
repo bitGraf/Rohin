@@ -12,11 +12,11 @@ GameObject::GameObject() :
     bool k = false;
 }
 
-void GameObject::Create(DataNode* node) {
-    Name = node->getData("name").asString("_gameObject_");
-    Position = node->getData("position").asVec3(vec3());
-    YawPitchRoll = node->getData("yawPitchRoll").asVec3(vec3());
-    vec3 _Scale = node->getData("scale").asVec3(vec3(1));
+void GameObject::Create(jsonObj node) {
+    Name = safeAccess<std::string>(node, "name", "_name_");
+    Position = safeAccessVec<vec3>(node, "position", vec3());
+    YawPitchRoll = safeAccessVec<vec3>(node, "yawPitchRoll", vec3());
+    vec3 _Scale = safeAccessVec<vec3>(node, "scale", vec3());
 
     Console::logMessage("GameObject: %llu {%s} created.", (m_uid) , Name.c_str());
 }

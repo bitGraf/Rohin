@@ -1,5 +1,29 @@
 #include "Benchmark.hpp"
 
+
+ScopeTimer::ScopeTimer(const char* _name) : name(_name), done(false) {
+    startTime = std::chrono::high_resolution_clock::now();
+}
+
+ScopeTimer::~ScopeTimer() {
+    if (!done)
+        Stop();
+}
+
+void ScopeTimer::Stop() {
+    auto endTime = std::chrono::high_resolution_clock::now();
+
+    long long start = std::chrono::time_point_cast<std::chrono::milliseconds>(startTime).time_since_epoch().count();
+    long long end = std::chrono::time_point_cast<std::chrono::milliseconds>(endTime).time_since_epoch().count();
+
+    std::cout << name << ": " << (end - start) << " ms" << std::endl;
+
+    done = true;
+}
+
+
+
+
 BenchmarkTimer::BenchmarkTimer(const char* _name) : name(_name), done(false) {
     startTime = std::chrono::high_resolution_clock::now();
 }

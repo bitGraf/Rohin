@@ -95,7 +95,7 @@ bool ResourceCatalog::loadResourceFile(std::string filename) {
         Console::logMessage(" Succesfully read %zu kilobytes", bytesRead/1024);
     }
     else {
-        Console::logError("Failed");
+        Console::logError("Failed to load resource file '%s'", filename.c_str());
         return false;
     }
 
@@ -305,6 +305,8 @@ bool ResourceCatalog::loadResourceFile(std::string filename) {
                 }
             }
         }
+
+        bool afterLoops = true;
     }
     else {
         Console::logError(" Incorrect file signature found...");

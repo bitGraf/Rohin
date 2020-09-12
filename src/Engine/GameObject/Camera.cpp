@@ -18,13 +18,13 @@ void Camera::set(float fovVert, float z_near, float z_far) {
     m_zFar = z_far;
 }
 
-void Camera::Create(DataNode* node) {
+void Camera::Create(jsonObj node) {
     GameObject::Create(node);
 
-    auto fovHoriz = node->getData("fovHoriz").asFloat(75);
-    auto ne = node->getData("near").asFloat(.01);
-    auto fa = node->getData("far").asFloat(100);
-    std::string followTarget = node->getData("followTarget").asString("_FollowTarget_");
+    auto fovHoriz = safeAccess<double>(node, "fovHoriz", 75);
+    auto ne = safeAccess<double>(node, "near", .01);
+    auto fa = safeAccess<double>(node, "far", 100);
+    std::string followTarget = safeAccess<std::string>(node, "followTarget", "_followTarget_");
 
     //h = 2 * atan(AR*tan(v/2))
     //tan(h/2) = AR*tan(v/2)
