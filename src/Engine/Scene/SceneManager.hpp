@@ -30,6 +30,7 @@ private:
     void UnloadCurrentScene();
 
     std::unordered_map<UID_t, GameObject*> gameObjectList;
+    EnvironmentMap envMap;
 
 public:
     static SceneManager* GetInstance();

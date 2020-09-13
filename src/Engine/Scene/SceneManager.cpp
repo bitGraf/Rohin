@@ -132,8 +132,7 @@ void SceneManager::CreateGameObjects(picojson::object& root) {
     }
 
     /* Load Game Objects */
-    if (root.find("GameObjects") != root.end())
-    {
+    if (root.find("GameObjects") != root.end()) {
         jo& gameObjectsNode = root["GameObjects"].get<jo>();
 
 
@@ -199,4 +198,22 @@ void SceneManager::CreateGameObjects(picojson::object& root) {
             }
         }
     }    
+
+    /* Load Environment */
+    if (root.find("Skybox") != root.end()) {
+        jo& skybox = root["Skybox"].get<jo>();
+
+        std::string type = safeAccess<std::string>(skybox, "type", "_none_");
+
+        if (type.compare("HDR") == 0) {
+            std::string path = skybox["file"].get<std::string>();
+
+            bool noGLLoad = true;
+            /* environment map */
+            if (!noGLLoad) {
+                envMap.loadHDRi(path);
+                envMap.preCompute();
+            }
+        }
+    }
 }
