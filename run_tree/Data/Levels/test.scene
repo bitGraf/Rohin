@@ -1,21 +1,262 @@
-/* Test scene file
- * Goals:
- * 1. properly ignore comments and newlines when parsing text
- * 2. allow scope-based property definition and retrieval
- * 3. be able to handle strings, numbers, and bools
- * 4. data need not be in a specific order
- * 5. be easy to write, read, and generate
- */
+{
+    "Scene" : {
+        "name": "level 1"
+    },
 
-# Line comments like this are ignored
-Scene: {
-    name: "Scene Name",
-    gravity: -9.81, # end of line comments are also ignored
-    raining: true,
-    size: 1.25,
-}
+    "Resources": {
+        "files": ["level.mcf"]
+    },
 
-GameObject: {
-    type: 1,
-    name: "obj1",
+    "Navigation": {
+        "navnodes": "level1"
+    },
+
+    "Skybox": {
+        "type": "HDR",
+        "file": "carpentry_shop_02_4k.hdr"
+    },
+
+    "GameObjects": {
+        "Renderables": [
+            {
+            "name": "Plane",
+            
+            "position": [0.00, 0.00, 0.00],
+            "yawPitchRoll": [0.00, 0.00, 0.00],
+            "scale": [1.00, 1.00, -1.00],
+    
+            "mesh": "Plane",
+            "material": "mat_WoodPlank",
+    
+            "mesh_position": [0.00, 0.00, 0.00],
+            "mesh_yawPitchRoll": [0.00, 0.00, 0.00],
+            "mesh_scale": [1.00, 1.00, 1.00],
+    
+            "mesh_cullRadius": 0.25
+            },
+            {
+            "name": "low_poly_barrel2",
+            
+            "position": [-3.41, 0.00, -0.89],
+            "yawPitchRoll": [0.00, 0.00, 0.00],
+            "scale": [1.00, 1.00, -1.00],
+    
+            "mesh": "Cylinder.002",
+            "material": "mat_rusted_barrel",
+    
+            "mesh_position": [0.00, 0.00, 0.00],
+            "mesh_yawPitchRoll": [0.00, 0.00, 0.00],
+            "mesh_scale": [1.00, 1.00, 1.00],
+    
+            "mesh_cullRadius": 0.25
+            },
+            {
+            "name": "Cube",
+            
+            "position": [0.00, 15.0, -50.0],
+            "yawPitchRoll": [0.00, 0.00, 0.00],
+            "scale": [1.00, 1.00, -1.00],
+            
+            "mesh": "Cube.007",
+            "material": "mat_brick",
+    
+            "mesh_position": [0.00, 0.00, 0.00],
+            "mesh_yawPitchRoll": [0.00, 0.00, 0.00],
+            "mesh_scale": [1.00, 1.00, 1.00],
+    
+            "mesh_cullRadius": 0.25
+            },
+            {
+                "name": "Cube.004",
+                
+                "position": [0.0, 30.0, 0.0],
+                "scale": [1.0, 1.0, -1.0],
+                
+                "mesh": "Cube.006",
+                "material": "mat_WoodPlank"
+            },
+            {
+                "name": "Cube.001",
+                
+                "position": [0.0, 15.0, 0.0],
+                "scale": [1.0, 1.0, -1.0],
+                
+                "mesh": "Cube.008",
+                "material": "mat_brick"
+            },
+            {
+                "name": "Cube.002",
+                
+                "position": [50.0, 15.0, 0.0],
+                "scale": [1.0, 1.0, -1.0],
+                
+                "mesh": "Cube.009",
+                "material": "mat_brick"
+            },
+            {
+                "name": "Cube.003",
+                
+                "position": [-50.0, 15.0, 0.0],
+                "scale": [1.0, 1.0, -1.0],
+                
+                "mesh": "Cube.010",
+                "material": "mat_brick"
+            },
+
+            {
+                "name": "shipping_container1",
+                
+                "position": [0, 0, -4],
+                "scale": [1.0, 1.0, -1.0],
+                "yawPitchRoll": [0.00, 0.00, 0.00],
+                
+                "mesh": "Cube",
+                "material": "mat_shipping_crate"
+            },
+            {
+                "name": "shipping_container2",
+                
+                "position": [-2, 0, -8],
+                "scale": [1.0, 1.0, -1.0],
+                "yawPitchRoll": [90.0, 0.0, 0.0],
+                
+                "mesh": "Cube",
+                "material": "mat_shipping_crate"
+            },
+            {
+                "name": "shipping_container3",
+                
+                "position": [-2, 0, -6],
+                "scale": [1.0, 1.0, -1.0],
+                "yawPitchRoll": [135.0, 0.0, 0.0],
+                
+                "mesh": "Cube",
+                "material": "mat_shipping_crate"
+            },
+            {
+                "name": "wood_crate",
+                
+                "position": [-5.42, 0, 1.88],
+                "scale": [1.0, 1.0, -1.0],
+                "yawPitchRoll": [38.27, 0, 0],
+                
+                "mesh": "Cube.002",
+                "material": "mat_wood_crate"
+            },
+            {
+                "name": "low_poly_barrel.001",
+                
+                "position": [-1.47, 0, 2.09],
+                "scale": [1.0, 1.0, -1.0],
+                
+                "mesh": "Cylinder.002",
+                "material": "mat_rusted_barrel.001"
+            }
+        ],
+    
+        "Camera": {
+            "name": "Maincamera",
+                
+            "position": [4.59, 3.36, 4.56],
+            "yawPitchRoll": [135.00, -11.16, -0.00],
+            "scale": [1.00, 1.00, -1.00],
+    
+            "fovHoriz": 75,
+            "near": 0.01,
+            "far": 100.0,
+    
+            "followTarget": "Cube"
+        },
+
+        "Lights": [
+            {
+                "type": "dir",
+
+                "color": [1, 1, 1],
+                "strength": 1.5,
+                "position": [47.94, 63.44, -8.40],
+
+                "direction": [-0.43, -0.78, 0.45]
+            },
+            {
+                "type": "spot",
+
+                "color": [1.00, 0.59, 0.43],
+                "strength": 571.43,
+                "position": [0, 29, 0],
+
+                "direction": [-0.00, -1.00, 0.00],
+                "cuttof": [9.93, 10.0]
+            },
+
+            {
+                "type": "spot",
+
+                "color": [1.00, 0.59, 0.43],
+                "strength": 571.43,
+                "position": [0, 29, 0],
+
+                "direction": [0.00, 29.00, 15.00],
+                "cuttof": [9.93, 10.0]
+            },
+            {
+                "type": "spot",
+
+                "color": [1.00, 0.59, 0.43],
+                "strength": 571.43,
+                "position": [0, 29, 0],
+
+                "direction": [0.00, 29.00, -15.00],
+                "cuttof": [9.93, 10.0]
+            },
+            {
+                "type": "spot",
+
+                "color": [1.00, 0.59, 0.43],
+                "strength": 571.43,
+                "position": [0, 29, 0],
+
+                "direction": [30.00, 29.00, 15.00],
+                "cuttof": [9.93, 10.0]
+            },
+            {
+                "type": "spot",
+
+                "color": [1.00, 0.59, 0.43],
+                "strength": 571.43,
+                "position": [0, 29, 0],
+
+                "direction": [-30.00, 29.00, 15.00],
+                "cuttof": [9.93, 10.0]
+            },
+            {
+                "type": "spot",
+
+                "color": [1.00, 0.59, 0.43],
+                "strength": 571.43,
+                "position": [0, 29, 0],
+
+                "direction": [30.00, 29.00, -15.00],
+                "cuttof": [9.93, 10.0]
+            },
+            {
+                "type": "spot",
+
+                "color": [1.00, 0.59, 0.43],
+                "strength": 571.43,
+                "position": [0, 29, 0],
+
+                "direction": [-30.00, 29.00, -15.00],
+                "cuttof": [9.93, 10.0]
+            }
+        ],
+
+        "Player": {
+            "name": "YaBoy",
+            "scale": [1,1,-1],
+
+            "mesh": "Guard_msh",
+            "material": "Guard_mat"
+        }
+    }
 }

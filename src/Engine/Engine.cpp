@@ -66,7 +66,7 @@ bool Engine::Init(int argc, char* argv[]) {
 
     //sceneManager->LoadNewScene("Data/Levels/outFile.scene");
     //sceneManager->LoadNewScene("Data/Levels/sceneHeirarchy.scene");
-    sceneManager->LoadNewScene("Data/Levels/jsTest.scene");
+    sceneManager->LoadNewScene("Data/Levels/test.scene");
 
     /* print out memory usage */
     u32 left = memory->getBytesLeft();
