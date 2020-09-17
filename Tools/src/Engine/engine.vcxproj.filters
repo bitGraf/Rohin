@@ -1,0 +1,294 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\AudioManager.cpp" />
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Collision\Collider.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Collision\CollisionHull.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Collision\CollisionMath.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Collision\CollisionWorld.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Collision\Visualizer.cpp">
+      <Filter>Collision</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Configuration.cpp" />
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Console.cpp" />
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Engine.cpp" />
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameMath.cpp" />
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\AICharacter.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Astar.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Camera.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Character.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\GameObject.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Goap.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Light.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Pathfinding.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Player.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\RenderableObject.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\TriggerVolume.cpp">
+      <Filter>GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Input.cpp" />
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Message\CoreSystem.cpp">
+      <Filter>Message</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Message\Message.cpp">
+      <Filter>Message</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Message\MessageBus.cpp">
+      <Filter>Message</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\OptionsPane.cpp" />
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Platform.cpp" />
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\BatchRenderer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\DeferredBatchRenderer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\DynamicFont.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\Shader.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\Shadowmap.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\SpriteRenderer.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Resource\FileSystem.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Resource\MemoryManager.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Resource\ResourceManager.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Resource\Texture.cpp">
+      <Filter>Resource</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Scene\EnvironmentMap.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Scene\Material.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Scene\Scene.cpp">
+      <Filter>Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\UI\UIElement.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\UI\UIRenderer.cpp">
+      <Filter>UI</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Utils.cpp" />
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Window\Framebuffer.cpp">
+      <Filter>Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Window\GBuffer.cpp">
+      <Filter>Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Window\Window.cpp">
+      <Filter>Window</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\g_GameObject\PlayerManager.cpp">
+      <Filter>g_GameObject</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\tinygltf.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\AudioManager.hpp" />
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Collision\Collider.hpp">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Collision\CollisionHull.hpp">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Collision\CollisionMath.hpp">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Collision\CollisionWorld.hpp">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Collision\Visualizer.hpp">
+      <Filter>Collision</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Configuration.hpp" />
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Console.hpp" />
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\DataTypes.hpp" />
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Engine.hpp" />
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameMath.hpp" />
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\AICharacter.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Astar.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Camera.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Character.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\GameObject.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Goap.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Light.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Pathfinding.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\Player.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\RenderableObject.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\GameObject\TriggerVolume.hpp">
+      <Filter>GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Input.hpp" />
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Message\CoreSystem.hpp">
+      <Filter>Message</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Message\Message.hpp">
+      <Filter>Message</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Message\MessageBus.hpp">
+      <Filter>Message</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\OptionsPane.hpp" />
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Platform.hpp" />
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\BatchRenderer.hpp">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\DeferredBatchRenderer.hpp">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\DynamicFont.hpp">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\RenderBatch.hpp">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\Shader.hpp">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\Shadowmap.hpp">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Render\SpriteRenderer.hpp">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Resource\FileSystem.hpp">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Resource\MemoryManager.hpp">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Resource\ResourceManager.hpp">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Resource\Texture.hpp">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Resource\TriangleMesh.hpp">
+      <Filter>Resource</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Scene\EnvironmentMap.hpp">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Scene\Material.hpp">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Scene\Scene.hpp">
+      <Filter>Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\UI\UIElement.hpp">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\UI\UIRenderer.hpp">
+      <Filter>UI</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Utils.hpp" />
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Window\Framebuffer.hpp">
+      <Filter>Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Window\GBuffer.hpp">
+      <Filter>Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\Window\Window.hpp">
+      <Filter>Window</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\g_GameObject\PlayerManager.hpp">
+      <Filter>g_GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\stb_truetype.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Nick\Documents\Creative\Rohin\src\Engine\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Collision">
+      <UniqueIdentifier>{8F095C39-4869-3265-8BF4-9BA4ADDD2119}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameObject">
+      <UniqueIdentifier>{24E6F25F-50E4-3C6F-A510-1410D46D987C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Message">
+      <UniqueIdentifier>{064D4832-D9F4-3FE7-876D-D39BFC34B844}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Render">
+      <UniqueIdentifier>{29C11A65-E226-3C8B-806C-2D57186E5528}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource">
+      <UniqueIdentifier>{3761ACC3-E5BC-3685-A012-104D17BA3A97}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Scene">
+      <UniqueIdentifier>{29942C95-9736-353E-955D-3CD1FE9AB8E5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{24600639-0B4A-393D-ADF9-46CB6589BBE2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Window">
+      <UniqueIdentifier>{945A2312-CA2C-3B71-B7F7-733C17309AC8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="g_GameObject">
+      <UniqueIdentifier>{1DB368D8-768A-3D4A-96F4-515C5206EBD5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
