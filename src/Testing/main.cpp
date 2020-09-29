@@ -10,10 +10,10 @@ int main(int argc, char* argv[]) {
 
 	g_engine.Start();
 
-	Shader shader;
+	/*Shader shader;
 	shader.create("sprite.vert", "sprite.frag", "spriteRendererShader");
-	SpriteRenderer testRender();
-	//system("pause");
+	SpriteRenderer testRender();*/
+	system("pause");
 
 	return 0;
 }

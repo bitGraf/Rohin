@@ -75,11 +75,11 @@ private:
 
     Shader m_ssaoBlurShader;
     Framebuffer_new ssaoBlurFBO;
-
+    
 	// Sprite Pass
 	Shader m_spriteShader;
 	_dur dur_spritePass;
-	SpriteRenderer spriteRender;
+	SpriteRenderer m_spriteRender;
 
     // Debug Pass
     Shader m_debugMeshShader;

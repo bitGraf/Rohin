@@ -1,7 +1,8 @@
 #include "SpriteRenderer.hpp"
 
 SpriteRenderer::SpriteRenderer() {
-
+	this->spriteShader = spriteShader;
+	//this->initRenderData();
 }
 
 SpriteRenderer::~SpriteRenderer()
@@ -12,7 +13,6 @@ SpriteRenderer::~SpriteRenderer()
 void SpriteRenderer::initRenderData()
 {
 	Console::logMessage("Initializing Text Rendering...");
-
 	spriteShader.create("sprite.vert", "sprite.frag", "spriteShader");
 	spriteShader.use();
 	//spriteShader.setInt("fontTex", 0);

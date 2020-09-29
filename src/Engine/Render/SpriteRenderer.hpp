@@ -21,9 +21,8 @@ public:
 		GLfloat rotate = 0.0f, vec3 color = vec3(1.0f));
 	void initRenderData();
 
-private:
-	Shader spriteShader;
 	GLuint quadVAO;
+	Shader spriteShader;
 };
 
 #endif
