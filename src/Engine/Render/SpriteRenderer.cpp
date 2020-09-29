@@ -2,24 +2,24 @@
 
 SpriteRenderer::SpriteRenderer() {
 	this->spriteShader = spriteShader;
-	//this->initRenderData();
 }
 
-SpriteRenderer::~SpriteRenderer()
-{
+SpriteRenderer::~SpriteRenderer() {
 	glDeleteVertexArrays(1, &this->quadVAO);
 }
 
-void SpriteRenderer::initRenderData()
+void SpriteRenderer::initRenderData(u32 width, u32 height)
 {
-	Console::logMessage("Initializing Text Rendering...");
-	spriteShader.create("sprite.vert", "sprite.frag", "spriteShader");
-	spriteShader.use();
-	//spriteShader.setInt("fontTex", 0);
+	Console::logMessage("Initializing Sprite Rendering...");
+
+	orthoMat.orthoProjection(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
+
+	this->spriteShader.create("sprite.vert", "sprite.frag", "spriteShader");
+	this->spriteShader.use();
 
 	Console::logMessage("Initializing sprite VAO");
 	// Configure our VAO/VBO
-	GLuint VBO;
+	GLuint vbo;
 	GLfloat vertices[] = {
 		// Pos      // Tex
 		0.0f, 1.0f, 0.0f, 1.0f,
@@ -32,14 +32,14 @@ void SpriteRenderer::initRenderData()
 	};
 
 	glGenVertexArrays(1, &this->quadVAO);
-	glGenBuffers(1, &VBO);
+	glBindVertexArray(this->quadVAO);
 
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindVertexArray(this->quadVAO);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4*sizeof(GLfloat), (GLvoid*)0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 }
@@ -58,10 +58,23 @@ void SpriteRenderer::DrawSprite(Texture &texture, vec2 position, vec2 size,
 
 	this->spriteShader.setMat4("model", model);
 	this->spriteShader.setVec3("spriteColor", color);
-
-	texture.bind(GL_TEXTURE0);
-
+	this->spriteShader.setInt("image", 0);
+	this->spriteShader.setMat4("projection", orthoMat);
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture.glTextureID);
 	glBindVertexArray(this->quadVAO);
+	//glCullFace(GL_FRONT);
+	glDisable(GL_DEPTH_TEST);
+
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glEnable(GL_DEPTH_TEST);
+	//glCullFace(GL_BACK);
+
 	glBindVertexArray(0);
+}
+
+void SpriteRenderer::resize(u32 width, u32 height) {
+	orthoMat.orthoProjection(0, width, height, 0, -1, 1);
 }

@@ -103,6 +103,7 @@ private:
     u16 scr_width, scr_height;
 
     u16 colliderID;
+
 };
 
 #endif

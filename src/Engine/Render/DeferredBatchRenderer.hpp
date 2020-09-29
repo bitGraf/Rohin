@@ -77,7 +77,6 @@ private:
     Framebuffer_new ssaoBlurFBO;
     
 	// Sprite Pass
-	Shader m_spriteShader;
 	_dur dur_spritePass;
 	SpriteRenderer m_spriteRender;
 
@@ -88,7 +87,7 @@ private:
     TriangleMesh* cameraMesh;
 
     // Common vars
-    Texture blackTex, whiteTex, normalTex, greenTex;
+    Texture blackTex, whiteTex, normalTex, greenTex, toad;
     GLuint fullscreenVAO;
 
     u16 scr_width, scr_height;

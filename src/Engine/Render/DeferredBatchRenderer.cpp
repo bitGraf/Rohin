@@ -79,6 +79,7 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
         ssaoFBO.resize(newX, newY);
         ssaoBlurFBO.resize(newX, newY);
         debugFont.resize(newX, newY);
+        m_spriteRender.resize(newX, newY);
 
         scr_width = newX;
         scr_height = newY;
@@ -98,6 +99,7 @@ CoreSystem* DeferredBatchRenderer::create() {
     whiteTex.loadImage("white.png");
     normalTex.loadImage("normal.png");
     greenTex.loadImage("green.png");
+    toad.loadImage("GiantToad.png");
 
     scr_width = DEFAULT_SCREEN_WIDTH;
     scr_height = DEFAULT_SCREEN_HEIGHT;
@@ -112,7 +114,8 @@ CoreSystem* DeferredBatchRenderer::create() {
     m_gBuffer.create();
     m_gBuffer.resize(scr_width, scr_height);
 
-	m_spriteRender.initRenderData();
+
+    m_spriteRender.initRenderData(scr_width, scr_height);
 
     debugFont.InitTextRendering();
     debugFont.create("UbuntuMono-Regular.ttf", 16, scr_width, scr_height);
@@ -200,6 +203,8 @@ void DeferredBatchRenderer::renderBatch(RenderBatch* batch) {
 
         screenPass(batch);
         dur_screenPass = profileRenderPass();
+
+        m_spriteRender.DrawSprite(toad, vec2(200.0f, 200.0f), vec2(300.0f, 400.0f), 45.0f, vec3(1.0f, 1.0f, 1.0f));
     }
 
     endProfile();
