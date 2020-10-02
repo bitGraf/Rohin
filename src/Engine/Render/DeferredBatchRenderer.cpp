@@ -100,6 +100,7 @@ CoreSystem* DeferredBatchRenderer::create() {
     normalTex.loadImage("normal.png");
     greenTex.loadImage("green.png");
     toad.loadImage("GiantToad.png");
+    testMenu.loadImage("Testing.png");
 
     scr_width = DEFAULT_SCREEN_WIDTH;
     scr_height = DEFAULT_SCREEN_HEIGHT;
@@ -204,7 +205,7 @@ void DeferredBatchRenderer::renderBatch(RenderBatch* batch) {
         screenPass(batch);
         dur_screenPass = profileRenderPass();
 
-        m_spriteRender.DrawSprite(toad, vec2(200.0f, 200.0f), vec2(300.0f, 400.0f), 45.0f, vec3(1.0f, 1.0f, 1.0f));
+        m_spriteRender.DrawSprite(testMenu, vec2(0.0f, 0.0f), vec2(scr_width, scr_height), 0.0f, vec3(1.0f, 1.0f, 1.0f));
     }
 
     endProfile();

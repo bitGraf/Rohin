@@ -87,7 +87,7 @@ private:
     TriangleMesh* cameraMesh;
 
     // Common vars
-    Texture blackTex, whiteTex, normalTex, greenTex, toad;
+    Texture blackTex, whiteTex, normalTex, greenTex, toad, testMenu;
     GLuint fullscreenVAO;
 
     u16 scr_width, scr_height;

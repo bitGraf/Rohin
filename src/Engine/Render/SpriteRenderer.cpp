@@ -52,7 +52,7 @@ void SpriteRenderer::DrawSprite(Texture &texture, vec2 position, vec2 size,
 	mat4 model;
 	model.translate(vec3(position,0.0f));
 	model.translate(vec3(0.5f*size.x, 0.5f*size.y, 0.0f));
-	model.rotate(rotate, vec3(0.0f, 0.0f, 1.0f));
+	model.rotate(rotate*d2r, vec3(0.0f, 0.0f, 1.0f));
 	model.translate(vec3(-0.5f*size.x, -0.5f*size.y, 0.0f));
 	model.scale(vec3(size,1.0f));
 
@@ -76,5 +76,5 @@ void SpriteRenderer::DrawSprite(Texture &texture, vec2 position, vec2 size,
 }
 
 void SpriteRenderer::resize(u32 width, u32 height) {
-	orthoMat.orthoProjection(0, width, height, 0, -1, 1);
+	this->orthoMat.orthoProjection(0, width, height, 0, -1, 1);
 }
