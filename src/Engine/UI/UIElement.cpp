@@ -4,8 +4,6 @@ UIElement::UIElement() {
 }
 
 void UIElement::create() {
-    tex.loadImage("GiantToad.png");
-
     position = vec2(0, 0);
     scale = vec2(0.5, 0.5);
     transparency = 0;

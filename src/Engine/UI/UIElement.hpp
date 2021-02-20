@@ -31,7 +31,6 @@ public:
     vec2 scale; // ([0,1],[0,1])
     scalar transparency; // [0,1]
 
-    Texture tex;
     UIAlignment align;
 };
 

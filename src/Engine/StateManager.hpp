@@ -19,6 +19,31 @@ public:
 	virtual void End() = 0;
 };
 
+class DefaultState : public GameState {
+public:
+	void Init();
+	void Cleanup();
+
+	void Pause();
+	void Resume();
+
+	void globalHandle();
+	void Update();
+	void Draw();
+
+	void End();
+
+	static DefaultState* Instance() {
+		return &m_DefaultState;
+	}
+
+protected:
+	DefaultState();
+
+private:
+	static DefaultState m_DefaultState;
+};
+
 
 class StateManager {
 public:

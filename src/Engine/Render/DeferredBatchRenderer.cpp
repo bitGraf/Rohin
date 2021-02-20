@@ -205,7 +205,7 @@ void DeferredBatchRenderer::renderBatch(RenderBatch* batch) {
         screenPass(batch);
         dur_screenPass = profileRenderPass();
 
-        m_spriteRender.DrawSprite(testMenu, vec2(0.0f, 0.0f), vec2(scr_width, scr_height), 0.0f, vec3(1.0f, 1.0f, 1.0f));
+        //m_spriteRender.DrawSprite(testMenu, vec2(0.0f, 0.0f), vec2(scr_width, scr_height), 0.0f, vec3(1.0f, 1.0f, 1.0f));
     }
 
     endProfile();

@@ -58,3 +58,9 @@ void StateManager::Draw() {
 	// let the state draw the screen
 	states.back()->Draw();
 }
+
+DefaultState DefaultState::m_DefaultState;
+
+void DefaultState::Init() {
+
+}

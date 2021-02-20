@@ -142,9 +142,8 @@ void UIRenderer::renderScene(Window* window, Scene* scene) {
         m_UIShader.setFloat("factor", 1 - ui.transparency);
 
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, ui.tex.glTextureID);
 
-        //glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
     drawLensFlare(scene);
