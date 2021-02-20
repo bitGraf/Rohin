@@ -1,0 +1,42 @@
+﻿Build started 4/8/2020 12:10:32 AM.
+     1>Project "D:\Desktop\Gamedev\Rohin\edb\meshConvert\meshConvert\meshConvert.vcxproj" on node 2 (Build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Debug\meshConvert.tlog\unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.13.26128\bin\HostX86\x86\CL.exe /c /ZI /nologo /W3 /WX- /diagnostics:classic /sdl /Od /Oy- /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /permissive- /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Debug\\" /Fd"Debug\vc141.pdb" /Gd /TP /analyze- /FC /errorReport:prompt main.cpp
+         main.cpp
+     1>d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(110): warning C4101: 'dump4': unreferenced local variable
+     1>d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(380): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(410): warning C4129: 'N': unrecognized character escape sequence
+     1>d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(538): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(539): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(540): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(541): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(543): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+     1>d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(544): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Tools\MSVC\14.13.26128\bin\HostX86\x86\link.exe /ERRORREPORT:PROMPT /OUT:"D:\Desktop\Gamedev\Rohin\edb\meshConvert\Debug\meshConvert.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG:FASTLINK /PDB:"D:\Desktop\Gamedev\Rohin\edb\meshConvert\Debug\meshConvert.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\Desktop\Gamedev\Rohin\edb\meshConvert\Debug\meshConvert.lib" /MACHINE:X86 Debug\main.obj
+         meshConvert.vcxproj -> D:\Desktop\Gamedev\Rohin\edb\meshConvert\Debug\meshConvert.exe
+       FinalizeBuildStatus:
+         Deleting file "Debug\meshConvert.tlog\unsuccessfulbuild".
+         Touching "Debug\meshConvert.tlog\meshConvert.lastbuildstate".
+     1>Done Building Project "D:\Desktop\Gamedev\Rohin\edb\meshConvert\meshConvert\meshConvert.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+       "D:\Desktop\Gamedev\Rohin\edb\meshConvert\meshConvert\meshConvert.vcxproj" (Build target) (1) ->
+       (ClCompile target) -> 
+         d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(110): warning C4101: 'dump4': unreferenced local variable
+         d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(380): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+         d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(410): warning C4129: 'N': unrecognized character escape sequence
+         d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(538): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+         d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(539): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+         d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(540): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+         d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(541): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+         d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(543): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+         d:\desktop\gamedev\rohin\edb\meshconvert\meshconvert\main.cpp(544): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+
+    9 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:03.71

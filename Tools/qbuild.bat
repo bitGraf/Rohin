@@ -1,5 +1,0 @@
-pushd ../Build
-
-cmake ..
-
-popd

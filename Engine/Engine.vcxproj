@@ -1,0 +1,255 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Dist|x64">
+      <Configuration>Dist</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{DBC7D3B0-C769-FE86-B024-12DB9C6585D7}</ProjectGuid>
+    <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Engine</RootNamespace>
+    <LatestTargetPlatformVersion>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetLatestSDKTargetPlatformVersion('Windows', '10.0'))</LatestTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>$(LatestTargetPlatformVersion)</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>..\bin\Debug-windows-x86_64\Engine\</OutDir>
+    <IntDir>..\bin-intermediate\Debug-windows-x86_64\Engine\</IntDir>
+    <TargetName>Engine</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>..\bin\Release-windows-x86_64\Engine\</OutDir>
+    <IntDir>..\bin-intermediate\Release-windows-x86_64\Engine\</IntDir>
+    <TargetName>Engine</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
+    <OutDir>..\bin\Dist-windows-x86_64\Engine\</OutDir>
+    <IntDir>..\bin-intermediate\Dist-windows-x86_64\Engine\</IntDir>
+    <TargetName>Engine</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>enpch.hpp</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;RH_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;deps\spdlog\include;deps\GLFW\include;deps\GLAD\include;deps\imgui;deps\picojson;deps\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>enpch.hpp</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;RH_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;deps\spdlog\include;deps\GLFW\include;deps\GLAD\include;deps\imgui;deps\picojson;deps\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>enpch.hpp</PrecompiledHeaderFile>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLFW_INCLUDE_NONE;RH_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;deps\spdlog\include;deps\GLFW\include;deps\GLAD\include;deps\imgui;deps\picojson;deps\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="deps\stb\stb_image.h" />
+    <ClInclude Include="deps\stb\stb_truetype.h" />
+    <ClInclude Include="src\Engine.hpp" />
+    <ClInclude Include="src\Engine\Benchmark.hpp" />
+    <ClInclude Include="src\Engine\Buffer.hpp" />
+    <ClInclude Include="src\Engine\Core\Application.hpp" />
+    <ClInclude Include="src\Engine\Core\Base.hpp" />
+    <ClInclude Include="src\Engine\Core\DataFile.hpp" />
+    <ClInclude Include="src\Engine\Core\DataTypes.hpp" />
+    <ClInclude Include="src\Engine\Core\GameMath.hpp" />
+    <ClInclude Include="src\Engine\Core\Input.hpp" />
+    <ClInclude Include="src\Engine\Core\KeyCodes.hpp" />
+    <ClInclude Include="src\Engine\Core\Logger.hpp" />
+    <ClInclude Include="src\Engine\Core\MouseButtonCodes.hpp" />
+    <ClInclude Include="src\Engine\Core\Platform.hpp" />
+    <ClInclude Include="src\Engine\Core\Timing.hpp" />
+    <ClInclude Include="src\Engine\Core\Utils.hpp" />
+    <ClInclude Include="src\Engine\Core\Window.hpp" />
+    <ClInclude Include="src\Engine\Editor-UNUSED\EditorCameraController.hpp" />
+    <ClInclude Include="src\Engine\Editor-UNUSED\EditorLayer.hpp" />
+    <ClInclude Include="src\Engine\Editor-UNUSED\SceneHierarchyPanel.hpp" />
+    <ClInclude Include="src\Engine\EngineLayer.hpp" />
+    <ClInclude Include="src\Engine\EntryPoint.h" />
+    <ClInclude Include="src\Engine\Event\Event.hpp" />
+    <ClInclude Include="src\Engine\Event\EventTypes.hpp" />
+    <ClInclude Include="src\Engine\GameObject\Components.hpp" />
+    <ClInclude Include="src\Engine\GameObject\GameObject.hpp" />
+    <ClInclude Include="src\Engine\GameObject\Pool.hpp" />
+    <ClInclude Include="src\Engine\GameObject\Registry.hpp" />
+    <ClInclude Include="src\Engine\GameObject\ScriptableBase.hpp" />
+    <ClInclude Include="src\Engine\GameObject\SparseSet.hpp" />
+    <ClInclude Include="src\Engine\Gui\GuiLayer.hpp" />
+    <ClInclude Include="src\Engine\LayerStack.hpp" />
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLBuffer.hpp" />
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLFramebuffer.hpp" />
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLGraphicsContext.hpp" />
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLRendererAPI.hpp" />
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLShader.hpp" />
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLTexture.hpp" />
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLVertexArray.hpp" />
+    <ClInclude Include="src\Engine\Platform\Windows\Window_windows.hpp" />
+    <ClInclude Include="src\Engine\Renderer\Buffer.hpp" />
+    <ClInclude Include="src\Engine\Renderer\Camera.hpp" />
+    <ClInclude Include="src\Engine\Renderer\Framebuffer.hpp" />
+    <ClInclude Include="src\Engine\Renderer\GraphicsContext.hpp" />
+    <ClInclude Include="src\Engine\Renderer\Material.hpp" />
+    <ClInclude Include="src\Engine\Renderer\Mesh.hpp" />
+    <ClInclude Include="src\Engine\Renderer\RenderCommand.hpp" />
+    <ClInclude Include="src\Engine\Renderer\Renderer.hpp" />
+    <ClInclude Include="src\Engine\Renderer\RendererAPI.hpp" />
+    <ClInclude Include="src\Engine\Renderer\Shader.hpp" />
+    <ClInclude Include="src\Engine\Renderer\Texture.hpp" />
+    <ClInclude Include="src\Engine\Renderer\VertexArray.hpp" />
+    <ClInclude Include="src\Engine\Resources\MeshCatalog.hpp" />
+    <ClInclude Include="src\Engine\Scene\Scene.hpp" />
+    <ClInclude Include="src\Engine\Scene\SceneCamera.hpp" />
+    <ClInclude Include="src\enpch.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="deps\stb\stb_implementation.cpp" />
+    <ClCompile Include="src\Engine\Benchmark.cpp" />
+    <ClCompile Include="src\Engine\Core\Application.cpp" />
+    <ClCompile Include="src\Engine\Core\GameMath.cpp" />
+    <ClCompile Include="src\Engine\Core\Logger.cpp" />
+    <ClCompile Include="src\Engine\Core\Utils.cpp" />
+    <ClCompile Include="src\Engine\Editor-UNUSED\EditorLayer.cpp" />
+    <ClCompile Include="src\Engine\Editor-UNUSED\SceneHierarchyPanel.cpp" />
+    <ClCompile Include="src\Engine\EngineLayer.cpp" />
+    <ClCompile Include="src\Engine\Gui\GuiBuild.cpp" />
+    <ClCompile Include="src\Engine\Gui\GuiLayer.cpp" />
+    <ClCompile Include="src\Engine\LayerStack.cpp" />
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLBuffer.cpp" />
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLFramebuffer.cpp" />
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLGraphicsContext.cpp" />
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLRendererAPI.cpp" />
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLShader.cpp" />
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLTexture.cpp" />
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLVertexArray.cpp" />
+    <ClCompile Include="src\Engine\Platform\Windows\Input_windows.cpp" />
+    <ClCompile Include="src\Engine\Platform\Windows\Window_windows.cpp" />
+    <ClCompile Include="src\Engine\Renderer\Buffer.cpp" />
+    <ClCompile Include="src\Engine\Renderer\Framebuffer.cpp" />
+    <ClCompile Include="src\Engine\Renderer\Material.cpp" />
+    <ClCompile Include="src\Engine\Renderer\Mesh.cpp" />
+    <ClCompile Include="src\Engine\Renderer\RenderCommand.cpp" />
+    <ClCompile Include="src\Engine\Renderer\Renderer.cpp" />
+    <ClCompile Include="src\Engine\Renderer\RendererAPI.cpp" />
+    <ClCompile Include="src\Engine\Renderer\Shader.cpp" />
+    <ClCompile Include="src\Engine\Renderer\Texture.cpp" />
+    <ClCompile Include="src\Engine\Renderer\VertexArray.cpp" />
+    <ClCompile Include="src\Engine\Resources\MeshCatalog.cpp" />
+    <ClCompile Include="src\Engine\Scene\Scene.cpp" />
+    <ClCompile Include="src\Engine\Scene\SceneCamera.cpp" />
+    <ClCompile Include="src\enpch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="deps\GLFW\GLFW.vcxproj">
+      <Project>{154B857C-0182-860D-AA6E-6C109684020F}</Project>
+    </ProjectReference>
+    <ProjectReference Include="deps\GLAD\GLAD.vcxproj">
+      <Project>{5D4A857C-4981-860D-F26D-6C10DE83020F}</Project>
+    </ProjectReference>
+    <ProjectReference Include="deps\imgui\ImGui.vcxproj">
+      <Project>{C0FF640D-2C14-8DBE-F595-301E616989EF}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

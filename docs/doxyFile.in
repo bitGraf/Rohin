@@ -1,9 +1,0 @@
-OUTPUT_DIRECTORY       = @CMAKE_CURRENT_BINARY_DIR@/../docs
-INPUT                  = @CMAKE_CURRENT_SOURCE_DIR@/src/ @CMAKE_CURRENT_SOURCE_DIR@/docs @CMAKE_CURRENT_SOURCE_DIR@/src/doc_mainpage.h @CMAKE_CURRENT_SOURCE_DIR@/docs/mainpage.md
-PROJECT_NAME           = "Epic Project Time"
-PROJECT_BRIEF          = "A second attempt at a game using lessons learned from big-time-disc-tomorrow"
-PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/docs/logo.png
-OUTPUT_LANGUAGE        = English
-GENERATE_LATEX         = NO
-
-USE_MDFILE_AS_MAINPAGE = @CMAKE_CURRENT_SOURCE_DIR@/docs/mainpage.md

@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="deps">
+      <UniqueIdentifier>{F1A1957C-DDD8-960D-86C5-7C1072DB120F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="deps\stb">
+      <UniqueIdentifier>{C9F0A231-B5BD-FD3C-DED6-EBE4CA0233CB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine">
+      <UniqueIdentifier>{12A1320E-FE58-745B-6760-4DB753370F4C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine\Core">
+      <UniqueIdentifier>{AA407579-16CC-E23D-1FDD-65328BE73E3E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine\Editor">
+      <UniqueIdentifier>{08B6A6AF-74CC-A445-BD43-3067299975CD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine\Event">
+      <UniqueIdentifier>{E32745A8-CF20-64FA-F852-497FE4AA4306}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine\GameObject">
+      <UniqueIdentifier>{524C157E-BEB8-D078-87AC-68D6F3D7F2E0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine\Gui">
+      <UniqueIdentifier>{66DDFB39-52AB-EF3F-3B3F-606627ACCBA4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine\Platform">
+      <UniqueIdentifier>{A63124B0-1293-01BE-9B00-48700761387D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine\Platform\OpenGL">
+      <UniqueIdentifier>{1AC46F4E-06D4-1B1F-6F8D-803D5BBC0AB8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine\Platform\Windows">
+      <UniqueIdentifier>{E0218474-4C2F-B25A-D515-AE4541227E11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine\Renderer">
+      <UniqueIdentifier>{F838018B-649A-DE98-ED07-254B59681558}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Engine\Scene">
+      <UniqueIdentifier>{AF1338A9-9B0C-57FB-C43E-3C80B0963607}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="deps\stb\stb_image.h">
+      <Filter>deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="deps\stb\stb_truetype.h">
+      <Filter>deps\stb</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Benchmark.hpp">
+      <Filter>src\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Buffer.hpp">
+      <Filter>src\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\Application.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\Base.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\DataFile.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\DataTypes.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\GameMath.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\Input.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\KeyCodes.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\Logger.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\MouseButtonCodes.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\Platform.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\Timing.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\Utils.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Core\Window.hpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\EngineLayer.hpp">
+      <Filter>src\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\EntryPoint.h">
+      <Filter>src\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Event\Event.hpp">
+      <Filter>src\Engine\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Event\EventTypes.hpp">
+      <Filter>src\Engine\Event</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\GameObject\Components.hpp">
+      <Filter>src\Engine\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\GameObject\GameObject.hpp">
+      <Filter>src\Engine\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\GameObject\Pool.hpp">
+      <Filter>src\Engine\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\GameObject\Registry.hpp">
+      <Filter>src\Engine\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\GameObject\ScriptableBase.hpp">
+      <Filter>src\Engine\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\GameObject\SparseSet.hpp">
+      <Filter>src\Engine\GameObject</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Gui\GuiLayer.hpp">
+      <Filter>src\Engine\Gui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\LayerStack.hpp">
+      <Filter>src\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLBuffer.hpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLFramebuffer.hpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLGraphicsContext.hpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLRendererAPI.hpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLShader.hpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLTexture.hpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Platform\OpenGL\OpenGLVertexArray.hpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Platform\Windows\Window_windows.hpp">
+      <Filter>src\Engine\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\Buffer.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\Camera.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\Framebuffer.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\GraphicsContext.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\Material.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\Mesh.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\RenderCommand.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\Renderer.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\RendererAPI.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\Shader.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\Texture.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Renderer\VertexArray.hpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Scene\Scene.hpp">
+      <Filter>src\Engine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Scene\SceneCamera.hpp">
+      <Filter>src\Engine\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\enpch.hpp">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Editor-UNUSED\EditorCameraController.hpp">
+      <Filter>src\Engine\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Editor-UNUSED\EditorLayer.hpp">
+      <Filter>src\Engine\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Editor-UNUSED\SceneHierarchyPanel.hpp">
+      <Filter>src\Engine\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Engine\Resources\MeshCatalog.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="deps\stb\stb_implementation.cpp">
+      <Filter>deps\stb</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Benchmark.cpp">
+      <Filter>src\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Core\Application.cpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Core\GameMath.cpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Core\Logger.cpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Core\Utils.cpp">
+      <Filter>src\Engine\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\EngineLayer.cpp">
+      <Filter>src\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Gui\GuiBuild.cpp">
+      <Filter>src\Engine\Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Gui\GuiLayer.cpp">
+      <Filter>src\Engine\Gui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\LayerStack.cpp">
+      <Filter>src\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLBuffer.cpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLFramebuffer.cpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLGraphicsContext.cpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLRendererAPI.cpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLShader.cpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLTexture.cpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Platform\OpenGL\OpenGLVertexArray.cpp">
+      <Filter>src\Engine\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Platform\Windows\Input_windows.cpp">
+      <Filter>src\Engine\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Platform\Windows\Window_windows.cpp">
+      <Filter>src\Engine\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Renderer\Buffer.cpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Renderer\Framebuffer.cpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Renderer\Material.cpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Renderer\Mesh.cpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Renderer\RenderCommand.cpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Renderer\Renderer.cpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Renderer\RendererAPI.cpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Renderer\Shader.cpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Renderer\Texture.cpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Renderer\VertexArray.cpp">
+      <Filter>src\Engine\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Scene\Scene.cpp">
+      <Filter>src\Engine\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Scene\SceneCamera.cpp">
+      <Filter>src\Engine\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\enpch.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Editor-UNUSED\EditorLayer.cpp">
+      <Filter>src\Engine\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Editor-UNUSED\SceneHierarchyPanel.cpp">
+      <Filter>src\Engine\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Engine\Resources\MeshCatalog.cpp" />
+  </ItemGroup>
+</Project>
