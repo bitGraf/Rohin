@@ -1,8 +1,9 @@
 bin/
 bin-intermediate/
 .vs
-*.blend
-*.blend1
-Tools/blender/other/
-Tools/blender/Textures/
-edb/*
+Tools/blender/
+Tools/edb/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
