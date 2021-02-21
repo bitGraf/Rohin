@@ -1,9 +1,0 @@
-[submodule "Engine\\deps\\spdlog"]
-	path = Engine\\deps\\spdlog
-	url = https://github.com/gabime/spdlog.git
-[submodule "Engine\\deps\\GLFW"]
-	path = Engine\\deps\\GLFW
-	url = git@github.com:bitGraf/glfw.git
-[submodule "Engine\\deps\\imgui"]
-	path = Engine\\deps\\imgui
-	url = git@github.com:bitGraf/imgui.git
