@@ -1,6 +1,0 @@
-[submodule "deps/glfw"]
-	path = deps/glfw
-	url = https://github.com/glfw/glfw
-[submodule "deps/tinygltf"]
-	path = deps/tinygltf
-	url = https://github.com/syoyo/tinygltf.git
