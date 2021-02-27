@@ -9,6 +9,7 @@ namespace Engine {
     public:
         static void Register(const std::string& mesh_name, const std::string& mesh_path);
         static std::shared_ptr<Mesh> Get(const std::string& mesh_name);
+        static void Clear();
 
     private:
         MeshCatalog() {}

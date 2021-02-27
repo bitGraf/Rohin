@@ -32,21 +32,23 @@ void GameLayer::OnAttach() {
     */
 
     // Load all meshes into the game
-    auto cubeMesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/cube.mesh");
-    auto rectMesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/cube.mesh");
-
-    //Engine::MeshCatalog::Register("mesh_cube1", "run_tree/Data/Models/cube.mesh");
-    //auto m = Engine::MeshCatalog::Get("mesh_cube1");
-
-    //Engine::MeshCatalog.register(cubeMesh, "mesh_cube1");
-    //Engine::MeshCatalog.register(rectMesh, "mesh_rect1");
+    {
+        // this should be read from some sort of resource pack file
+        std::vector<std::pair<std::string, std::string>> meshList = {
+            { "cube_mesh", "run_tree/Data/Models/cube.mesh"},
+            { "rect_mesh", "run_tree/Data/Models/cube.mesh" }
+        };
+        for (auto p : meshList) {
+            Engine::MeshCatalog::Register(p.first, p.second);
+        }
+    }
 
     m_ActiveScene = std::make_shared<Engine::Scene>();
 
     { // Platform
         auto platform = m_ActiveScene->CreateGameObject("Platform");
+        auto rectMesh = Engine::MeshCatalog::Get("cube_mesh");
         platform.AddComponent<Engine::MeshRendererComponent>(rectMesh);
-        //platform.AddComponent<Engine::MeshRendererComponent>(Engine::MeshCatalog.get("mesh_cube1"));
 
         auto& trans = platform.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
@@ -55,6 +57,7 @@ void GameLayer::OnAttach() {
     }
     { // Frog Cube 1
         auto frog = m_ActiveScene->CreateGameObject("Frog Cube 1");
+        auto cubeMesh = Engine::MeshCatalog::Get("cube_mesh");
         frog.AddComponent<Engine::MeshRendererComponent>(cubeMesh);
         frog.AddComponent<Engine::NativeScriptComponent>().Bind<Gem>(frog);
 
@@ -64,6 +67,7 @@ void GameLayer::OnAttach() {
     }
     { // Frog Cube 2
         auto frog = m_ActiveScene->CreateGameObject("Frog Cube 2");
+        auto cubeMesh = Engine::MeshCatalog::Get("cube_mesh");
         frog.AddComponent<Engine::MeshRendererComponent>(cubeMesh);
         frog.AddComponent<Engine::NativeScriptComponent>().Bind<Gem>(frog);
 
@@ -73,6 +77,7 @@ void GameLayer::OnAttach() {
     }
     { // Frog Cube 3
         auto frog = m_ActiveScene->CreateGameObject("Frog Cube 3");
+        auto cubeMesh = Engine::MeshCatalog::Get("cube_mesh");
         frog.AddComponent<Engine::MeshRendererComponent>(cubeMesh);
         frog.AddComponent<Engine::NativeScriptComponent>().Bind<Gem>(frog);
 
@@ -91,7 +96,7 @@ void GameLayer::OnAttach() {
         trans.translate(vec3(0, 1, 5));
     }
 
-    m_ActiveScene->writeToFile("output.scene");
+    //m_ActiveScene->writeToFile("output.scene");
 
     m_ActiveScene->OnRuntimeStart();
 }
