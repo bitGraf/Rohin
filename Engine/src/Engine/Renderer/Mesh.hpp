@@ -56,7 +56,7 @@ namespace Engine {
     class Mesh
     {
     public:
-        Mesh(const std::string& filename);
+        Mesh(const std::string& filename, bool mesh_only = false);
         ~Mesh();
 
         void OnUpdate(double ts);
@@ -70,7 +70,12 @@ namespace Engine {
         std::vector<Ref<MaterialInstance>> GetMaterials() { return m_Materials; }
         Ref<MaterialInstance> GetMaterial(u32 index) { ENGINE_LOG_ASSERT(index <= m_Materials.size(), "Not that many materials!"); return m_Materials[index]; }
         //const std::vector<Engine::Ref<Engine::Texture2D>>& GetTextures() const { return m_Textures; }
+
+        const std::string& GetName() const { return m_Name; }
         const std::string& GetFilePath() const { return m_FilePath; }
+        const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
+        const std::vector<Index>& GetIndices() const { return m_Indices; }
+        const std::unordered_map<uint32_t, std::vector<Triangle>> GetTriCache() const { return m_TriangleCache; }
 
         const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
 

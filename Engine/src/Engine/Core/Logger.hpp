@@ -20,6 +20,7 @@ namespace Engine {
 }
 
 /* Log macros */
+#define NO_LOGGING
 #ifdef NO_LOGGING
     #define ENGINE_LOG_TRACE(...)
     #define ENGINE_LOG_INFO(...)

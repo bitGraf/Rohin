@@ -7,7 +7,7 @@
 
 namespace Engine {
 
-    Mesh::Mesh(const std::string & filename) : m_FilePath(filename) {
+    Mesh::Mesh(const std::string & filename, bool mesh_only) : m_FilePath(filename) {
         ENGINE_LOG_INFO("Loading mesh: {0}", filename);
 
         u32 highestMaterialIndex = 0;
@@ -58,6 +58,9 @@ namespace Engine {
             }
         }
         
+        if (mesh_only)
+            return;
+
         // Set shader info
         m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR_static");
         m_BaseMaterial = std::make_shared<Material>(m_MeshShader);
