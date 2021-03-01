@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <memory>
 
 #include "data.hpp"
 #include "endian.hpp"
@@ -13,6 +14,8 @@ namespace nbt {
 
 	namespace io {
 		const size_t max_array_len = 0x7FFFFFFF; // 2,147,483,647 entries
+        const size_t max_name_len = 16;
+        const size_t max_array_print = 8;
 
 		tag_type read_type(std::istream& is);
 		std::string read_string(std::istream& is, endian::endian e = endian::default_endian);

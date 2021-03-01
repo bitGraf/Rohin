@@ -70,9 +70,104 @@ namespace nbt
         }
     }
 
+    std::string printSpaces(int deeper = 0) {
+        static std::uint8_t depth = 0;
+        if (deeper>0) depth++;
+        if (deeper<0) depth--;
+        //if (reset) depth = 0;
+        if (depth < 0) depth = 0;
+
+        std::string text(depth*2, ' ');
+        return text;
+    }
+
     std::ostream& operator<<(std::ostream& os, const tag& t) {
         //might want to output the tag info to a stream for debug purposes
-        return os << t.get_type();
+        switch (t.get_type()) {
+        case tag_type::End:         return os << "tag_end";
+        case tag_type::Byte:        return os << (short)t.as<tag_byte>().get();
+        case tag_type::Short:       return os << t.as<tag_short>().get();
+        case tag_type::Int:         return os << t.as<tag_int>().get();
+        case tag_type::Long:        return os << t.as<tag_long>().get();
+        case tag_type::Float:       return os << t.as<tag_float>().get();
+        case tag_type::Double:      return os << t.as<tag_double>().get();
+        case tag_type::Byte_Array: {
+            const auto& arr = t.as<tag_byte_array>();
+            os << arr.size() << " elements {";
+            auto numElem = arr.size() < io::max_array_print ? arr.size() : io::max_array_print;
+            for (int n = 0; n < numElem; n++) {
+                os << (int)arr[n] << ", ";
+                if (n == numElem - 1)
+                    os << "...";
+            }
+            os << "}";
+            return os;
+        }
+        case tag_type::String:      return os << t.as<tag_string>().get();
+        case tag_type::List:        return os << "tag_list";
+        case tag_type::Compound: {
+            os << std::endl;
+            printSpaces(1);
+            for (auto& tag : t.as<tag_compound>()) {
+                os << printSpaces() << "tag[" << tag.second.get_type() << "] \"";
+                if (tag.first.size() > io::max_name_len) {
+                    os << std::string(tag.first, 0, io::max_name_len) << "... ";
+                }
+                else {
+                    os << tag.first;
+                }
+                os << "\" = " << tag.second.get() << std::endl;
+            }
+            os << printSpaces() << "tag[end]" << std::endl;
+            printSpaces(-1);
+            return os;
+        }
+        case tag_type::Int_Array: {
+            const auto& arr = t.as<tag_int_array>();
+            os << arr.size() << " elements {";
+            auto numElem = arr.size() < io::max_array_print ? arr.size() : io::max_array_print;
+            for (int n = 0; n < numElem; n++) {
+                os << arr[n];
+                if (n < numElem-1)
+                    os << ", ";
+                if (n == numElem - 1 && numElem != arr.size())
+                    os << "...";
+            }
+            os << "}";
+            return os;
+        }
+        case tag_type::Long_Array: {
+            const auto& arr = t.as<tag_long_array>();
+            os << arr.size() << " elements {";
+            auto numElem = arr.size() < io::max_array_print ? arr.size() : io::max_array_print;
+            for (int n = 0; n < numElem; n++) {
+                os << arr[n];
+                if (n < numElem - 1)
+                    os << ", ";
+                if (n == numElem - 1 && numElem != arr.size())
+                    os << "...";
+            }
+            os << "}";
+            return os;
+        }
+        case tag_type::Null:        return os << "null";
+
+        default:                    return os << "invalid";
+        }
+
+        /*
+        for (auto& tag : comp_data->as<nbt::tag_compound>()) {
+            std::cout << "  tag[" << tag.second.get_type() << "] " <<
+            tag.first << std::endl;
+
+            if (tag.second.get_type() == nbt::tag_type::Compound) {
+                for (auto& subtag : tag.second.as<nbt::tag_compound>()) {
+                    std::cout << "    tag[" << subtag.second.get_type() << "] " <<
+                    subtag.first << std::endl;
+                }
+            }
+        }
+        */
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

@@ -31,7 +31,28 @@ Engine::Application* Engine::CreateApplication() {
 #endif
 
 #ifdef RUN_TEST_CODE
+#include "nbt\nbt.hpp"
 
+int main(int argc, char** argv) {
+    std::ifstream file_in("bigtest.nbt", std::ios::binary);
+
+    if (file_in) {
+        auto data = nbt::read_compound(file_in);
+    
+        auto comp_name = data.first;
+        auto& comp_data = data.second;
+
+        std::cout << "tag[" << comp_data->get_type() << "] " << comp_name << comp_data->as<nbt::tag_compound>()  << std::endl;
+
+        file_in.close();
+    }
+
+    system("pause");
+}
+
+#endif
+
+#if 0
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
