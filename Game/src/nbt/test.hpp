@@ -2,7 +2,9 @@
 
 #include "NBT.hpp"
 
-#include "Engine/Renderer/Mesh.hpp"
+#ifdef ROHIN_GAME
+    #include "Engine/Renderer/Mesh.hpp"
+#endif
 
 namespace nbtTest {
 
@@ -35,6 +37,7 @@ namespace nbtTest {
 		}
 	}
 
+#ifdef ROHIN_GAME
 	void test2() {
 		{
 			// test if the nbt format can be easily used to store mesh data
@@ -106,6 +109,7 @@ namespace nbtTest {
 			file.close();
 		}
 	}
+#endif
 
     // read bigtest.nbt as a raw compound and std::cout it to see its tree
     void test3() {
@@ -131,6 +135,7 @@ namespace nbtTest {
 
         if (!file_in) {
             std::cout << "Failed to load bigtest.nbt!" << std::endl;
+            system("pause");
             return;
         }
 

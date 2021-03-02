@@ -65,7 +65,8 @@ project "Engine"
 
     defines
     {
-        "_CRT_SECURE_NO_WARNINGS"
+        "_CRT_SECURE_NO_WARNINGS",
+        "ROHIN_ENGINE"
     }
 
     filter "system:windows"
@@ -120,6 +121,10 @@ project "Game"
     links
     {
         "Engine"
+    }
+
+    defines {
+        "ROHIN_GAME"
     }
 
     filter "system:windows"
