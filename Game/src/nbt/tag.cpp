@@ -77,8 +77,14 @@ namespace nbt
         //if (reset) depth = 0;
         if (depth < 0) depth = 0;
 
-        std::string text(depth*2, ' ');
-        return text;
+        if (depth > 0) {
+            std::string text(depth * 2, ' ');
+            //std::string text(depth * 2 - 1, '\xC4');
+            //text.insert(text.begin(), '\xC3');
+            return text;
+        }
+        else
+            return "";
     }
 
     std::ostream& operator<<(std::ostream& os, const tag& t) {
@@ -118,7 +124,7 @@ namespace nbt
                 }
                 os << "\" = " << tag.second.get() << std::endl;
             }
-            os << printSpaces() << "tag[end]" << std::endl;
+            os << printSpaces() << "tag[end]";
             printSpaces(-1);
             return os;
         }

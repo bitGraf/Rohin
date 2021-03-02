@@ -9,85 +9,24 @@ namespace nbtTest {
 	void test1() {
 		{
 			using namespace nbt;
-			
-			tag_byte byteTest;
-			tag_short shortTest;
-			tag_int intTest;
-			tag_long longTest;
-			tag_float floatTest;
-			tag_double doubleTest;
-			tag_string stringTest;
-
-			/*
-			TAG_Compound("Level"): 11 entries
-			{
-			   TAG_Short("shortTest"): 32767
-			   TAG_Long("longTest"): 9223372036854775807
-			   TAG_Float("floatTest"): 0.49823147
-			   TAG_String("stringTest"): HELLO WORLD THIS IS A TEST STRING ÅÄÖ!
-			   TAG_Int("intTest"): 2147483647
-			   TAG_Compound("nested compound test"): 2 entries
-			   {
-				  TAG_Compound("ham"): 2 entries
-				  {
-					 TAG_String("name"): Hampus
-					 TAG_Float("value"): 0.75
-				  }
-				  TAG_Compound("egg"): 2 entries
-				  {
-					 TAG_String("name"): Eggbert
-					 TAG_Float("value"): 0.5
-				  }
-			   }
-			   TAG_List("listTest (long)"): 5 entries of type TAG_Long
-			   {
-				  TAG_Long: 11
-				  TAG_Long: 12
-				  TAG_Long: 13
-				  TAG_Long: 14
-				  TAG_Long: 15
-			   }
-			   TAG_Byte("byteTest"): 127
-			   TAG_List("listTest (compound)"): 2 entries of type TAG_Compound
-			   {
-				  TAG_Compound: 2 entries
-				  {
-					 TAG_String("name"): Compound tag #0
-					 TAG_Long("created-on"): 1264099775885
-				  }
-				  TAG_Compound: 2 entries
-				  {
-					 TAG_String("name"): Compound tag #1
-					 TAG_Long("created-on"): 1264099775885
-				  }
-			   }
-			   TAG_Byte_Array("byteArrayTest (the first 1000 values of (n*n*255+n*7)%100, starting with n=0 (0, 62, 34, 16, 8, ...))"): [1000 bytes]
-			   TAG_Double("doubleTest"): 0.4931287132182315
-			}
-			*/
 
 			std::ifstream file("bigtest.nbt", std::ios::binary);
 			if (file) {
 				std::cout << "Opened file!" << std::endl;
 
-				auto pair = read_compound(file);
+				auto pair = read_compound_raw(file);
 
 				auto name = pair.first;
 				auto& comp = pair.second;
 
 				file.close();
 
-				// use the file now
-				//nbt_byte byte_test = comp->at("byteTest").as<tag_byte>().get();
-				//assert(comp->at("byteTest") == tag_byte(127));
-				//assert(comp->at("byteTest").as<tag_byte>().get() == 127);
-
 				/* output2.nbt should be identical to output.nbt */
 				std::ofstream fileout("output2.nbt", std::ios::binary);
 				if (fileout) {
 					std::cout << "Writing nbt back to a file" << std::endl;
 					//nbt::file_data pairout = { pair.first, std::make_unique<tag_compound>(pair.second) };
-					write_compound(fileout, pair);
+					write_compound_raw(fileout, pair);
 					fileout.close();
 				}
 			}
@@ -144,7 +83,7 @@ namespace nbtTest {
 
 			if (file) {
 				nbt::file_data data{ name, std::make_unique<nbt::tag_compound>(mesh_data) };
-				nbt::write_compound(file, data);
+				nbt::write_compound_raw(file, data);
 				file.close();
 			}
 
@@ -152,7 +91,7 @@ namespace nbtTest {
 
 		std::ifstream file("meshout.nbt", std::ios::binary);
 		if (file) {
-			auto data = nbt::read_compound(file);
+			auto data = nbt::read_compound_raw(file);
 			
 			std::cout << "Data name: " << data.first << std::endl;
 			for (auto& tag : *data.second) {
@@ -167,5 +106,58 @@ namespace nbtTest {
 			file.close();
 		}
 	}
+
+    // read bigtest.nbt as a raw compound and std::cout it to see its tree
+    void test3() {
+        std::ifstream file_in("bigtest.nbt", std::ios::binary);
+
+        if (file_in) {
+            auto data = nbt::read_compound_raw(file_in);
+
+            auto comp_name = data.first;
+            auto& comp_data = data.second;
+
+            std::cout << "tag[" << comp_data->get_type() << "] " << comp_name << comp_data->as<nbt::tag_compound>() << std::endl;
+
+            file_in.close();
+        }
+
+        system("pause");
+    }
+
+    // try writing to a full .nbt file with header
+    void test4() {
+        std::ifstream file_in("bigtest.nbt", std::ios::binary);
+
+        if (!file_in) {
+            std::cout << "Failed to load bigtest.nbt!" << std::endl;
+            return;
+        }
+
+        auto data = nbt::read_compound_raw(file_in);
+        file_in.close();
+
+        bool write_success = nbt::write_to_file(
+            "output.nbt_file",
+            data,
+            0, 1, endian::little);
+
+
+        // read from the same file
+        nbt::file_data data_in;
+        nbt::nbt_byte version_major, version_minor;
+        endian::endian endianness;
+        bool read_success = nbt::read_from_file(
+            "output.nbt_file",
+            data_in,
+            version_major, version_minor, endianness);
+
+        if (!write_success)
+            std::cout << "failed to write to file!" << std::endl;
+        if (!read_success)
+            std::cout << "failed to read from file!" << std::endl;
+
+        system("pause");
+    }
 
 }
