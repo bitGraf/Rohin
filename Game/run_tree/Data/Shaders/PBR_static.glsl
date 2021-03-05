@@ -200,7 +200,8 @@ void main()
 	vec3 F0 = mix(FD, m_Params.Albedo, m_Params.Metalness);
 
 	vec3 lightContribution = Lighting(F0);
-	vec3 iblContribution = vec3(0,0,0);//IBL(F0, Lr);
+	vec3 iblContribution = vec3(0.1,0.1,0.1);//IBL(F0, Lr);
 
 	FragColor = vec4(lightContribution + iblContribution, 1.0);
+	//FragColor = vec4(dot(m_Params.Normal, (-r_lights.Direction)) * vec3(1,1,1), 1.0);
 }

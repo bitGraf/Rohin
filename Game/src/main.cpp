@@ -1,4 +1,6 @@
 //#define RUN_TEST_CODE
+#define RUN_MESH_CODE
+
 #ifndef RUN_TEST_CODE
 #include <Engine.hpp>
 #include <Engine/EntryPoint.h>
@@ -31,6 +33,7 @@ Engine::Application* Engine::CreateApplication() {
 #endif
 
 #ifdef RUN_TEST_CODE
+#ifndef RUN_MESH_CODE
 #include "Engine\Resources\nbt\nbt.hpp"
 
 #include "Engine\Core\GameMath.hpp"
@@ -60,7 +63,7 @@ int main(int argc, char** argv) {
 
 #endif
 
-#if 0
+#ifdef RUN_MESH_CODE
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
@@ -88,33 +91,59 @@ int main(int argc, char** argv) {
     {
         /* Create mesh data */
         std::vector<Vertex> vertices;
-        vertices.resize(8);
+        vertices.resize(24);
         std::vector<u32> indices;
         {
             indices = {
-                0, 1, 5,
-                0, 5, 4,
-                1, 2, 6,
-                1, 6, 5,
-                2, 3, 7,
-                2, 7, 6,
-                3, 0, 4,
-                3, 4, 7,
-                4, 5, 6,
+                0, 1, 2, //front
+                0, 2, 3,
+
+                4, 5, 6, //top
                 4, 6, 7,
-                1, 0, 3,
-                1, 3, 2
+
+                8, 9, 10, //right
+                8, 10, 11,
+
+                12, 13, 14, //left
+                12, 14, 15,
+
+                16, 17, 18, //bot
+                16, 18, 19,
+
+                20, 21, 22, //back
+                20, 22, 23
             };
 
             scalar s = 0.5f;
-            vertices[0].Position = { -s, -s,  s };
-            vertices[1].Position = { s, -s,  s };
-            vertices[2].Position = { s, -s, -s };
-            vertices[3].Position = { -s, -s, -s };
-            vertices[4].Position = { -s,  s,  s };
-            vertices[5].Position = { s,  s,  s };
-            vertices[6].Position = { s,  s, -s };
-            vertices[7].Position = { -s,  s, -s };
+            vertices[0].Position =  { -s, -s,  s }; //front
+            vertices[1].Position =  {  s, -s,  s };
+            vertices[2].Position =  {  s,  s,  s };
+            vertices[3].Position =  { -s,  s,  s };
+                                    
+            vertices[4].Position =  { -s,  s,  s }; //top
+            vertices[5].Position =  {  s,  s,  s };
+            vertices[6].Position =  {  s,  s, -s };
+            vertices[7].Position =  { -s,  s, -s };
+
+            vertices[8].Position =  {  s, -s,  s }; //right
+            vertices[9].Position =  {  s, -s, -s };
+            vertices[10].Position = {  s,  s, -s };
+            vertices[11].Position = {  s,  s,  s };
+
+            vertices[12].Position = { -s, -s, -s }; //left
+            vertices[13].Position = { -s, -s,  s };
+            vertices[14].Position = { -s,  s,  s };
+            vertices[15].Position = { -s,  s, -s };
+                                       
+            vertices[16].Position = { -s, -s, -s }; //bot
+            vertices[17].Position = {  s, -s, -s };
+            vertices[18].Position = {  s, -s,  s };
+            vertices[19].Position = { -s, -s,  s };
+                                       
+            vertices[20].Position = {  s, -s, -s }; //back
+            vertices[21].Position = { -s, -s, -s };
+            vertices[22].Position = { -s,  s, -s };
+            vertices[23].Position = {  s,  s, -s };
 
             for (auto& v : vertices) {
                 v.Normal = v.Position.get_unit();
@@ -123,15 +152,35 @@ int main(int argc, char** argv) {
                 v.Tangent = v.Binormal.cross(v.Normal);
             }
 
-            vertices[0].Texcoord = { 0, 0 };
-            vertices[1].Texcoord = { 1, 0 };
-            vertices[5].Texcoord = { 1, 1 };
-            vertices[4].Texcoord = { 0, 1 };
+            vertices[0].Texcoord =  { 0, 0 };
+            vertices[1].Texcoord =  { 1, 0 };
+            vertices[2].Texcoord =  { 1, 1 };
+            vertices[3].Texcoord =  { 0, 1 };
+                                    
+            vertices[4].Texcoord =  { 0, 1 };
+            vertices[5].Texcoord =  { 0, 0 };
+            vertices[6].Texcoord =  { 1, 0 };
+            vertices[7].Texcoord =  { 1, 1 };
+                                    
+            vertices[8].Texcoord =  { 0, 1 };
+            vertices[9].Texcoord =  { 0, 0 };
+            vertices[10].Texcoord = { 1, 0 };
+            vertices[11].Texcoord = { 1, 1 };
 
-            vertices[2].Texcoord = { 0, 0 };
-            vertices[3].Texcoord = { 1, 0 };
-            vertices[7].Texcoord = { 1, 1 };
-            vertices[6].Texcoord = { 0, 1 };
+            vertices[12].Texcoord = { 1, 0 };
+            vertices[13].Texcoord = { 1, 1 };
+            vertices[14].Texcoord = { 0, 1 };
+            vertices[15].Texcoord = { 0, 0 };
+
+            vertices[16].Texcoord = { 1, 0 };
+            vertices[17].Texcoord = { 1, 1 };
+            vertices[18].Texcoord = { 0, 1 };
+            vertices[19].Texcoord = { 0, 0 };
+
+            vertices[20].Texcoord = { 1, 1 };
+            vertices[21].Texcoord = { 0, 1 };
+            vertices[22].Texcoord = { 0, 0 };
+            vertices[23].Texcoord = { 1, 0 };
         }
 
         // Materials
@@ -146,10 +195,10 @@ int main(int argc, char** argv) {
             matBlock.push_byte(numTextures);
 
             // AlbedoTexture
-            std::string albedoPath = "run_tree/Data/Images/frog.png";
-            std::string normalPath = "run_tree/Data/Images/frog.png";
-            std::string metalPath = "run_tree/Data/Images/frog.png";
-            std::string roughnessPath = "run_tree/Data/Images/frog.png";
+            std::string albedoPath =    "run_tree/Data/Images/waffle/WaffleSlab2_albedo.png";
+            std::string normalPath =    "run_tree/Data/Images/waffle/WaffleSlab2_normal.png";
+            std::string metalPath =     "run_tree/Data/Images/frog.png"; // not yet
+            std::string roughnessPath = "run_tree/Data/Images/waffle/WaffleSlab2_roughness.png";
             
             matBlock.push_string("u_AlbedoTexture");
             matBlock.push_string(albedoPath);
@@ -243,7 +292,7 @@ int main(int argc, char** argv) {
         file.AddBlock(meshBlock);
         file.AddBlock(skelBlock);
         file.ResolveOffsets();
-        file.WriteToFile("cube.mesh");
+        file.WriteToFile("run_tree/Data/Models/cube.mesh");
     }
 
     /* Read from the file and extract data */
@@ -316,4 +365,5 @@ int main(int argc, char** argv) {
     return 0;
 }
 
+#endif
 #endif

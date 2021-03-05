@@ -62,7 +62,7 @@ namespace Engine {
             return;
 
         // Set shader info
-        m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR_static");
+        m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR_static"); // TODO: allow meshes to choose their shader?
         m_BaseMaterial = std::make_shared<Material>(m_MeshShader);
 
         // Load Materials
@@ -88,9 +88,9 @@ namespace Engine {
                 auto matName = matBlock.read_string();
                 Ref<MaterialInstance> mat = std::make_shared<MaterialInstance>(m_BaseMaterial, matName);
 
-                m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", matBlock.read<math::vec3>());
-                m_BaseMaterial->Set<float>("u_Metalness", matBlock.read<float>());
-                m_BaseMaterial->Set<float>("u_Roughness", matBlock.read<float>());
+                mat->Set<math::vec3>("u_AlbedoColor", matBlock.read<math::vec3>());
+                mat->Set<float>("u_Metalness", matBlock.read<float>());
+                mat->Set<float>("u_Roughness", matBlock.read<float>());
 
                 auto numTextures = matBlock.read_byte();
                 for (int n = 0; n < numTextures; n++) {

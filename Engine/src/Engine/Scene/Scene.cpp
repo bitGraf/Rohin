@@ -156,7 +156,7 @@ namespace Engine {
             // messy group
             // TODO: figure out how to get the group function to work
             for (auto n : m_Registry.GetRegList()) {
-                // check if entity n has both transform and camera
+                // check if entity n has both transform and mesh
                 if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshRendererComponent>(n)) {
                     // good to go
                     auto& mesh = m_Registry.get<MeshRendererComponent>(n);
