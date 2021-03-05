@@ -33,10 +33,29 @@ Engine::Application* Engine::CreateApplication() {
 #ifdef RUN_TEST_CODE
 #include "nbt\nbt.hpp"
 
+#include "Engine\Core\GameMath.hpp"
 #include "nbt\test.hpp"
 
 int main(int argc, char** argv) {
-    nbtTest::test4();
+    // try to generate a level file in .nbt format
+
+    using namespace nbt;
+    /*
+    tag_compound comp{
+        {"name", "Level NBT Test"},
+        {"meshes", tag_list::of<tag_compound>({
+            {{"mesh_name", "cube_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.mesh" }},
+            {{"mesh_name", "rect_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.mesh" }}
+            })},
+        {"entities", tag_list::of<tag_compound>({
+            {{"name", "Platform"}, {"components", tag_list::of<tag_compound>({
+                {{"type", "Transform"}, {"mesh_name", "cube_mesh"}},
+                {{"type", "MeshRenderer"}, {"mesh_name", "cube_mesh"}}
+                })}}
+            })}
+    };
+    */
+    nbtTest::test5();
 }
 
 #endif

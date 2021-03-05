@@ -18,6 +18,7 @@ namespace math {
         vec2(scalar v); ///< Same-value constructor
         vec2(scalar a, scalar b); ///< Specific-value constructor
         vec2(double* data); ///< Initialize by array
+        vec2(int v);
 
         vec2(picojson::array& arr);
 
@@ -43,6 +44,7 @@ namespace math {
         vec3(double* data); ///< Initialize by array
         vec3(vec2 v, scalar c); ///< Initialize from smaller vector
         vec3(vec4 v); ///< Initialize from larger vector
+        vec3(int v);
 
         vec3(picojson::array& arr);
 
@@ -66,6 +68,7 @@ namespace math {
         vec4(scalar a, scalar b, scalar c, scalar d); ///< Specific-value constructor
         vec4(double* data); ///< Initialize by array
         vec4(vec3 v, scalar d); ///< Initialize from smaller vector
+        vec4(int v);
 
         vec4(picojson::array& arr);
 
@@ -96,6 +99,8 @@ namespace math {
         vec2 col1() const;  ///< Get column 1
         vec2 col2() const;  ///< Get column 2
 
+        friend ::std::ostream& operator<<(std::ostream& os, const mat2& v); ///< Stream operator overload
+
         scalar _11, _21, _12, _22;
     };
 
@@ -123,6 +128,8 @@ namespace math {
         scalar roll();
 
         mat3 getTranspose();
+
+        friend ::std::ostream& operator<<(std::ostream& os, const mat3& v); ///< Stream operator overload
 
         scalar _11, _21, _31, _12, _22, _32, _13, _23, _33;
     };
@@ -161,6 +168,10 @@ namespace math {
     bool operator== (const vec2& A, const vec2& B);  ///< Vector2 == Vector2
     bool operator== (const vec3& A, const vec3& B);  ///< Vector3 == Vector3
     bool operator== (const vec4& A, const vec4& B);  ///< Vector4 == Vector4
+
+    bool operator== (const mat2& A, const mat2& B);  ///< Matrix2 == Matrix2
+    bool operator== (const mat3& A, const mat3& B);  ///< Matrix3 == Matrix3
+    bool operator== (const mat4& A, const mat4& B);  ///< Matrix4 == Matrix4
 
     vec2 operator+ (const vec2& A, const vec2& B);  ///< Vector2 + Vector2
     vec3 operator+ (const vec3& A, const vec3& B);  ///< Vector3 + Vector3

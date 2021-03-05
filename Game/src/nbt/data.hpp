@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <string>
 
+#include "Engine\Core\GameMath.hpp"
+
 namespace nbt {
 
 	typedef std::int8_t		nbt_byte;
@@ -12,6 +14,7 @@ namespace nbt {
 	typedef float			nbt_float;
 	typedef double			nbt_double;
 	typedef std::string		nbt_string;
+    //typedef math::vec3      nbt_vec3;
 
     enum class tag_type : nbt_byte
     {
@@ -28,6 +31,12 @@ namespace nbt {
         Compound = 10,
         Int_Array = 11,
         Long_Array = 12,
+        Vector2 = 13,
+        Vector3 = 14,
+        Vector4 = 15,
+        Matrix2 = 16,
+        Matrix3 = 17,
+        Matrix4 = 18,
         Null = -1   ///< Used to denote empty value
     };
 }

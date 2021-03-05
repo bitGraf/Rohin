@@ -108,6 +108,12 @@ namespace nbt {
     typedef tag_primitive<nbt_long> tag_long;
     typedef tag_primitive<nbt_float> tag_float;
     typedef tag_primitive<nbt_double> tag_double;
+    typedef tag_primitive<math::vec2> tag_vec2;
+    typedef tag_primitive<math::vec3> tag_vec3;
+    typedef tag_primitive<math::vec4> tag_vec4;
+    typedef tag_primitive<math::mat2> tag_mat2;
+    typedef tag_primitive<math::mat3> tag_mat3;
+    typedef tag_primitive<math::mat4> tag_mat4;
 
     // tag_string
     class tag_string final : public tag {
@@ -188,6 +194,12 @@ namespace nbt {
         value& operator=(double val);
         value& operator=(const std::string& str);//TODO: what is this?
         value& operator=(std::string&& str);
+        value& operator=(math::vec2);
+        value& operator=(math::vec3);
+        value& operator=(math::vec4);
+        value& operator=(math::mat2);
+        value& operator=(math::mat3);
+        value& operator=(math::mat4);
 
         //Conversions to primitives and string
         explicit operator int8_t() const;
@@ -197,6 +209,12 @@ namespace nbt {
         explicit operator float() const;
         explicit operator double() const;
         explicit operator const std::string& () const;
+        explicit operator math::vec2() const;
+        explicit operator math::vec3() const;
+        explicit operator math::vec4() const;
+        explicit operator math::mat2() const;
+        explicit operator math::mat3() const;
+        explicit operator math::mat4() const;
 
         ///Returns true if the value is not uninitialized
         explicit operator bool() const { return tag_ != nullptr; }
@@ -248,6 +266,12 @@ namespace nbt {
         value_initializer(const std::string& str);
         value_initializer(std::string&& str);
         value_initializer(const char* str);
+        value_initializer(math::vec2 val);
+        value_initializer(math::vec3 val);
+        value_initializer(math::vec4 val);
+        value_initializer(math::mat2 val);
+        value_initializer(math::mat3 val);
+        value_initializer(math::mat4 val);
     };
 
     //tag_compound
@@ -418,7 +442,7 @@ namespace nbt {
         template<class T>
         static tag_list of(std::initializer_list<T> init) {
             tag_list result;
-            result.init<T, T>(il);
+            result.init<T, T>(init);
             return result;
         }
 
@@ -442,6 +466,12 @@ namespace nbt {
         tag_list(std::initializer_list<tag_int_array> init);
         tag_list(std::initializer_list<tag_long_array> init);
         tag_list(std::initializer_list<value> init);
+        tag_list(std::initializer_list<math::vec2> init);
+        tag_list(std::initializer_list<math::vec3> init);
+        tag_list(std::initializer_list<math::vec4> init);
+        tag_list(std::initializer_list<math::mat2> init);
+        tag_list(std::initializer_list<math::mat3> init);
+        tag_list(std::initializer_list<math::mat4> init);
 
         // get tag by index with bounds checking
         value& at(size_t i);

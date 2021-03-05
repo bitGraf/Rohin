@@ -13,6 +13,7 @@ namespace math {
         if (arr.size() > 1)
             y = arr[1].get<double>();
     }
+    vec2::vec2(int v) : x(v), y(v) {}
 
     /* vec3 constructors */
     vec3::vec3() : x(0), y(0), z(0) {}
@@ -21,6 +22,7 @@ namespace math {
     vec3::vec3(double* data) : x(data[0]), y(data[1]), z(data[2]) {}
     vec3::vec3(vec2 v, scalar c) : x(v.x), y(v.y), z(c) {}
     vec3::vec3(vec4 v) : x(v.x), y(v.y), z(v.z) {}
+    vec3::vec3(int v) : x(v), y(v), z(v) {}
     vec3::vec3(picojson::array& arr) {
         if (arr.size() > 0)
             x = arr[0].get<double>();
@@ -36,6 +38,7 @@ namespace math {
     vec4::vec4(scalar a, scalar b, scalar c, scalar d) : x(a), y(b), z(c), w(d) {}
     vec4::vec4(double* data) : x(data[0]), y(data[1]), z(data[2]), w(data[3]) {}
     vec4::vec4(vec3 v, scalar d) : x(v.x), y(v.y), z(v.z), w(d) {}
+    vec4::vec4(int v) : x(v), y(v), z(v), w(v) {}
     vec4::vec4(picojson::array& arr) {
         if (arr.size() > 0)
             x = arr[0].get<double>();
@@ -346,6 +349,22 @@ namespace math {
     }
     bool operator== (const vec4& A, const vec4& B) {
         return (A.x == B.x && A.y == B.y && A.z == B.z && A.w == B.w);
+    }
+
+    bool operator== (const mat2& A, const mat2& B) {
+        return (A.row1() == B.row1()) &&
+               (A.row2() == B.row2());
+    }
+    bool operator== (const mat3& A, const mat3& B) {
+        return (A.row1() == B.row1()) &&
+               (A.row2() == B.row2()) &&
+               (A.row3() == B.row3());
+    }
+    bool operator== (const mat4& A, const mat4& B) {
+        return (A.row1() == B.row1()) &&
+               (A.row2() == B.row2()) &&
+               (A.row3() == B.row3()) &&
+               (A.row4() == B.row4());
     }
 
     vec2 operator+ (const vec2& A, const vec2& B) {
@@ -867,13 +886,39 @@ namespace math {
         return os;
     }
 
+    std::ostream & operator<<(std::ostream & os, const mat2 & m)
+    {
+        // TODO: float formatting
+        // [1,2;3,4]
+        os << '[';
+        os << m._11 << ',' << m._12 << ';';
+        os << m._21 << ',' << m._22 << ']';
+
+        return os;
+    }
+
+    std::ostream & operator<<(std::ostream & os, const mat3 & m)
+    {
+        // TODO: float formatting
+        // [1,2,3;4,5,6;7,8,9]
+        os << '[';
+        os << m._11 << ',' << m._12 << ',' << m._13 << ';';
+        os << m._21 << ',' << m._22 << ',' << m._23 << ';';
+        os << m._31 << ',' << m._32 << ',' << m._33 << ']';
+
+        return os;
+    }
+
     std::ostream & operator<<(std::ostream & os, const mat4 & m)
     {
         // TODO: float formatting
-        os << m._11 << " " << m._12 << " " << m._13 << " " << m._14 << " " << std::endl;
-        os << m._21 << " " << m._22 << " " << m._23 << " " << m._24 << " " << std::endl;
-        os << m._31 << " " << m._32 << " " << m._33 << " " << m._34 << " " << std::endl;
-        os << m._41 << " " << m._42 << " " << m._43 << " " << m._44 << " " << std::endl;
+        // [1,2,3,4;4,5,6,7;9,10,10,12;13,14,15,16]
+        os << '[';
+        os << m._11 << ',' << m._12 << ',' << m._13 << ',' << m._14 << ';';
+        os << m._21 << ',' << m._22 << ',' << m._23 << ',' << m._24 << ';';
+        os << m._31 << ',' << m._32 << ',' << m._33 << ',' << m._34 << ';';
+        os << m._41 << ',' << m._42 << ',' << m._43 << ',' << m._44 << ']';
+        
         return os;
     }
 }

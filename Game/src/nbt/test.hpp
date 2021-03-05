@@ -165,4 +165,37 @@ namespace nbtTest {
         system("pause");
     }
 
+    // implement math structs as primitives
+    void test5() {
+        using namespace nbt;
+        tag_compound comp{
+            { "name", "Level NBT Test" },
+            { "position", math::vec3(1,2,3)} ,
+            {"matrix", math::mat4(1,2,3.4,4)},
+            {"verts", tag_list::of<tag_vec3>({
+                math::vec3(1,2,3),
+                math::vec3(2,3,4),
+                math::vec3(3,4,5)
+                })}
+        };
+
+        std::cout << comp["matrix"].as<tag_mat4>() << std::endl;
+
+        auto v = comp["position"].as<tag_vec3>().get();
+        std::cout << v << std::endl;
+        comp["position"].set(tag_vec3(math::vec3(2,4,5)));
+        v = comp["position"].as<tag_vec3>().get();
+        std::cout << v << std::endl << std::endl;
+
+        std::cout << comp << std::endl; // print whole compound
+
+        auto list = comp["verts"].as<tag_list>();
+        std::cout << comp["verts"].as<tag_list>() << std::endl; // print tag_list
+        
+        for (auto& a : list) {
+            std::cout << a.as<tag_vec3>() << std::endl; // print each element in the list
+        }
+
+        system("pause");
+    }
 }

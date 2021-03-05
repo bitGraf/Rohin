@@ -34,6 +34,12 @@ namespace nbt
         case tag_type::Compound:    return std::make_unique<tag_compound>();
         case tag_type::Int_Array:   return std::make_unique<tag_int_array>();
         case tag_type::Long_Array:  return std::make_unique<tag_long_array>();
+        case tag_type::Vector2:     return std::make_unique<tag_vec2>();
+        case tag_type::Vector3:     return std::make_unique<tag_vec3>();
+        case tag_type::Vector4:     return std::make_unique<tag_vec4>();
+        case tag_type::Matrix2:     return std::make_unique<tag_mat2>();
+        case tag_type::Matrix3:     return std::make_unique<tag_mat3>();
+        case tag_type::Matrix4:     return std::make_unique<tag_mat4>();
 
         default: throw std::invalid_argument("Invalid tag type");
         }
@@ -64,6 +70,12 @@ namespace nbt
         case tag_type::Compound:    return os << "compound";
         case tag_type::Int_Array:   return os << "int_array";
         case tag_type::Long_Array:  return os << "long_array";
+        case tag_type::Vector2:     return os << "vector2";
+        case tag_type::Vector3:     return os << "vector3";
+        case tag_type::Vector4:     return os << "vector4";
+        case tag_type::Matrix2:     return os << "matrix2";
+        case tag_type::Matrix3:     return os << "matrix3";
+        case tag_type::Matrix4:     return os << "matrix4";
         case tag_type::Null:        return os << "null";
 
         default:                    return os << "invalid";
@@ -97,6 +109,12 @@ namespace nbt
         case tag_type::Long:        return os << t.as<tag_long>().get();
         case tag_type::Float:       return os << t.as<tag_float>().get();
         case tag_type::Double:      return os << t.as<tag_double>().get();
+        case tag_type::Vector2:     return os << t.as<tag_vec2>().get();
+        case tag_type::Vector3:     return os << t.as<tag_vec3>().get();
+        case tag_type::Vector4:     return os << t.as<tag_vec4>().get();
+        case tag_type::Matrix2:     return os << t.as<tag_mat2>().get();
+        case tag_type::Matrix3:     return os << t.as<tag_mat3>().get();
+        case tag_type::Matrix4:     return os << t.as<tag_mat4>().get();
         case tag_type::Byte_Array: {
             const auto& arr = t.as<tag_byte_array>();
             os << arr.size() << " elements {";
@@ -110,7 +128,20 @@ namespace nbt
             return os;
         }
         case tag_type::String:      return os << t.as<tag_string>().get();
-        case tag_type::List:        return os << "tag_list";
+        case tag_type::List: {
+            const auto& list = t.as<tag_list>();
+            os << list.size() << " elements {";
+            auto numElem = list.size() < io::max_array_print ? list.size() : io::max_array_print;
+            for (int n = 0; n < numElem; n++) {
+                os << list[n];
+                if (n < numElem - 1)
+                    os << ", ";
+                if (n == numElem - 1 && numElem != list.size())
+                    os << "...";
+            }
+            os << "}";
+            return os;
+        }
         case tag_type::Compound: {
             os << std::endl;
             printSpaces(1);
@@ -157,23 +188,8 @@ namespace nbt
             return os;
         }
         case tag_type::Null:        return os << "null";
-
         default:                    return os << "invalid";
         }
-
-        /*
-        for (auto& tag : comp_data->as<nbt::tag_compound>()) {
-            std::cout << "  tag[" << tag.second.get_type() << "] " <<
-            tag.first << std::endl;
-
-            if (tag.second.get_type() == nbt::tag_type::Compound) {
-                for (auto& subtag : tag.second.as<nbt::tag_compound>()) {
-                    std::cout << "    tag[" << subtag.second.get_type() << "] " <<
-                    subtag.first << std::endl;
-                }
-            }
-        }
-        */
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -416,6 +432,90 @@ namespace nbt
         return *this;
     }
 
+    value& value::operator=(math::vec2 val) {
+        if (!tag_)
+            set(tag_vec2(val));
+        else switch (tag_->get_type()) {
+        case tag_type::Vector2:
+            static_cast<tag_vec2&>(*tag_).set(val);
+            break;
+
+        default:
+            throw std::bad_cast();
+        }
+        return *this;
+    }
+
+    value& value::operator=(math::vec3 val) {
+        if (!tag_)
+            set(tag_vec3(val));
+        else switch (tag_->get_type()) {
+        case tag_type::Vector3:
+            static_cast<tag_vec3&>(*tag_).set(val);
+            break;
+
+        default:
+            throw std::bad_cast();
+        }
+        return *this;
+    }
+
+    value& value::operator=(math::vec4 val) {
+        if (!tag_)
+            set(tag_vec4(val));
+        else switch (tag_->get_type()) {
+        case tag_type::Vector4:
+            static_cast<tag_vec4&>(*tag_).set(val);
+            break;
+
+        default:
+            throw std::bad_cast();
+        }
+        return *this;
+    }
+
+    value& value::operator=(math::mat2 val) {
+        if (!tag_)
+            set(tag_mat2(val));
+        else switch (tag_->get_type()) {
+        case tag_type::Matrix2:
+            static_cast<tag_mat2&>(*tag_).set(val);
+            break;
+
+        default:
+            throw std::bad_cast();
+        }
+        return *this;
+    }
+
+    value& value::operator=(math::mat3 val) {
+        if (!tag_)
+            set(tag_mat3(val));
+        else switch (tag_->get_type()) {
+        case tag_type::Matrix3:
+            static_cast<tag_mat3&>(*tag_).set(val);
+            break;
+
+        default:
+            throw std::bad_cast();
+        }
+        return *this;
+    }
+
+    value& value::operator=(math::mat4 val) {
+        if (!tag_)
+            set(tag_mat4(val));
+        else switch (tag_->get_type()) {
+        case tag_type::Matrix4:
+            static_cast<tag_mat4&>(*tag_).set(val);
+            break;
+
+        default:
+            throw std::bad_cast();
+        }
+        return *this;
+    }
+
     //Primitive conversion
     value::operator int8_t() const {
         switch (tag_->get_type()) {
@@ -507,6 +607,66 @@ namespace nbt
         }
     }
 
+    value::operator math::vec2() const {
+        switch (tag_->get_type()) {
+        case tag_type::Vector2:
+            return static_cast<tag_vec2&>(*tag_).get();
+
+        default:
+            throw std::bad_cast();
+        }
+    }
+
+    value::operator math::vec3() const {
+        switch (tag_->get_type()) {
+        case tag_type::Vector3:
+            return static_cast<tag_vec3&>(*tag_).get();
+
+        default:
+            throw std::bad_cast();
+        }
+    }
+
+    value::operator math::vec4() const {
+        switch (tag_->get_type()) {
+        case tag_type::Vector4:
+            return static_cast<tag_vec4&>(*tag_).get();
+
+        default:
+            throw std::bad_cast();
+        }
+    }
+
+    value::operator math::mat2() const {
+        switch (tag_->get_type()) {
+        case tag_type::Matrix2:
+            return static_cast<tag_mat2&>(*tag_).get();
+
+        default:
+            throw std::bad_cast();
+        }
+    }
+
+    value::operator math::mat3() const {
+        switch (tag_->get_type()) {
+        case tag_type::Matrix3:
+            return static_cast<tag_mat3&>(*tag_).get();
+
+        default:
+            throw std::bad_cast();
+        }
+    }
+
+    value::operator math::mat4() const {
+        switch (tag_->get_type()) {
+        case tag_type::Matrix4:
+            return static_cast<tag_mat4&>(*tag_).get();
+
+        default:
+            throw std::bad_cast();
+        }
+    }
+
     value& value::operator=(std::string&& str) {
         if (!tag_)
             set(tag_string(std::move(str)));
@@ -578,6 +738,12 @@ namespace nbt
     value_initializer::value_initializer(const std::string& str) : value(tag_string(str)) {}
     value_initializer::value_initializer(std::string&& str) : value(tag_string(std::move(str))) {}
     value_initializer::value_initializer(const char* str) : value(tag_string(str)) {}
+    value_initializer::value_initializer(math::vec2 val) : value(tag_vec2(val)) {}
+    value_initializer::value_initializer(math::vec3 val) : value(tag_vec3(val)) {}
+    value_initializer::value_initializer(math::vec4 val) : value(tag_vec4(val)) {}
+    value_initializer::value_initializer(math::mat2 val) : value(tag_mat2(val)) {}
+    value_initializer::value_initializer(math::mat3 val) : value(tag_mat3(val)) {}
+    value_initializer::value_initializer(math::mat4 val) : value(tag_mat4(val)) {}
 
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -596,6 +762,12 @@ namespace nbt
     tag_list::tag_list(std::initializer_list<tag_compound>   il) { init<tag_compound>(il); }
     tag_list::tag_list(std::initializer_list<tag_int_array>  il) { init<tag_int_array>(il); }
     tag_list::tag_list(std::initializer_list<tag_long_array> il) { init<tag_long_array>(il); }
+    tag_list::tag_list(std::initializer_list<math::vec2>     il) { init<tag_vec2>(il); }
+    tag_list::tag_list(std::initializer_list<math::vec3>     il) { init<tag_vec3>(il); }
+    tag_list::tag_list(std::initializer_list<math::vec4>     il) { init<tag_vec4>(il); }
+    tag_list::tag_list(std::initializer_list<math::mat2>     il) { init<tag_mat2>(il); }
+    tag_list::tag_list(std::initializer_list<math::mat3>     il) { init<tag_mat3>(il); }
+    tag_list::tag_list(std::initializer_list<math::mat4>     il) { init<tag_mat4>(il); }
 
     tag_list::tag_list(std::initializer_list<value> init) {
         if (init.size() == 0)
