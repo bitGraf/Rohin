@@ -4,10 +4,10 @@
 #include <map>
 #include <vector>
 
-#include "data.hpp"
-#include "utils.hpp"
-#include "endian.hpp"
-#include "io.hpp"
+#include "Engine\Resources\nbt\data.hpp"
+#include "Engine\Resources\nbt\utils.hpp"
+#include "Engine\Resources\nbt\endian.hpp"
+#include "Engine\Resources\nbt\io.hpp"
 
 namespace nbt {
 

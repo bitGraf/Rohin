@@ -1,6 +1,6 @@
 #pragma once
 
-#include "NBT.hpp"
+#include "Engine\Resources\nbt\NBT.hpp"
 
 #ifdef ROHIN_GAME
     #include "Engine/Renderer/Mesh.hpp"

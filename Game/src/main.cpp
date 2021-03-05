@@ -31,10 +31,10 @@ Engine::Application* Engine::CreateApplication() {
 #endif
 
 #ifdef RUN_TEST_CODE
-#include "nbt\nbt.hpp"
+#include "Engine\Resources\nbt\nbt.hpp"
 
 #include "Engine\Core\GameMath.hpp"
-#include "nbt\test.hpp"
+#include "Engine\Resources\nbt\test.hpp"
 
 int main(int argc, char** argv) {
     // try to generate a level file in .nbt format

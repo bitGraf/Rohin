@@ -1,7 +1,7 @@
 #pragma once
 
-#include "data.hpp"
-#include "tag.hpp"
+#include "Engine\Resources\nbt\data.hpp"
+#include "Engine\Resources\nbt\tag.hpp"
 
 namespace nbt {
 	typedef std::pair<std::string, std::unique_ptr<tag_compound>> file_data;

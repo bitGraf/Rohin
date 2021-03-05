@@ -5,8 +5,8 @@
 #include <iostream>
 #include <memory>
 
-#include "data.hpp"
-#include "endian.hpp"
+#include "Engine\Resources\nbt\data.hpp"
+#include "Engine\Resources\nbt\endian.hpp"
 
 namespace nbt {
 	class tag;

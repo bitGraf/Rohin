@@ -33,6 +33,7 @@
 
 /* Resource stuff */
 #include "Engine/Resources/MeshCatalog.hpp"
+#include "Engine/Resources/nbt/nbt.hpp"
 
 /* Dependencies */
 #include "spdlog/spdlog.h"

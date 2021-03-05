@@ -1,6 +1,6 @@
 #pragma once
 
-#include "data.hpp"
+#include "Engine\Resources\nbt\data.hpp"
 
 namespace nbt {
 
