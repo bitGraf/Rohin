@@ -167,6 +167,7 @@ newaction {
        print("clean the build...")
        os.rmdir("./bin")
        os.rmdir("./bin-intermediate")
+       os.remove("./Rohin.sln")
        print("done.")
     end
  }
