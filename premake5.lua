@@ -69,6 +69,13 @@ project "Engine"
         "ROHIN_ENGINE"
     }
 
+    -- Clean function --
+    if _ACTION == "clean" then
+        os.remove("Engine/Engine.vcxproj")
+        os.remove("Engine/Engine.vcxproj.filters")
+        os.remove("Engine/Engine.vcxproj.user")
+     end
+
     filter "system:windows"
         systemversion "latest"
 
@@ -127,6 +134,13 @@ project "Game"
         "ROHIN_GAME"
     }
 
+    -- Clean function --
+    if _ACTION == "clean" then
+        os.remove("Game/Game.vcxproj")
+        os.remove("Game/Game.vcxproj.filters")
+        os.remove("Game/Game.vcxproj.user")
+     end
+
     filter "system:windows"
         systemversion "latest"
     
@@ -144,3 +158,15 @@ project "Game"
         defines "RH_DIST"
         runtime "Release"
         optimize "on"
+
+-- Clean Function --
+newaction {
+    trigger     = "clean",
+    description = "clean the software build files",
+    execute     = function ()
+       print("clean the build...")
+       os.rmdir("./bin")
+       os.rmdir("./bin-intermediate")
+       print("done.")
+    end
+ }
