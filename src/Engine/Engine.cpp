@@ -100,7 +100,7 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
 
     // Load collision info
     //cWorld.testCreate(&m_Resource);
-    /*
+
     UID_t floor = cWorld.CreateNewCubeHull(&m_Resource, vec3(0, -2.5, 0), 75, 5, 75);
     cWorld.CreateNewCubeHull(&m_Resource, vec3(0, 1.5, -4), 8, 3, 3);
     UID_t crate = cWorld.CreateNewCubeHull(&m_Resource, vec3(-2, 1.5, -8), 8, 3, 3);
@@ -125,7 +125,7 @@ void Engine::InitEngine(handleMessageFnc f, int argc, char* argv[]) {
         ->rotation.toYawPitchRoll(0, 40, 0);
     cWorld.getHullFromID(cWorld.CreateNewCubeHull(&m_Resource, vec3(5, 3.5, 17), 10, 1, 3))
         ->rotation.toYawPitchRoll(0, 50, 0);
-        */
+
 }
 
 void Engine::LoadLevel(std::string levelPath) {
