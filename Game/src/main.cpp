@@ -37,28 +37,75 @@ Engine::Application* Engine::CreateApplication() {
 #include "Engine\Resources\nbt\nbt.hpp"
 
 #include "Engine\Core\GameMath.hpp"
-#include "Engine\Resources\nbt\test.hpp"
+#include <assert.h>
+//#include "Engine\Resources\nbt\test.hpp"
 
 int main(int argc, char** argv) {
+    //nbtTest::test5();
+    
     // try to generate a level file in .nbt format
-
     using namespace nbt;
-    /*
     tag_compound comp{
         {"name", "Level NBT Test"},
-        {"meshes", tag_list::of<tag_compound>({
+        {"meshes", tag_list::of<tag_compound>({ //TODO: add tag_string_list possibly?
             {{"mesh_name", "cube_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.mesh" }},
             {{"mesh_name", "rect_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.mesh" }}
             })},
         {"entities", tag_list::of<tag_compound>({
-            {{"name", "Platform"}, {"components", tag_list::of<tag_compound>({
-                {{"type", "Transform"}, {"mesh_name", "cube_mesh"}},
-                {{"type", "MeshRenderer"}, {"mesh_name", "cube_mesh"}}
-                })}}
+            {{"name", "Platform"}, 
+                {"transform", tag_compound{
+                    {"position", math::vec3(0,-1,0)},
+                    //{"rotation", math::vec4(0,0,0,1)},
+                    {"scale", math::vec3(5,.25,5)}
+                }},
+                {"components", tag_list::of<tag_compound>({
+                    {{"type", "MeshRenderer"}, {"mesh_name", "rect_mesh"}}
+                    })
+                }},
+            {{"name", "Frog Cube 1"},
+                {"transform", tag_compound{
+                    {"position", math::vec3(2,1,-2)}
+                }},
+                {"components", tag_list::of<tag_compound>({
+                    {{"type", "MeshRenderer"},{"mesh_name", "cube_mesh"}},
+                    {{"type", "NativeScript"},{"script_tag", "script_gem"}}
+                    })
+                }},
+            { { "name", "Frog Cube 2" },
+                { "transform", tag_compound{
+                    { "position", math::vec3(-2,1,-2) }
+                } },
+                { "components", tag_list::of<tag_compound>({
+                    { { "type", "MeshRenderer" },{ "mesh_name", "cube_mesh" } },
+                    { { "type", "NativeScript" },{ "script_tag", "script_gem" } }
+                    })
+                } },
+            { { "name", "Frog Cube 3" },
+            { "transform", tag_compound{
+                { "position", math::vec3(2,1,2) }
+            } },
+            { "components", tag_list::of<tag_compound>({
+                { { "type", "MeshRenderer" },{ "mesh_name", "cube_mesh" } },
+                { { "type", "NativeScript" },{ "script_tag", "script_gem" } }
+                })
+            } }
             })}
     };
-    */
-    nbtTest::test5();
+
+    auto name = comp["name"].as<tag_string>().get();
+    std::cout << "Level name: " << name << std::endl;
+
+    auto meshList = comp["meshes"].as<tag_list>();
+    assert(meshList.el_type() == tag_type::Compound);
+    for (const auto& m : meshList) {
+        auto c = m.as<tag_compound>();
+        std::cout << c["mesh_name"] << ", " << c["mesh_path"] << std::endl;
+    }
+
+
+    nbt::write_to_file("run_tree/Data/Levels/nbtTest.scene", nbt::file_data({ "level_data", std::make_unique<tag_compound>(comp) }), 0, 1);
+
+    system("pause");
 }
 
 #endif
@@ -145,9 +192,71 @@ int main(int argc, char** argv) {
             vertices[22].Position = { -s,  s, -s };
             vertices[23].Position = {  s,  s, -s };
 
+            // Normals
+            vertices[0].Normal= { 0, 0, 1 }; //front
+            vertices[1].Normal= { 0, 0, 1 };
+            vertices[2].Normal= { 0, 0, 1 };
+            vertices[3].Normal= { 0, 0, 1 };
+                       
+            vertices[4].Normal= { 0, 1, 0 }; //top
+            vertices[5].Normal= { 0, 1, 0 };
+            vertices[6].Normal= { 0, 1, 0 };
+            vertices[7].Normal= { 0, 1, 0 };
+                       
+            vertices[8].Normal= { 1, 0, 0 }; //right
+            vertices[9].Normal= { 1, 0, 0 };
+            vertices[10].Normal = { 1, 0, 0 };
+            vertices[11].Normal = { 1, 0, 0 };
+                        
+            vertices[12].Normal = { -1, 0, 0 }; //left
+            vertices[13].Normal = { -1, 0, 0 };
+            vertices[14].Normal = { -1, 0, 0 };
+            vertices[15].Normal = { -1, 0, 0 };
+                        
+            vertices[16].Normal = { 0, -1, 0 }; //bot
+            vertices[17].Normal = { 0, -1, 0 };
+            vertices[18].Normal = { 0, -1, 0 };
+            vertices[19].Normal = { 0, -1, 0 };
+                        
+            vertices[20].Normal = { 0, 0, -1 }; //back
+            vertices[21].Normal = { 0, 0, -1 };
+            vertices[22].Normal = { 0, 0, -1 };
+            vertices[23].Normal = { 0, 0, -1 };
+
+            // Tangents
+            vertices[0].Tangent = { 1, 0, 0 }; //front
+            vertices[1].Tangent = { 1, 0, 0 };
+            vertices[2].Tangent = { 1, 0, 0 };
+            vertices[3].Tangent = { 1, 0, 0 };
+
+            vertices[4].Tangent = { 0, 0, 1 }; //top
+            vertices[5].Tangent = { 0, 0, 1 };
+            vertices[6].Tangent = { 0, 0, 1 };
+            vertices[7].Tangent = { 0, 0, 1 };
+
+            vertices[8].Tangent = { 0, 1, 0 }; //right
+            vertices[9].Tangent = { 0, 1, 0 };
+            vertices[10].Tangent = { 0, 1, 0 };
+            vertices[11].Tangent = { 0, 1, 0 };
+                         
+            vertices[12].Tangent = { 0, -1, 0 }; //left
+            vertices[13].Tangent = { 0, -1, 0 };
+            vertices[14].Tangent = { 0, -1, 0 };
+            vertices[15].Tangent = { 0, -1, 0 };
+                         
+            vertices[16].Tangent = { 0, 0, -1 }; //bot
+            vertices[17].Tangent = { 0, 0, -1 };
+            vertices[18].Tangent = { 0, 0, -1 };
+            vertices[19].Tangent = { 0, 0, -1 };
+                         
+            vertices[20].Tangent = { -1, 0, 0 }; //back
+            vertices[21].Tangent = { -1, 0, 0 };
+            vertices[22].Tangent = { -1, 0, 0 };
+            vertices[23].Tangent = { -1, 0, 0 };
+
             for (auto& v : vertices) {
-                v.Normal = v.Position.get_unit();
-                v.Tangent = vec3(0, 1, 0);
+                //v.Normal = v.Position.get_unit();
+                //v.Tangent = vec3(0, 1, 0);
                 v.Binormal = v.Normal.cross(v.Tangent);
                 v.Tangent = v.Binormal.cross(v.Normal);
             }
@@ -297,67 +406,69 @@ int main(int argc, char** argv) {
 
     /* Read from the file and extract data */
     {
-        fin.ReadFromFile("cube.mesh");
+        fin.ReadFromFile("run_tree/Data/Models/cube.mesh");
+        if (fin.fileLength > 0) {
 
-        {
-            auto& block = fin.GetBlock("Skeleton");
-            auto skelName = block.read_string();
-            auto numBones = block.read_byte();
-            mat4 invTransform = block.read<mat4>();
-        }
-
-        /*
-        {
-            auto& block = fin.GetBlock("Materials");
-            auto baseColor = block.read<vec4>();
-            auto numTextures = block.read_byte();
-            for (int n = 0; n < numTextures; n++) {
-                auto texName = block.read_string();
-                auto texPath = block.read_string();
+            {
+                auto& block = fin.GetBlock("Skeleton");
+                auto skelName = block.read_string();
+                auto numBones = block.read_byte();
+                mat4 invTransform = block.read<mat4>();
             }
-            auto numMats = block.read_byte();
-            for (int n = 0; n < numMats; n++) {
-                auto matName = block.read_string();
-                vec4 u_color = block.read<vec4>();
+
+            /*
+            {
+                auto& block = fin.GetBlock("Materials");
+                auto baseColor = block.read<vec4>();
                 auto numTextures = block.read_byte();
                 for (int n = 0; n < numTextures; n++) {
                     auto texName = block.read_string();
                     auto texPath = block.read_string();
                 }
+                auto numMats = block.read_byte();
+                for (int n = 0; n < numMats; n++) {
+                    auto matName = block.read_string();
+                    vec4 u_color = block.read<vec4>();
+                    auto numTextures = block.read_byte();
+                    for (int n = 0; n < numTextures; n++) {
+                        auto texName = block.read_string();
+                        auto texPath = block.read_string();
+                    }
+                }
             }
-        }
-        */
+            */
 
-        {
-            auto& block = fin.GetBlock("Mesh");
-            auto meshName = block.read_string();
-            auto numSubmeshes = block.read_byte();
-            auto numVerts = block.read_short();
-            auto numInds = block.read_short();
+            {
+                auto& block = fin.GetBlock("Mesh");
+                auto meshName = block.read_string();
+                auto numSubmeshes = block.read_byte();
+                auto numVerts = block.read_short();
+                auto numInds = block.read_short();
 
-            Vertex* __new_vertices_ = new Vertex[numVerts];
-            block.read_data(reinterpret_cast<u8*>(__new_vertices_), numVerts * sizeof(Vertex));
-            std::vector<Vertex> verts;
-            verts.reserve(numVerts);
-            verts.assign(__new_vertices_, __new_vertices_ + numVerts);
-            delete[] __new_vertices_;
+                Vertex* __new_vertices_ = new Vertex[numVerts];
+                block.read_data(reinterpret_cast<u8*>(__new_vertices_), numVerts * sizeof(Vertex));
+                std::vector<Vertex> verts;
+                verts.reserve(numVerts);
+                verts.assign(__new_vertices_, __new_vertices_ + numVerts);
+                delete[] __new_vertices_;
 
-            u32* __new_indices_ = new u32[numInds];
-            block.read_data(reinterpret_cast<u8*>(__new_indices_), numInds * sizeof(u32));
-            std::vector<u32> inds;
-            inds.reserve(numInds);
-            inds.assign(__new_indices_, __new_indices_ + numInds);
-            delete[] __new_indices_;
+                u32* __new_indices_ = new u32[numInds];
+                block.read_data(reinterpret_cast<u8*>(__new_indices_), numInds * sizeof(u32));
+                std::vector<u32> inds;
+                inds.reserve(numInds);
+                inds.assign(__new_indices_, __new_indices_ + numInds);
+                delete[] __new_indices_;
 
-            auto meshFlag = block.read_byte();
+                auto meshFlag = block.read_byte();
 
-            // load submeshes
-            for (int n = 0; n < numSubmeshes; n++) {
-                auto smName = block.read_string();
-                auto smMatIdx = block.read_byte();
-                auto smTransf = block.read<mat4>();
-                auto smStartIdx = block.read_short();
-                auto smIdxCount = block.read_short();
+                // load submeshes
+                for (int n = 0; n < numSubmeshes; n++) {
+                    auto smName = block.read_string();
+                    auto smMatIdx = block.read_byte();
+                    auto smTransf = block.read<mat4>();
+                    auto smStartIdx = block.read_short();
+                    auto smIdxCount = block.read_short();
+                }
             }
         }
     }

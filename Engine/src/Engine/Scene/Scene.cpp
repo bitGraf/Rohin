@@ -168,6 +168,26 @@ namespace Engine {
                 }
             }
 
+            // draw surface normals
+            if (m_showNormals) {
+                for (auto n : m_Registry.GetRegList()) {
+                    // check if entity n has both transform and mesh
+                    if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshRendererComponent>(n)) {
+                        // good to go
+                        auto& mesh = m_Registry.get<MeshRendererComponent>(n);
+                        auto& trans = m_Registry.get<TransformComponent>(n);
+                        auto& tag = m_Registry.get<TagComponent>(n);
+
+                        if (mesh.Mesh)
+                            Renderer::SubmitMesh_drawNormals(mesh.Mesh, trans.Transform);
+                    }
+                }
+            }
+
+            if (m_showEntityLocations) {
+                Renderer::RenderDebug(*mainCamera, *mainTransform);
+            }
+
             Renderer::EndScene();
         }
     }

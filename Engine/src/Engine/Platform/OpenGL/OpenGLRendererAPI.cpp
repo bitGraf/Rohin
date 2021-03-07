@@ -24,9 +24,33 @@ namespace Engine {
 
         //glEnable(GL_MULTISAMPLE);
         //glEnable(GL_STENCIL_TEST);
+
+        GLfloat pointSize;
+        glGetFloatv(GL_POINT_SIZE, &pointSize);
+        ENGINE_LOG_CRITICAL("Default point size: {0}", pointSize);
+        glPointSize(4);
+        glGetFloatv(GL_POINT_SIZE, &pointSize);
+        ENGINE_LOG_CRITICAL("New point size: {0}", pointSize);
+
+        GLfloat lineWidth;
+        glGetFloatv(GL_LINE_WIDTH, &lineWidth);
+        ENGINE_LOG_CRITICAL("Default line width: {0}", lineWidth);
+        glLineWidth(2);
+        glGetFloatv(GL_LINE_WIDTH, &lineWidth);
+        ENGINE_LOG_CRITICAL("New line width: {0}", lineWidth);
     }
 
     void OpenGLRendererAPI::Shutdown() {
+    }
+
+    void OpenGLRendererAPI::DrawLines(const Ref<VertexArray>& vertexArray, bool depth_test) {
+        if (!depth_test)
+            glDisable(GL_DEPTH_TEST);
+
+        glDrawElements(GL_LINES, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+
+        if (!depth_test)
+            glEnable(GL_DEPTH_TEST);
     }
 
     void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, bool depth_test) {
@@ -37,6 +61,9 @@ namespace Engine {
 
         if (!depth_test)
             glEnable(GL_DEPTH_TEST);
+    }
+    void OpenGLRendererAPI::DrawSubIndexed_points(u32 startIndex, u32 startVertex, u32 count) {
+        glDrawElements(GL_POINTS, count, GL_UNSIGNED_INT, (void*)(sizeof(GLuint) * startIndex));
     }
     void OpenGLRendererAPI::DrawSubIndexed(u32 startIndex, u32 startVertex, u32 count) {
         //glDrawElementsBaseVertex(GL_TRIANGLES, count, GL_UNSIGNED_INT, (void*)(sizeof(uint32_t) * startIndex), startVertex);

@@ -26,6 +26,9 @@ namespace Engine {
 
         bool IsPlaying() const { return m_Playing; }
 
+        inline void ToggleShowEntityLocations() { ENGINE_LOG_WARN("Showing entity locations: {0}", !m_showEntityLocations); m_showEntityLocations = !m_showEntityLocations; }
+        inline void ToggleShowNormals() { ENGINE_LOG_WARN("Showing normals: {0}", !m_showNormals); m_showNormals = !m_showNormals; }
+
         Registry& GetRegistry() { return m_Registry; }
 
     private:
@@ -33,6 +36,8 @@ namespace Engine {
         u32 m_ViewportWidth = 0, m_ViewportHeight = 0;
 
         bool m_Playing = false;
+        bool m_showEntityLocations = false;
+        bool m_showNormals = false;
 
         friend class GameObject;
         friend class SceneHierarchyPanel;

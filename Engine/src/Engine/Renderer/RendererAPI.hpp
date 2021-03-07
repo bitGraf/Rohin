@@ -18,8 +18,10 @@ namespace Engine {
         virtual void Init() = 0;
         virtual void Shutdown() = 0;
 
+        virtual void DrawLines(const Ref<VertexArray>& vertexArray, bool depth_test) = 0;
         virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, bool depth_test) = 0;
         virtual void DrawSubIndexed(u32 startIndex, u32 startVertex, u32 count) = 0;
+        virtual void DrawSubIndexed_points(u32 startIndex, u32 startVertex, u32 count) = 0;
         virtual void SetViewport(u32 x, u32 y, u32 width, u32 height) = 0;
 
         static inline API GetAPI() { return s_API; }

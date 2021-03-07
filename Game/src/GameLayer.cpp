@@ -158,6 +158,14 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
         auto camController = m_Camera.GetComponent<NativeScriptComponent>().GetScript<CameraController>();
         camController->ExternalAcess(); // test
     }
+
+    // Debug options
+    if (e.GetKeyCode() == KEY_CODE_L) {
+        m_ActiveScene->ToggleShowEntityLocations();
+    }
+    if (e.GetKeyCode() == KEY_CODE_N) {
+        m_ActiveScene->ToggleShowNormals();
+    }
     return false;
 }
 

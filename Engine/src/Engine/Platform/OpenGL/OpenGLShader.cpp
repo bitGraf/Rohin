@@ -11,6 +11,8 @@ namespace Engine {
             return GL_VERTEX_SHADER;
         if (type == "fragment" || type == "pixel")
             return GL_FRAGMENT_SHADER;
+        if (type == "geometry")
+            return GL_GEOMETRY_SHADER;
 
         ENGINE_LOG_ASSERT(false, "Unknown shader type");
         return 0;
@@ -161,7 +163,7 @@ namespace Engine {
             ENGINE_LOG_ASSERT(eol != std::string::npos, "Syntax error");
             size_t begin = pos + typeTokenLength + 1;
             std::string type = source.substr(begin, eol - begin);
-            ENGINE_LOG_ASSERT(type == "vertex" || type == "fragment" || type == "pixel", "Invalid shader type specified");
+            ENGINE_LOG_ASSERT(type == "vertex" || type == "fragment" || type == "pixel" || type == "geometry", "Invalid shader type specified");
 
             size_t nextLinePos = source.find_first_not_of("\r\n", eol);
             pos = source.find(typeToken, nextLinePos);
@@ -185,8 +187,8 @@ namespace Engine {
     void OpenGLShader::Compile() {
         GLuint program = glCreateProgram();
         
-        ENGINE_LOG_ASSERT(m_ShaderSources.size() <= 2, "More than two shader programs not supported");
-        std::array<GLenum, 2> glShaderIDs;
+        //ENGINE_LOG_ASSERT(m_ShaderSources.size() <= 2, "More than two shader programs not supported");
+        std::array<GLenum, 3> glShaderIDs;
         int idx = 0;
 
         for (auto& kv : m_ShaderSources) {

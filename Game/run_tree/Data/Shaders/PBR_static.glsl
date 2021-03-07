@@ -50,12 +50,13 @@ const float PI = 3.141592;
 const float Epsilon = 0.00001;
 
 struct Light {
-    vec3 Direction;
+    vec3 Position;
     vec3 Color;
     float Strength;
 };
 
-uniform Light r_lights;
+const int MAX_LIGHTS = 2;
+uniform Light r_lights[MAX_LIGHTS];
 uniform vec3 r_CamPos;
 
 // PBR Textures
@@ -149,28 +150,32 @@ vec3 fresnelSchlickRoughness(vec3 F0, float cosTheta, float roughness)
 vec3 Lighting(vec3 F0)
 {
 	vec3 result = vec3(0.0);
-	//for(int i = 0; i < LightCount; i++)
-	//{
-		vec3 Li = -r_lights.Direction;
-		vec3 Lradiance = r_lights.Color * r_lights.Strength;
-		vec3 Lh = normalize(Li + m_Params.View);
+	for(int i = 0; i < MAX_LIGHTS; i++)
+	{
+		//vec3 Li = -r_lights.Direction;
+		vec3 L = normalize(r_lights[i].Position - vs_Input.WorldPos);
+		vec3 H = normalize(L + m_Params.View);
+
+		float distance = length(r_lights[i].Position - vs_Input.WorldPos);
+		float attenuation = 1 / (distance * distance);
+		vec3 Lradiance = r_lights[i].Color * r_lights[i].Strength * attenuation;
 
 		// Calculate angles between surface normal and various light vectors.
-		float cosLi = max(0.0, dot(m_Params.Normal, Li));
-		float cosLh = max(0.0, dot(m_Params.Normal, Lh));
+		float NdotL = max(0.0, dot(m_Params.Normal, L));
+		float NdotH = max(0.0, dot(m_Params.Normal, H));
 
-		vec3 F = fresnelSchlick(F0, max(0.0, dot(Lh, m_Params.View)));
-		float D = ndfGGX(cosLh, m_Params.Roughness);
-		float G = gaSchlickGGX(cosLi, m_Params.NdotV, m_Params.Roughness);
+		float D = ndfGGX(NdotH, m_Params.Roughness);
+		float G = gaSchlickGGX(NdotL, m_Params.NdotV, m_Params.Roughness);
+		vec3 F = fresnelSchlickRoughness(F0, max(0.0, dot(H, m_Params.View)), m_Params.Roughness);
 
 		vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-		vec3 diffuseBRDF = kd * m_Params.Albedo;
+		vec3 diffuseBRDF = kd * m_Params.Albedo / PI;
 
 		// Cook-Torrance
-		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * cosLi * m_Params.NdotV);
+		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdotL * m_Params.NdotV);
 
-		result += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
-	//}
+		result += (diffuseBRDF + specularBRDF) * Lradiance * NdotL;
+	}
 	return result;
 }
 
@@ -194,14 +199,15 @@ void main()
 	m_Params.NdotV = max(dot(m_Params.Normal, m_Params.View), 0.0);
 		
 	// Specular reflection vector
-	vec3 Lr = 2.0 * m_Params.NdotV * m_Params.Normal - m_Params.View;
+	vec3 R = 2.0 * m_Params.NdotV * m_Params.Normal - m_Params.View;
 
 	// Fresnel reflectance, metals use albedo
 	vec3 F0 = mix(FD, m_Params.Albedo, m_Params.Metalness);
 
 	vec3 lightContribution = Lighting(F0);
-	vec3 iblContribution = vec3(0.1,0.1,0.1);//IBL(F0, Lr);
+	vec3 iblContribution = vec3(0.0);//IBL(F0, R);
 
 	FragColor = vec4(lightContribution + iblContribution, 1.0);
-	//FragColor = vec4(dot(m_Params.Normal, (-r_lights.Direction)) * vec3(1,1,1), 1.0);
+	//FragColor = vec4(vec3(dot(m_Params.Normal, vec3(0,1,0))), 1.0);
+	//FragColor = vec4(vs_Input.WorldPos/2, 1.0);
 }
