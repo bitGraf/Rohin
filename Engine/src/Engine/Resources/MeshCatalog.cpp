@@ -7,7 +7,7 @@ namespace Engine {
 
     void MeshCatalog::Register(const std::string& mesh_name, const std::string& mesh_path) {
         ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, mesh_path);
-        auto mesh = std::make_shared<Engine::Mesh>(mesh_path);
+        auto mesh = std::make_shared<Engine::Mesh>(mesh_path, false);
         m_MeshList[mesh_name] = mesh;
     }
 

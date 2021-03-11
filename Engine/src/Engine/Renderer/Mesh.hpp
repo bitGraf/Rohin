@@ -56,7 +56,7 @@ namespace Engine {
     class Mesh
     {
     public:
-        Mesh(const std::string& filename, bool mesh_only = false);
+        Mesh(const std::string& filename, bool nbt, bool mesh_only = false);
         ~Mesh();
 
         void OnUpdate(double ts);

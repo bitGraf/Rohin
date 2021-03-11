@@ -142,7 +142,7 @@ namespace Engine {
 
         // set toggles
         pbrShader->SetFloat("r_AlbedoTexToggle",    1.0f);
-        pbrShader->SetFloat("r_NormalTexToggle",    1.0f);
+        pbrShader->SetFloat("r_NormalTexToggle",    0.0f);
         pbrShader->SetFloat("r_MetalnessTexToggle", 0.0f);
         pbrShader->SetFloat("r_RoughnessTexToggle", 0.0f);
     }

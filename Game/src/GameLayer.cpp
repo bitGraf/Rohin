@@ -30,6 +30,9 @@ void GameLayer::OnAttach() {
     2. load scene from file and deserialze
 
     */
+    {
+        auto mesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/cube.nbt_mesh", true);
+    }
 
     // Load all meshes into the game
     {
@@ -77,8 +80,9 @@ void GameLayer::OnAttach() {
     }
     { // Frog Cube 3
         auto frog = m_ActiveScene->CreateGameObject("Frog Cube 3");
-        auto cubeMesh = Engine::MeshCatalog::Get("cube_mesh");
-        frog.AddComponent<Engine::MeshRendererComponent>(cubeMesh);
+        //auto mesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/robot.nbt", true);
+        auto mesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/guard.nbt", true);
+        frog.AddComponent<Engine::MeshRendererComponent>(mesh);
         frog.AddComponent<Engine::NativeScriptComponent>().Bind<Gem>(frog);
 
         auto& trans = frog.GetComponent<Engine::TransformComponent>().Transform;

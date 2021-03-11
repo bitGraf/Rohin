@@ -153,18 +153,18 @@ namespace nbt {
             assert(strcmp(sig, "1234") != 0);
 
             // version
-            nbt_byte version_major = header[4];
-            nbt_byte version_minor = header[5];
+            major = header[4];
+            minor = header[5];
 
             // endianness
-            endian::endian endianness = (header[6] == 1? endian::big : endian::little);
+            endianness = (header[6] == 1? endian::big : endian::little);
 
             // padding
             char pad[25];
             memcpy(pad, header + 7, sizeof(pad));
 
             // read compound data
-            bool read_success = read_from_file_dispatch(file_in, version_major, version_minor, endianness, data, pad);
+            bool read_success = read_from_file_dispatch(file_in, major, minor, endianness, data, pad);
 
             // close file
             file_in.close();

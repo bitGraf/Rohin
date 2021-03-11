@@ -3,7 +3,7 @@
 
 layout (location = 0) in vec3 a_Position;
 layout (location = 1) in vec3 a_Normal;
-//layout (location = 2) in vec3 a_Tangent;
+layout (location = 2) in vec3 a_Tangent;
 //layout (location = 3) in vec3 a_Binormal;
 //layout (location = 4) in vec2 a_TexCoord;
 
@@ -14,6 +14,8 @@ out vec3 vs_normal; //world space
 void main() {
     mat3 normalMatrix = mat3(transpose(inverse(r_Transform)));
     vs_normal = normalize(vec3(vec4(normalMatrix * a_Normal, 0.0))); // world space
+    //vs_normal = normalize(vec3(vec4(normalMatrix * a_Tangent, 0.0))); // world space
+    //vs_normal = normalize(vec3(vec4(normalMatrix * a_Normal, 0.0))); // world space
 
     //vs_normal = vec3(r_Transform * vec4(a_Normal,0));
     //vs_Output.TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);

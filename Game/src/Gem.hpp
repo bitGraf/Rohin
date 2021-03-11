@@ -20,6 +20,8 @@ public:
     }
 
     virtual void OnUpdate(double ts) override {
+        if (m_static) return;
+
         time += ts;
         rotation += rotSpeed * ts;
         if (rotation > 360.0f)
@@ -34,6 +36,14 @@ public:
         transform *= mat4(scale, scale, scale, 1.0f);
     }
 
+    void SetStatic() {
+        m_static = true;
+    }
+
+    void SetDynamic() {
+        m_static = true;
+    }
+
 private:
     TransformComponent * transformComponent;
 
@@ -43,4 +53,6 @@ private:
     vec3 position;
     float rotation = 0.0f;
     float scale = 0.25f;
+
+    bool m_static = true;
 };
