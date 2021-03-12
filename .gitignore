@@ -1,9 +1,9 @@
 bin/
 bin-intermediate/
 .vs
-Tools/blender/
-Tools/edb/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
 *.sln
+*.blend1
+*.blend2

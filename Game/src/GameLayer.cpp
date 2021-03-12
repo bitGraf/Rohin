@@ -81,7 +81,7 @@ void GameLayer::OnAttach() {
     { // Frog Cube 3
         auto frog = m_ActiveScene->CreateGameObject("Frog Cube 3");
         //auto mesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/robot.nbt", true);
-        auto mesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/guard.nbt", true);
+        auto mesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/blimp.nbt", true);
         frog.AddComponent<Engine::MeshRendererComponent>(mesh);
         frog.AddComponent<Engine::NativeScriptComponent>().Bind<Gem>(frog);
 
