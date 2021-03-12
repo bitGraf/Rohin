@@ -65,11 +65,12 @@ def pack_verts(vertices, e):
             uvc[0], uvc[1]))
     return packed
     
-def write_mesh_data(f, vertices, indices, e):
+def write_start_compound(f, e):
     # start compound
     write_tag(f, 10)
     write_string(f, "mesh_data", e) 
-    
+
+def write_mesh_data(f, vertices, indices, e):    
     # tag_int: numVerts
     write_tag(f, 3)
     write_string(f, "num_verts", e)
@@ -96,21 +97,78 @@ def write_mesh_data(f, vertices, indices, e):
     write_num(f, num_ints, 4, e)
     for p in indices:
         write_num(f, p, 4, e)
-    
+
+def write_end_compound(f):
     # tag_end: end of "mesh_data" compound
     write_tag(f, 0)
+
+def write_texture_data(f, albedo_path, normal_path, metalness_path, roughness_path, e):
+    # tag_string: u_albedo_path
+    write_tag(f, 8)
+    write_string(f, "u_albedo_path", e)
+    if albedo_path is None:
+        write_string(f, 'run_tree/Data/Images/frog.png', e)
+    else:
+        write_string(f, albedo_path, e)
+
+    # tag_string: u_normal_path
+    write_tag(f, 8)
+    write_string(f, "u_normal_path", e)
+    if normal_path is None:
+        write_string(f, 'run_tree/Data/Images/frog.png', e)
+    else:
+        write_string(f, normal_path, e)
+
+    # tag_string: u_metalness_path
+    write_tag(f, 8)
+    write_string(f, "u_metalness_path", e)
+    if metalness_path is None:
+        write_string(f, 'run_tree/Data/Images/frog.png', e)
+    else:
+        write_string(f, metalness_path, e)
+
+    # tag_string: u_roughness_path
+    write_tag(f, 8)
+    write_string(f, "u_roughness_path", e)
+    if roughness_path is None:
+        write_string(f, 'run_tree/Data/Images/frog.png', e)
+    else:
+        write_string(f, roughness_path, e)
     
 
-def triangulate_object(me):
+def triangulate_mesh(mesh):
     # Get a BMesh representation
     bm = bmesh.new()
-    bm.from_mesh(me)
+    bm.from_mesh(mesh)
 
+    print(len(bm.faces), "tris before triangulate")
     bmesh.ops.triangulate(bm, faces=bm.faces[:])
+    print(len(bm.faces), "tris after triangulate")
+    print()
     # V2.79 : bmesh.ops.triangulate(bm, faces=bm.faces[:], quad_method=0, ngon_method=0)
 
     # Finish up, write the bmesh back to the mesh
-    bm.to_mesh(me)
+    bm.to_mesh(mesh)
+    bm.free()
+
+def cut_seams(mesh):    
+    # Get a BMesh representation
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    
+    edges = []
+    for edge in bm.edges:
+        if edge.seam:
+            edges.append(edge)
+    
+    # cut the seams now
+    print(len(bm.verts), "verts before edge split")
+    bmesh.ops.split_edges(bm, edges=edges)
+    print(len(bm.verts), "verts after edge split")
+    print()
+
+    # Finish up, write the bmesh back to the mesh
+    bm.to_mesh(mesh)
     bm.free()
         
 # get the average vector from a list of vectors
@@ -129,14 +187,31 @@ def getUV(dupes):
     # TODO: add error checking
     return dupes[0]
 
+def getCustomString(obj, key):
+    if key in obj:
+        return obj[key]
+    else:
+        return None
+
 def nbt_write_test(context, filepath): #-- , apply_modifiers, export_selection, global_matrix, path_mode):
     print("Writing mesh to .nbt file!")
     #obj = context.selected_objects[0]
     obj = context.view_layer.objects.active
     mesh = obj.data.copy()
-    triangulate_object(mesh)
+    cut_seams(mesh)
+    triangulate_mesh(mesh)
     mesh.calc_tangents()
-    # TODO: need to make sure that all uv seams are spli
+
+    # get texture strings
+    albedo_path = getCustomString(obj, 'u_albedo_path')
+    normal_path = getCustomString(obj, 'u_normal_path')
+    metalness_path = getCustomString(obj, 'u_metalness_path')
+    roughness_path = getCustomString(obj, 'u_roughness_path')
+
+    print('u_albedo_path', albedo_path)
+    print('u_normal_path', normal_path)
+    print('u_metalness_path', metalness_path)
+    print('u_roughness_path', roughness_path)
 
     # indices: point to index of vertex in mesh.vertices
     indices = []
@@ -266,7 +341,10 @@ def nbt_write_test(context, filepath): #-- , apply_modifiers, export_selection, 
         version_minor = 1
         endianness = 'little'
         write_header(f, version_major, version_minor, endianness)
+        write_start_compound(f, endianness)
         write_mesh_data(f, vertices, indices, endianness)
+        write_texture_data(f, albedo_path, normal_path, metalness_path, roughness_path, endianness)
+        write_end_compound(f)
         
         print('done!')
 

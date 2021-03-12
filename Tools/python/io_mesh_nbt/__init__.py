@@ -1,7 +1,7 @@
 bl_info = {
     "name": "Rohin mesh output (nbt)",
     "author": "Andrew Blaskovich",
-    "version": (1, 0, 5),
+    "version": (1, 2, 0),
     "blender": (2, 80, 0),
     "location": "File > Import-Export",
     "description": "Export selected object to a .nbt file as a mesh",
