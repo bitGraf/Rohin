@@ -7,7 +7,7 @@ namespace Engine {
 
     class MeshCatalog {
     public:
-        static void Register(const std::string& mesh_name, const std::string& mesh_path);
+        static void Register(const std::string& mesh_name, const std::string& mesh_path, bool nbt);
         static std::shared_ptr<Mesh> Get(const std::string& mesh_name);
         static void Clear();
 

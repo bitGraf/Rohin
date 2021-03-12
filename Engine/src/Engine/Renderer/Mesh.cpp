@@ -72,15 +72,24 @@ namespace Engine {
                     m_BaseMaterial->Set<float>("u_Metalness", 0);
                     m_BaseMaterial->Set<float>("u_Roughness", 1.0f);
 
-                    auto albedo_path = comp["u_albedo_path"].as<nbt::tag_string>().get();
-                    auto normal_path = comp["u_normal_path"].as<nbt::tag_string>().get();
-                    auto metalness_path = comp["u_metalness_path"].as<nbt::tag_string>().get();
-                    auto roughness_path = comp["u_roughness_path"].as<nbt::tag_string>().get();
+                    // TODO: idk is this actually works. might need to actually create a texture on the material...
+                    if (comp.has_key("u_albedo_path")) {
+                        auto albedo_path = comp["u_albedo_path"].as<nbt::tag_string>().get();
+                        m_BaseMaterial->Set("u_AlbedoTexture", Texture2D::Create(albedo_path));
+                    }
+                    if (comp.has_key("u_normal_path")) {
+                        auto normal_path = comp["u_normal_path"].as<nbt::tag_string>().get();
+                        m_BaseMaterial->Set("u_NormalTexture", Texture2D::Create(normal_path));
+                    }
+                    if (comp.has_key("u_metalness_path")) {
+                        auto metalness_path = comp["u_metalness_path"].as<nbt::tag_string>().get();
+                        m_BaseMaterial->Set("u_MetalnessTexture", Texture2D::Create(metalness_path));
+                    }
+                    if (comp.has_key("u_roughness_path")) {
+                        auto roughness_path = comp["u_roughness_path"].as<nbt::tag_string>().get();
+                        m_BaseMaterial->Set("u_RoughnessTexture", Texture2D::Create(roughness_path));
+                    }
 
-                    m_BaseMaterial->Set("u_AlbedoTexture", Texture2D::Create(albedo_path));
-                    m_BaseMaterial->Set("u_NormalTexture", Texture2D::Create(normal_path));
-                    m_BaseMaterial->Set("u_MetalnessTexture", Texture2D::Create(metalness_path));
-                    m_BaseMaterial->Set("u_RoughnessTexture", Texture2D::Create(roughness_path));
 
                     //m_BaseMaterial->Set("u_AlbedoTexture", Texture2D::Create("run_tree/Data/Images/waffle/WaffleSlab2_albedo.png"));
                     //m_BaseMaterial->Set("u_AlbedoTexture", Texture2D::Create("run_tree/Data/Images/guard.png"));

@@ -5,6 +5,9 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/GameObject/Components.hpp"
 
+#include "Engine/Resources/nbt/nbt.hpp"
+#include "Engine/Resources/MeshCatalog.hpp"
+
 /*mat4 transform = (
     mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(position, 1)) *
     mat4(createYawPitchRollMatrix(0, 0, 0)));*/
@@ -26,6 +29,105 @@ namespace Engine {
         3. attach all components
 
         */
+
+        nbt::file_data data;
+        nbt::nbt_byte version_major, version_minor;
+        endian::endian endianness;
+        ENGINE_LOG_INFO("Loading .nbt level file from \"{0}\"", filename);
+        bool success = nbt::read_from_file(filename, data, version_major, version_minor, endianness);
+
+        if (!success) {
+            ENGINE_LOG_ERROR("Failed to load /nbt level file \"{0}\"", filename);
+            return;
+        }
+
+        auto str = data.first;
+        auto& comp = data.second->as<nbt::tag_compound>();
+
+        /* Extract global scene data */
+        auto level_name = comp["name"].as<nbt::tag_string>().get();
+        ENGINE_LOG_INFO("Level name: {0}", level_name);
+
+        /* First get all the meshes that need to be loaded */
+        auto mesh_list = comp["meshes"].as<nbt::tag_list>();
+        ENGINE_LOG_ASSERT(mesh_list.el_type() == nbt::tag_type::Compound, "Mesh list needs to be a lag_list of tag_compound!");
+
+        for (auto& mesh : mesh_list) {
+            auto& tc = mesh.as<nbt::tag_compound>();
+
+            auto mesh_name = tc["mesh_name"].as<nbt::tag_string>();
+            auto mesh_path = tc["mesh_path"].as<nbt::tag_string>();
+            bool is_nbt = tc.has_key("nbt");
+            
+            MeshCatalog::Register(mesh_name, mesh_path, is_nbt);
+        }
+
+        /* loop through entities and create them */
+        auto entity_list = comp["entities"].as<nbt::tag_list>();
+        ENGINE_LOG_ASSERT(entity_list.el_type() == nbt::tag_type::Compound, "Entity list needs to be a lag_list of tag_compound!");
+
+        for (auto& entity : entity_list) {
+            auto& tc = entity.as<nbt::tag_compound>();
+
+            auto& name = tc["name"].as<nbt::tag_string>();
+            // create the entity
+            ENGINE_LOG_TRACE("Entity {0}", name);
+            auto go = CreateGameObject(name);
+
+            auto& transform = tc["transform"].as<nbt::tag_compound>();
+            math::vec3 position, scale(1,1,1);
+            math::vec4 rotation;
+            if (transform.has_key("position"))
+                position = transform["position"].as<nbt::tag_vec3>().get();
+            if (transform.has_key("rotation"))
+                rotation = transform["rotation"].as<nbt::tag_vec4>().get();
+            if (transform.has_key("scale"))
+                scale = transform["scale"].as<nbt::tag_vec3>().get();
+
+            // TODO: allow for rotations (need quaternion to yaw/pitch/roll
+            // TODO: alternatively, ned function to build transform from position/scale vectors and rotation quaternion
+            auto& T = go.GetComponent<TransformComponent>().Transform;
+            T = math::mat4();
+            T.translate(position);
+            //auto q = math::quat2ypr(rotation);
+            T *= math::createYawPitchRollMatrix(0, 0, 0);
+            T *= math::mat4(scale.x, scale.y, scale.z, 1.0f);
+
+            auto& component_list = tc["components"].as<nbt::tag_list>();
+            ENGINE_LOG_ASSERT(component_list.el_type() == nbt::tag_type::Compound, "Component list needs to be a lag_list of tag_compound!");
+
+            for (auto& component : component_list) {
+                auto& comp_type = component["type"].as<nbt::tag_string>().get();
+
+                if (comp_type.compare("MeshRenderer") == 0) {
+                    ENGINE_LOG_INFO("adding a MeshRenderer component");
+
+                    auto& mesh_name = component["mesh_name"].as<nbt::tag_string>().get();
+                    auto __mesh = MeshCatalog::Get(mesh_name);
+                    go.AddComponent<MeshRendererComponent>(__mesh); // TODO: add blockchain
+                } else if (comp_type.compare("Camera") == 0) {
+                    ENGINE_LOG_INFO("adding a Camera component");
+
+                    go.AddComponent<CameraComponent>();
+                } else if (comp_type.compare("NativeScript") == 0) {
+                    ENGINE_LOG_INFO("adding a NativeScript component");
+
+                    auto& script_tag = component["script_tag"].as<nbt::tag_string>().get();
+                    if (script_tag.compare("script_builtin_example") == 0) {
+                        ENGINE_LOG_ERROR("This is nonsnse temporay code");
+                    }
+                    else if (Engine::BindGameScript(script_tag, this, go)) {
+                        //...
+                    }
+                    else {
+                        ENGINE_LOG_WARN("unknown native script component: {0}", script_tag);
+                    }
+                }
+                else {
+                    ENGINE_LOG_WARN("unknown component type!");
+                }
+            }
+        }
     }
 
     void Scene::writeToFile(const std::string& filename) {

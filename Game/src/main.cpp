@@ -1,5 +1,5 @@
 //#define RUN_TEST_CODE
-#define RUN_MESH_CODE
+//#define RUN_MESH_CODE
 
 #ifndef RUN_TEST_CODE
 #include <Engine.hpp>
@@ -30,6 +30,7 @@ private:
 Engine::Application* Engine::CreateApplication() {
     return new Game();
 }
+
 #endif
 
 #ifdef RUN_TEST_CODE
@@ -49,10 +50,12 @@ int main(int argc, char** argv) {
         {"name", "Level NBT Test"},
         {"meshes", tag_list::of<tag_compound>({ //TODO: add tag_string_list possibly?
             {{"mesh_name", "cube_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.mesh" }},
-            {{"mesh_name", "rect_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.mesh" }}
+            {{"mesh_name", "rect_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.mesh" }},
+            {{"mesh_name", "guard_mesh"}, {"mesh_path", "run_tree/Data/Models/guard.nbt" }, {"nbt", true}} // flag as an nbt file
             })},
         {"entities", tag_list::of<tag_compound>({
-            {{"name", "Platform"}, 
+            { // entity 1
+                {"name", "Platform"}, 
                 {"transform", tag_compound{
                     {"position", math::vec3(0,-1,0)},
                     //{"rotation", math::vec4(0,0,0,1)},
@@ -62,7 +65,8 @@ int main(int argc, char** argv) {
                     {{"type", "MeshRenderer"}, {"mesh_name", "rect_mesh"}}
                     })
                 }},
-            {{"name", "Frog Cube 1"},
+            { // entity 2
+                {"name", "Frog Cube 1"},
                 {"transform", tag_compound{
                     {"position", math::vec3(2,1,-2)}
                 }},
@@ -71,7 +75,8 @@ int main(int argc, char** argv) {
                     {{"type", "NativeScript"},{"script_tag", "script_gem"}}
                     })
                 }},
-            { { "name", "Frog Cube 2" },
+            {  // entity 3
+                { "name", "Frog Cube 2" },
                 { "transform", tag_compound{
                     { "position", math::vec3(-2,1,-2) }
                 } },
@@ -80,15 +85,26 @@ int main(int argc, char** argv) {
                     { { "type", "NativeScript" },{ "script_tag", "script_gem" } }
                     })
                 } },
-            { { "name", "Frog Cube 3" },
-            { "transform", tag_compound{
-                { "position", math::vec3(2,1,2) }
-            } },
-            { "components", tag_list::of<tag_compound>({
-                { { "type", "MeshRenderer" },{ "mesh_name", "cube_mesh" } },
-                { { "type", "NativeScript" },{ "script_tag", "script_gem" } }
-                })
-            } }
+            {  // entity 4
+                { "name", "Frog Cube 3" },
+                { "transform", tag_compound{
+                    { "position", math::vec3(2,1,2) }
+                } },
+                { "components", tag_list::of<tag_compound>({
+                    { { "type", "MeshRenderer" },{ "mesh_name", "guard_mesh" } },
+                    { { "type", "NativeScript" },{ "script_tag", "script_gem" } }
+                    })
+                } },
+            { // entity 5
+                { "name", "Camera" },
+                { "transform", tag_compound{
+                    { "position", math::vec3(0, 1, 5) }
+                } },
+                { "components", tag_list::of<tag_compound>({
+                    { { "type", "Camera" } },
+                    { { "type", "NativeScript" },{ "script_tag", "script_camera_controller" } }
+                    })
+                }}
             })}
     };
 

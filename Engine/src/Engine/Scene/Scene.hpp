@@ -42,4 +42,6 @@ namespace Engine {
         friend class GameObject;
         friend class SceneHierarchyPanel;
     };
+
+    extern bool BindGameScript(const std::string& script_tag, Scene* scene, GameObject gameobject);
 }

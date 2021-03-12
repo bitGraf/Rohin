@@ -5,9 +5,9 @@ namespace Engine {
 
     std::unordered_map<std::string, std::shared_ptr<Mesh>> m_MeshList;
 
-    void MeshCatalog::Register(const std::string& mesh_name, const std::string& mesh_path) {
+    void MeshCatalog::Register(const std::string& mesh_name, const std::string& mesh_path, bool nbt) {
         ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, mesh_path);
-        auto mesh = std::make_shared<Engine::Mesh>(mesh_path, false);
+        auto mesh = std::make_shared<Engine::Mesh>(mesh_path, nbt);
         m_MeshList[mesh_name] = mesh;
     }
 
