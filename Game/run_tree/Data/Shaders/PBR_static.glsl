@@ -49,19 +49,7 @@ const vec3 FD = vec3(0.04);
 const float PI = 3.141592;
 const float Epsilon = 0.00001;
 
-struct PointLight {
-    vec3 Position;
-    vec3 Color;
-    float Strength;
-};
-
-struct DirLight {
-	vec3 Direction;
-	vec3 Color;
-	float Strength;
-};
-
-struct SpotLight {
+struct Light {
 	vec3 Position;
 	vec3 Direction;
 	vec3 Color;
@@ -71,9 +59,9 @@ struct SpotLight {
 };
 
 const int MAX_LIGHTS = 32;
-uniform PointLight r_pointLights[MAX_LIGHTS];
-uniform SpotLight r_spotLights[MAX_LIGHTS];
-uniform DirLight r_sun;
+uniform Light r_pointLights[MAX_LIGHTS];
+uniform Light r_spotLights[MAX_LIGHTS];
+uniform Light r_sun;
 uniform vec3 r_CamPos;
 
 // PBR Textures
@@ -187,7 +175,7 @@ vec3 CalcSun(vec3 F0) {
 	return (diffuseBRDF + specularBRDF) * Lradiance * NdotL;
 }
 
-vec3 CalcPointLight(vec3 F0, PointLight pl) {
+vec3 CalcPointLight(vec3 F0, Light pl) {
 	vec3 L = normalize(pl.Position - vs_Input.WorldPos);
 	vec3 H = normalize(L + m_Params.View);
 
@@ -212,7 +200,7 @@ vec3 CalcPointLight(vec3 F0, PointLight pl) {
 	return (diffuseBRDF + specularBRDF) * Lradiance * NdotL;
 }
 
-vec3 CalcSpotLight(vec3 F0, SpotLight sl) {
+vec3 CalcSpotLight(vec3 F0, Light sl) {
 	vec3 L = normalize(sl.Position - vs_Input.WorldPos);
 	vec3 H = normalize(L + m_Params.View);
 
