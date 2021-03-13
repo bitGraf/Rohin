@@ -14,7 +14,7 @@ bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene* scene,
     return false;
 }
 
-GameLayer::GameLayer() : EngineLayer("Game", true) {
+GameLayer::GameLayer() : EngineLayer("Game") {
 }
 
 void GameLayer::OnAttach() {
@@ -180,12 +180,10 @@ void GameLayer::OnUpdate(Engine::Timestep ts) {
     CheckViewportSize();
 
     // Render
-    if (!IsSwap()) m_Framebuffer->Bind();
     Engine::RenderCommand::SetClearColor(math::vec4(.1, .1, .1, 1));
     Engine::RenderCommand::Clear();
 
     m_ActiveScene->OnUpdate(ts);
-    if (!IsSwap()) m_Framebuffer->Unbind();
 }
 
 void GameLayer::OnEvent(Engine::Event& event) {

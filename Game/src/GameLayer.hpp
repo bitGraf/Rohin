@@ -13,9 +13,6 @@ public:
     virtual void OnEvent(Engine::Event& event) override;
     virtual void OnGuiRender() override;
 
-    virtual Engine::Ref<Engine::Scene> GetScene() override { return m_ActiveScene; }
-    virtual Engine::Ref<Engine::Framebuffer> GetOutput() override { return m_Framebuffer; }
-
 private:
     void CheckViewportSize();
     bool OnKeyPressedEvent(Engine::KeyPressedEvent& e);

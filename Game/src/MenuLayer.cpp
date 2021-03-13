@@ -3,7 +3,7 @@
 #include "Engine/Core/Application.hpp"
 
 
-MenuLayer::MenuLayer() : EngineLayer("Menu", true) {
+MenuLayer::MenuLayer() : EngineLayer("Menu") {
 }
 
 void MenuLayer::createMenu() {
