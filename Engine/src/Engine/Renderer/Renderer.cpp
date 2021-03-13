@@ -191,8 +191,7 @@ namespace Engine {
             lineShader->SetVec3("r_LineColor", pointLights[n].color);
             RenderCommand::DrawLines(s_Data.debug_coordinate_axis, false);
         }
-
-        TextRenderer::SubmitText("Hello, world!", 50, 200, 32, { 1,1,1 });
+        TextRenderer::SubmitText("Hello, world!", 50, 200, 32, { .753f,.741f,.345f });
     }
     void Renderer::EndScene() {
         TextRenderer::EndScene();// do this now to finishing rendering before 3D scene is done
