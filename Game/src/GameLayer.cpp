@@ -21,7 +21,7 @@ void GameLayer::OnAttach() {
     LOG_INFO("Game layer attached");
 
     Engine::FramebufferSpecification spec;
-    spec.Width = 1280.0f;
+    spec.Width = 1280.0f; // TODO: This should be an application-level property
     spec.Height = 720.0f;
     m_Framebuffer = Engine::Framebuffer::Create(spec);
 
@@ -225,6 +225,12 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     }
     if (e.GetKeyCode() == KEY_CODE_N) {
         m_ActiveScene->ToggleShowNormals();
+    }
+    if (e.GetKeyCode() == KEY_CODE_P) {
+        bool playing = m_ActiveScene->IsPlaying();
+
+        if (playing) m_ActiveScene->OnRuntimePause();
+        else         m_ActiveScene->OnRuntimeResume();
     }
     return false;
 }

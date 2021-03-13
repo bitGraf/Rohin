@@ -100,6 +100,9 @@ namespace Engine {
             s_Data.debug_coordinate_axis->SetIndexBuffer(ebo);
             s_Data.debug_coordinate_axis->Unbind();
         }
+
+        // Init text renderer
+        TextRenderer::Init();
     }
 
     void Renderer::Shutdown() {
@@ -110,6 +113,8 @@ namespace Engine {
         u32 numPointLights, const Light pointLights[32],
         u32 numSpotLights, const Light spotLights[32],
         const Light& sun) {
+
+        TextRenderer::BeginScene(); // do this first to avoid context switching when rendering the 3D scene
 
         math::mat4 invTransform = math::invertViewMatrix(transform);
         math::mat4 viewProj = camera.GetProjection() * invTransform;
@@ -124,7 +129,7 @@ namespace Engine {
             if (s->GetName().compare("r_skybox") == 0)
                 s_Data.Skybox->Bind(s->GetID());
         }
-        //SubmitFullscreenQuad();
+        //SubmitFullscreenQuad(); // draw skybox
 
         auto normalsShader = s_Data.ShaderLibrary->Get("Normals");
         normalsShader->Bind();
@@ -186,8 +191,12 @@ namespace Engine {
             lineShader->SetVec3("r_LineColor", pointLights[n].color);
             RenderCommand::DrawLines(s_Data.debug_coordinate_axis, false);
         }
+
+        TextRenderer::SubmitText("Hello, world!", 50, 200, 32, { 1,1,1 });
     }
     void Renderer::EndScene() {
+        TextRenderer::EndScene();// do this now to finishing rendering before 3D scene is done
+
         Flush();
     }
 
@@ -198,6 +207,8 @@ namespace Engine {
     void Renderer::OnWindowResize(uint32_t width, uint32_t height)
     {
         RenderCommand::SetViewport(0, 0, width, height);
+
+        TextRenderer::OnWindowResize(width, height); // update text renderer
     }
 
     const std::unique_ptr<ShaderLibrary>& Renderer::GetShaderLibrary() {

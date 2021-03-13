@@ -8,10 +8,6 @@
 #include "Engine/Resources/nbt/nbt.hpp"
 #include "Engine/Resources/MeshCatalog.hpp"
 
-/*mat4 transform = (
-    mat4(vec4(1, 0, 0, 0), vec4(0, 1, 0, 0), vec4(0, 0, 1, 0), vec4(position, 1)) *
-    mat4(createYawPitchRollMatrix(0, 0, 0)));*/
-
 namespace Engine {
 
     GameObject Scene::CreateGameObject(const std::string& name) {
@@ -202,6 +198,14 @@ namespace Engine {
         m_Playing = true;
     }
 
+    void Scene::OnRuntimePause() {
+        m_Playing = false;
+    }
+
+    void Scene::OnRuntimeResume() {
+        m_Playing = true;
+    }
+
     void Scene::OnRuntimeStop() {
         if (m_Playing) {
             // Destroy all scripts
@@ -219,13 +223,15 @@ namespace Engine {
     }
 
     void Scene::OnUpdate(double dt) {
-        // Update
-        auto& scriptComponents = m_Registry.view<NativeScriptComponent>();
-        for (auto& script : scriptComponents) {
-            if (script.Script) {
-                ENGINE_LOG_ASSERT(script.Script, "Native script not instantiated");
+        if (m_Playing) {
+            // Update
+            auto& scriptComponents = m_Registry.view<NativeScriptComponent>();
+            for (auto& script : scriptComponents) {
+                if (script.Script) {
+                    ENGINE_LOG_ASSERT(script.Script, "Native script not instantiated");
 
-                script.Script->OnUpdate(dt);
+                    script.Script->OnUpdate(dt);
+                }
             }
         }
 

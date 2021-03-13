@@ -14,9 +14,6 @@ namespace Engine {
     }
 
     void OpenGLRendererAPI::Init() {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -38,6 +35,9 @@ namespace Engine {
         glLineWidth(2);
         glGetFloatv(GL_LINE_WIDTH, &lineWidth);
         ENGINE_LOG_WARN("New line width: {0}", lineWidth);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     void OpenGLRendererAPI::Shutdown() {
@@ -72,5 +72,26 @@ namespace Engine {
 
     void OpenGLRendererAPI::SetViewport(u32 x, u32 y, u32 width, u32 height) {
         glViewport(x, y, width, height);
+    }
+
+    void OpenGLRendererAPI::SetCullFace(int face) {
+        switch (face) {
+        case -1:
+            glCullFace(GL_BACK);
+            return;
+        case 0:
+            glCullFace(GL_FRONT_AND_BACK); // TODO: opposite of what I want actually
+            return;
+        case 1:
+            glCullFace(GL_FRONT);
+            return;
+        default:
+            ENGINE_LOG_ASSERT(false, "Not a valid face cull option");
+        }
+    }
+
+    void OpenGLRendererAPI::SetDepthTest(bool enabled) {
+        if (enabled) glEnable(GL_DEPTH_TEST);
+        else         glDisable(GL_DEPTH_TEST);
     }
 }

@@ -7,6 +7,7 @@ namespace Engine {
     class OpenGLTexture2D : public Texture2D {
     public:
         OpenGLTexture2D(const std::string& path);
+        OpenGLTexture2D(const unsigned char* bitmap, u32 res);
         virtual ~OpenGLTexture2D();
 
         virtual void Bind(u32 slot = 0) const override;

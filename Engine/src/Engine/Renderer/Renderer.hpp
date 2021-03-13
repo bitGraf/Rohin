@@ -6,6 +6,8 @@
 #include "Mesh.hpp"
 #include "Light.hpp"
 
+#include "TextRenderer.hpp"
+
 namespace Engine {
     class Renderer
     {

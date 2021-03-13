@@ -808,12 +808,30 @@ namespace Engine {
         glUniform3f(loc, value.x, value.y, value.z);
     }
 
-    void OpenGLShader::SetFloat(const std::string &name, float value) const {
+    void OpenGLShader::SetVec4(const std::string &name, const math::vec4& value) const {
+        s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
+        if (loc == -1) {
+            ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
+            return;
+        }
+        glUniform4f(loc, value.x, value.y, value.z, value.w);
+    }
+
+    void OpenGLShader::SetFloat(const std::string &name, f32 value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
             ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
             return;
         }
         glUniform1f(loc, value);
+    }
+
+    void OpenGLShader::SetInt(const std::string &name, s32 value) const {
+        s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
+        if (loc == -1) {
+            ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
+            return;
+        }
+        glUniform1i(loc, value);
     }
 }

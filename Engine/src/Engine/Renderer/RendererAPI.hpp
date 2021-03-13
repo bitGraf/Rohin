@@ -24,6 +24,9 @@ namespace Engine {
         virtual void DrawSubIndexed_points(u32 startIndex, u32 startVertex, u32 count) = 0;
         virtual void SetViewport(u32 x, u32 y, u32 width, u32 height) = 0;
 
+        virtual void SetCullFace(int face) = 0;
+        virtual void SetDepthTest(bool enabled) = 0;
+
         static inline API GetAPI() { return s_API; }
 
     private:

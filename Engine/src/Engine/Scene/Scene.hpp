@@ -20,6 +20,8 @@ namespace Engine {
 
         void OnUpdate(double dt);
         void OnRuntimeStart();
+        void OnRuntimePause();
+        void OnRuntimeResume();
         void OnRuntimeStop();
 
         void OnViewportResize(u32 width, u32 height);

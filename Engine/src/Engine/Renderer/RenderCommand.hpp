@@ -33,6 +33,21 @@ namespace Engine {
         inline static void SetViewport(u32 x, u32 y, u32 width, u32 height) {
             s_RendererAPI->SetViewport(x, y, width, height);
         }
+        inline static void SetCullFront() {
+            s_RendererAPI->SetCullFace(1);
+        }
+        inline static void SetCullBack() {
+            s_RendererAPI->SetCullFace(-1);
+        }
+        inline static void SetCullNone() {
+            s_RendererAPI->SetCullFace(0);
+        }
+        inline static void DisableDepthTest() {
+            s_RendererAPI->SetDepthTest(false);
+        }
+        inline static void EnableDepthTest() {
+            s_RendererAPI->SetDepthTest(true);
+        }
     private:
         static RendererAPI * s_RendererAPI;
     };

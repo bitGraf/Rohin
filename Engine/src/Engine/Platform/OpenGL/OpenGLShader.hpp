@@ -121,7 +121,9 @@ namespace Engine {
         void SetMat3(const std::string &name, const math::mat3& value) const;
         */
         virtual void SetFloat(const std::string &name, f32 value) const override;
+        virtual void SetInt(const std::string &name, s32 value) const override;
         virtual void SetVec3(const std::string &name, const math::vec3& value) const override;
+        virtual void SetVec4(const std::string &name, const math::vec4& value) const override;
         virtual void SetMat4(const std::string &name, const math::mat4& value) const override;
 
         // Upload data to uniform location

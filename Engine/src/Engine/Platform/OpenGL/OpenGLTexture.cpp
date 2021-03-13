@@ -45,6 +45,26 @@ namespace Engine {
 
         stbi_image_free(data);
     }
+
+    OpenGLTexture2D::OpenGLTexture2D(const unsigned char* bitmap, u32 res) {
+        ENGINE_LOG_ASSERT(bitmap, "Bad data passed to OpenGLTexture2D");
+        m_Width = res;
+        m_Height = res;
+
+        glGenTextures(1, &m_TextureID);
+        glBindTexture(GL_TEXTURE_2D, m_TextureID);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, res, res, 0, GL_RED, GL_UNSIGNED_BYTE, bitmap);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        /*
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        */
+    }
     
     OpenGLTexture2D::~OpenGLTexture2D() {
         glDeleteTextures(1, &m_TextureID);
