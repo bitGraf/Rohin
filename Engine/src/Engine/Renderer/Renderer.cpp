@@ -106,7 +106,10 @@ namespace Engine {
         RenderCommand::Shutdown();
     }
 
-    void Renderer::BeginScene(const Camera& camera, const math::mat4& transform) {
+    void Renderer::BeginScene(const Camera& camera, const math::mat4& transform, 
+        u32 numPointLights, const Light pointLights[32],
+        u32 numSpotLights, const Light spotLights[32],
+        const Light& sun) {
 
         math::mat4 invTransform = math::invertViewMatrix(transform);
         math::mat4 viewProj = camera.GetProjection() * invTransform;
@@ -121,7 +124,7 @@ namespace Engine {
             if (s->GetName().compare("r_skybox") == 0)
                 s_Data.Skybox->Bind(s->GetID());
         }
-        SubmitFullscreenQuad();
+        //SubmitFullscreenQuad();
 
         auto normalsShader = s_Data.ShaderLibrary->Get("Normals");
         normalsShader->Bind();
@@ -132,21 +135,38 @@ namespace Engine {
         pbrShader->SetMat4( "r_VP", viewProj);
         pbrShader->SetVec3( "r_CamPos", camPos);
 
-        pbrShader->SetVec3("r_lights[0].Position", math::vec3(0, 2, 0));
-        pbrShader->SetVec3("r_lights[0].Color", math::vec3(1, .1, .2f));
-        pbrShader->SetFloat("r_lights[0].Strength", 3);
+        // set directional light
+        pbrShader->SetVec3("r_sun.Direction", sun.direction);
+        pbrShader->SetVec3("r_sun.Color", sun.color);
+        pbrShader->SetFloat("r_sun.Strength", sun.strength);
 
-        pbrShader->SetVec3("r_lights[1].Position", math::vec3(2.5, 3.6, 2));
-        pbrShader->SetVec3("r_lights[1].Color", math::vec3(.2, .8, .6));
-        pbrShader->SetFloat("r_lights[1].Strength", 4);
+        // set point lights
+        for (int n = 0; n < numPointLights; n++) {
+            pbrShader->SetVec3("r_pointLights[" + std::to_string(n) + "].Position", pointLights[n].position);
+            pbrShader->SetVec3("r_pointLights[" + std::to_string(n) + "].Color", pointLights[n].color);
+            pbrShader->SetFloat("r_pointLights[" + std::to_string(n) + "].Strength", pointLights[n].strength);
+        }
+
+        // set spot lights
+        for (int n = 0; n < numSpotLights; n++) {
+            pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Position",  spotLights[n].position);
+            pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Direction", spotLights[n].direction);
+            pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Color",     spotLights[n].color);
+            pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Strength", spotLights[n].strength);
+            pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Inner",    spotLights[n].inner);
+            pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Outer",    spotLights[n].outer);
+        }
 
         // set toggles
         pbrShader->SetFloat("r_AlbedoTexToggle",    1.0f);
-        pbrShader->SetFloat("r_NormalTexToggle",    0.0f);
-        pbrShader->SetFloat("r_MetalnessTexToggle", 0.0f);
-        pbrShader->SetFloat("r_RoughnessTexToggle", 0.0f);
+        pbrShader->SetFloat("r_NormalTexToggle",    1.0f);
+        pbrShader->SetFloat("r_MetalnessTexToggle", 1.0f);
+        pbrShader->SetFloat("r_RoughnessTexToggle", 1.0f);
     }
-    void Renderer::RenderDebug(const Camera& camera, const math::mat4& transform) {
+    void Renderer::RenderDebug(const Camera& camera, const math::mat4& transform, 
+        u32 numPointLights, const Light pointLights[32],
+        u32 numSpotLights, const Light spotLights[32],
+        const Light& sun) {
         math::mat4 invTransform = math::invertViewMatrix(transform);
         math::mat4 viewProj = camera.GetProjection() * invTransform;
         math::vec3 camPos = transform.col4().XYZ();
@@ -155,14 +175,17 @@ namespace Engine {
         lineShader->Bind();
         lineShader->SetMat4("r_VP", viewProj);
         lineShader->SetVec3("r_CamPos", camPos);
-        math::mat4 pl_transform;
-        pl_transform.translate(math::vec3(2.5, 3.6, 2));
-        lineShader->SetMat4("r_Transform", pl_transform);
-        lineShader->SetVec3("r_LineColor", math::vec3(1, 1, 1));
         lineShader->SetFloat("r_LineFadeStart", 5);
         lineShader->SetFloat("r_LineFadeEnd", 10);
+
         s_Data.debug_coordinate_axis->Bind();
-        RenderCommand::DrawLines(s_Data.debug_coordinate_axis, false);
+        for (int n = 0; n < numPointLights; n++) {
+            math::mat4 pl_transform;
+            pl_transform.translate(pointLights[n].position);
+            lineShader->SetMat4("r_Transform", pl_transform);
+            lineShader->SetVec3("r_LineColor", pointLights[n].color);
+            RenderCommand::DrawLines(s_Data.debug_coordinate_axis, false);
+        }
     }
     void Renderer::EndScene() {
         Flush();

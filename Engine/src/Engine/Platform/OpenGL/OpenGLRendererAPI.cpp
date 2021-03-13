@@ -27,17 +27,17 @@ namespace Engine {
 
         GLfloat pointSize;
         glGetFloatv(GL_POINT_SIZE, &pointSize);
-        ENGINE_LOG_CRITICAL("Default point size: {0}", pointSize);
+        ENGINE_LOG_WARN("Default point size: {0}", pointSize);
         glPointSize(4);
         glGetFloatv(GL_POINT_SIZE, &pointSize);
-        ENGINE_LOG_CRITICAL("New point size: {0}", pointSize);
+        ENGINE_LOG_WARN("New point size: {0}", pointSize);
 
         GLfloat lineWidth;
         glGetFloatv(GL_LINE_WIDTH, &lineWidth);
-        ENGINE_LOG_CRITICAL("Default line width: {0}", lineWidth);
+        ENGINE_LOG_WARN("Default line width: {0}", lineWidth);
         glLineWidth(2);
         glGetFloatv(GL_LINE_WIDTH, &lineWidth);
-        ENGINE_LOG_CRITICAL("New line width: {0}", lineWidth);
+        ENGINE_LOG_WARN("New line width: {0}", lineWidth);
     }
 
     void OpenGLRendererAPI::Shutdown() {

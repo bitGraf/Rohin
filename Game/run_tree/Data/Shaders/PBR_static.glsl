@@ -49,14 +49,31 @@ const vec3 FD = vec3(0.04);
 const float PI = 3.141592;
 const float Epsilon = 0.00001;
 
-struct Light {
+struct PointLight {
     vec3 Position;
     vec3 Color;
     float Strength;
 };
 
-const int MAX_LIGHTS = 2;
-uniform Light r_lights[MAX_LIGHTS];
+struct DirLight {
+	vec3 Direction;
+	vec3 Color;
+	float Strength;
+};
+
+struct SpotLight {
+	vec3 Position;
+	vec3 Direction;
+	vec3 Color;
+	float Strength;
+	float Inner;
+	float Outer;
+};
+
+const int MAX_LIGHTS = 32;
+uniform PointLight r_pointLights[MAX_LIGHTS];
+uniform SpotLight r_spotLights[MAX_LIGHTS];
+uniform DirLight r_sun;
 uniform vec3 r_CamPos;
 
 // PBR Textures
@@ -147,35 +164,100 @@ vec3 fresnelSchlickRoughness(vec3 F0, float cosTheta, float roughness)
 
 // ---------------------------------------------------------------------------------------------------
 
+vec3 CalcSun(vec3 F0) {
+	vec3 L = -r_sun.Direction;
+	vec3 H = normalize(L + m_Params.View);
+
+	vec3 Lradiance = r_sun.Color * r_sun.Strength;
+
+	// Calculate angles between surface normal and various light vectors.
+	float NdotL = max(0.0, dot(m_Params.Normal, L));
+	float NdotH = max(0.0, dot(m_Params.Normal, H));
+
+	float D = ndfGGX(NdotH, m_Params.Roughness);
+	float G = gaSchlickGGX(NdotL, m_Params.NdotV, m_Params.Roughness);
+	vec3 F = fresnelSchlickRoughness(F0, max(0.0, dot(H, m_Params.View)), m_Params.Roughness);
+
+	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+	vec3 diffuseBRDF = kd * m_Params.Albedo / PI;
+
+	// Cook-Torrance
+	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdotL * m_Params.NdotV);
+
+	return (diffuseBRDF + specularBRDF) * Lradiance * NdotL;
+}
+
+vec3 CalcPointLight(vec3 F0, PointLight pl) {
+	vec3 L = normalize(pl.Position - vs_Input.WorldPos);
+	vec3 H = normalize(L + m_Params.View);
+
+	float distance = length(pl.Position - vs_Input.WorldPos);
+	float attenuation = 1 / (distance * distance);
+	vec3 Lradiance = pl.Color * pl.Strength * attenuation;
+
+	// Calculate angles between surface normal and various light vectors.
+	float NdotL = max(0.0, dot(m_Params.Normal, L));
+	float NdotH = max(0.0, dot(m_Params.Normal, H));
+
+	float D = ndfGGX(NdotH, m_Params.Roughness);
+	float G = gaSchlickGGX(NdotL, m_Params.NdotV, m_Params.Roughness);
+	vec3 F = fresnelSchlickRoughness(F0, max(0.0, dot(H, m_Params.View)), m_Params.Roughness);
+
+	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+	vec3 diffuseBRDF = kd * m_Params.Albedo / PI;
+
+	// Cook-Torrance
+	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdotL * m_Params.NdotV);
+
+	return (diffuseBRDF + specularBRDF) * Lradiance * NdotL;
+}
+
+vec3 CalcSpotLight(vec3 F0, SpotLight sl) {
+	vec3 L = normalize(sl.Position - vs_Input.WorldPos);
+	vec3 H = normalize(L + m_Params.View);
+
+	float distance = length(sl.Position - vs_Input.WorldPos);
+	float attenuation = 1 / (distance * distance);
+
+	float theta     = dot(L, normalize(-sl.Direction));
+	float epsilon   = sl.Inner - sl.Outer;
+	float intensity = clamp((theta - sl.Outer) / epsilon, 0.0, 1.0);
+
+	vec3 Lradiance = sl.Color * sl.Strength * attenuation * intensity;
+
+	// Calculate angles between surface normal and various light vectors.
+	float NdotL = max(0.0, dot(m_Params.Normal, L));
+	float NdotH = max(0.0, dot(m_Params.Normal, H));
+
+	float D = ndfGGX(NdotH, m_Params.Roughness);
+	float G = gaSchlickGGX(NdotL, m_Params.NdotV, m_Params.Roughness);
+	vec3 F = fresnelSchlickRoughness(F0, max(0.0, dot(H, m_Params.View)), m_Params.Roughness);
+
+	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
+	vec3 diffuseBRDF = kd * m_Params.Albedo / PI;
+
+	// Cook-Torrance
+	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdotL * m_Params.NdotV);
+
+	return (diffuseBRDF + specularBRDF) * Lradiance * NdotL;
+}
+
 vec3 Lighting(vec3 F0)
 {
 	vec3 result = vec3(0.0);
-	for(int i = 0; i < MAX_LIGHTS; i++)
-	{
-		//vec3 Li = -r_lights.Direction;
-		vec3 L = normalize(r_lights[i].Position - vs_Input.WorldPos);
-		vec3 H = normalize(L + m_Params.View);
+	// add directional light
+	result += CalcSun(F0);
 
-		float distance = length(r_lights[i].Position - vs_Input.WorldPos);
-		float attenuation = 1 / (distance * distance);
-		vec3 Lradiance = r_lights[i].Color * r_lights[i].Strength * attenuation;
-
-		// Calculate angles between surface normal and various light vectors.
-		float NdotL = max(0.0, dot(m_Params.Normal, L));
-		float NdotH = max(0.0, dot(m_Params.Normal, H));
-
-		float D = ndfGGX(NdotH, m_Params.Roughness);
-		float G = gaSchlickGGX(NdotL, m_Params.NdotV, m_Params.Roughness);
-		vec3 F = fresnelSchlickRoughness(F0, max(0.0, dot(H, m_Params.View)), m_Params.Roughness);
-
-		vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-		vec3 diffuseBRDF = kd * m_Params.Albedo / PI;
-
-		// Cook-Torrance
-		vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdotL * m_Params.NdotV);
-
-		result += (diffuseBRDF + specularBRDF) * Lradiance * NdotL;
+	// add up all point lights
+	for(int i = 0; i < MAX_LIGHTS; i++) {
+		result += CalcPointLight(F0, r_pointLights[i]);
 	}
+	
+	// add up all spot lights
+	for(int i = 0; i < MAX_LIGHTS; i++) {
+		result += CalcSpotLight(F0, r_spotLights[i]);
+	}
+
 	return result;
 }
 
@@ -210,5 +292,8 @@ void main()
 	FragColor = vec4(lightContribution + iblContribution, 1.0);
 	//FragColor = vec4(vec3(dot(m_Params.Normal, vec3(0,1,0))), 1.0);
 	//FragColor = vec4(vs_Input.WorldPos/2, 1.0);
-	FragColor = vec4(lightContribution + iblContribution, 1.0) * 0.0001 + vec4(m_Params.Albedo, 1.0);
+	//FragColor = vec4(lightContribution + iblContribution, 1.0) * 0.0001 + vec4(m_Params.Albedo, 1.0);
+	//FragColor = vec4(lightContribution + iblContribution, 1.0) * 0.0001 + vec4(m_Params.Normal, 1.0);
+	//FragColor = vec4(lightContribution + iblContribution, 1.0) * 0.0001 + vec4(m_Params.Metalness, 0, 0, 1.0);
+	//FragColor = vec4(lightContribution + iblContribution, 1.0) * 0.0001 + vec4(m_Params.Roughness, 0, 0, 1.0);
 }

@@ -251,9 +251,60 @@ namespace Engine {
             }
         }
 
+        // Get point lights
+        Light scenePointLights[32]; // TODO: where is this number stored?
+        Light sceneSpotLights[32]; // TODO: where is this number stored?
+        Light sceneSun;
+        int numPointLight = 0, numSpotLight = 0;
+        {
+            // messy group
+            // TODO: figure out how to get the group function to work
+            for (auto n : m_Registry.GetRegList()) {
+                // check if entity n has both transform and mesh
+                if (m_Registry.has<TransformComponent>(n) && m_Registry.has<LightComponent>(n)) {
+                    // good to go
+                    auto& light = m_Registry.get<LightComponent>(n);
+                    auto& trans = m_Registry.get<TransformComponent>(n);
+                    auto& tag = m_Registry.get<TagComponent>(n);
+
+                    switch (light.Type) {
+                        case LightType::Point:
+                            if (numPointLight == 32) break;
+                            scenePointLights[numPointLight].color = light.Color;
+                            scenePointLights[numPointLight].strength = light.Strength;
+                            scenePointLights[numPointLight].type = light.Type;
+                            scenePointLights[numPointLight].position = trans.Transform.col4().XYZ();
+                            numPointLight++;
+                            break;
+                        case LightType::Spot:
+                            if (numSpotLight == 32) break;
+                            sceneSpotLights[numSpotLight].color = light.Color;
+                            sceneSpotLights[numSpotLight].strength = light.Strength;
+                            sceneSpotLights[numSpotLight].type = light.Type;
+                            sceneSpotLights[numSpotLight].position = trans.Transform.col4().XYZ();
+                            sceneSpotLights[numSpotLight].direction = -trans.Transform.col3().XYZ();
+                            sceneSpotLights[numSpotLight].inner = light.InnerCutoff;
+                            sceneSpotLights[numSpotLight].outer = light.OuterCutoff;
+                            numSpotLight++;
+                            break;
+                        case LightType::Directional:
+                            sceneSun.color = light.Color;
+                            sceneSun.strength = light.Strength;
+                            sceneSun.type = light.Type;
+                            sceneSun.position = trans.Transform.col4().XYZ();
+                            sceneSun.direction = -trans.Transform.col3().XYZ(); // sun points in entities -z direction (or whatever the camera looks in...)
+                            break;
+                    }
+                    if (light.Type != LightType::Point) break;
+                }
+            }
+            for (auto& light : m_Registry.view<LightComponent>()) {
+            }
+        }
+
         // Render
         if (mainCamera) {
-            Renderer::BeginScene(*mainCamera, *mainTransform);
+            Renderer::BeginScene(*mainCamera, *mainTransform, numPointLight, scenePointLights, numSpotLight, sceneSpotLights, sceneSun);
 
             // messy group
             // TODO: figure out how to get the group function to work
@@ -287,7 +338,7 @@ namespace Engine {
             }
 
             if (m_showEntityLocations) {
-                Renderer::RenderDebug(*mainCamera, *mainTransform);
+                Renderer::RenderDebug(*mainCamera, *mainTransform, numPointLight, scenePointLights, numSpotLight, sceneSpotLights, sceneSun);
             }
 
             Renderer::EndScene();

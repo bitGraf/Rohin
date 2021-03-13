@@ -40,7 +40,52 @@ void GameLayer::OnAttach() {
     */
 
     m_ActiveScene = std::make_shared<Engine::Scene>();
-    m_ActiveScene->loadFromFile("run_tree/Data/Levels/nbtTest.scene");
+    //m_ActiveScene->loadFromFile("run_tree/Data/Levels/nbtTest.scene");
+
+    Engine::MeshCatalog::Register("mesh_ball", "run_tree/Data/Models/sphere.nbt", true);
+    for (int nx = 0; nx < 5; nx++) {
+        auto ball = m_ActiveScene->CreateGameObject("ball " + nx);
+        auto mesh = Engine::MeshCatalog::Get("mesh_ball");
+        ball.AddComponent<Engine::MeshRendererComponent>(mesh);
+
+        auto& trans = ball.GetComponent<Engine::TransformComponent>().Transform;
+        trans = mat4();
+        trans.translate(vec3(nx-2, 1.0f, 0));
+        trans.scale(vec3(.45f, .45f, .45f));
+    }
+
+    { // Lights
+        auto light = m_ActiveScene->CreateGameObject("light 1");
+        light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(1,1,1), 2, 0, 0);
+        auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
+        trans = mat4();
+        trans.translate(vec3(0, 2, 0));
+    }
+    {
+        auto light = m_ActiveScene->CreateGameObject("light 2");
+        light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(.2, .8, .6), 4, 0, 0);
+        auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
+        trans = mat4();
+        trans.translate(vec3(2.5, 3.6, 2));
+    }
+    {
+        auto light = m_ActiveScene->CreateGameObject("Sun");
+        light.AddComponent<Engine::LightComponent>(Engine::LightType::Directional, vec3(.8, .9, .05), 5, 0, 0);
+        auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
+        trans = mat4();
+        trans *= math::createYawPitchRollMatrix(15, -80, 0);
+    }
+
+    { // Player
+        m_Camera = m_ActiveScene->CreateGameObject("Camera");
+        m_Camera.AddComponent<Engine::CameraComponent>().camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+        m_Camera.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(m_Camera);
+        m_Camera.AddComponent<Engine::LightComponent>(Engine::LightType::Spot, vec3(0, 1, 0), 1, cos(d2r * 12.5), cos(d2r * 17.5));
+
+        auto& trans = m_Camera.GetComponent<Engine::TransformComponent>().Transform;
+        trans = mat4();
+        trans.translate(vec3(0, 1, 2));
+    }
 
     if (false) {
         // Load all meshes into the game

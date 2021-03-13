@@ -4,6 +4,7 @@
 #include "Engine/Core/GameMath.hpp"
 #include "Engine/Scene/SceneCamera.hpp"
 #include "Engine/Renderer/Mesh.hpp"
+#include "Engine/Renderer/Light.hpp"
 #include "Engine/GameObject/ScriptableBase.hpp"
 #include <ostream>
 
@@ -47,6 +48,20 @@ namespace Engine {
         CameraComponent(const CameraComponent&) = default;
 
         DEBUG_OSTR_IMPL(CameraComponent)
+    };
+
+    struct LightComponent {
+        LightType Type;
+        math::vec3 Color;
+        float Strength;
+        float InnerCutoff, OuterCutoff;
+
+        LightComponent() = default;
+        LightComponent(const LightComponent&) = default;
+        LightComponent(LightType type, const math::vec3& color, float strength, float inner, float outer) 
+            : Type(type), Color(color), Strength(strength), InnerCutoff(inner), OuterCutoff(outer) {}
+
+        DEBUG_OSTR_IMPL(LightComponent)
     };
 
     

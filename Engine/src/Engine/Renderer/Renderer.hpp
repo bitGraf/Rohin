@@ -4,6 +4,7 @@
 #include "Camera.hpp"
 #include "Shader.hpp"
 #include "Mesh.hpp"
+#include "Light.hpp"
 
 namespace Engine {
     class Renderer
@@ -13,8 +14,14 @@ namespace Engine {
         static void Shutdown();
 
 
-        static void BeginScene(const Camera& camera, const math::mat4& transform);
-        static void RenderDebug(const Camera& camera, const math::mat4& transform);
+        static void BeginScene(const Camera& camera, const math::mat4& transform, 
+            u32 numPointLights, const Light pointLights[32], 
+            u32 numSpotLights,  const Light spotLights[32], 
+            const Light& sun);
+        static void RenderDebug(const Camera& camera, const math::mat4& transform, 
+            u32 numPointLights, const Light pointLights[32],
+            u32 numSpotLights, const Light spotLights[32],
+            const Light& sun);
         static void EndScene();
         static void Flush();
 
