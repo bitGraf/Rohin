@@ -28,8 +28,12 @@ namespace Engine {
             internalFormat = GL_RGB8;
             format = GL_RGB;
         }
+        else if (channels == 2) {
+            internalFormat = GL_RG8;
+            format = GL_RG;
+        }
 
-        assert(internalFormat & format, "Unsupported image format");
+        ENGINE_LOG_ASSERT(internalFormat & format, "Unsupported image format");
 
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);

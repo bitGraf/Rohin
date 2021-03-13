@@ -43,6 +43,7 @@ void GameLayer::OnAttach() {
     //m_ActiveScene->loadFromFile("run_tree/Data/Levels/nbtTest.scene");
 
     Engine::MeshCatalog::Register("mesh_ball", "run_tree/Data/Models/sphere.nbt", true);
+    //Engine::MeshCatalog::Register("mesh_helmet", "run_tree/Data/Models/helmet.nbt", true); // TODO: this is slow
     for (int nx = 0; nx < 5; nx++) {
         auto ball = m_ActiveScene->CreateGameObject("ball " + nx);
         auto mesh = Engine::MeshCatalog::Get("mesh_ball");
@@ -70,7 +71,7 @@ void GameLayer::OnAttach() {
     }
     {
         auto light = m_ActiveScene->CreateGameObject("Sun");
-        light.AddComponent<Engine::LightComponent>(Engine::LightType::Directional, vec3(.8, .9, .05), 5, 0, 0);
+        light.AddComponent<Engine::LightComponent>(Engine::LightType::Directional, vec3(.8, .9, .75), 5, 0, 0);
         auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
         trans *= math::createYawPitchRollMatrix(15, -80, 0);
@@ -80,7 +81,7 @@ void GameLayer::OnAttach() {
         m_Camera = m_ActiveScene->CreateGameObject("Camera");
         m_Camera.AddComponent<Engine::CameraComponent>().camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
         m_Camera.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(m_Camera);
-        m_Camera.AddComponent<Engine::LightComponent>(Engine::LightType::Spot, vec3(0, 1, 0), 1, cos(d2r * 12.5), cos(d2r * 17.5));
+        //m_Camera.AddComponent<Engine::LightComponent>(Engine::LightType::Spot, vec3(0, 1, 0), 1, cos(d2r * 12.5), cos(d2r * 17.5));
 
         auto& trans = m_Camera.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();

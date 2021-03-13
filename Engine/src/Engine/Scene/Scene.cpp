@@ -295,10 +295,7 @@ namespace Engine {
                             sceneSun.direction = -trans.Transform.col3().XYZ(); // sun points in entities -z direction (or whatever the camera looks in...)
                             break;
                     }
-                    if (light.Type != LightType::Point) break;
                 }
-            }
-            for (auto& light : m_Registry.view<LightComponent>()) {
             }
         }
 
