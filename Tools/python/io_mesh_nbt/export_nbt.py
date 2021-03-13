@@ -1,7 +1,11 @@
 import os
 import bpy
 import bmesh
+import mathutils
 from mathutils import Matrix
+from collections import namedtuple
+from collections import defaultdict
+from struct import pack
 
 def write_header(f, version_major, version_minor, endianness):
     f.write(b"1234") #signature
@@ -22,8 +26,7 @@ def write_float(f, x, numBytes, e):
         form[0] = '<'
     if numBytes == 8:
         form[1] = 'd'
-    
-    from struct import pack
+
     bb = pack("".join(form), x)
     f.write(bb)
     
@@ -173,13 +176,19 @@ def cut_seams(mesh):
         
 # get the average vector from a list of vectors
 def averageVectors(dupes):
-    import mathutils
     total = mathutils.Vector((0,0,0))
     for d in dupes:
         v = mathutils.Vector((d[0],d[1],d[2]))
         total = total + v
     total.normalize()
     return [total[0],total[1],total[2]]
+
+def averageAtIndex(dvals, arr):
+    dupes = []
+    for i in dvals:
+        dupes.append(arr[i])
+    avg = averageVectors(dupes)
+    return avg
         
 # choose the correct UV from a list
 def getUV(dupes):
@@ -193,11 +202,15 @@ def getCustomString(obj, key):
     else:
         return None
 
-def nbt_write_test(context, filepath): #-- , apply_modifiers, export_selection, global_matrix, path_mode):
+def nbt_write_test(context, filepath, global_matrix): #-- , apply_modifiers, export_selection, global_matrix, path_mode):
     print("Writing mesh to .nbt file!")
+
+    if global_matrix is None:
+        global_matrix = Matrix()
     #obj = context.selected_objects[0]
     obj = context.view_layer.objects.active
     mesh = obj.data.copy()
+    mesh.transform(global_matrix)
     cut_seams(mesh)
     triangulate_mesh(mesh)
     mesh.calc_tangents()
@@ -232,7 +245,8 @@ def nbt_write_test(context, filepath): #-- , apply_modifiers, export_selection, 
     bitangents_indexed = []
     vertex_indices = []
     for face in mesh.polygons:
-        for vert_idx, loop_idx in zip(face.vertices, face.loop_indices):
+        #for vert_idx, loop_idx in zip(face.vertices, face.loop_indices):
+        for loop_idx in face.loop_indices:
             vert = mesh.loops[loop_idx]
             
             v_idx = vert.vertex_index
@@ -242,92 +256,37 @@ def nbt_write_test(context, filepath): #-- , apply_modifiers, export_selection, 
             bitangent = [bt[0],bt[1],bt[2]]
             uv_v = mesh.uv_layers.active.data[loop_idx].uv
             uv = [uv_v[0], uv_v[1]]
+
+            #print("v_idx", v_idx, "normal", normal)
             
             vertex_indices.append(v_idx)
             uvs_indexed.append(uv)
             normals_indexed.append(normal)
             tangents_indexed.append(tangent)
             bitangents_indexed.append(bitangent)
-        
-    # de-index arrays (still have duplicates/multiples)
-    uvs_d = uvs_indexed.copy()
-    normals_d = normals_indexed.copy()
-    tangents_d = tangents_indexed.copy()
-    bitangents_d = bitangents_indexed.copy()
-    for n in range(len(vertex_indices)):
-        index = vertex_indices[n]
-        uvs_d[n] = uvs_indexed[n] # uvs are already de-indexed? TODO: check this
-        normals_d[n] = normals_indexed[index]
-        tangents_d[n] = tangents_indexed[index]
-        bitangents_d[n] = bitangents_indexed[index]
-
-    # get averages for each normal/tangent/bitangent
-    from collections import defaultdict
+            
+    # construct dictionary of duplicated vertices
     d = defaultdict(list)
+    
     for n in range(len(indices)):
         big_idx = n
         lit_idx = indices[n]
         
         d[lit_idx].append(big_idx)
 
-    normals = [None] * len(positions)
-    tangents = [None] * len(positions)
-    bitangents = [None] * len(positions)
-    uvs = [None] * len(positions)
-    for key in d:
-        # key is vertex index
-        # d[key] is a list of vertices that share an index
-        #print(key, d[key])
-        
-        # normals
-        dupes = []
-        for n in d[key]:
-            dupes.append(normals_d[n])
-        normal = averageVectors(dupes)
-        
-        #tangents
-        dupes = []
-        for n in d[key]:
-            dupes.append(tangents_d[n])
-        tangent = averageVectors(dupes)
-        
-        #bitangents
-        dupes = []
-        for n in d[key]:
-            dupes.append(bitangents_d[n])
-        bitangent = averageVectors(dupes)
-        
-        
-        # renormalize
-        import mathutils
-        nn = mathutils.Vector(normal)
-        tt = mathutils.Vector(tangent)
-        bb_ = mathutils.Vector(bitangent)
-        
-        # keep normal
-        # b = n x t
-        # t = b x n
-        # need to use original sign of b to 
-        bb = nn.cross(tt)
-        tt = bb.cross(nn)
-        if bb.dot(nn) * bb_.dot(nn) < 0:
-            # incorrect sign
-            bb = -bb
-        
-        # assign to index
-        normals[key] = [nn[0],nn[1],nn[2]]
-        tangents[key] = [tt[0],tt[1],tt[2]]
-        bitangents[key] = [bb[0],bb[1],bb[2]]
-        
-        # check all uvs on a vertex are identical
-        dupes = []
-        for n in d[key]:
-            dupes.append(uvs_d[n])
-        uv = getUV(dupes)
-        
-        uvs[key] = [uv[0], 1-uv[1]] #flip y-dir?
+    # de-index and remove duplicate normals/tangents/bitangents
+    normals = [[]]*len(positions)
+    tangents = [[]]*len(positions)
+    bitangents = [[]]*len(positions)
+    uvs = [[]]*len(positions)
+    for index in d.keys():
+        uv = uvs_indexed[d[index][0]] # just take the first
+        uvs[index] = [uv[0], 1-uv[1]] # flip uv y-axis
+        normals[index] = averageAtIndex(d[index], normals_indexed)
+        tangents[index] = averageAtIndex(d[index], tangents_indexed)
+        bitangents[index] = averageAtIndex(d[index], bitangents_indexed)
+        # TODO: are these actually orthonormal?
     
-    from collections import namedtuple
     vertex = namedtuple("vertex", "position uv normal tangent bitangent")
     
     vertices = []
@@ -357,7 +316,7 @@ def save(context,
          global_matrix=None,
          ):
 
-    nbt_write_test(context, filepath)
+    nbt_write_test(context, filepath, global_matrix)
 
     return {'FINISHED'}
 
@@ -368,7 +327,7 @@ if __name__ == "__main__":
     global_scale = 1.0
     global_matrix = Matrix.Scale(global_scale, 4)
     path_mode = "uhh"
-    filepath = "D:\\Desktop\\Gamedev\\rohin\\Game\\run_tree\\Data\\Models\\cube.nbt_mesh"
+    filepath = "D:\\Desktop\\Gamedev\\rohin\\Game\\run_tree\\Data\\Models\\guard.nbt"
     
     save(context, filepath)
     #nbt_write_test(context, filepath, apply_modifiers, export_selection, global_matrix, path_mode)

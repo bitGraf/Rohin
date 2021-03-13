@@ -136,7 +136,7 @@ namespace Engine {
         pbrShader->SetVec3("r_lights[0].Color", math::vec3(1, .1, .2f));
         pbrShader->SetFloat("r_lights[0].Strength", 3);
 
-        pbrShader->SetVec3("r_lights[1].Position", math::vec3(1.5, 0.6, 1.5));
+        pbrShader->SetVec3("r_lights[1].Position", math::vec3(2.5, 3.6, 2));
         pbrShader->SetVec3("r_lights[1].Color", math::vec3(.2, .8, .6));
         pbrShader->SetFloat("r_lights[1].Strength", 4);
 
@@ -156,7 +156,7 @@ namespace Engine {
         lineShader->SetMat4("r_VP", viewProj);
         lineShader->SetVec3("r_CamPos", camPos);
         math::mat4 pl_transform;
-        pl_transform.translate(math::vec3(1.5, 0.6, 1.5));
+        pl_transform.translate(math::vec3(2.5, 3.6, 2));
         lineShader->SetMat4("r_Transform", pl_transform);
         lineShader->SetVec3("r_LineColor", math::vec3(1, 1, 1));
         lineShader->SetFloat("r_LineFadeStart", 5);

@@ -38,9 +38,6 @@ void GameLayer::OnAttach() {
     2. load scene from file and deserialze
 
     */
-    {
-        auto mesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/cube.nbt_mesh", true);
-    }
 
     m_ActiveScene = std::make_shared<Engine::Scene>();
     m_ActiveScene->loadFromFile("run_tree/Data/Levels/nbtTest.scene");

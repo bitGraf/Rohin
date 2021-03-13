@@ -36,7 +36,7 @@ layout(line_strip, max_vertices = 2) out;
 
 in vec3 vs_normal[];
 uniform mat4 r_VP;
-const float normal_scale = 0.06;
+const float normal_scale = 0.08;
 
 void main() {
     vec4 v0 = gl_in[0].gl_Position;

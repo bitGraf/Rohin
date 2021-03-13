@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     tag_compound comp{
         {"name", "Level NBT Test"},
         {"meshes", tag_list::of<tag_compound>({ //TODO: add tag_string_list possibly?
-            {{"mesh_name", "cube_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.mesh" }},
+            {{"mesh_name", "cube_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.nbt" }, {"nbt", true}},
             {{"mesh_name", "rect_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.mesh" }},
             {{"mesh_name", "guard_mesh"}, {"mesh_path", "run_tree/Data/Models/guard.nbt" }, {"nbt", true}} // flag as an nbt file
             })},
@@ -119,7 +119,9 @@ int main(int argc, char** argv) {
     }
 
 
-    nbt::write_to_file("run_tree/Data/Levels/nbtTest.scene", nbt::file_data({ "level_data", std::make_unique<tag_compound>(comp) }), 0, 1);
+    bool result = nbt::write_to_file("run_tree/Data/Levels/nbtTest.scene", nbt::file_data({ "level_data", std::make_unique<tag_compound>(comp) }), 0, 1);
+    if (!result)
+        ENGINE_LOG_ERROR("Failed to output to file");
 
     system("pause");
 }
