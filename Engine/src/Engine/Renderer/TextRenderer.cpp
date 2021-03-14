@@ -13,6 +13,7 @@ namespace Engine {
 
         Ref<VertexArray> TextQuad;
         math::mat4 orthoMat;
+
         DynamicFont font;
     };
 
@@ -134,13 +135,6 @@ namespace Engine {
                     shader->SetVec4("r_transformUV", math::vec4(scaleX, scaleY, transX, transY));
 
                     RenderCommand::DrawIndexed(s_Data.TextQuad, false);
-                    /*
-                    glCullFace(GL_FRONT);
-                    glDisable(GL_DEPTH_TEST);
-                    glDrawArrays(GL_TRIANGLES, 0, 6);
-                    glEnable(GL_DEPTH_TEST);
-                    glCullFace(GL_BACK);
-                    */
                 }
                 ++_text;
             }

@@ -32,12 +32,6 @@ namespace Engine {
         float getLength(const char* text);
         void getTextOffset(float* hOffset, float *vOffset, TextAlignment align, float textLength, float textHeight);
 
-        /*
-        void InitTextRendering();
-
-        void drawText(float startX, float startY, math::vec4 color, char *text, TextAlignment align = TextAlignment::ALIGN_TOP_LEFT);
-        */
-
     //private:
         bool initialized = false;
         _bakedchar cdata[96]; // ASCII 32..126 is 95 glyphs

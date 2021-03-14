@@ -129,7 +129,7 @@ namespace Engine {
             if (s->GetName().compare("r_skybox") == 0)
                 s_Data.Skybox->Bind(s->GetID());
         }
-        //SubmitFullscreenQuad(); // draw skybox
+        SubmitFullscreenQuad(); // draw skybox
 
         auto normalsShader = s_Data.ShaderLibrary->Get("Normals");
         normalsShader->Bind();
@@ -191,7 +191,7 @@ namespace Engine {
             lineShader->SetVec3("r_LineColor", pointLights[n].color);
             RenderCommand::DrawLines(s_Data.debug_coordinate_axis, false);
         }
-        TextRenderer::SubmitText("Hello, world!", 50, 200, 32, { .753f,.741f,.345f });
+        TextRenderer::SubmitText("^_^", 50, 200, 32, { .753f,.741f,.345f });
     }
     void Renderer::EndScene() {
         TextRenderer::EndScene();// do this now to finishing rendering before 3D scene is done
