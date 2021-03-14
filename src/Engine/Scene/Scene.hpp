@@ -19,6 +19,7 @@
 #include "GameObject/Player.hpp"
 #include "GameObject/Camera.hpp"
 #include "GameObject/Light.hpp"
+#include "GameObject/SpriteObject.hpp"
 #include "GameObject/AICharacter.hpp"
 #include "GameObject/TriggerVolume.hpp"
 #include "GameObject/Pathfinding.hpp"

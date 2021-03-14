@@ -85,6 +85,14 @@ void Scene::loadFromFile(ResourceManager* resource, std::string path, bool noGLL
                 
                 go = k.data;
             }
+            else if (entType.compare("SPRITE") == 0) {
+                auto k = resource->reserveDataBlocks<SpriteObject>(1);
+
+                k.data->Create(iss, resource);
+                objectsByType.Sprites.push_back(k.data);
+
+                go = k.data;
+            }
             else if (entType.compare("DIR") == 0) {
                 auto k = resource->reserveDataBlocks<DirLight>(1);
 

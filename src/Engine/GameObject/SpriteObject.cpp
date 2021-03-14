@@ -1,5 +1,6 @@
 #include "SpriteObject.hpp"
 #include "Resource/ResourceManager.hpp"
+const char* SpriteObject::_obj_type_SpriteObject = "Sprite";
 
 SpriteObject::SpriteObject() :
 	m_material(nullptr),
@@ -10,6 +11,7 @@ SpriteObject::SpriteObject() :
 }
 
 void SpriteObject::Create(istringstream& iss, ResourceManager* resource) {
+
 	GameObject::Create(iss, resource);
 
 	m_material = resource->getMaterial(getNextString(iss));
