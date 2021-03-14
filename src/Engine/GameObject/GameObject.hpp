@@ -20,7 +20,7 @@ public:
         Camera,
         RenderObject,
         Volume,
-
+        SpriteObject,
         Count
     };
     GameObject();

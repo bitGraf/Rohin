@@ -324,5 +324,21 @@ void getRenderBatch(RenderBatch* batch, bool useCull) {
                 }
             }
         }
+
+        // Sprites
+        for (int n = 0; n < CurrentScene->objectsByType.Sprites.size(); n++) {
+            if (batch->numSpriteCalls >= MAX_CALLS)
+                break;
+            auto ent = CurrentScene->objectsByType.Sprites[n];
+
+            if (!useCull || ent->noCull || camera->withinFrustum(ent->Position, 0.25)) {
+                batch->spriteCalls[batch->numSpriteCalls].id = ent->getID();
+                batch->spriteCalls[batch->numSpriteCalls].pos = ent->getPos();
+                batch->spriteCalls[batch->numSpriteCalls].size = ent->getSize();
+                batch->spriteCalls[batch->numSpriteCalls].rotate = ent->getRotate();
+                batch->spriteCalls[batch->numSpriteCalls].color = ent->getColor();
+                batch->numSpriteCalls++;
+            }
+        }
     }
 }

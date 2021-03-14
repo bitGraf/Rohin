@@ -21,6 +21,7 @@ public:
 		GLfloat rotate = 0.0f, vec3 color = vec3(1.0f));
 	void initRenderData(u32 width, u32 height);
 	void resize(u32 width, u32 height);
+	void refreshShaders();
 
 private:
 	GLuint quadVAO;

@@ -8,8 +8,7 @@ SpriteRenderer::~SpriteRenderer() {
 	glDeleteVertexArrays(1, &this->quadVAO);
 }
 
-void SpriteRenderer::initRenderData(u32 width, u32 height)
-{
+void SpriteRenderer::initRenderData(u32 width, u32 height) {
 	Console::logMessage("Initializing Sprite Rendering...");
 
 	orthoMat.orthoProjection(0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
@@ -77,4 +76,8 @@ void SpriteRenderer::DrawSprite(Texture &texture, vec2 position, vec2 size,
 
 void SpriteRenderer::resize(u32 width, u32 height) {
 	this->orthoMat.orthoProjection(0, width, height, 0, -1, 1);
+}
+
+void SpriteRenderer::refreshShaders() {
+	this->spriteShader.create("sprite.vert", "sprite.frag", "spriteShader");
 }

@@ -5,9 +5,9 @@ DeferredBatchRenderer::DeferredBatchRenderer() :
     shaderOutput(0),
     soStr("Albedo"),
     ssaoKernel(Kernel_Size),
-    ssaoFBO(800, 600),
-    m_gBuffer(800, 600),
-    ssaoBlurFBO(800, 600)
+    ssaoFBO(scr_width, scr_height),
+    m_gBuffer(scr_width, scr_height),
+    ssaoBlurFBO(scr_width, scr_height)
 {}
 
 DeferredBatchRenderer::~DeferredBatchRenderer() {}
@@ -30,6 +30,8 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
             m_ssaoPassShader.create("pipeline/screen.vert", "pipeline/ssao.frag", "ssaoShader");
             m_ssaoBlurShader.create("pipeline/screen.vert", "pipeline/ssaoBlur.frag", "ssaoBlurShader");
             m_screenShader.create("pipeline/screen.vert", "pipeline/screen.frag", "screenShader");
+
+            m_spriteRender.refreshShaders();
 
             m_debugMeshShader.create("debugMesh.vert", "debugMesh.frag", "debugMeshShader");
         }
@@ -87,6 +89,7 @@ void DeferredBatchRenderer::handleMessage(Message msg) {
 }
 
 void DeferredBatchRenderer::destroy() {}
+
 CoreSystem* DeferredBatchRenderer::create() {
     m_geometryPassShader.create("pipeline/geometryPass.vert", "pipeline/geometryPass.frag", "geometryPassShader");
     m_ssaoPassShader.create("pipeline/screen.vert", "pipeline/ssao.frag", "ssaoShader");
@@ -204,8 +207,6 @@ void DeferredBatchRenderer::renderBatch(RenderBatch* batch) {
 
         screenPass(batch);
         dur_screenPass = profileRenderPass();
-
-        //m_spriteRender.DrawSprite(testMenu, vec2(0.0f, 0.0f), vec2(scr_width, scr_height), 0.0f, vec3(1.0f, 1.0f, 1.0f));
     }
 
     endProfile();
@@ -345,7 +346,13 @@ void DeferredBatchRenderer::screenPass(RenderBatch* batch) {
     glBindVertexArray(0);
 }
 
+void DeferredBatchRenderer::renderSprites(RenderBatch* batch) {
+    for (int n = 0; n < batch->numSpriteCalls; n++) {
+        SpriteDrawCall* spriteCall = &batch->spriteCalls[n];
+    }
 
+    m_spriteRender.DrawSprite(testMenu, vec2(0.0f, 0.0f), vec2(scr_width, scr_height), 0.0f, vec3(1.0f, 1.0f, 1.0f));
+}
 
 void DeferredBatchRenderer::renderDebug(
     RenderBatch* batch,

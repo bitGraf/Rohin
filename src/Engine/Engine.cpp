@@ -173,6 +173,8 @@ void Engine::PreRender() {
 
 void Engine::Render() {
     m_Renderer.renderBatch(&batch);
+    
+    m_Renderer.renderSprites(&batch);
 
     m_Renderer.renderDebug(
         &batch, fpsAvg.getCurrentAverage(), 

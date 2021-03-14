@@ -19,6 +19,14 @@ struct DrawCall {
     UID_t id = 0;
 };
 
+struct SpriteDrawCall {
+    vec2 pos;
+    vec2 size;
+    GLfloat rotate;
+    vec3 color;
+    UID_t id = 0;
+};
+
 struct RenderBatch {
     mat4 cameraView;
     mat4 cameraProjection;
@@ -35,7 +43,9 @@ struct RenderBatch {
     EnvironmentMap (*env);
 
     DrawCall calls[MAX_CALLS];
+    SpriteDrawCall spriteCalls[MAX_CALLS];
     u16 numCalls = 0;
+    u16 numSpriteCalls = 0;
 };
 
 #endif

@@ -29,6 +29,7 @@ public:
 
     /* System Unique functions */
     void renderBatch(RenderBatch* batch);
+    void renderSprites(RenderBatch* batch);
     void renderDebug(RenderBatch* batch,
         double frameCount, long long lastFrame,
         bool debugMode);
@@ -77,7 +78,6 @@ private:
     Framebuffer_new ssaoBlurFBO;
     
 	// Sprite Pass
-	_dur dur_spritePass;
 	SpriteRenderer m_spriteRender;
 
     // Debug Pass

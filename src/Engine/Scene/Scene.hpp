@@ -10,6 +10,7 @@
 #include "Resource/ResourceManager.hpp"
 #include "GLFW/glfw3.h"
 #include "Render/RenderBatch.hpp"
+
 #include "Render/Shadowmap.hpp"
 
 #include "EnvironmentMap.hpp"
@@ -46,6 +47,7 @@ public:
     struct GameObjectLists_t {
         void clear() {
             Renderable.clear();
+            Sprites.clear();
             Cameras.clear();
             PointLights.clear();
             SpotLights.clear();
@@ -56,6 +58,7 @@ public:
         }
 
         std::vector<RenderableObject*> Renderable;
+        std::vector<SpriteObject*> Sprites;
         std::vector<Camera*> Cameras;
         std::vector<PointLight*> PointLights;
         std::vector<SpotLight*> SpotLights;
