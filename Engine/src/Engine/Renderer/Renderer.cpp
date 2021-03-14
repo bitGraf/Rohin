@@ -2,6 +2,7 @@
 #include "Renderer.hpp"
 
 #include "Engine/Renderer/Texture.hpp"
+#include "Engine/Renderer/Framebuffer.hpp"
 
 namespace Engine {
 
@@ -11,6 +12,13 @@ namespace Engine {
 
         Ref<VertexArray> FullscreenQuad;
         Ref<VertexArray> debug_coordinate_axis; //lineRender
+
+        // Render buffers
+        //Ref<Framebuffer> gBuffer;
+
+        Ref<Texture2D> Albedo;
+        Ref<Texture2D> ViewSpaceNormal;
+        Ref<Texture2D> AmbientMetalnessRoughness;
     };
 
     static RendererData s_Data;
@@ -103,6 +111,12 @@ namespace Engine {
 
         // Init text renderer
         TextRenderer::Init();
+
+        // create the pipeline buffers
+        //FramebufferSpecification spec;
+        //spec.Width = 1280.0f; // TODO: This should be an application-level property
+        //spec.Height = 720.0f;
+        //s_Data.gBuffer = Framebuffer::Create(spec);
     }
 
     void Renderer::Shutdown() {

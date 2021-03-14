@@ -16,7 +16,6 @@ out VertexOutput {
     vec2 TexCoord;
     mat3 WorldNormals;
     mat3 WorldTransform;
-    vec3 Binormal;
 } vs_Output;
 
 void main() {
@@ -25,7 +24,6 @@ void main() {
     vs_Output.TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
     vs_Output.WorldNormals = mat3(r_Transform) * mat3(a_Tangent, a_Binormal, a_Normal);
     vs_Output.WorldTransform = mat3(r_Transform);
-    vs_Output.Binormal = a_Binormal;
 
     gl_Position = r_VP * r_Transform * vec4(a_Position, 1.0);
 }
@@ -42,7 +40,6 @@ in VertexOutput {
     vec2 TexCoord;
     mat3 WorldNormals;
     mat3 WorldTransform;
-    vec3 Binormal;
 } vs_Input;
 
 const vec3 FD = vec3(0.04);

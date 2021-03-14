@@ -21,9 +21,14 @@ void GameLayer::OnAttach() {
     LOG_INFO("Game layer attached");
 
     Engine::FramebufferSpecification spec;
-    spec.Width = 1280.0f; // TODO: This should be an application-level property
-    spec.Height = 720.0f;
+    spec.ClearColor = math::vec4(1, 0, 0, 0);
+    spec.Attachments = {
+        FramebufferTextureFormat::RGBA16F,
+        FramebufferTextureFormat::Depth
+    };
+    spec.SwapChainTarget = true;
     m_Framebuffer = Engine::Framebuffer::Create(spec);
+    m_Framebuffer->Unbind();
 
     Input::CaptureMouse(true);
     

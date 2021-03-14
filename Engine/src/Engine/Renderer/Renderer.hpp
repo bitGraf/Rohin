@@ -15,7 +15,7 @@ namespace Engine {
         static void Init();
         static void Shutdown();
 
-
+        // start writing to pre-pass buffers
         static void BeginScene(const Camera& camera, const math::mat4& transform, 
             u32 numPointLights, const Light pointLights[32], 
             u32 numSpotLights,  const Light spotLights[32], 
@@ -24,6 +24,8 @@ namespace Engine {
             u32 numPointLights, const Light pointLights[32],
             u32 numSpotLights, const Light spotLights[32],
             const Light& sun);
+
+        // end pre-pass and begin render pipeline
         static void EndScene();
         static void Flush();
 
