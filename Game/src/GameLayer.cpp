@@ -38,10 +38,11 @@ void GameLayer::OnAttach() {
     //m_ActiveScene->loadFromFile("run_tree/Data/Levels/nbtTest.scene");
 
     Engine::MeshCatalog::Register("mesh_ball", "run_tree/Data/Models/sphere.nbt", true);
+    Engine::MeshCatalog::Register("mesh_cyl", "run_tree/Data/Models/cylinder.nbt", true);
     //Engine::MeshCatalog::Register("mesh_helmet", "run_tree/Data/Models/helmet.nbt", true); // TODO: this is slow
     for (int nx = 0; nx < 5; nx++) {
         auto ball = m_ActiveScene->CreateGameObject("ball " + nx);
-        auto mesh = Engine::MeshCatalog::Get("mesh_ball");
+        auto mesh = Engine::MeshCatalog::Get("mesh_cyl");
         ball.AddComponent<Engine::MeshRendererComponent>(mesh);
 
         auto& trans = ball.GetComponent<Engine::TransformComponent>().Transform;
@@ -66,10 +67,10 @@ void GameLayer::OnAttach() {
     }
     {
         auto light = m_ActiveScene->CreateGameObject("Sun");
-        light.AddComponent<Engine::LightComponent>(Engine::LightType::Directional, vec3(.8, .9, .75), 5, 0, 0);
+        light.AddComponent<Engine::LightComponent>(Engine::LightType::Directional, vec3(.4, .8, .1), 5, 0, 0);
         auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
-        trans *= math::createYawPitchRollMatrix(15, -80, 0);
+        trans *= math::createYawPitchRollMatrix(0, 0, 0);
     }
 
     { // Player
@@ -230,6 +231,13 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
 
         if (playing) m_ActiveScene->OnRuntimePause();
         else         m_ActiveScene->OnRuntimeResume();
+    }
+
+    if (e.GetKeyCode() == KEY_CODE_O) {
+        Renderer::NextOutputMode();
+    }
+    if (e.GetKeyCode() == KEY_CODE_I) {
+        Renderer::PrintState();
     }
     return false;
 }

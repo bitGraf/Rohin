@@ -6,6 +6,16 @@
 
 namespace Engine {
 
+    struct Lightingdata { // holds view-space lighting data
+        u32 NumPointLights;
+        u32 NumSpotLights;
+        Light pointLights[32];
+        Light spotLights[32];
+        Light sun;
+
+        math::mat4 projection;
+    };
+
     struct RendererData {
         std::unique_ptr<Engine::ShaderLibrary> ShaderLibrary;
         Ref<TextureCube> Skybox;
@@ -15,8 +25,13 @@ namespace Engine {
 
         // Render buffers
         Ref<Framebuffer> gBuffer;
+        Ref<Framebuffer> DiffuseSpecularLighting;
         Ref<Framebuffer> screenBuffer;
-        std::unordered_map<std::string, size_t> targetMap;
+        //std::unordered_map<std::string, size_t> targetMap; // TODO: good idea, needs further thought
+
+        Lightingdata Lights;
+
+        u32 OutputMode;
     };
 
     static RendererData s_Data;
@@ -31,6 +46,7 @@ namespace Engine {
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Normals.glsl");
 
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PrePass.glsl");
+        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Lighting.glsl");
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Screen.glsl");
 
         //s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/DebugCubeMap.tga");
@@ -115,14 +131,19 @@ namespace Engine {
             FramebufferSpecification spec;
             spec.Attachments = {
                 FramebufferTextureFormat::RGBA8, // Albedo
-                FramebufferTextureFormat::RGBA8, // View-space normal
+                FramebufferTextureFormat::RGBA16F, // View-space normal
                 FramebufferTextureFormat::RGBA8, // Ambient/Metallic/Roughness
                 FramebufferTextureFormat::Depth  // Depth
             };
             s_Data.gBuffer = Framebuffer::Create(spec);
-            s_Data.targetMap["Albedo"] = 0;
-            s_Data.targetMap["Normal"] = 1;
-            s_Data.targetMap["AMR"] = 2;
+        }
+        {
+            FramebufferSpecification spec;
+            spec.Attachments = {
+                FramebufferTextureFormat::RGBA8, // Diffuse
+                FramebufferTextureFormat::RGBA8, // Specular
+            };
+            s_Data.DiffuseSpecularLighting = Framebuffer::Create(spec);
         }
 
         {
@@ -130,6 +151,26 @@ namespace Engine {
             spec.SwapChainTarget = true;
             s_Data.screenBuffer = Framebuffer::Create(spec);
         }
+
+        s_Data.OutputMode = 0;
+    }
+
+    void Renderer::NextOutputMode() {
+        s_Data.OutputMode++;
+        std::vector<std::string> outputModes = {
+            "Albedo",
+            "View-Space Normals",
+            "Baked Ambient Occlusion",
+            "Metalness",
+            "Roughness",
+            "Ambient/Metallic/Roughness",
+            "Diffuse Lighting",
+            "Specular Lighting"
+        };
+        if (s_Data.OutputMode == outputModes.size())
+            s_Data.OutputMode = 0;
+
+        ENGINE_LOG_INFO("Output mode {1}:{0}", outputModes[s_Data.OutputMode], s_Data.OutputMode);
     }
 
     void Renderer::Shutdown() {
@@ -152,30 +193,62 @@ namespace Engine {
         */
     }
 
-    void LightingPass() {
-        /*
+    void Renderer::UpdateLighting(const math::mat4& ViewMatrix,
+        u32 numPointLights, const Light pointLights[32],
+        u32 numSpotLights, const Light spotLights[32],
+        const Light& sun, const math::mat4& projection) {
+
+        s_Data.Lights.projection = projection;
+        s_Data.Lights.NumPointLights = numPointLights;
+        s_Data.Lights.NumSpotLights = numSpotLights;
+        memcpy(&s_Data.Lights.sun, &sun, sizeof(Light));
+        memcpy(s_Data.Lights.pointLights, &pointLights, sizeof(Light)*numPointLights);
+        memcpy(s_Data.Lights.spotLights, &spotLights, sizeof(Light)*numSpotLights);
+
+        math::mat4 normalMatrix = math::mat4(math::mat3(ViewMatrix)); //TODO: check the math to see if this is needed
+
+        // recaulculate position and direction in view-space
+        for (int n = 0; n < numPointLights; n++) {
+            s_Data.Lights.pointLights[n].position = (ViewMatrix * math::vec4(s_Data.Lights.pointLights[n].position, 1)).XYZ();
+        }
+        for (int n = 0; n < numSpotLights; n++) {
+            s_Data.Lights.spotLights[n].position = (ViewMatrix * math::vec4(s_Data.Lights.spotLights[n].position, 1)).XYZ();
+            s_Data.Lights.spotLights[n].direction = (normalMatrix * math::vec4(s_Data.Lights.spotLights[n].direction, 0)).XYZ().get_unit();
+        }
+        s_Data.Lights.sun.direction = (normalMatrix * math::vec4(s_Data.Lights.sun.direction, 0)).XYZ().get_unit();
+    }
+
+    void Renderer::PrintState() {
+        ENGINE_LOG_TRACE("View-space sun direction: <{0},{1},{2}>", 
+            s_Data.Lights.sun.direction.x, 
+            s_Data.Lights.sun.direction.y, 
+            s_Data.Lights.sun.direction.z);
+    }
+
+    void Renderer::UploadLights(const Ref<Shader> shader) {
+        // uploads lights to shader in view-space
+
         // set directional light
-        pbrShader->SetVec3("r_sun.Direction", sun.direction);
-        pbrShader->SetVec3("r_sun.Color", sun.color);
-        pbrShader->SetFloat("r_sun.Strength", sun.strength);
+        shader->SetVec3("r_sun.Direction", s_Data.Lights.sun.direction);
+        shader->SetVec3("r_sun.Color", s_Data.Lights.sun.color);
+        shader->SetFloat("r_sun.Strength", s_Data.Lights.sun.strength);
 
         // set point lights
-        for (int n = 0; n < numPointLights; n++) {
-            pbrShader->SetVec3("r_pointLights[" + std::to_string(n) + "].Position", pointLights[n].position);
-            pbrShader->SetVec3("r_pointLights[" + std::to_string(n) + "].Color", pointLights[n].color);
-            pbrShader->SetFloat("r_pointLights[" + std::to_string(n) + "].Strength", pointLights[n].strength);
+        for (int n = 0; n < s_Data.Lights.NumPointLights; n++) {
+            shader->SetVec3("r_pointLights[" + std::to_string(n) + "].Position", s_Data.Lights.pointLights[n].position);
+            shader->SetVec3("r_pointLights[" + std::to_string(n) + "].Color", s_Data.Lights.pointLights[n].color);
+            shader->SetFloat("r_pointLights[" + std::to_string(n) + "].Strength", s_Data.Lights.pointLights[n].strength);
         }
 
         // set spot lights
-        for (int n = 0; n < numSpotLights; n++) {
-            pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Position", spotLights[n].position);
-            pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Direction", spotLights[n].direction);
-            pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Color", spotLights[n].color);
-            pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Strength", spotLights[n].strength);
-            pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Inner", spotLights[n].inner);
-            pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Outer", spotLights[n].outer);
+        for (int n = 0; n < s_Data.Lights.NumSpotLights; n++) {
+            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Position", s_Data.Lights.spotLights[n].position);
+            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Direction", s_Data.Lights.spotLights[n].direction);
+            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Color", s_Data.Lights.spotLights[n].color);
+            shader->SetFloat("r_spotLights[" + std::to_string(n) + "].Strength", s_Data.Lights.spotLights[n].strength);
+            shader->SetFloat("r_spotLights[" + std::to_string(n) + "].Inner", s_Data.Lights.spotLights[n].inner);
+            shader->SetFloat("r_spotLights[" + std::to_string(n) + "].Outer", s_Data.Lights.spotLights[n].outer);
         }
-        */
     }
 
     void Renderer::Begin3DScene(const Camera& camera, const math::mat4& transform, 
@@ -183,20 +256,22 @@ namespace Engine {
         u32 numSpotLights, const Light spotLights[32],
         const Light& sun) {
 
-        s_Data.gBuffer->Bind();
-        RenderCommand::Clear();
         math::mat4 ViewMatrix = math::invertViewMatrix(transform);
         math::mat4 ProjectionMatrix = camera.GetProjection();
         math::vec3 camPos = transform.col4().XYZ();
+        UpdateLighting(ViewMatrix, numPointLights, pointLights, numSpotLights, spotLights, sun, ProjectionMatrix);
 
+        s_Data.gBuffer->Bind();
+        RenderCommand::SetClearColor(math::vec4(0, 0, 0, 0));
+        RenderCommand::Clear();
         auto prePassShader = s_Data.ShaderLibrary->Get("PrePass");
         prePassShader->Bind();
-        prePassShader->SetMat4("r_View", ViewMatrix);
         prePassShader->SetMat4("r_Projection", ProjectionMatrix);
+        prePassShader->SetMat4("r_View", ViewMatrix);
 
         // set toggles
         prePassShader->SetFloat("r_AlbedoTexToggle",    1.0f);
-        prePassShader->SetFloat("r_NormalTexToggle",    1.0f);
+        prePassShader->SetFloat("r_NormalTexToggle",    0.0f);
         prePassShader->SetFloat("r_MetalnessTexToggle", 1.0f);
         prePassShader->SetFloat("r_RoughnessTexToggle", 1.0f);
         prePassShader->SetFloat("r_AmbientTexToggle",   1.0f);
@@ -206,15 +281,31 @@ namespace Engine {
         s_Data.gBuffer->Unbind();
 
         // Lighting Pass
+        s_Data.DiffuseSpecularLighting->Bind();
+        auto lightingShader = s_Data.ShaderLibrary->Get("Lighting");
+        lightingShader->Bind();
+        lightingShader->SetInt("u_normal", 0);
+        s_Data.gBuffer->BindTexture(1, 0);
+        UploadLights(lightingShader);
+        lightingShader->SetMat4("r_Projection", s_Data.Lights.projection);
+        SubmitFullscreenQuad();
+        s_Data.DiffuseSpecularLighting->Unbind();
+
+        // Output to screen
         s_Data.screenBuffer->Bind();
         auto screenShader = s_Data.ShaderLibrary->Get("Screen");
         screenShader->Bind();
-        screenShader->SetInt("u_tex1", 0);
-        screenShader->SetInt("u_tex2", 1);
-        screenShader->SetInt("u_tex3", 2);
+        screenShader->SetInt("u_albedo", 0);
+        screenShader->SetInt("u_normal", 1);
+        screenShader->SetInt("u_amr", 2);
+        screenShader->SetInt("u_diffuse", 3);
+        screenShader->SetInt("u_specular", 4);
+        screenShader->SetInt("r_outputSwitch", s_Data.OutputMode);
         s_Data.gBuffer->BindTexture(0, 0);
         s_Data.gBuffer->BindTexture(1, 1);
         s_Data.gBuffer->BindTexture(2, 2);
+        s_Data.DiffuseSpecularLighting->BindTexture(0, 3);
+        s_Data.DiffuseSpecularLighting->BindTexture(1, 4);
 
         SubmitFullscreenQuad();
         s_Data.screenBuffer->Unbind();

@@ -22,10 +22,11 @@ out VertexOutput { // all in view-space
 
 void main() {
     mat4 model2view = r_View * r_Transform;
+    mat4 normalMatrix = transpose(inverse(model2view));
     vs_Output.Position = vec3(model2view * vec4(a_Position, 1.0));
-    vs_Output.Normal = mat3(model2view) * a_Normal;
+    vs_Output.Normal = vec3(normalMatrix * vec4(a_Normal, 0));
     vs_Output.TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
-    vs_Output.ViewNormalMatrix = mat3(model2view) * mat3(a_Tangent, a_Binormal, a_Normal);
+    vs_Output.ViewNormalMatrix = mat3(normalMatrix) * mat3(a_Tangent, a_Binormal, a_Normal);
 
     gl_Position = r_Projection * model2view * vec4(a_Position, 1.0);
 }

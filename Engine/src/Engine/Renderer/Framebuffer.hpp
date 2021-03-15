@@ -13,8 +13,8 @@ namespace Engine {
         RED8,
         //RGB8,
         RGBA8,
-        //RGBA16F,
-        RGB32F,
+        RGBA16F,
+        //RGB32F,
         //RG32F,
 
         // Depth/stencil

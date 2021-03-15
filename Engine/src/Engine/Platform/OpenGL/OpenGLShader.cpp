@@ -178,7 +178,7 @@ namespace Engine {
     {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
-            ENGINE_LOG_WARN("Could not find uniform '{0}' in shader", name);
+            //ENGINE_LOG_WARN("Could not find uniform '{0}' in shader", name);
         }
 
         return loc;
@@ -789,10 +789,11 @@ namespace Engine {
         }
     }
 
+    //TODO: turn this logging back on
     void OpenGLShader::SetMat4(const std::string &name, const math::mat4& value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
-            ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
+            //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
             return;
         }
         glUniformMatrix4fv(loc, 1, GL_FALSE, &(value._11));
@@ -802,7 +803,7 @@ namespace Engine {
     void OpenGLShader::SetVec3(const std::string &name, const math::vec3& value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
-            ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
+            //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
             return;
         }
         glUniform3f(loc, value.x, value.y, value.z);
@@ -811,7 +812,7 @@ namespace Engine {
     void OpenGLShader::SetVec4(const std::string &name, const math::vec4& value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
-            ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
+            //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
             return;
         }
         glUniform4f(loc, value.x, value.y, value.z, value.w);
@@ -820,7 +821,7 @@ namespace Engine {
     void OpenGLShader::SetFloat(const std::string &name, f32 value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
-            ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
+            //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
             return;
         }
         glUniform1f(loc, value);
@@ -829,7 +830,7 @@ namespace Engine {
     void OpenGLShader::SetInt(const std::string &name, s32 value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
-            ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
+            //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
             return;
         }
         glUniform1i(loc, value);

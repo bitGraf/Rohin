@@ -44,6 +44,7 @@ namespace Engine {
             case GL_RGBA:
             case GL_RGBA8: return GL_RGBA;
             case GL_RGB32F: return GL_RGB;
+            case GL_RGBA16F: return GL_RGBA;
             }
 
             ENGINE_LOG_ASSERT(false, "Unknown format!");
@@ -131,8 +132,8 @@ namespace Engine {
                 case FramebufferTextureFormat::RGBA8:
                     Utils::AttachColorTexture(m_ColorAttachments[n], GL_RGBA8, m_Width, m_Height, n);
                     break;
-                case FramebufferTextureFormat::RGB32F:
-                    Utils::AttachColorTexture(m_ColorAttachments[n], GL_RGB32F, m_Width, m_Height, n);
+                case FramebufferTextureFormat::RGBA16F:
+                    Utils::AttachColorTexture(m_ColorAttachments[n], GL_RGBA16F, m_Width, m_Height, n);
                     break;
                 /*case FramebufferTextureFormat::RGBA16F:
                     Utils::AttachColorTexture(m_ColorAttachments[n], GL_RGBA16F, m_Width, m_Height, n);

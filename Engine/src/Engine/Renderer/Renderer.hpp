@@ -23,7 +23,15 @@ namespace Engine {
 
         // end pre-pass and begin render pipeline
         static void End3DScene();
+        static void UpdateLighting(const math::mat4& ViewMatrix,
+            u32 numPointLights, const Light pointLights[32],
+            u32 numSpotLights, const Light spotLights[32],
+            const Light& sun, const math::mat4& projection);
+        static void UploadLights(const Ref<Shader> shader);
         static void Flush();
+
+        static void NextOutputMode();
+        static void PrintState();
 
         static void Submit(const math::mat4& transform = math::mat4());
         static void SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform);
