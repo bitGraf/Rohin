@@ -93,6 +93,10 @@ namespace Engine {
                         auto ambient_path = comp["u_ambient_path"].as<nbt::tag_string>().get();
                         m_BaseMaterial->Set("u_AmbientTexture", Texture2D::Create(ambient_path));
                     }
+                    if (comp.has_key("u_emissive_path")) {
+                        auto emissive_path = comp["u_emissive_path"].as<nbt::tag_string>().get();
+                        m_BaseMaterial->Set("u_EmissiveTexture", Texture2D::Create(emissive_path));
+                    }
 
 
                     //m_BaseMaterial->Set("u_AlbedoTexture", Texture2D::Create("run_tree/Data/Images/waffle/WaffleSlab2_albedo.png"));

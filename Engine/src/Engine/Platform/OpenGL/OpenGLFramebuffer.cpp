@@ -176,8 +176,8 @@ namespace Engine {
         }
 
         if (m_ColorAttachments.size() > 1) {
-            ENGINE_LOG_ASSERT(m_ColorAttachments.size() <= 4, "More color attachments not supported atm");
-            GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+            ENGINE_LOG_ASSERT(m_ColorAttachments.size() <= 5, "More color attachments not supported atm");
+            GLenum buffers[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
             glDrawBuffers(m_ColorAttachments.size(), buffers);
         }
         else if (m_ColorAttachments.size() == 0) {

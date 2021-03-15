@@ -159,10 +159,11 @@ namespace Engine {
         {
             FramebufferSpecification spec;
             spec.Attachments = {
-                {FramebufferTextureFormat::RGBA8}, // Albedo
-                {FramebufferTextureFormat::RGBA16F}, // View-space normal
-                {FramebufferTextureFormat::RGBA8, 0, 0, 0, 1}, // Ambient/Metallic/Roughness
+                FramebufferTextureFormat::RGBA8, // Albedo
+                FramebufferTextureFormat::RGBA16F, // View-space normal
+                FramebufferTextureFormat::RGBA8, // Ambient/Metallic/Roughness
                 {FramebufferTextureFormat::RGBA16F, 100, 100, 100, 1},  // Distance
+                FramebufferTextureFormat::RGBA8,  // Emissive
                 FramebufferTextureFormat::Depth  // Depth-buffer
             };
             s_Data.gBuffer = Framebuffer::Create(spec);
@@ -198,6 +199,7 @@ namespace Engine {
             "Depth",
             "Diffuse Lighting",
             "Specular Lighting",
+            "Emission",
             "Combined Output"
         };
         if (s_Data.OutputMode == outputModes.size())
@@ -312,6 +314,7 @@ namespace Engine {
         prePassShader->SetFloat("r_MetalnessTexToggle", 1.0f);
         prePassShader->SetFloat("r_RoughnessTexToggle", 1.0f);
         prePassShader->SetFloat("r_AmbientTexToggle",   1.0f);
+        prePassShader->SetFloat("r_EmissiveTexToggle",  1.0f);
     }
     
     void Renderer::End3DScene() {
@@ -345,6 +348,7 @@ namespace Engine {
         screenShader->SetInt("u_depth", 3);
         screenShader->SetInt("u_diffuse", 4);
         screenShader->SetInt("u_specular", 5);
+        screenShader->SetInt("u_emissive", 6);
         screenShader->SetInt("r_outputSwitch", s_Data.OutputMode);
         s_Data.gBuffer->BindTexture(0, 0);
         s_Data.gBuffer->BindTexture(1, 1);
@@ -352,6 +356,7 @@ namespace Engine {
         s_Data.gBuffer->BindTexture(3, 3);
         s_Data.DiffuseSpecularLighting->BindTexture(0, 4);
         s_Data.DiffuseSpecularLighting->BindTexture(1, 5);
+        s_Data.gBuffer->BindTexture(4, 6);
 
         SubmitFullscreenQuad();
         s_Data.screenBuffer->Unbind();

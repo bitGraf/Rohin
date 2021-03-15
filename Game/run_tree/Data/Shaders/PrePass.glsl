@@ -38,6 +38,7 @@ layout (location = 0) out vec4 out_Albedo; //RGBA8
 layout (location = 1) out vec4 out_Normal; //RGBA16F
 layout (location = 2) out vec4 out_AMR;    //RGBA8
 layout (location = 3) out vec4 out_Depth;  //R32F
+layout (location = 4) out vec4 out_Emissive;  //RGBA8
 
 // from vertex shader
 in VertexOutput {
@@ -53,6 +54,7 @@ uniform sampler2D u_NormalTexture;
 uniform sampler2D u_MetalnessTexture;
 uniform sampler2D u_RoughnessTexture;
 uniform sampler2D u_AmbientTexture;
+uniform sampler2D u_EmissiveTexture;
 
 // Material properties
 uniform vec3 u_AlbedoColor;
@@ -65,6 +67,7 @@ uniform float r_NormalTexToggle;
 uniform float r_MetalnessTexToggle;
 uniform float r_RoughnessTexToggle;
 uniform float r_AmbientTexToggle;
+uniform float r_EmissiveTexToggle;
 
 float linearize_depth(float d,float zNear,float zFar)
 {
@@ -76,6 +79,7 @@ void main()
 {
 	// Standard PBR inputs
 	vec3 Albedo = r_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord).rgb : u_AlbedoColor; 
+    vec3 Emissive = r_EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, vs_Input.TexCoord).rgb : vec3(0); 
 	float Metalness = r_MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, vs_Input.TexCoord).r : u_Metalness;
 	float Roughness = r_RoughnessTexToggle > 0.5 ?  texture(u_RoughnessTexture, vs_Input.TexCoord).r : u_Roughness;
     float Ambient = r_AmbientTexToggle > 0.5 ? texture(u_AmbientTexture, vs_Input.TexCoord).r : 1;
@@ -95,6 +99,6 @@ void main()
     out_Albedo = vec4(Albedo, 1);
 	out_Normal = vec4(Normal, 1);
     out_AMR = vec4(Ambient, Metalness, Roughness, 1);
-    //out_Depth = vec4(vs_Input.Position.z / farClipDistance, 0, 0, 1);//linearize_depth(gl_FragCoord.z, .01, 100);
-    out_Depth = vec4(length(vs_Input.Position.xyz), 0, 0, 1);//linearize_depth(gl_FragCoord.z, .01, 100);
+    out_Depth = vec4(length(vs_Input.Position.xyz), 0, 0, 1);
+    out_Emissive = vec4(Emissive, 1);
 }
