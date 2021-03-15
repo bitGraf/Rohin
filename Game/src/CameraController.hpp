@@ -103,7 +103,7 @@ public:
             updateTransform = true;
         }
 
-        if (Input::IsKeyPressed(KEY_CODE_T)) {
+        if (Input::IsKeyPressed(KEY_CODE_R)) {
             yaw = 0;
             pitch = 0;
             updateTransform = true;

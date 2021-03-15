@@ -68,6 +68,7 @@ uniform float r_MetalnessTexToggle;
 uniform float r_RoughnessTexToggle;
 uniform float r_AmbientTexToggle;
 uniform float r_EmissiveTexToggle;
+uniform float r_gammaCorrect;
 
 float linearize_depth(float d,float zNear,float zFar)
 {
@@ -75,11 +76,19 @@ float linearize_depth(float d,float zNear,float zFar)
     return 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
 }
 
+const float gamma = 2.2;
+vec3 gammaCorrect(vec3 srgb) {
+    if (r_gammaCorrect > 0.5)
+        return pow(srgb, vec3(gamma));
+    else
+        return srgb;
+}
+
 void main()
 {
 	// Standard PBR inputs
-	vec3 Albedo = r_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord).rgb : u_AlbedoColor; 
-    vec3 Emissive = r_EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, vs_Input.TexCoord).rgb : vec3(0); 
+	vec3 Albedo = gammaCorrect(r_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord).rgb : u_AlbedoColor);
+    vec3 Emissive = gammaCorrect(r_EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, vs_Input.TexCoord).rgb : vec3(0));
 	float Metalness = r_MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, vs_Input.TexCoord).r : u_Metalness;
 	float Roughness = r_RoughnessTexToggle > 0.5 ?  texture(u_RoughnessTexture, vs_Input.TexCoord).r : u_Roughness;
     float Ambient = r_AmbientTexToggle > 0.5 ? texture(u_AmbientTexture, vs_Input.TexCoord).r : 1;

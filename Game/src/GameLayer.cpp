@@ -251,6 +251,12 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     if (e.GetKeyCode() == KEY_CODE_I) {
         Renderer::PrintState();
     }
+    if (e.GetKeyCode() == KEY_CODE_T) {
+        Renderer::ToggleToneMapping();
+    }
+    if (e.GetKeyCode() == KEY_CODE_G) {
+        Renderer::ToggleGammaCorrection();
+    }
     return false;
 }
 

@@ -27,12 +27,15 @@ namespace Engine {
         // Render buffers
         Ref<Framebuffer> gBuffer;
         Ref<Framebuffer> DiffuseSpecularLighting;
+        Ref<Framebuffer> SSAO;
         Ref<Framebuffer> screenBuffer;
         //std::unordered_map<std::string, size_t> targetMap; // TODO: good idea, needs further thought
 
         Lightingdata Lights;
 
         u32 OutputMode;
+        bool ToneMap;
+        bool Gamma;
     };
 
     static RendererData s_Data;
@@ -73,9 +76,8 @@ namespace Engine {
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Normals.glsl");
 
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PrePass.glsl");
-        auto lightingShader = Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Lighting.glsl");
-        lightingShader->Bind();
-        //InitLights(lightingShader);
+        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Lighting.glsl");
+        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/SSAO.glsl");
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Screen.glsl");
 
         //s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/DebugCubeMap.tga");
@@ -171,10 +173,17 @@ namespace Engine {
         {
             FramebufferSpecification spec;
             spec.Attachments = {
-                FramebufferTextureFormat::RGBA8, // Diffuse
-                FramebufferTextureFormat::RGBA8, // Specular
+                FramebufferTextureFormat::RGBA16F, // Diffuse
+                FramebufferTextureFormat::RGBA16F, // Specular
             };
             s_Data.DiffuseSpecularLighting = Framebuffer::Create(spec);
+        }
+        {
+            FramebufferSpecification spec;
+            spec.Attachments = {
+                FramebufferTextureFormat::RGBA8, // SSAO output
+            };
+            s_Data.SSAO = Framebuffer::Create(spec);
         }
 
         {
@@ -185,6 +194,8 @@ namespace Engine {
 
         s_Data.OutputMode = 7;
         //s_Data.OutputMode = 0;
+        s_Data.ToneMap = true;
+        s_Data.Gamma = true;
     }
 
     void Renderer::NextOutputMode() {
@@ -200,6 +211,7 @@ namespace Engine {
             "Diffuse Lighting",
             "Specular Lighting",
             "Emission",
+            "SSAO + Baked ao",
             "Combined Output"
         };
         if (s_Data.OutputMode == outputModes.size())
@@ -263,6 +275,16 @@ namespace Engine {
             s_Data.Lights.pointLights[1].position.z);
     }
 
+    void Renderer::ToggleToneMapping() {
+        s_Data.ToneMap = !s_Data.ToneMap;
+        ENGINE_LOG_INFO("Tone Mapping: {0}", s_Data.ToneMap);
+    }
+
+    void Renderer::ToggleGammaCorrection() {
+        s_Data.Gamma = !s_Data.Gamma;
+        ENGINE_LOG_INFO("Gamma Correction: {0}", s_Data.Gamma);
+    }
+
     void Renderer::UploadLights(const Ref<Shader> shader) {
         // uploads lights to shader in view-space
 
@@ -315,6 +337,8 @@ namespace Engine {
         prePassShader->SetFloat("r_RoughnessTexToggle", 1.0f);
         prePassShader->SetFloat("r_AmbientTexToggle",   1.0f);
         prePassShader->SetFloat("r_EmissiveTexToggle",  1.0f);
+
+        prePassShader->SetFloat("r_gammaCorrect", s_Data.Gamma ? 1.0 : 0.0);
     }
     
     void Renderer::End3DScene() {
@@ -338,6 +362,15 @@ namespace Engine {
         SubmitFullscreenQuad();
         s_Data.DiffuseSpecularLighting->Unbind();
 
+        // SSAO pass
+        s_Data.SSAO->Bind();
+        auto ssaoShader = s_Data.ShaderLibrary->Get("SSAO");
+        ssaoShader->Bind();
+        ssaoShader->SetInt("u_amr", 0);
+        s_Data.gBuffer->BindTexture(2, 0);
+        SubmitFullscreenQuad();
+        s_Data.SSAO->Unbind();
+
         // Output to screen
         s_Data.screenBuffer->Bind();
         auto screenShader = s_Data.ShaderLibrary->Get("Screen");
@@ -349,7 +382,10 @@ namespace Engine {
         screenShader->SetInt("u_diffuse", 4);
         screenShader->SetInt("u_specular", 5);
         screenShader->SetInt("u_emissive", 6);
+        screenShader->SetInt("u_ssao", 7);
         screenShader->SetInt("r_outputSwitch", s_Data.OutputMode);
+        screenShader->SetFloat("r_toneMap", s_Data.ToneMap ? 1.0 : 0.0);
+        screenShader->SetFloat("r_gammaCorrect", s_Data.Gamma ? 1.0 : 0.0);
         s_Data.gBuffer->BindTexture(0, 0);
         s_Data.gBuffer->BindTexture(1, 1);
         s_Data.gBuffer->BindTexture(2, 2);
@@ -357,6 +393,7 @@ namespace Engine {
         s_Data.DiffuseSpecularLighting->BindTexture(0, 4);
         s_Data.DiffuseSpecularLighting->BindTexture(1, 5);
         s_Data.gBuffer->BindTexture(4, 6);
+        s_Data.SSAO->BindTexture(0, 7);
 
         SubmitFullscreenQuad();
         s_Data.screenBuffer->Unbind();

@@ -32,6 +32,8 @@ namespace Engine {
 
         static void NextOutputMode();
         static void PrintState();
+        static void ToggleToneMapping();
+        static void ToggleGammaCorrection();
 
         static void Submit(const math::mat4& transform = math::mat4());
         static void SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform);
