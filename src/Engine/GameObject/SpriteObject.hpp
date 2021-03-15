@@ -2,6 +2,7 @@
 #define SPRITE_OBJECT_H
 
 #include "GameObject.hpp"
+#include "Resource/Texture.hpp"
 
 class SpriteObject : public GameObject {
 public: 
@@ -14,11 +15,12 @@ public:
 	vec2 getSize();
 	GLfloat getRotate();
 	vec3 getColor();
+	Texture getTexture();
 
 	bool noCull;
 
 protected:
-	materialRef m_material;
+	Texture texture;
 	vec2 pos;
 	vec2 size;
 	GLfloat rotate;

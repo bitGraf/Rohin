@@ -36,4 +36,4 @@ ENTITY RENDERABLE "low_poly_barrel.001" "-1.47 -0.00 2.09" "-0.00 0.00 -0.00" "1
 ENTITY COLLISION "Collidor1" "0 2.5 0" "0 0 0" "1 1 1" "" ".75"
 ENTITY COLLISION "Collidor2" "1 2.5 0" "0 0 0" "1 1 1" "" ".5"
 
-ENTITY SPRITE "wood_crate" "-5.42 0.00 1.88" "38.27 0.00 -0.00" "1.00 1.00 -1.00" "" "testObject" "0.00 0.00" "800.00 600.00" "0.00" "1.00 1.00 1.00" "0.25"
+ENTITY SPRITE "wood_crate" "-5.42 0.00 1.88" "38.27 0.00 -0.00" "1.00 1.00 -1.00" "" "Testing.png" "0.00 0.00" "800.00 600.00" "0.00" "1.00 1.00 1.00" "0.25"

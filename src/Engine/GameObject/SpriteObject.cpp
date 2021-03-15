@@ -3,7 +3,6 @@
 const char* SpriteObject::_obj_type_SpriteObject = "Sprite";
 
 SpriteObject::SpriteObject() :
-	m_material(nullptr),
 	m_cullRadius(1),
 	noCull(true)
 {
@@ -11,16 +10,20 @@ SpriteObject::SpriteObject() :
 }
 
 void SpriteObject::Create(istringstream& iss, ResourceManager* resource) {
-
 	GameObject::Create(iss, resource);
-
-	m_material = resource->getMaterial(getNextString(iss));
+	std::cout << "Texture id for sprite is " << texture.glTextureID << "\n";
+	texture.loadImage(getNextString(iss));
 	pos = getNextVec2(iss);
 	size = getNextVec2(iss);
 	rotate = getNextFloat(iss);
 	color = getNextVec3(iss);
 	m_cullRadius = getNextFloat(iss);
 }
+
+Texture SpriteObject::getTexture() {
+	return texture;
+}
+
 
 vec2 SpriteObject::getPos() {
 	return pos;

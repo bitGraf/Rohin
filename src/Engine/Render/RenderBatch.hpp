@@ -8,6 +8,7 @@
 #include "Scene/EnvironmentMap.hpp"
 #include "Scene/Material.hpp"
 class Scene;
+class Texture;
 
 using namespace math;
 
@@ -20,10 +21,12 @@ struct DrawCall {
 };
 
 struct SpriteDrawCall {
+
     vec2 pos;
     vec2 size;
     GLfloat rotate;
     vec3 color;
+    GLuint texId = 0;
     UID_t id = 0;
 };
 

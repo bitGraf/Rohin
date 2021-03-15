@@ -17,7 +17,7 @@ public:
 	SpriteRenderer();
 	~SpriteRenderer();
 
-	void DrawSprite(Texture &texture, vec2 position, vec2 size = vec2(10, 10),
+	void DrawSprite(GLuint texId, vec2 position, vec2 size = vec2(10, 10),
 		GLfloat rotate = 0.0f, vec3 color = vec3(1.0f));
 	void initRenderData(u32 width, u32 height);
 	void resize(u32 width, u32 height);

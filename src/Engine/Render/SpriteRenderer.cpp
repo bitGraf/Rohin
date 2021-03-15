@@ -43,7 +43,7 @@ void SpriteRenderer::initRenderData(u32 width, u32 height) {
 	glBindVertexArray(0);
 }
 
-void SpriteRenderer::DrawSprite(Texture &texture, vec2 position, vec2 size,
+void SpriteRenderer::DrawSprite(GLuint texId, vec2 position, vec2 size,
 	GLfloat rotate, vec3 color)
 {
 	//Prepare transformations
@@ -61,7 +61,7 @@ void SpriteRenderer::DrawSprite(Texture &texture, vec2 position, vec2 size,
 	this->spriteShader.setMat4("projection", orthoMat);
 	
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture.glTextureID);
+	glBindTexture(GL_TEXTURE_2D, texId);
 	glBindVertexArray(this->quadVAO);
 	//glCullFace(GL_FRONT);
 	glDisable(GL_DEPTH_TEST);
