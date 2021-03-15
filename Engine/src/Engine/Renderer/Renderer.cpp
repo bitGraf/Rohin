@@ -4,10 +4,6 @@
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/Framebuffer.hpp"
 
-// REMOVE
-#include <glad/glad.h>
-// REMOVE
-
 namespace Engine {
 
     struct RendererData {
@@ -18,13 +14,9 @@ namespace Engine {
         Ref<VertexArray> debug_coordinate_axis; //lineRender
 
         // Render buffers
-        //Ref<Framebuffer> gBuffer;
-        //Ref<Framebuffer> screenBuffer;
-        GLuint gBuffer, g_rt1, g_rt2, g_rt3, g_rb;
-
-        Ref<Texture2D> Albedo;
-        //Ref<Texture2D> ViewSpaceNormal;
-        //Ref<Texture2D> AmbientMetalnessRoughness;
+        Ref<Framebuffer> gBuffer;
+        Ref<Framebuffer> screenBuffer;
+        std::unordered_map<std::string, size_t> targetMap;
     };
 
     static RendererData s_Data;
@@ -43,7 +35,6 @@ namespace Engine {
 
         //s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/DebugCubeMap.tga");
         s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/snowbox.png");
-        s_Data.Albedo = Texture2D::Create("run_tree/Data/Images/frog.png");
 
         // Create fullscreen quad
         {
@@ -123,62 +114,21 @@ namespace Engine {
         {
             FramebufferSpecification spec;
             spec.Attachments = {
-                FramebufferTextureFormat::RGB8,
-                FramebufferTextureFormat::RGB8,
-                FramebufferTextureFormat::RGB8,
-                FramebufferTextureFormat::Depth
+                FramebufferTextureFormat::RGBA8, // Albedo
+                FramebufferTextureFormat::RGBA8, // View-space normal
+                FramebufferTextureFormat::RGBA8, // Ambient/Metallic/Roughness
+                FramebufferTextureFormat::Depth  // Depth
             };
-            //s_Data.gBuffer = Framebuffer::Create(spec);
+            s_Data.gBuffer = Framebuffer::Create(spec);
+            s_Data.targetMap["Albedo"] = 0;
+            s_Data.targetMap["Normal"] = 1;
+            s_Data.targetMap["AMR"] = 2;
         }
 
         {
             FramebufferSpecification spec;
             spec.SwapChainTarget = true;
-            //s_Data.screenBuffer = Framebuffer::Create(spec);
-        }
-
-        // OpenGL nonsense
-        {
-            auto err = glGetError();
-            glGenFramebuffers(1, &s_Data.gBuffer);
-            glBindFramebuffer(GL_FRAMEBUFFER, s_Data.gBuffer);
-            // position color buffer
-            glGenTextures(1, &s_Data.g_rt1);
-            glBindTexture(GL_TEXTURE_2D, s_Data.g_rt1);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, s_Data.g_rt1, 0);
-            if (glGetError() != GL_NO_ERROR) { __debugbreak(); }
-            // normal color buffer
-            glGenTextures(1, &s_Data.g_rt2);
-            glBindTexture(GL_TEXTURE_2D, s_Data.g_rt2);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, s_Data.g_rt2, 0);
-            if (glGetError() != GL_NO_ERROR) { __debugbreak(); }
-            // color + specular color buffer
-            glGenTextures(1, &s_Data.g_rt3);
-            glBindTexture(GL_TEXTURE_2D, s_Data.g_rt3);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, s_Data.g_rt3, 0);
-            if (glGetError() != GL_NO_ERROR) { __debugbreak(); }
-            // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-            unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-            glDrawBuffers(3, attachments);
-            // create and attach depth buffer (renderbuffer)
-            glGenRenderbuffers(1, &s_Data.g_rb);
-            glBindRenderbuffer(GL_RENDERBUFFER, s_Data.g_rb);
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1280, 720);
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, s_Data.g_rb);
-            // finally check if framebuffer is complete
-            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-                __debugbreak();
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            if (glGetError() != GL_NO_ERROR) { __debugbreak(); }
+            s_Data.screenBuffer = Framebuffer::Create(spec);
         }
     }
 
@@ -233,9 +183,8 @@ namespace Engine {
         u32 numSpotLights, const Light spotLights[32],
         const Light& sun) {
 
-        //s_Data.gBuffer->Bind();
-        glBindFramebuffer(GL_FRAMEBUFFER, s_Data.gBuffer);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        s_Data.gBuffer->Bind();
+        RenderCommand::Clear();
         math::mat4 ViewMatrix = math::invertViewMatrix(transform);
         math::mat4 ProjectionMatrix = camera.GetProjection();
         math::vec3 camPos = transform.col4().XYZ();
@@ -254,27 +203,21 @@ namespace Engine {
     }
     
     void Renderer::End3DScene() {
-        //s_Data.gBuffer->Unbind();
+        s_Data.gBuffer->Unbind();
 
         // Lighting Pass
-        //s_Data.screenBuffer->Bind();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        s_Data.screenBuffer->Bind();
         auto screenShader = s_Data.ShaderLibrary->Get("Screen");
         screenShader->Bind();
         screenShader->SetInt("u_tex1", 0);
         screenShader->SetInt("u_tex2", 1);
         screenShader->SetInt("u_tex3", 2);
-        //s_Data.gBuffer->BindTexture(0, 0);
-        //s_Data.Albedo->Bind(0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, s_Data.g_rt1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, s_Data.g_rt2);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, s_Data.g_rt3);
+        s_Data.gBuffer->BindTexture(0, 0);
+        s_Data.gBuffer->BindTexture(1, 1);
+        s_Data.gBuffer->BindTexture(2, 2);
 
         SubmitFullscreenQuad();
-        //s_Data.screenBuffer->Unbind();
+        s_Data.screenBuffer->Unbind();
 
         Flush();
     }

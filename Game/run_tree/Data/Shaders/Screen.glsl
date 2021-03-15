@@ -21,11 +21,12 @@ in vec2 texcoord;
 uniform sampler2D u_tex1;
 uniform sampler2D u_tex2;
 uniform sampler2D u_tex3;
+//uniform sampler2D u_tex4;
 
 void main() {
     vec4 rt1 = texture(u_tex1, texcoord);
-    vec4 rt2 = texture(u_tex1, texcoord);
-    vec4 rt3 = texture(u_tex1, texcoord);
+    vec4 rt2 = texture(u_tex2, texcoord);
+    vec4 rt3 = texture(u_tex3, texcoord);
 
     vec3 Albedo = rt1.rgb;
 	vec3 Normal = rt2.rgb;
@@ -33,5 +34,10 @@ void main() {
     float Metalness = rt3.g;
     float Roughness = rt3.b;
 
-    FragColor = vec4(Albedo, 1);
+    // this just stops the compiler from optimizing these vars 
+    // out and complaining it can't find the uniforms :(
+    float value = length(Albedo) + length(Normal) + Ambient + Metalness + Roughness;
+    value = min(max(value, 0), 1) * 0.000001;
+
+    FragColor = vec4(Albedo, 1+value);
 }
