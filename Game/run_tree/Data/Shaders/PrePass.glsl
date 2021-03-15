@@ -34,9 +34,10 @@ void main() {
 #type fragment
 #version 430 core
 
-layout (location = 0) out vec4 out_RT1;
-layout (location = 1) out vec4 out_RT2;
-layout (location = 2) out vec4 out_RT3;
+layout (location = 0) out vec4 out_Albedo; //RGBA8
+layout (location = 1) out vec4 out_Normal; //RGBA16F
+layout (location = 2) out vec4 out_AMR;    //RGBA8
+layout (location = 3) out vec4 out_Depth;  //R32F
 
 // from vertex shader
 in VertexOutput {
@@ -65,6 +66,12 @@ uniform float r_MetalnessTexToggle;
 uniform float r_RoughnessTexToggle;
 uniform float r_AmbientTexToggle;
 
+float linearize_depth(float d,float zNear,float zFar)
+{
+    float z_n = 2.0 * d - 1.0;
+    return 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
+}
+
 void main()
 {
 	// Standard PBR inputs
@@ -82,8 +89,12 @@ void main()
 		Normal = normalize(vs_Input.ViewNormalMatrix * Normal);
 	}
 
+    float farClipDistance = 100.0f;
+
     // write to render targets
-    out_RT1 = vec4(Albedo, 1);
-	out_RT2 = vec4(Normal, 1);
-    out_RT3 = vec4(Ambient, Metalness, Roughness, 1);
+    out_Albedo = vec4(Albedo, 1);
+	out_Normal = vec4(Normal, 1);
+    out_AMR = vec4(Ambient, Metalness, Roughness, 1);
+    //out_Depth = vec4(vs_Input.Position.z / farClipDistance, 0, 0, 1);//linearize_depth(gl_FragCoord.z, .01, 100);
+    out_Depth = vec4(length(vs_Input.Position.xyz), 0, 0, 1);//linearize_depth(gl_FragCoord.z, .01, 100);
 }

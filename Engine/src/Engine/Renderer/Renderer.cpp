@@ -14,6 +14,7 @@ namespace Engine {
         Light sun;
 
         math::mat4 projection;
+        math::mat4 view;
     };
 
     struct RendererData {
@@ -36,6 +37,32 @@ namespace Engine {
 
     static RendererData s_Data;
 
+    void InitLights(const Ref<Shader> shader) {
+        // uploads lights to shader in view-space
+
+        // set directional light
+        shader->SetVec3("r_sun.Direction", math::vec3(0, 0, 0));
+        shader->SetVec3("r_sun.Color", math::vec3(0, 0, 0));
+        shader->SetFloat("r_sun.Strength", 0);
+
+        // set point lights
+        for (int n = 0; n < 32; n++) {
+            shader->SetVec3("r_pointLights[" + std::to_string(n) + "].Position", math::vec3(0, 0, 0));
+            shader->SetVec3("r_pointLights[" + std::to_string(n) + "].Color", math::vec3(0, 0, 0));
+            shader->SetFloat("r_pointLights[" + std::to_string(n) + "].Strength", 0);
+        }
+
+        // set spot lights
+        for (int n = 0; n < 32; n++) {
+            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Position", math::vec3(0,0,0));
+            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Direction", math::vec3(0, 0, 0));
+            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Color", math::vec3(0, 0, 0));
+            shader->SetFloat("r_spotLights[" + std::to_string(n) + "].Strength", 0);
+            shader->SetFloat("r_spotLights[" + std::to_string(n) + "].Inner", 0);
+            shader->SetFloat("r_spotLights[" + std::to_string(n) + "].Outer", 0);
+        }
+    }
+
     void Renderer::Init() {
         RenderCommand::Init();
 
@@ -46,7 +73,9 @@ namespace Engine {
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Normals.glsl");
 
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PrePass.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Lighting.glsl");
+        auto lightingShader = Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Lighting.glsl");
+        lightingShader->Bind();
+        //InitLights(lightingShader);
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Screen.glsl");
 
         //s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/DebugCubeMap.tga");
@@ -130,10 +159,11 @@ namespace Engine {
         {
             FramebufferSpecification spec;
             spec.Attachments = {
-                FramebufferTextureFormat::RGBA8, // Albedo
-                FramebufferTextureFormat::RGBA16F, // View-space normal
-                FramebufferTextureFormat::RGBA8, // Ambient/Metallic/Roughness
-                FramebufferTextureFormat::Depth  // Depth
+                {FramebufferTextureFormat::RGBA8}, // Albedo
+                {FramebufferTextureFormat::RGBA16F}, // View-space normal
+                {FramebufferTextureFormat::RGBA8, 0, 0, 0, 1}, // Ambient/Metallic/Roughness
+                {FramebufferTextureFormat::RGBA16F, 100, 100, 100, 1},  // Distance
+                FramebufferTextureFormat::Depth  // Depth-buffer
             };
             s_Data.gBuffer = Framebuffer::Create(spec);
         }
@@ -152,7 +182,8 @@ namespace Engine {
             s_Data.screenBuffer = Framebuffer::Create(spec);
         }
 
-        s_Data.OutputMode = 0;
+        s_Data.OutputMode = 7;
+        //s_Data.OutputMode = 0;
     }
 
     void Renderer::NextOutputMode() {
@@ -164,8 +195,10 @@ namespace Engine {
             "Metalness",
             "Roughness",
             "Ambient/Metallic/Roughness",
+            "Depth",
             "Diffuse Lighting",
-            "Specular Lighting"
+            "Specular Lighting",
+            "Combined Output"
         };
         if (s_Data.OutputMode == outputModes.size())
             s_Data.OutputMode = 0;
@@ -198,12 +231,11 @@ namespace Engine {
         u32 numSpotLights, const Light spotLights[32],
         const Light& sun, const math::mat4& projection) {
 
-        s_Data.Lights.projection = projection;
         s_Data.Lights.NumPointLights = numPointLights;
         s_Data.Lights.NumSpotLights = numSpotLights;
-        memcpy(&s_Data.Lights.sun, &sun, sizeof(Light));
-        memcpy(s_Data.Lights.pointLights, &pointLights, sizeof(Light)*numPointLights);
-        memcpy(s_Data.Lights.spotLights, &spotLights, sizeof(Light)*numSpotLights);
+        memcpy(&s_Data.Lights.sun, &(sun), sizeof(Light));
+        memcpy(s_Data.Lights.pointLights, pointLights, sizeof(Light)*numPointLights);
+        memcpy(s_Data.Lights.spotLights, spotLights, sizeof(Light)*numSpotLights);
 
         math::mat4 normalMatrix = math::mat4(math::mat3(ViewMatrix)); //TODO: check the math to see if this is needed
 
@@ -216,13 +248,17 @@ namespace Engine {
             s_Data.Lights.spotLights[n].direction = (normalMatrix * math::vec4(s_Data.Lights.spotLights[n].direction, 0)).XYZ().get_unit();
         }
         s_Data.Lights.sun.direction = (normalMatrix * math::vec4(s_Data.Lights.sun.direction, 0)).XYZ().get_unit();
+
+        // for debugging
+        s_Data.Lights.projection = projection;
+        s_Data.Lights.view = ViewMatrix;
     }
 
     void Renderer::PrintState() {
-        ENGINE_LOG_TRACE("View-space sun direction: <{0},{1},{2}>", 
-            s_Data.Lights.sun.direction.x, 
-            s_Data.Lights.sun.direction.y, 
-            s_Data.Lights.sun.direction.z);
+        ENGINE_LOG_TRACE("View-space pl position: <{0},{1},{2}>", 
+            s_Data.Lights.pointLights[1].position.x, 
+            s_Data.Lights.pointLights[1].position.y,
+            s_Data.Lights.pointLights[1].position.z);
     }
 
     void Renderer::UploadLights(const Ref<Shader> shader) {
@@ -262,8 +298,9 @@ namespace Engine {
         UpdateLighting(ViewMatrix, numPointLights, pointLights, numSpotLights, spotLights, sun, ProjectionMatrix);
 
         s_Data.gBuffer->Bind();
-        RenderCommand::SetClearColor(math::vec4(0, 0, 0, 0));
-        RenderCommand::Clear();
+        //RenderCommand::SetClearColor(math::vec4(0, 0, 0, 0));
+        //RenderCommand::Clear(); //same for all color attachments
+        s_Data.gBuffer->ClearBuffers();
         auto prePassShader = s_Data.ShaderLibrary->Get("PrePass");
         prePassShader->Bind();
         prePassShader->SetMat4("r_Projection", ProjectionMatrix);
@@ -285,9 +322,16 @@ namespace Engine {
         auto lightingShader = s_Data.ShaderLibrary->Get("Lighting");
         lightingShader->Bind();
         lightingShader->SetInt("u_normal", 0);
+        lightingShader->SetInt("u_distance", 1);
+        lightingShader->SetInt("u_amr", 2);
+        lightingShader->SetInt("u_albedo", 3);
         s_Data.gBuffer->BindTexture(1, 0);
+        s_Data.gBuffer->BindTexture(3, 1);
+        s_Data.gBuffer->BindTexture(2, 2);
+        s_Data.gBuffer->BindTexture(0, 3);
         UploadLights(lightingShader);
         lightingShader->SetMat4("r_Projection", s_Data.Lights.projection);
+        lightingShader->SetMat4("r_View", s_Data.Lights.view);
         SubmitFullscreenQuad();
         s_Data.DiffuseSpecularLighting->Unbind();
 
@@ -298,14 +342,16 @@ namespace Engine {
         screenShader->SetInt("u_albedo", 0);
         screenShader->SetInt("u_normal", 1);
         screenShader->SetInt("u_amr", 2);
-        screenShader->SetInt("u_diffuse", 3);
-        screenShader->SetInt("u_specular", 4);
+        screenShader->SetInt("u_depth", 3);
+        screenShader->SetInt("u_diffuse", 4);
+        screenShader->SetInt("u_specular", 5);
         screenShader->SetInt("r_outputSwitch", s_Data.OutputMode);
         s_Data.gBuffer->BindTexture(0, 0);
         s_Data.gBuffer->BindTexture(1, 1);
         s_Data.gBuffer->BindTexture(2, 2);
-        s_Data.DiffuseSpecularLighting->BindTexture(0, 3);
-        s_Data.DiffuseSpecularLighting->BindTexture(1, 4);
+        s_Data.gBuffer->BindTexture(3, 3);
+        s_Data.DiffuseSpecularLighting->BindTexture(0, 4);
+        s_Data.DiffuseSpecularLighting->BindTexture(1, 5);
 
         SubmitFullscreenQuad();
         s_Data.screenBuffer->Unbind();

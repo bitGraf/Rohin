@@ -27,6 +27,7 @@ namespace Engine {
             case GL_RG32F:
             case GL_RGBA16F:
             case GL_RGB32F:
+            case GL_R32F:
             case GL_RGBA32F: return GL_FLOAT;
             case GL_DEPTH24_STENCIL8: return GL_UNSIGNED_INT_24_8;
             }
@@ -39,12 +40,14 @@ namespace Engine {
         {
             switch (format)
             {
+            case GL_R32F:
             case GL_R8: return GL_RED;
             case GL_RGB8: return GL_RGB;
             case GL_RGBA:
             case GL_RGBA8: return GL_RGBA;
             case GL_RGB32F: return GL_RGB;
             case GL_RGBA16F: return GL_RGBA;
+            case GL_RGBA32F: return GL_RGBA;
             }
 
             ENGINE_LOG_ASSERT(false, "Unknown format!");
@@ -106,6 +109,16 @@ namespace Engine {
         m_ColorAttachments.clear();
     }
 
+    void OpenGLFramebuffer::ClearBuffers() const {
+        for (int n = 0; n < m_ColorAttachments.size(); n++) {
+            glClearTexImage(m_ColorAttachments[n], 0, GL_RGBA, GL_FLOAT, m_Specification.Attachments.Attachments[n].clearColor);
+        }
+
+        if (m_DepthAttachmentFormat != FramebufferTextureFormat::None) {
+            glClear(GL_DEPTH_BUFFER_BIT);
+        }
+    }
+
     void OpenGLFramebuffer::Invalidate() {
 
         if (m_FramebufferID) {
@@ -129,15 +142,19 @@ namespace Engine {
                 case FramebufferTextureFormat::RED8:
                     Utils::AttachColorTexture(m_ColorAttachments[n], GL_R8, m_Width, m_Height, n);
                     break;
+                case FramebufferTextureFormat::R32F:
+                    Utils::AttachColorTexture(m_ColorAttachments[n], GL_R32F, m_Width, m_Height, n);
+                    break;
                 case FramebufferTextureFormat::RGBA8:
                     Utils::AttachColorTexture(m_ColorAttachments[n], GL_RGBA8, m_Width, m_Height, n);
                     break;
                 case FramebufferTextureFormat::RGBA16F:
                     Utils::AttachColorTexture(m_ColorAttachments[n], GL_RGBA16F, m_Width, m_Height, n);
                     break;
-                /*case FramebufferTextureFormat::RGBA16F:
-                    Utils::AttachColorTexture(m_ColorAttachments[n], GL_RGBA16F, m_Width, m_Height, n);
+                case FramebufferTextureFormat::RGBA32F:
+                    Utils::AttachColorTexture(m_ColorAttachments[n], GL_RGBA32F, m_Width, m_Height, n);
                     break;
+                /*
                 case FramebufferTextureFormat::RG32F:
                     Utils::AttachColorTexture(m_ColorAttachments[n], GL_RG32F, m_Width, m_Height, n);
                     break;*/

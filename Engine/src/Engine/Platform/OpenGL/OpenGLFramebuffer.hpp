@@ -14,6 +14,7 @@ namespace Engine {
         virtual void Bind() const override;
         virtual void Unbind() const override;
 
+        virtual void ClearBuffers() const override;
         virtual void BindTexture(u32 attachmentIndex = 0, u32 slot = 0) const override;
 
         virtual u32 GetWidth() const override { return m_Specification.Width; }

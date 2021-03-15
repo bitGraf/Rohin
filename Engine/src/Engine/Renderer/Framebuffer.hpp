@@ -14,6 +14,8 @@ namespace Engine {
         //RGB8,
         RGBA8,
         RGBA16F,
+        RGBA32F,
+        R32F,
         //RGB32F,
         //RG32F,
 
@@ -28,9 +30,12 @@ namespace Engine {
     struct FramebufferTextureSpecification
     {
         FramebufferTextureSpecification() = default;
-        FramebufferTextureSpecification(FramebufferTextureFormat format) : TextureFormat(format) {}
+        FramebufferTextureSpecification(FramebufferTextureFormat format) : TextureFormat(format), clearColor{0,0,0,1} {}
+        FramebufferTextureSpecification(FramebufferTextureFormat format, float r, float g, float b, float a) 
+            : TextureFormat(format), clearColor{ r, g, b, a } {}
 
         FramebufferTextureFormat TextureFormat;
+        float clearColor[4];
         // TODO: add options for filtering/wrap
     };
 
@@ -63,6 +68,8 @@ namespace Engine {
 
         virtual void Resize(u32 width, u32 height) = 0;
         virtual void BindTexture(u32 attachmentIndex = 0, u32 slot = 0) const = 0;
+
+        virtual void ClearBuffers() const = 0;
 
         virtual u32 GetWidth() const = 0;
         virtual u32 GetHeight() const = 0;

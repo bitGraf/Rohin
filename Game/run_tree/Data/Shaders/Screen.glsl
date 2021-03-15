@@ -21,25 +21,30 @@ in vec2 texcoord;
 uniform sampler2D u_albedo;
 uniform sampler2D u_normal;
 uniform sampler2D u_amr;
+uniform sampler2D u_depth;
 uniform sampler2D u_diffuse;
 uniform sampler2D u_specular;
 
 uniform int r_outputSwitch;
 
+float makeDepthPretty(float d);
+
 void main() {
     vec4 rt1 = texture(u_albedo, texcoord);
     vec4 rt2 = texture(u_normal, texcoord);
     vec4 rt3 = texture(u_amr, texcoord);
-    vec4 rt4 = texture(u_diffuse, texcoord);
-    vec4 rt5 = texture(u_specular, texcoord);
+    vec4 rt4 = texture(u_depth, texcoord);
+    vec4 rt5 = texture(u_diffuse, texcoord);
+    vec4 rt6 = texture(u_specular, texcoord);
 
     vec3 Albedo = rt1.rgb;
 	vec3 Normal = rt2.rgb;
     float Ambient = rt3.r;
     float Metalness = rt3.g;
     float Roughness = rt3.b;
-    vec3 Diffuse = rt4.rgb;
-    vec3 Specular = rt5.rgb;
+    float depth = rt4.r;
+    vec3 Diffuse = rt5.rgb;
+    vec3 Specular = rt6.rgb;
 
     // this just stops the compiler from optimizing these vars 
     // out and complaining it can't find the uniforms :(
@@ -59,9 +64,17 @@ void main() {
     else if (r_outputSwitch == 5)
         FragColor = vec4(rt3.rgb, 1);
     else if (r_outputSwitch == 6)
-        FragColor = vec4(Diffuse, 1);
+        FragColor = vec4(vec3(makeDepthPretty(depth)), 1);
     else if (r_outputSwitch == 7)
+        FragColor = vec4(Diffuse, 1);
+    else if (r_outputSwitch == 8)
         FragColor = vec4(Specular, 1);
+    else if (r_outputSwitch == 9)
+        FragColor = vec4((Albedo*Diffuse + Specular)*Ambient, 1);
     else
         FragColor = vec4(1, 0, 0, 1);
+}
+
+float makeDepthPretty(float d) {
+    return d/15;
 }

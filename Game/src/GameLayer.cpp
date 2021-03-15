@@ -37,12 +37,13 @@ void GameLayer::OnAttach() {
     m_ActiveScene = std::make_shared<Engine::Scene>();
     //m_ActiveScene->loadFromFile("run_tree/Data/Levels/nbtTest.scene");
 
+    Engine::MeshCatalog::Register("mesh_cube", "run_tree/Data/Models/cube.nbt", true);
     Engine::MeshCatalog::Register("mesh_ball", "run_tree/Data/Models/sphere.nbt", true);
-    Engine::MeshCatalog::Register("mesh_cyl", "run_tree/Data/Models/cylinder.nbt", true);
-    //Engine::MeshCatalog::Register("mesh_helmet", "run_tree/Data/Models/helmet.nbt", true); // TODO: this is slow
+    //Engine::MeshCatalog::Register("mesh_cyl", "run_tree/Data/Models/cylinder.nbt", true);
+    Engine::MeshCatalog::Register("mesh_helmet", "run_tree/Data/Models/helmet.nbt", true); // TODO: this is slow
     for (int nx = 0; nx < 5; nx++) {
         auto ball = m_ActiveScene->CreateGameObject("ball " + nx);
-        auto mesh = Engine::MeshCatalog::Get("mesh_cyl");
+        auto mesh = Engine::MeshCatalog::Get("mesh_helmet");
         ball.AddComponent<Engine::MeshRendererComponent>(mesh);
 
         auto& trans = ball.GetComponent<Engine::TransformComponent>().Transform;
@@ -50,27 +51,38 @@ void GameLayer::OnAttach() {
         trans.translate(vec3(nx-2, 1.0f, 0));
         trans.scale(vec3(.45f, .45f, .45f));
     }
+    { // Platform
+        auto platform = m_ActiveScene->CreateGameObject("Platform");
+        auto rectMesh = Engine::MeshCatalog::Get("mesh_cube");
+        platform.AddComponent<Engine::MeshRendererComponent>(rectMesh);
+
+        auto& trans = platform.GetComponent<Engine::TransformComponent>().Transform;
+        trans = mat4();
+        trans.scale(vec3(5.0f, .25f, 5.0f));
+        trans.translate(vec3(0, -1.0f, 0));
+    }
 
     { // Lights
         auto light = m_ActiveScene->CreateGameObject("light 1");
-        light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(1,1,1), 2, 0, 0);
+        //light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(1,1,1), 2, 0, 0);
         auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
         trans.translate(vec3(0, 2, 0));
     }
     {
         auto light = m_ActiveScene->CreateGameObject("light 2");
-        light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(.2, .8, .6), 4, 0, 0);
+        //light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(.2, .8, .6), 4, 0, 0);
         auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
         trans.translate(vec3(2.5, 3.6, 2));
     }
     {
         auto light = m_ActiveScene->CreateGameObject("Sun");
-        light.AddComponent<Engine::LightComponent>(Engine::LightType::Directional, vec3(.4, .8, .1), 5, 0, 0);
+        // 255, 236, 224
+        light.AddComponent<Engine::LightComponent>(Engine::LightType::Directional, vec3(1.0f, 236.0f/255.0f, 225.0f/255.0f), 5, 0, 0);
         auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
-        trans = mat4();
-        trans *= math::createYawPitchRollMatrix(0, 0, 0);
+        //trans = mat4();
+        trans = math::createYawPitchRollMatrix(45, 0, -80);
     }
 
     { // Player
