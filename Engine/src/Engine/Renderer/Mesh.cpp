@@ -62,7 +62,7 @@ namespace Engine {
                 m_Submeshes.push_back(sm);
 
                 // Set shader info
-                m_MeshShader = Renderer::GetShaderLibrary()->Get("PBR_static"); // TODO: allow meshes to choose their shader?
+                m_MeshShader = Renderer::GetShaderLibrary()->Get("PrePass"); // TODO: allow meshes to choose their shader?
                 m_BaseMaterial = std::make_shared<Material>(m_MeshShader);
 
                 // Manually set material struct
@@ -88,6 +88,10 @@ namespace Engine {
                     if (comp.has_key("u_roughness_path")) {
                         auto roughness_path = comp["u_roughness_path"].as<nbt::tag_string>().get();
                         m_BaseMaterial->Set("u_RoughnessTexture", Texture2D::Create(roughness_path));
+                    }
+                    if (comp.has_key("u_ambient_path")) {
+                        auto ambient_path = comp["u_ambient_path"].as<nbt::tag_string>().get();
+                        m_BaseMaterial->Set("u_AmbientTexture", Texture2D::Create(ambient_path));
                     }
 
 

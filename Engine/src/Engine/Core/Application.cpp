@@ -4,6 +4,7 @@
 #include "Engine/Core/Logger.hpp"
 
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Renderer/TextRenderer.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -19,6 +20,7 @@ namespace Engine {
         m_Window->SetEventCallback(BIND_EVENT_FN(Application::HandleEvent));
 
         Renderer::Init();
+        TextRenderer::Init();
 
         m_GuiLayer = new GuiLayer();
         PushOverlay(m_GuiLayer);
@@ -26,6 +28,7 @@ namespace Engine {
 
     Application::~Application() {
         Renderer::Shutdown();
+        TextRenderer::Shutdown();
     }
 
     void Application::Close() {

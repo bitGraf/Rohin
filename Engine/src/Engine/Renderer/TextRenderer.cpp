@@ -63,13 +63,13 @@ namespace Engine {
     void TextRenderer::Shutdown() {
     }
 
-    void TextRenderer::BeginScene() {
+    void TextRenderer::BeginTextRendering() {
         auto textShader = s_Data.ShaderLibrary->Get("Text");
         textShader->Bind();
         textShader->SetMat4("r_orthoProjection", s_Data.orthoMat);
     }
     
-    void TextRenderer::EndScene() {
+    void TextRenderer::EndTextRendering() {
         Flush();
     }
 

@@ -3,6 +3,7 @@
 
 #include "Engine/GameObject/GameObject.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Renderer/TextRenderer.hpp"
 #include "Engine/GameObject/Components.hpp"
 
 #include "Engine/Resources/nbt/nbt.hpp"
@@ -307,7 +308,7 @@ namespace Engine {
 
         // Render
         if (mainCamera) {
-            Renderer::BeginScene(*mainCamera, *mainTransform, numPointLight, scenePointLights, numSpotLight, sceneSpotLights, sceneSun);
+            Renderer::Begin3DScene(*mainCamera, *mainTransform, numPointLight, scenePointLights, numSpotLight, sceneSpotLights, sceneSun);
 
             // messy group
             // TODO: figure out how to get the group function to work
@@ -319,33 +320,21 @@ namespace Engine {
                     auto& trans = m_Registry.get<TransformComponent>(n);
                     auto& tag = m_Registry.get<TagComponent>(n);
 
-                    if (mesh.Mesh)
+                    if (mesh.Mesh) {
                         Renderer::SubmitMesh(mesh.Mesh, trans.Transform);
-                }
-            }
-
-            // draw surface normals
-            if (m_showNormals) {
-                for (auto n : m_Registry.GetRegList()) {
-                    // check if entity n has both transform and mesh
-                    if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshRendererComponent>(n)) {
-                        // good to go
-                        auto& mesh = m_Registry.get<MeshRendererComponent>(n);
-                        auto& trans = m_Registry.get<TransformComponent>(n);
-                        auto& tag = m_Registry.get<TagComponent>(n);
-
-                        if (mesh.Mesh)
-                            Renderer::SubmitMesh_drawNormals(mesh.Mesh, trans.Transform);
+                        //if (m_showNormals) // should probably be in a separate part...
+                        //    Renderer::SubmitMesh_drawNormals(mesh.Mesh, trans.Transform);
                     }
                 }
             }
-
-            if (m_showEntityLocations) {
-                Renderer::RenderDebug(*mainCamera, *mainTransform, numPointLight, scenePointLights, numSpotLight, sceneSpotLights, sceneSun);
-            }
-
-            Renderer::EndScene();
+            Renderer::End3DScene();
         }
+
+        TextRenderer::BeginTextRendering();
+        if (m_showEntityLocations) {
+            TextRenderer::SubmitText("Showing entity locations", 5, 5, 32, math::vec3(.7, .1, .5));
+        }
+        TextRenderer::EndTextRendering();
     }
 
     void Scene::OnViewportResize(u32 width, u32 height) {

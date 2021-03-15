@@ -21,7 +21,7 @@ out VertexOutput { // all in view-space
 } vs_Output;
 
 void main() {
-    mat4 model2view = r_View*r_Transform;
+    mat4 model2view = r_View * r_Transform;
     vs_Output.Position = vec3(model2view * vec4(a_Position, 1.0));
     vs_Output.Normal = mat3(model2view) * a_Normal;
     vs_Output.TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
@@ -33,9 +33,9 @@ void main() {
 #type fragment
 #version 430 core
 
-layout (location = 0) out vec3 out_Albedo;
-layout (location = 1) out vec3 out_Normal;
-layout (location = 2) out vec3 out_AMR; // Ambient,Metallic,Roughness
+layout (location = 0) out vec4 out_RT1;
+layout (location = 1) out vec4 out_RT2;
+layout (location = 2) out vec4 out_RT3;
 
 // from vertex shader
 in VertexOutput {
@@ -74,7 +74,7 @@ void main()
     Roughness = max(Roughness, 0.05); // Minimum roughness of 0.05 to keep specular highlight
 
 	// Normals (either from vertex or map)
-	vec3 Normal; = normalize(vs_Input.Normal);
+	vec3 Normal = normalize(vs_Input.Normal);
 	if (r_NormalTexToggle > 0.5)
 	{
 		Normal = normalize(2.0 * texture(u_NormalTexture, vs_Input.TexCoord).rgb - 1.0);
@@ -82,7 +82,7 @@ void main()
 	}
 
     // write to render targets
-	out_Albedo = Albedo;
-    out_Normal = Normal;
-    out_AMR = vec3(Ambient, Metalness, Roughness);
+    out_RT1 = vec4(Albedo, 1);
+	out_RT2 = vec4(Normal, 1);
+    out_RT3 = vec4(Ambient, Metalness, Roughness, 1);
 }

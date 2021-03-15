@@ -19,6 +19,7 @@ namespace Engine {
         {
             switch (format)
             {
+            case GL_RGB8:;
             case GL_RGBA8: return GL_UNSIGNED_BYTE;
             case GL_RG16F:
             case GL_RG32F:
@@ -34,7 +35,7 @@ namespace Engine {
         static void AttachColorTexture(u32 id, GLenum format, uint32_t width, uint32_t height, int index)
         {
             // Only RGBA access for now
-            glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA, DataType(format), nullptr);
+            glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGB, DataType(format), nullptr);
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -46,29 +47,32 @@ namespace Engine {
 
         static void AttachDepthTexture(u32 id, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height)
         {
-            glTexStorage2D(GL_TEXTURE_2D, 1, format, width, height);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GL_TEXTURE_2D, id, 0);
+            glRenderbufferStorage(GL_RENDERBUFFER, format, width, height);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachmentType, GL_RENDERBUFFER, id);
         }
     }
 
     OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification & spec) 
         : m_Specification(spec), m_Width(spec.Width), m_Height(spec.Height) {
 
-        for (auto format : m_Specification.Attachments.Attachments) {
-            if (!Utils::IsDepthFormat(format.TextureFormat)) {
-                m_ColorAttachmentFormats.emplace_back(format.TextureFormat);
-            } else {
-                m_DepthAttachmentFormat = format.TextureFormat;
+        if (m_Specification.SwapChainTarget) {
+            m_FramebufferID = 0;
+        } else {
+            for (auto format : m_Specification.Attachments.Attachments) {
+                if (!Utils::IsDepthFormat(format.TextureFormat)) {
+                    m_ColorAttachmentFormats.emplace_back(format.TextureFormat);
+                }
+                else {
+                    m_DepthAttachmentFormat = format.TextureFormat;
+                }
+            }
+
+            auto err = glGetError();
+            Invalidate();
+            if (glGetError() != GL_NO_ERROR) {
+                __debugbreak();
             }
         }
-
-        Invalidate();
     }
 
     OpenGLFramebuffer::~OpenGLFramebuffer() {
@@ -89,6 +93,9 @@ namespace Engine {
             m_ColorAttachments.clear();
         }
 
+        glGenFramebuffers(1, &m_FramebufferID);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_FramebufferID);
+
         if (m_ColorAttachmentFormats.size()) {
             m_ColorAttachments.resize(m_ColorAttachmentFormats.size());
             glCreateTextures(GL_TEXTURE_2D, m_ColorAttachments.size(), m_ColorAttachments.data()); // he?
@@ -96,6 +103,9 @@ namespace Engine {
             for (int n = 0; n < m_ColorAttachments.size(); n++) {
                 glBindTexture(GL_TEXTURE_2D, m_ColorAttachments[n]);
                 switch (m_ColorAttachmentFormats[n]) {
+                case FramebufferTextureFormat::RGB8:
+                    Utils::AttachColorTexture(m_ColorAttachments[n], GL_RGB8, m_Width, m_Height, n);
+                    break;
                 case FramebufferTextureFormat::RGBA8:
                     Utils::AttachColorTexture(m_ColorAttachments[n], GL_RGBA8, m_Width, m_Height, n);
                     break;
@@ -113,8 +123,8 @@ namespace Engine {
         }
 
         if (m_DepthAttachmentFormat != FramebufferTextureFormat::None) {
-            glCreateTextures(GL_TEXTURE_2D, 1, &m_DepthAttachment);
-            glBindTexture(GL_TEXTURE_2D, m_DepthAttachment);
+            glCreateRenderbuffers(1, &m_DepthAttachment);
+            glBindRenderbuffer(GL_RENDERBUFFER, m_DepthAttachment);
             switch (m_DepthAttachmentFormat) {
             case FramebufferTextureFormat::DEPTH24STENCIL8:
                 Utils::AttachDepthTexture(m_DepthAttachment, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Width, m_Height);
@@ -123,7 +133,6 @@ namespace Engine {
                 Utils::AttachDepthTexture(m_DepthAttachment, GL_DEPTH_COMPONENT32F, GL_DEPTH_ATTACHMENT, m_Width, m_Height);
                 break;
             }
-
         }
 
         if (m_ColorAttachments.size() > 1) {
@@ -144,7 +153,8 @@ namespace Engine {
     void OpenGLFramebuffer::Resize(u32 width, u32 height) {
         m_Specification.Width = width;
         m_Specification.Height = height;
-        Invalidate();
+        
+        if (!m_Specification.SwapChainTarget) Invalidate();
     }
 
     void OpenGLFramebuffer::Bind() const {

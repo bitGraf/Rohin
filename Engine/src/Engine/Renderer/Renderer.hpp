@@ -6,7 +6,7 @@
 #include "Mesh.hpp"
 #include "Light.hpp"
 
-#include "TextRenderer.hpp"
+//#include "TextRenderer.hpp"
 
 namespace Engine {
     class Renderer
@@ -16,17 +16,13 @@ namespace Engine {
         static void Shutdown();
 
         // start writing to pre-pass buffers
-        static void BeginScene(const Camera& camera, const math::mat4& transform, 
-            u32 numPointLights, const Light pointLights[32], 
-            u32 numSpotLights,  const Light spotLights[32], 
-            const Light& sun);
-        static void RenderDebug(const Camera& camera, const math::mat4& transform, 
+        static void Begin3DScene(const Camera& camera, const math::mat4& transform, 
             u32 numPointLights, const Light pointLights[32],
-            u32 numSpotLights, const Light spotLights[32],
+            u32 numSpotLights,  const Light spotLights[32],
             const Light& sun);
 
         // end pre-pass and begin render pipeline
-        static void EndScene();
+        static void End3DScene();
         static void Flush();
 
         static void Submit(const math::mat4& transform = math::mat4());

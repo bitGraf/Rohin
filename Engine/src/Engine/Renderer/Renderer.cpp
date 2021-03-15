@@ -4,6 +4,10 @@
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/Framebuffer.hpp"
 
+// REMOVE
+#include <glad/glad.h>
+// REMOVE
+
 namespace Engine {
 
     struct RendererData {
@@ -15,10 +19,12 @@ namespace Engine {
 
         // Render buffers
         //Ref<Framebuffer> gBuffer;
+        //Ref<Framebuffer> screenBuffer;
+        GLuint gBuffer, g_rt1, g_rt2, g_rt3, g_rb;
 
         Ref<Texture2D> Albedo;
-        Ref<Texture2D> ViewSpaceNormal;
-        Ref<Texture2D> AmbientMetalnessRoughness;
+        //Ref<Texture2D> ViewSpaceNormal;
+        //Ref<Texture2D> AmbientMetalnessRoughness;
     };
 
     static RendererData s_Data;
@@ -32,8 +38,12 @@ namespace Engine {
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Line.glsl");
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Normals.glsl");
 
+        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PrePass.glsl");
+        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Screen.glsl");
+
         //s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/DebugCubeMap.tga");
         s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/snowbox.png");
+        s_Data.Albedo = Texture2D::Create("run_tree/Data/Images/frog.png");
 
         // Create fullscreen quad
         {
@@ -109,51 +119,91 @@ namespace Engine {
             s_Data.debug_coordinate_axis->Unbind();
         }
 
-        // Init text renderer
-        TextRenderer::Init();
-
         // create the pipeline buffers
-        //FramebufferSpecification spec;
-        //spec.Width = 1280.0f; // TODO: This should be an application-level property
-        //spec.Height = 720.0f;
-        //s_Data.gBuffer = Framebuffer::Create(spec);
+        {
+            FramebufferSpecification spec;
+            spec.Attachments = {
+                FramebufferTextureFormat::RGB8,
+                FramebufferTextureFormat::RGB8,
+                FramebufferTextureFormat::RGB8,
+                FramebufferTextureFormat::Depth
+            };
+            //s_Data.gBuffer = Framebuffer::Create(spec);
+        }
+
+        {
+            FramebufferSpecification spec;
+            spec.SwapChainTarget = true;
+            //s_Data.screenBuffer = Framebuffer::Create(spec);
+        }
+
+        // OpenGL nonsense
+        {
+            auto err = glGetError();
+            glGenFramebuffers(1, &s_Data.gBuffer);
+            glBindFramebuffer(GL_FRAMEBUFFER, s_Data.gBuffer);
+            // position color buffer
+            glGenTextures(1, &s_Data.g_rt1);
+            glBindTexture(GL_TEXTURE_2D, s_Data.g_rt1);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280, 720, 0, GL_RGBA, GL_FLOAT, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, s_Data.g_rt1, 0);
+            if (glGetError() != GL_NO_ERROR) { __debugbreak(); }
+            // normal color buffer
+            glGenTextures(1, &s_Data.g_rt2);
+            glBindTexture(GL_TEXTURE_2D, s_Data.g_rt2);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, s_Data.g_rt2, 0);
+            if (glGetError() != GL_NO_ERROR) { __debugbreak(); }
+            // color + specular color buffer
+            glGenTextures(1, &s_Data.g_rt3);
+            glBindTexture(GL_TEXTURE_2D, s_Data.g_rt3);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, s_Data.g_rt3, 0);
+            if (glGetError() != GL_NO_ERROR) { __debugbreak(); }
+            // tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
+            unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+            glDrawBuffers(3, attachments);
+            // create and attach depth buffer (renderbuffer)
+            glGenRenderbuffers(1, &s_Data.g_rb);
+            glBindRenderbuffer(GL_RENDERBUFFER, s_Data.g_rb);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1280, 720);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, s_Data.g_rb);
+            // finally check if framebuffer is complete
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+                __debugbreak();
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            if (glGetError() != GL_NO_ERROR) { __debugbreak(); }
+        }
     }
 
     void Renderer::Shutdown() {
         RenderCommand::Shutdown();
     }
 
-    void Renderer::BeginScene(const Camera& camera, const math::mat4& transform, 
-        u32 numPointLights, const Light pointLights[32],
-        u32 numSpotLights, const Light spotLights[32],
-        const Light& sun) {
 
-        TextRenderer::BeginScene(); // do this first to avoid context switching when rendering the 3D scene
-
-        math::mat4 invTransform = math::invertViewMatrix(transform);
-        math::mat4 viewProj = camera.GetProjection() * invTransform;
-        math::mat4 invViewProj = camera.GetProjection() * transform;
-        math::vec3 camPos = transform.col4().XYZ();
-
+    void DrawSkybox() {
+        /*
+        // TODO: make this work with a deferred renderer :(
         auto skyboxShader = s_Data.ShaderLibrary->Get("Skybox");
         skyboxShader->Bind();
         skyboxShader->SetMat4("r_inverseVP", viewProj);
         auto samplers = skyboxShader->GetSamplers();
         for (auto& s : samplers) {
-            if (s->GetName().compare("r_skybox") == 0)
-                s_Data.Skybox->Bind(s->GetID());
+        if (s->GetName().compare("r_skybox") == 0)
+        s_Data.Skybox->Bind(s->GetID());
         }
         SubmitFullscreenQuad(); // draw skybox
+        */
+    }
 
-        auto normalsShader = s_Data.ShaderLibrary->Get("Normals");
-        normalsShader->Bind();
-        normalsShader->SetMat4("r_VP", viewProj);
-
-        auto pbrShader = s_Data.ShaderLibrary->Get("PBR_static");
-        pbrShader->Bind();
-        pbrShader->SetMat4( "r_VP", viewProj);
-        pbrShader->SetVec3( "r_CamPos", camPos);
-
+    void LightingPass() {
+        /*
         // set directional light
         pbrShader->SetVec3("r_sun.Direction", sun.direction);
         pbrShader->SetVec3("r_sun.Color", sun.color);
@@ -168,47 +218,63 @@ namespace Engine {
 
         // set spot lights
         for (int n = 0; n < numSpotLights; n++) {
-            pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Position",  spotLights[n].position);
+            pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Position", spotLights[n].position);
             pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Direction", spotLights[n].direction);
-            pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Color",     spotLights[n].color);
+            pbrShader->SetVec3("r_spotLights[" + std::to_string(n) + "].Color", spotLights[n].color);
             pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Strength", spotLights[n].strength);
-            pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Inner",    spotLights[n].inner);
-            pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Outer",    spotLights[n].outer);
+            pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Inner", spotLights[n].inner);
+            pbrShader->SetFloat("r_spotLights[" + std::to_string(n) + "].Outer", spotLights[n].outer);
         }
-
-        // set toggles
-        pbrShader->SetFloat("r_AlbedoTexToggle",    1.0f);
-        pbrShader->SetFloat("r_NormalTexToggle",    1.0f);
-        pbrShader->SetFloat("r_MetalnessTexToggle", 1.0f);
-        pbrShader->SetFloat("r_RoughnessTexToggle", 1.0f);
+        */
     }
-    void Renderer::RenderDebug(const Camera& camera, const math::mat4& transform, 
+
+    void Renderer::Begin3DScene(const Camera& camera, const math::mat4& transform, 
         u32 numPointLights, const Light pointLights[32],
         u32 numSpotLights, const Light spotLights[32],
         const Light& sun) {
-        math::mat4 invTransform = math::invertViewMatrix(transform);
-        math::mat4 viewProj = camera.GetProjection() * invTransform;
+
+        //s_Data.gBuffer->Bind();
+        glBindFramebuffer(GL_FRAMEBUFFER, s_Data.gBuffer);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        math::mat4 ViewMatrix = math::invertViewMatrix(transform);
+        math::mat4 ProjectionMatrix = camera.GetProjection();
         math::vec3 camPos = transform.col4().XYZ();
 
-        auto lineShader = s_Data.ShaderLibrary->Get("Line");
-        lineShader->Bind();
-        lineShader->SetMat4("r_VP", viewProj);
-        lineShader->SetVec3("r_CamPos", camPos);
-        lineShader->SetFloat("r_LineFadeStart", 5);
-        lineShader->SetFloat("r_LineFadeEnd", 10);
+        auto prePassShader = s_Data.ShaderLibrary->Get("PrePass");
+        prePassShader->Bind();
+        prePassShader->SetMat4("r_View", ViewMatrix);
+        prePassShader->SetMat4("r_Projection", ProjectionMatrix);
 
-        s_Data.debug_coordinate_axis->Bind();
-        for (int n = 0; n < numPointLights; n++) {
-            math::mat4 pl_transform;
-            pl_transform.translate(pointLights[n].position);
-            lineShader->SetMat4("r_Transform", pl_transform);
-            lineShader->SetVec3("r_LineColor", pointLights[n].color);
-            RenderCommand::DrawLines(s_Data.debug_coordinate_axis, false);
-        }
-        TextRenderer::SubmitText("^_^", 50, 200, 32, { .753f,.741f,.345f });
+        // set toggles
+        prePassShader->SetFloat("r_AlbedoTexToggle",    1.0f);
+        prePassShader->SetFloat("r_NormalTexToggle",    1.0f);
+        prePassShader->SetFloat("r_MetalnessTexToggle", 1.0f);
+        prePassShader->SetFloat("r_RoughnessTexToggle", 1.0f);
+        prePassShader->SetFloat("r_AmbientTexToggle",   1.0f);
     }
-    void Renderer::EndScene() {
-        TextRenderer::EndScene();// do this now to finishing rendering before 3D scene is done
+    
+    void Renderer::End3DScene() {
+        //s_Data.gBuffer->Unbind();
+
+        // Lighting Pass
+        //s_Data.screenBuffer->Bind();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        auto screenShader = s_Data.ShaderLibrary->Get("Screen");
+        screenShader->Bind();
+        screenShader->SetInt("u_tex1", 0);
+        screenShader->SetInt("u_tex2", 1);
+        screenShader->SetInt("u_tex3", 2);
+        //s_Data.gBuffer->BindTexture(0, 0);
+        //s_Data.Albedo->Bind(0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, s_Data.g_rt1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, s_Data.g_rt2);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, s_Data.g_rt3);
+
+        SubmitFullscreenQuad();
+        //s_Data.screenBuffer->Unbind();
 
         Flush();
     }
@@ -220,8 +286,6 @@ namespace Engine {
     void Renderer::OnWindowResize(uint32_t width, uint32_t height)
     {
         RenderCommand::SetViewport(0, 0, width, height);
-
-        TextRenderer::OnWindowResize(width, height); // update text renderer
     }
 
     const std::unique_ptr<ShaderLibrary>& Renderer::GetShaderLibrary() {

@@ -10,14 +10,15 @@ namespace Engine {
         None = 0,
 
         // Color
-        RGBA8 = 1,
-        RGBA16F = 2,
-        RGBA32F = 3,
-        RG32F = 4,
+        RGB8,
+        RGBA8,
+        RGBA16F,
+        RGBA32F,
+        RG32F,
 
         // Depth/stencil
-        DEPTH32F = 5,
-        DEPTH24STENCIL8 = 6,
+        DEPTH32F,
+        DEPTH24STENCIL8,
 
         // Defaults
         Depth = DEPTH24STENCIL8

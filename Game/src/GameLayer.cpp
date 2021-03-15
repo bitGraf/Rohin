@@ -20,16 +20,6 @@ GameLayer::GameLayer() : EngineLayer("Game") {
 void GameLayer::OnAttach() {
     LOG_INFO("Game layer attached");
 
-    Engine::FramebufferSpecification spec;
-    spec.ClearColor = math::vec4(1, 0, 0, 0);
-    spec.Attachments = {
-        FramebufferTextureFormat::RGBA16F,
-        FramebufferTextureFormat::Depth
-    };
-    spec.SwapChainTarget = true;
-    m_Framebuffer = Engine::Framebuffer::Create(spec);
-    m_Framebuffer->Unbind();
-
     Input::CaptureMouse(true);
     
     m_ViewportSize = { 
@@ -172,10 +162,14 @@ void GameLayer::OnDetach() {
 }
 
 void GameLayer::CheckViewportSize() {
-    Engine::FramebufferSpecification spec = m_Framebuffer->GetSpecification();
+    static u32 specWidth = -1;
+    static u32 specHeight = -1;
+
     if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
-        (spec.Width != m_ViewportSize.x || spec.Height != m_ViewportSize.y)) {
-        m_Framebuffer->Resize((u32)m_ViewportSize.x, (u32)m_ViewportSize.y);
+        (specWidth != m_ViewportSize.x || specHeight != m_ViewportSize.y)) {
+        specWidth = (u32)m_ViewportSize.x;
+        specHeight = (u32)m_ViewportSize.y;
+        ENGINE_LOG_INFO("Render resolution: {0} x {1}", specWidth, specHeight);
         m_ActiveScene->OnViewportResize((u32)m_ViewportSize.x, (u32)m_ViewportSize.y);
         Engine::Renderer::OnWindowResize((u32)m_ViewportSize.x, (u32)m_ViewportSize.y);
     }

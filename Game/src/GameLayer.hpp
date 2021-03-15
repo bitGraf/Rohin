@@ -19,7 +19,6 @@ private:
 
 private:
     Engine::Ref<Engine::Scene> m_ActiveScene;
-    Engine::Ref<Engine::Framebuffer> m_Framebuffer;
 
     Engine::GameObject m_Camera;
     
