@@ -2,6 +2,8 @@
 
 #include "Engine/Core/Application.hpp"
 
+#include "Engine/Collision/CollisionWorld.hpp"
+
 /* native scripts */
 #include "CameraController.hpp"
 #include "Gem.hpp"
@@ -179,6 +181,32 @@ void GameLayer::OnAttach() {
     //m_ActiveScene->writeToFile("output.scene");
 
     m_ActiveScene->OnRuntimeStart();
+
+    /* Collision code TODO: Remove this */
+    UID_t floor = cWorld.CreateNewCubeHull(vec3(0, -2.5, 0), 75, 5, 75);
+    cWorld.CreateNewCubeHull(vec3(0, 1.5, -4), 8, 3, 3);
+    UID_t crate = cWorld.CreateNewCubeHull(vec3(-2, 1.5, -8), 8, 3, 3);
+    cWorld.getHullFromID(crate)->rotation.toYawPitchRoll(90, 0, 0);
+
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(-2, 1.5, -6), 8, 3, 3))
+        ->rotation.toYawPitchRoll(135, 0, 0);
+
+    UID_t id = cWorld.CreateNewCubeHull(vec3(-5.42, 1, 1.88), 2);
+    cWorld.getHullFromID(id)->rotation.toYawPitchRoll(38.27, 0, 0);
+    cWorld.CreateNewCubeHull(vec3(-3.41, 0.5, -0.89), .75, 1.5, .75);
+    cWorld.CreateNewCubeHull(vec3(-1.47, 0.5, 2.09), .75, 1.5, .75);
+
+    // Ramps at various angles
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 0, 5), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 10, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 1, 8), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 20, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 2, 11), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 30, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 3, 14), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 40, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 3.5, 17), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 50, 0);
 }
 
 void GameLayer::OnDetach() {

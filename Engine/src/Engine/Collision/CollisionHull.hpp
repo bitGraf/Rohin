@@ -2,30 +2,31 @@
 #define COLLISION_HULL_H
 
 #include "Engine/Core/GameMath.hpp"
-#include "Engine/Resource/TriangleMesh.hpp"
 
 using namespace math;
 typedef u64 UID_t;
 
+struct Triangle {
+    index_t indices[3];
+    Triangle() : indices{ 0,0,0 } {}
+    Triangle(index_t n1, index_t n2, index_t n3) : indices{ n1,n2,n3 } {}
+};
+
 class CollisionHull {
 public:
     CollisionHull();
-
-    //void loadVerts(ResourceManager* resource, int count...);
-    //void loadFaces(ResourceManager* resource, int count...);
 
     int GetSupport(vec3 search_dir);
     vec3 GetVertWorldSpace(int index);
 
     vec3 position;
     mat3 rotation;
-    GLuint wireframeVAO;
+    u32 wireframeVAO;
 
-//private:
     void bufferData();
 
-    vec3Array vertices;
-    FaceArray faces;
+    std::vector<math::vec3> vertices;
+    std::vector<Triangle> faces;
     float m_radius;
 
     const UID_t m_hullID;

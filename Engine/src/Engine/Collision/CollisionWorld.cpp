@@ -1,4 +1,4 @@
-#include "rhpch.hpp"
+#include "enpch.hpp"
 #include "CollisionWorld.hpp"
 
 CollisionWorld cWorld;
@@ -39,8 +39,8 @@ RaycastResult CollisionWorld::Raycast(vec3 start, vec3 end) {
             continue;
 
         // loop through all the triangles in the hull
-        for (int m = 0; m < hull->faces.m_numElements; m++) {
-            auto face = hull->faces.data[m];
+        for (int m = 0; m < hull->faces.size(); m++) {
+            auto face = hull->faces[m];
             vec3 v0 = hull->GetVertWorldSpace(face.indices[0]);
             vec3 v1 = hull->GetVertWorldSpace(face.indices[1]);
             vec3 v2 = hull->GetVertWorldSpace(face.indices[2]);
@@ -114,8 +114,8 @@ RaycastResult CollisionWorld::Raycast(UID_t target, vec3 start, vec3 end) {
         return res;
 
     // loop through all the triangles in the hull
-    for (int m = 0; m < hull->faces.m_numElements; m++) {
-        auto face = hull->faces.data[m];
+    for (int m = 0; m < hull->faces.size(); m++) {
+        auto face = hull->faces[m];
         vec3 v0 = hull->GetVertWorldSpace(face.indices[0]);
         vec3 v1 = hull->GetVertWorldSpace(face.indices[1]);
         vec3 v2 = hull->GetVertWorldSpace(face.indices[2]);
@@ -169,33 +169,31 @@ UID_t CollisionWorld::CreateNewCubeHull(vec3 position, scalar size) {
     scalar halfSize = size / 2.0f;
 
     // Box hull
-    vec3Array vblock = MemoryPool::GetInstance()->allocBlock<vec3>(8);
-    vblock.data[0] = vec3(-halfSize, -halfSize, -halfSize);
-    vblock.data[1] = vec3(-halfSize, -halfSize, halfSize);
-    vblock.data[2] = vec3(halfSize, -halfSize, halfSize);
-    vblock.data[3] = vec3(halfSize, -halfSize, -halfSize);
+    hull.vertices.resize(8);
+    hull.vertices[0] = vec3(-halfSize, -halfSize, -halfSize);
+    hull.vertices[1] = vec3(-halfSize, -halfSize, halfSize);
+    hull.vertices[2] = vec3(halfSize, -halfSize, halfSize);
+    hull.vertices[3] = vec3(halfSize, -halfSize, -halfSize);
 
-    vblock.data[4] = vec3(-halfSize, halfSize, -halfSize);
-    vblock.data[5] = vec3(-halfSize, halfSize, halfSize);
-    vblock.data[6] = vec3(halfSize, halfSize, halfSize);
-    vblock.data[7] = vec3(halfSize, halfSize, -halfSize);
-    hull.vertices = vblock;
+    hull.vertices[4] = vec3(-halfSize, halfSize, -halfSize);
+    hull.vertices[5] = vec3(-halfSize, halfSize, halfSize);
+    hull.vertices[6] = vec3(halfSize, halfSize, halfSize);
+    hull.vertices[7] = vec3(halfSize, halfSize, -halfSize);
 
-    FaceArray fblock = MemoryPool::GetInstance()->allocBlock<Triangle>(12);
-    fblock.data[0] = Triangle(0, 1, 4);
-    fblock.data[1] = Triangle(4, 1, 5);
-    fblock.data[2] = Triangle(1, 2, 6);
-    fblock.data[3] = Triangle(1, 6, 5);
-    fblock.data[4] = Triangle(2, 3, 7);
-    fblock.data[5] = Triangle(2, 7, 6);
+    hull.faces.resize(12);
+    hull.faces[0] = Triangle(0, 1, 4);
+    hull.faces[1] = Triangle(4, 1, 5);
+    hull.faces[2] = Triangle(1, 2, 6);
+    hull.faces[3] = Triangle(1, 6, 5);
+    hull.faces[4] = Triangle(2, 3, 7);
+    hull.faces[5] = Triangle(2, 7, 6);
 
-    fblock.data[6] = Triangle(3, 0, 4);
-    fblock.data[7] = Triangle(3, 4, 7);
-    fblock.data[8] = Triangle(0, 2, 1);
-    fblock.data[9] = Triangle(0, 3, 2);
-    fblock.data[10] = Triangle(4, 5, 7);
-    fblock.data[11] = Triangle(7, 5, 6);
-    hull.faces = fblock;
+    hull.faces[6] = Triangle(3, 0, 4);
+    hull.faces[7] = Triangle(3, 4, 7);
+    hull.faces[8] = Triangle(0, 2, 1);
+    hull.faces[9] = Triangle(0, 3, 2);
+    hull.faces[10] = Triangle(4, 5, 7);
+    hull.faces[11] = Triangle(7, 5, 6);
 
     hull.bufferData();
     hull.position = position;
@@ -213,33 +211,31 @@ UID_t CollisionWorld::CreateNewCubeHull(
     scalar halfz = zSize / 2.0f;
 
     // Box hull
-    vec3Array vBlock = MemoryPool::GetInstance()->allocBlock<vec3>(8);
-    vBlock.data[0] = vec3(-halfx, -halfy, -halfz);
-    vBlock.data[1] = vec3(-halfx, -halfy, halfz);
-    vBlock.data[2] = vec3(halfx, -halfy, halfz);
-    vBlock.data[3] = vec3(halfx, -halfy, -halfz);
+    hull.vertices.resize(8);
+    hull.vertices[0] = vec3(-halfx, -halfy, -halfz);
+    hull.vertices[1] = vec3(-halfx, -halfy, halfz);
+    hull.vertices[2] = vec3(halfx, -halfy, halfz);
+    hull.vertices[3] = vec3(halfx, -halfy, -halfz);
 
-    vBlock.data[4] = vec3(-halfx, halfy, -halfz);
-    vBlock.data[5] = vec3(-halfx, halfy, halfz);
-    vBlock.data[6] = vec3(halfx, halfy, halfz);
-    vBlock.data[7] = vec3(halfx, halfy, -halfz);
-    hull.vertices = vBlock;
+    hull.vertices[4] = vec3(-halfx, halfy, -halfz);
+    hull.vertices[5] = vec3(-halfx, halfy, halfz);
+    hull.vertices[6] = vec3(halfx, halfy, halfz);
+    hull.vertices[7] = vec3(halfx, halfy, -halfz);
 
-    FaceArray fBlock = MemoryPool::GetInstance()->allocBlock<Triangle>(12);
-    fBlock.data[0] = Triangle(0, 1, 4);
-    fBlock.data[1] = Triangle(4, 1, 5);
-    fBlock.data[2] = Triangle(1, 2, 6);
-    fBlock.data[3] = Triangle(1, 6, 5);
-    fBlock.data[4] = Triangle(2, 3, 7);
-    fBlock.data[5] = Triangle(2, 7, 6);
+    hull.faces.resize(12);
+    hull.faces[0] = Triangle(0, 1, 4);
+    hull.faces[1] = Triangle(4, 1, 5);
+    hull.faces[2] = Triangle(1, 2, 6);
+    hull.faces[3] = Triangle(1, 6, 5);
+    hull.faces[4] = Triangle(2, 3, 7);
+    hull.faces[5] = Triangle(2, 7, 6);
 
-    fBlock.data[6] = Triangle(3, 0, 4);
-    fBlock.data[7] = Triangle(3, 4, 7);
-    fBlock.data[8] = Triangle(0, 2, 1);
-    fBlock.data[9] = Triangle(0, 3, 2);
-    fBlock.data[10] = Triangle(4, 5, 7);
-    fBlock.data[11] = Triangle(7, 5, 6);
-    hull.faces = fBlock;
+    hull.faces[6] = Triangle(3, 0, 4);
+    hull.faces[7] = Triangle(3, 4, 7);
+    hull.faces[8] = Triangle(0, 2, 1);
+    hull.faces[9] = Triangle(0, 3, 2);
+    hull.faces[10] = Triangle(4, 5, 7);
+    hull.faces[11] = Triangle(7, 5, 6);
 
     hull.bufferData();
     hull.position = position;
@@ -251,16 +247,14 @@ UID_t CollisionWorld::CreateNewCubeHull(
 UID_t CollisionWorld::CreateNewCapsule(vec3 position, scalar height, scalar radius) {
     CollisionHull hull;
 
-    // Box hull
-    vec3Array vBlock = MemoryPool::GetInstance()->allocBlock<vec3>(3);
-    vBlock.data[0] = vec3(0, 0, 0);
-    vBlock.data[1] = vec3(0, height / 2, 0); // to allow it to render more easily
-    vBlock.data[2] = vec3(0, height, 0);
-    hull.vertices = vBlock;
+    // Capsule Hull
+    hull.vertices.resize(3);
+    hull.vertices[0] = vec3(0, 0, 0);
+    hull.vertices[1] = vec3(0, height / 2, 0); // to allow it to render more easily
+    hull.vertices[2] = vec3(0, height, 0);
 
-    FaceArray fBlock = MemoryPool::GetInstance()->allocBlock<Triangle>(1);
-    fBlock.data[0] = Triangle(0, 1, 2);
-    hull.faces = fBlock;
+    hull.faces.resize(1);
+    hull.faces[0] = Triangle(0, 1, 2);
 
     hull.bufferData();
     hull.position = position;
