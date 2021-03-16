@@ -40,10 +40,10 @@ void GameLayer::OnAttach() {
     Engine::MeshCatalog::Register("mesh_cube", "run_tree/Data/Models/cube.nbt", true);
     Engine::MeshCatalog::Register("mesh_ball", "run_tree/Data/Models/sphere.nbt", true);
     //Engine::MeshCatalog::Register("mesh_cyl", "run_tree/Data/Models/cylinder.nbt", true);
-    //Engine::MeshCatalog::Register("mesh_helmet", "run_tree/Data/Models/helmet.nbt", true); // TODO: this is slow
+    Engine::MeshCatalog::Register("mesh_helmet", "run_tree/Data/Models/helmet.nbt", true); // TODO: this is slow
     for (int nx = 0; nx < 5; nx++) {
         auto ball = m_ActiveScene->CreateGameObject("ball " + nx);
-        auto mesh = Engine::MeshCatalog::Get("mesh_ball");
+        auto mesh = Engine::MeshCatalog::Get("mesh_helmet");
         ball.AddComponent<Engine::MeshRendererComponent>(mesh);
 
         auto& trans = ball.GetComponent<Engine::TransformComponent>().Transform;

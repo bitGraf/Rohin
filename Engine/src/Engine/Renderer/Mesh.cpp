@@ -7,6 +7,8 @@
 
 #include "Engine/Resources/nbt/nbt.hpp"
 
+#include "Engine/Resources/MaterialCatalog.hpp"
+
 namespace Engine {
 
     Mesh::Mesh(const std::string & filename, bool nbt, bool mesh_only) : m_FilePath(filename) {
@@ -67,33 +69,65 @@ namespace Engine {
 
                 // Manually set material struct
                 {
+                    MaterialSpec mat_spec;
                     // see if a comprehensive material is listed to load
                     if (comp.has_key("material")) {
                         // load material props from this material listing
                         const auto& material_name = comp["material"].as<nbt::tag_string>().get();
-                        ENGINE_LOG_TRACE("This mesh is using material {0}", material_name);
+                        mat_spec = MaterialCatalog::GetMaterial(material_name);
+                        ENGINE_LOG_TRACE("This mesh is using material {0}[{1}]", material_name, mat_spec.Name);
                     }
 
-                    // If no material loaded, create it manually
-                    // If a material was loaded, override specific properties
-                    // TODO: determine what each material property should be called
-                    m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", nbt::SafeGetVec3(comp, "albedo_color", math::vec3(1, 1, 1)));
-                    m_BaseMaterial->Set<float>("u_Metalness", nbt::SafeGetFloat(comp, "metalness", 0));
-                    m_BaseMaterial->Set<float>("u_Roughness", nbt::SafeGetFloat(comp, "roughness", 0.7f));
+                    // If mesh nbt file overrwrites anything, capture that
+                    mat_spec.AlbedoBase = nbt::SafeGetVec3(comp, "albedo_color", mat_spec.AlbedoBase);
+                    mat_spec.MetalnessBase = nbt::SafeGetFloat(comp, "metalness", mat_spec.MetalnessBase);
+                    mat_spec.RoughnessBase = nbt::SafeGetFloat(comp, "roughness", mat_spec.RoughnessBase);
 
-                    auto albedo_path = nbt::SafeGetString(comp, "albedo_path", "run_tree/Data/Images/frog.png");
-                    auto normal_path = nbt::SafeGetString(comp, "normal_path", "run_tree/Data/Images/normal.png");
-                    auto ambient_path = nbt::SafeGetString(comp, "ambient_path", "run_tree/Data/Images/white.png");
-                    auto roughness_path = nbt::SafeGetString(comp, "roughness_path", "run_tree/Data/Images/white.png");
-                    auto metalness_path = nbt::SafeGetString(comp, "metalness_path", "run_tree/Data/Images/black.png");
-                    auto emissive_path = nbt::SafeGetString(comp, "emissive_path", "run_tree/Data/Images/black.png");
+                    if (comp.has_key("albedo_path")) {
+                        const auto& albedo_path = comp.at("albedo_path").as<nbt::tag_string>().get();
+                        mat_spec.Albedo = MaterialCatalog::GetTexture(albedo_path);
+                    }
+                    if (comp.has_key("normal_path")) {
+                        const auto& normal_path = comp.at("normal_path").as<nbt::tag_string>().get();
+                        mat_spec.Normal = MaterialCatalog::GetTexture(normal_path);
+                    }
+                    if (comp.has_key("ambient_path")) {
+                        const auto& ambient_path = comp.at("ambient_path").as<nbt::tag_string>().get();
+                        mat_spec.Ambient = MaterialCatalog::GetTexture(ambient_path);
+                    }
+                    if (comp.has_key("metalness_path")) {
+                        const auto& metalness_path = comp.at("metalness_path").as<nbt::tag_string>().get();
+                        mat_spec.Metalness = MaterialCatalog::GetTexture(metalness_path);
+                    }
+                    if (comp.has_key("roughness_path")) {
+                        const auto& roughness_path = comp.at("roughness_path").as<nbt::tag_string>().get();
+                        mat_spec.Roughness = MaterialCatalog::GetTexture(roughness_path);
+                    }
+                    if (comp.has_key("emissive_path")) {
+                        const auto& emissive_path = comp.at("emissive_path").as<nbt::tag_string>().get();
+                        mat_spec.Emissive = MaterialCatalog::GetTexture(emissive_path);
+                    }
 
-                    m_BaseMaterial->Set("u_AlbedoTexture", Texture2D::Create(albedo_path));
-                    m_BaseMaterial->Set("u_NormalTexture", Texture2D::Create(normal_path));
-                    m_BaseMaterial->Set("u_MetalnessTexture", Texture2D::Create(metalness_path));
-                    m_BaseMaterial->Set("u_RoughnessTexture", Texture2D::Create(roughness_path));
-                    m_BaseMaterial->Set("u_AmbientTexture", Texture2D::Create(ambient_path));
-                    m_BaseMaterial->Set("u_EmissiveTexture", Texture2D::Create(emissive_path));
+                    // If after the material and texture definitions, some channels are still
+                    // not set, set them to the default texture values
+                    if (!mat_spec.Albedo)    mat_spec.Albedo    = MaterialCatalog::GetTexture("run_tree/Data/Images/frog.png");
+                    if (!mat_spec.Normal)    mat_spec.Normal    = MaterialCatalog::GetTexture("run_tree/Data/Images/normal.png");
+                    if (!mat_spec.Ambient)   mat_spec.Ambient   = MaterialCatalog::GetTexture("run_tree/Data/Images/white.png");
+                    if (!mat_spec.Metalness) mat_spec.Metalness = MaterialCatalog::GetTexture("run_tree/Data/Images/black.png");
+                    if (!mat_spec.Roughness) mat_spec.Roughness = MaterialCatalog::GetTexture("run_tree/Data/Images/white.png");
+                    if (!mat_spec.Emissive)  mat_spec.Emissive  = MaterialCatalog::GetTexture("run_tree/Data/Images/black.png");
+
+                    // mat_spec should now have all the valid data needed!
+                    // upload everyhing from mat_spec to the material
+                    m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
+                    m_BaseMaterial->Set<float>("u_Metalness", mat_spec.MetalnessBase);
+                    m_BaseMaterial->Set<float>("u_Roughness", mat_spec.RoughnessBase);
+                    m_BaseMaterial->Set("u_AlbedoTexture",    mat_spec.Albedo);
+                    m_BaseMaterial->Set("u_NormalTexture",    mat_spec.Normal);
+                    m_BaseMaterial->Set("u_MetalnessTexture", mat_spec.Metalness);
+                    m_BaseMaterial->Set("u_RoughnessTexture", mat_spec.Roughness);
+                    m_BaseMaterial->Set("u_AmbientTexture",   mat_spec.Ambient);
+                    m_BaseMaterial->Set("u_EmissiveTexture",  mat_spec.Emissive);
 
                     /// mat1
                     Ref<MaterialInstance> mat = std::make_shared<MaterialInstance>(m_BaseMaterial, "mat1");

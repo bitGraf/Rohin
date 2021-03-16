@@ -3,7 +3,7 @@
 
 namespace Engine {
 
-    std::unordered_map<std::string, std::shared_ptr<Mesh>> m_MeshList;
+    static std::unordered_map<std::string, std::shared_ptr<Mesh>> m_MeshList;
 
     void MeshCatalog::Register(const std::string& mesh_name, const std::string& mesh_path, bool nbt) {
         ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, mesh_path);

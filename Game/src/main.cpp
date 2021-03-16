@@ -108,20 +108,46 @@ int main(int argc, char** argv) {
             })}
     };
 
-    auto name = comp["name"].as<tag_string>().get();
-    std::cout << "Level name: " << name << std::endl;
-
-    auto meshList = comp["meshes"].as<tag_list>();
-    assert(meshList.el_type() == tag_type::Compound);
-    for (const auto& m : meshList) {
-        auto c = m.as<tag_compound>();
-        std::cout << c["mesh_name"] << ", " << c["mesh_path"] << std::endl;
-    }
-
-
     bool result = nbt::write_to_file("run_tree/Data/Levels/nbtTest.scene", nbt::file_data({ "level_data", std::make_unique<tag_compound>(comp) }), 0, 1);
     if (!result)
-        ENGINE_LOG_ERROR("Failed to output to file");
+        __debugbreak();
+
+    tag_compound mat_copper{
+        { "name", "PBR Copper" },
+        { "albedo_path", "run_tree/Data/Images/Copper/albedo.png" },
+        { "normal_path", "run_tree/Data/Images/Copper/normal.png" },
+        { "ambient_path", "run_tree/Data/Images/Copper/ao.png" },
+        { "metalness_path", "run_tree/Data/Images/Copper/metallic.png" },
+        { "roughness_path", "run_tree/Data/Images/Copper/roughness.png" }
+    };
+
+    tag_compound mat_concrete {
+        { "name", "Waffle Concrete" },
+        { "albedo_path",    "run_tree/Data/Images/Waffle/WaffleSlab2_albedo.png" },
+        { "normal_path",    "run_tree/Data/Images/Waffle/WaffleSlab2_normal.png" },
+        { "ambient_path",   "run_tree/Data/Images/Waffle/WaffleSlab2_ao.png" },
+        { "roughness_path", "run_tree/Data/Images/Waffle/WaffleSlab2_roughness.png" }
+    };
+
+    tag_compound mat_damaged_helmet{
+        { "name", "Damaged Helmet" },
+        { "albedo_path",    "run_tree/Data/Images/helmet/albedo.png" },
+        { "normal_path",    "run_tree/Data/Images/helmet/normal.png" },
+        { "ambient_path",   "run_tree/Data/Images/helmet/ambient.png" },
+        { "metalness_path", "run_tree/Data/Images/helmet/metallic.png" },
+        { "roughness_path", "run_tree/Data/Images/helmet/roughness.png" },
+        { "emissive_path",  "run_tree/Data/Images/helmet/emission.png" }
+    };
+
+    tag_compound material_catalog {
+        { "mat_copper", tag_compound(mat_copper) },
+        { "mat_concrete", tag_compound(mat_concrete) },
+        { "mat_damaged_helmet", tag_compound(mat_damaged_helmet) }
+    };
+
+    result = nbt::write_to_file("run_tree/Data/Materials/materials.nbt", nbt::file_data({ "material_catalog", std::make_unique<tag_compound>(material_catalog) }), 0, 1);
+    if (!result)
+        __debugbreak();
 
     system("pause");
 }
