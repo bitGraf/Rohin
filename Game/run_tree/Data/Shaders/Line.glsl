@@ -11,6 +11,7 @@ out VertexOutput {
 } vs_Output;
 
 void main() {
+	vs_Output.WorldPos = vec3(r_Transform * vec4(a_Position, 1.0));
     gl_Position = r_VP * r_Transform * vec4(a_Position, 1.0);
 }
 
