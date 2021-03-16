@@ -76,14 +76,14 @@ void GameLayer::OnAttach() {
 
     { // Lights
         auto light = m_ActiveScene->CreateGameObject("light 1");
-        //light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(1,1,1), 2, 0, 0);
+        light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(1,.2,.3), 6, 0, 0);
         auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
         trans.translate(vec3(0, 2, 0));
     }
     {
         auto light = m_ActiveScene->CreateGameObject("light 2");
-        //light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(.2, .8, .6), 4, 0, 0);
+        light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(.2, .8, .6), 4, 0, 0);
         auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
         trans.translate(vec3(2.5, 3.6, 2));
