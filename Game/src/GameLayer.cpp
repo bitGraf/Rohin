@@ -37,23 +37,35 @@ void GameLayer::OnAttach() {
     m_ActiveScene = std::make_shared<Engine::Scene>();
     //m_ActiveScene->loadFromFile("run_tree/Data/Levels/nbtTest.scene");
 
-    Engine::MeshCatalog::Register("mesh_cube", "run_tree/Data/Models/cube.nbt", true);
-    Engine::MeshCatalog::Register("mesh_ball", "run_tree/Data/Models/sphere.nbt", true);
-    //Engine::MeshCatalog::Register("mesh_cyl", "run_tree/Data/Models/cylinder.nbt", true);
-    Engine::MeshCatalog::Register("mesh_helmet", "run_tree/Data/Models/helmet.nbt", true); // TODO: this is slow
-    for (int nx = 0; nx < 5; nx++) {
-        auto ball = m_ActiveScene->CreateGameObject("ball " + nx);
-        auto mesh = Engine::MeshCatalog::Get("mesh_helmet");
+    std::vector<std::string> meshes{
+        "mesh_guard",
+        "mesh_helmet",
+        "mesh_cylinder",
+        "mesh_cube",
+        "mesh_sphere",
+        "mesh_plane",
+        "mesh_guard"
+    };
+
+    Engine::MeshCatalog::Register("mesh_guard",    "run_tree/Data/Models/guard.nbt", true);
+    Engine::MeshCatalog::Register("mesh_helmet",   "run_tree/Data/Models/helmet.nbt", true); // TODO: this loads slow
+    Engine::MeshCatalog::Register("mesh_cylinder", "run_tree/Data/Models/cylinder.nbt", true);
+    Engine::MeshCatalog::Register("mesh_cube",     "run_tree/Data/Models/cube.nbt", true);
+    Engine::MeshCatalog::Register("mesh_sphere",   "run_tree/Data/Models/sphere.nbt", true);
+    Engine::MeshCatalog::Register("mesh_plane",    "run_tree/Data/Models/plane.nbt", true);
+    for (int nx = 0; nx < 7; nx++) {
+        auto ball = m_ActiveScene->CreateGameObject("mesh " + nx);
+        auto mesh = Engine::MeshCatalog::Get(meshes[nx]);
         ball.AddComponent<Engine::MeshRendererComponent>(mesh);
 
         auto& trans = ball.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
-        trans.translate(vec3(nx-2, 1.0f, 0));
+        trans.translate(vec3(nx-3, 1.0f, 0));
         trans.scale(vec3(.45f, .45f, .45f));
     }
     { // Platform
         auto platform = m_ActiveScene->CreateGameObject("Platform");
-        auto rectMesh = Engine::MeshCatalog::Get("mesh_cube");
+        auto rectMesh = Engine::MeshCatalog::Get("mesh_plane");
         platform.AddComponent<Engine::MeshRendererComponent>(rectMesh);
 
         auto& trans = platform.GetComponent<Engine::TransformComponent>().Transform;

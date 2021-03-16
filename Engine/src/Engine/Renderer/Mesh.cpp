@@ -107,7 +107,7 @@ namespace Engine {
                         const auto& emissive_path = comp.at("emissive_path").as<nbt::tag_string>().get();
                         mat_spec.Emissive = MaterialCatalog::GetTexture(emissive_path);
                     }
-
+                    
                     // If after the material and texture definitions, some channels are still
                     // not set, set them to the default texture values
                     if (!mat_spec.Albedo)    mat_spec.Albedo    = MaterialCatalog::GetTexture("run_tree/Data/Images/frog.png");
@@ -117,11 +117,15 @@ namespace Engine {
                     if (!mat_spec.Roughness) mat_spec.Roughness = MaterialCatalog::GetTexture("run_tree/Data/Images/white.png");
                     if (!mat_spec.Emissive)  mat_spec.Emissive  = MaterialCatalog::GetTexture("run_tree/Data/Images/black.png");
 
+                    // print out texture IDs
+                    //ENGINE_LOG_INFO("Mesh {0} has texIDs ({1},{2},{3},{4},{5},{6})", filename, mat_spec.Albedo->GetID(), mat_spec.Normal->GetID(), mat_spec.Ambient->GetID(), mat_spec.Metalness->GetID(), mat_spec.Albedo->GetID(), mat_spec.Roughness->GetID());
+
                     // mat_spec should now have all the valid data needed!
                     // upload everyhing from mat_spec to the material
                     m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
                     m_BaseMaterial->Set<float>("u_Metalness", mat_spec.MetalnessBase);
                     m_BaseMaterial->Set<float>("u_Roughness", mat_spec.RoughnessBase);
+
                     m_BaseMaterial->Set("u_AlbedoTexture",    mat_spec.Albedo);
                     m_BaseMaterial->Set("u_NormalTexture",    mat_spec.Normal);
                     m_BaseMaterial->Set("u_MetalnessTexture", mat_spec.Metalness);

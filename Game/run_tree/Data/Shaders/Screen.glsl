@@ -76,11 +76,11 @@ void main() {
         FragColor = vec4(rt3.rgb, 1);
     else if (r_outputSwitch == 7)
         FragColor = vec4(vec3(makeDepthPretty(depth)), 1);
-    else if (r_outputSwitch == 8) {
+    else if (r_outputSwitch == 8)
         FragColor = vec4(ToneMap(Diffuse), 1);
-    } else if (r_outputSwitch == 9) {
+    else if (r_outputSwitch == 9)
         FragColor = vec4(ToneMap(Specular), 1);
-    } else if (r_outputSwitch == 10)
+    else if (r_outputSwitch == 10)
         FragColor = vec4(Emission, 1);
     else if (r_outputSwitch == 11)
         FragColor = vec4(vec3(SSAO), 1);

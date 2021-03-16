@@ -17,7 +17,7 @@ namespace Engine {
         if (s_Data.LoadedTextures.find(path) == s_Data.LoadedTextures.end()) {
             // not currently loaded
             s_Data.LoadedTextures.emplace(path, Texture2D::Create(path));
-            ENGINE_LOG_TRACE("texture [{0}] loaded!", path);
+            ENGINE_LOG_TRACE("texture {1}[{0}] loaded!", path, s_Data.LoadedTextures[path]->GetID());
         }
         
         return s_Data.LoadedTextures.at(path);
@@ -38,7 +38,7 @@ namespace Engine {
         }
         if (data.has_key("ambient_path")) {
             auto ambient_path = data.at("ambient_path").as<nbt::tag_string>().get();
-            spec.Albedo = GetTexture(ambient_path);
+            spec.Ambient = GetTexture(ambient_path);
         }
         if (data.has_key("metalness_path")) {
             auto metalness_path = data.at("metalness_path").as<nbt::tag_string>().get();
@@ -86,6 +86,7 @@ namespace Engine {
     MaterialSpec MaterialCatalog::GetMaterial(const std::string& material_name) {
         if (s_Data.Map.find(material_name) == s_Data.Map.end()) {
             MaterialSpec spec;
+            __debugbreak();
             return spec;
         }
 
