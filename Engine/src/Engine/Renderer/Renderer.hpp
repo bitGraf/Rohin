@@ -29,6 +29,7 @@ namespace Engine {
             const Light& sun, const math::mat4& projection);
         static void UploadLights(const Ref<Shader> shader);
         static void Flush();
+        static void Precompute();
 
         static void NextOutputMode();
         static void PrintState();

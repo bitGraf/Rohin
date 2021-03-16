@@ -22,4 +22,9 @@ namespace nbt {
         file_data& data,
         nbt_byte& major, nbt_byte& minor,
         endian::endian& endianness);
+
+    // Safe/guaranteed access of compounds
+    std::string SafeGetString(const tag_compound& comp, const std::string& key, const std::string& default);
+    math::vec3 SafeGetVec3(const tag_compound& comp, const std::string& key, const math::vec3& default);
+    float SafeGetFloat(const tag_compound& comp, const std::string& key, float default);
 }

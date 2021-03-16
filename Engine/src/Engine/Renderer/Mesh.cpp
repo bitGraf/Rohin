@@ -67,43 +67,33 @@ namespace Engine {
 
                 // Manually set material struct
                 {
-                    // base material properties
-                    m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", math::vec3(1,1,1));
-                    m_BaseMaterial->Set<float>("u_Metalness", 0);
-                    m_BaseMaterial->Set<float>("u_Roughness", 1.0f);
-
-                    // TODO: idk is this actually works. might need to actually create a texture on the material...
-                    if (comp.has_key("u_albedo_path")) {
-                        auto albedo_path = comp["u_albedo_path"].as<nbt::tag_string>().get();
-                        m_BaseMaterial->Set("u_AlbedoTexture", Texture2D::Create(albedo_path));
-                    }
-                    if (comp.has_key("u_normal_path")) {
-                        auto normal_path = comp["u_normal_path"].as<nbt::tag_string>().get();
-                        m_BaseMaterial->Set("u_NormalTexture", Texture2D::Create(normal_path));
-                    }
-                    if (comp.has_key("u_metalness_path")) {
-                        auto metalness_path = comp["u_metalness_path"].as<nbt::tag_string>().get();
-                        m_BaseMaterial->Set("u_MetalnessTexture", Texture2D::Create(metalness_path));
-                    }
-                    if (comp.has_key("u_roughness_path")) {
-                        auto roughness_path = comp["u_roughness_path"].as<nbt::tag_string>().get();
-                        m_BaseMaterial->Set("u_RoughnessTexture", Texture2D::Create(roughness_path));
-                    }
-                    if (comp.has_key("u_ambient_path")) {
-                        auto ambient_path = comp["u_ambient_path"].as<nbt::tag_string>().get();
-                        m_BaseMaterial->Set("u_AmbientTexture", Texture2D::Create(ambient_path));
-                    }
-                    if (comp.has_key("u_emissive_path")) {
-                        auto emissive_path = comp["u_emissive_path"].as<nbt::tag_string>().get();
-                        m_BaseMaterial->Set("u_EmissiveTexture", Texture2D::Create(emissive_path));
+                    // see if a comprehensive material is listed to load
+                    if (comp.has_key("material")) {
+                        // load material props from this material listing
+                        const auto& material_name = comp["material"].as<nbt::tag_string>().get();
+                        ENGINE_LOG_TRACE("This mesh is using material {0}", material_name);
                     }
 
+                    // If no material loaded, create it manually
+                    // If a material was loaded, override specific properties
+                    // TODO: determine what each material property should be called
+                    m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", nbt::SafeGetVec3(comp, "albedo_color", math::vec3(1, 1, 1)));
+                    m_BaseMaterial->Set<float>("u_Metalness", nbt::SafeGetFloat(comp, "metalness", 0));
+                    m_BaseMaterial->Set<float>("u_Roughness", nbt::SafeGetFloat(comp, "roughness", 0.7f));
 
-                    //m_BaseMaterial->Set("u_AlbedoTexture", Texture2D::Create("run_tree/Data/Images/waffle/WaffleSlab2_albedo.png"));
-                    //m_BaseMaterial->Set("u_AlbedoTexture", Texture2D::Create("run_tree/Data/Images/guard.png"));
-                    //m_BaseMaterial->Set("u_NormalTexture", Texture2D::Create("run_tree/Data/Images/waffle/WaffleSlab2_normal.png"));
-                    //m_BaseMaterial->Set("u_MetalnessTexture", Texture2D::Create("run_tree/Data/Images/frog.png"));
-                    //m_BaseMaterial->Set("u_RoughnessTexture", Texture2D::Create("run_tree/Data/Images/waffle/WaffleSlab2_roughness.png"));
+                    auto albedo_path = nbt::SafeGetString(comp, "albedo_path", "run_tree/Data/Images/frog.png");
+                    auto normal_path = nbt::SafeGetString(comp, "normal_path", "run_tree/Data/Images/normal.png");
+                    auto ambient_path = nbt::SafeGetString(comp, "ambient_path", "run_tree/Data/Images/white.png");
+                    auto roughness_path = nbt::SafeGetString(comp, "roughness_path", "run_tree/Data/Images/white.png");
+                    auto metalness_path = nbt::SafeGetString(comp, "metalness_path", "run_tree/Data/Images/black.png");
+                    auto emissive_path = nbt::SafeGetString(comp, "emissive_path", "run_tree/Data/Images/black.png");
+
+                    m_BaseMaterial->Set("u_AlbedoTexture", Texture2D::Create(albedo_path));
+                    m_BaseMaterial->Set("u_NormalTexture", Texture2D::Create(normal_path));
+                    m_BaseMaterial->Set("u_MetalnessTexture", Texture2D::Create(metalness_path));
+                    m_BaseMaterial->Set("u_RoughnessTexture", Texture2D::Create(roughness_path));
+                    m_BaseMaterial->Set("u_AmbientTexture", Texture2D::Create(ambient_path));
+                    m_BaseMaterial->Set("u_EmissiveTexture", Texture2D::Create(emissive_path));
 
                     /// mat1
                     Ref<MaterialInstance> mat = std::make_shared<MaterialInstance>(m_BaseMaterial, "mat1");

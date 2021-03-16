@@ -61,30 +61,30 @@ void main() {
     //value = min(max(value, 0), 1) * 0.000001;
 
     if (r_outputSwitch == 0)
-        FragColor = vec4(Albedo, 1);
-    else if (r_outputSwitch == 1)
-        FragColor = vec4(Normal, 1);
-    else if (r_outputSwitch == 2)
-        FragColor = vec4(Ambient, Ambient, Ambient, 1);
-    else if (r_outputSwitch == 3)
-        FragColor = vec4(Metalness, Metalness, Metalness, 1);
-    else if (r_outputSwitch == 4)
-        FragColor = vec4(Roughness, Roughness, Roughness, 1);
-    else if (r_outputSwitch == 5)
-        FragColor = vec4(rt3.rgb, 1);
-    else if (r_outputSwitch == 6)
-        FragColor = vec4(vec3(makeDepthPretty(depth)), 1);
-    else if (r_outputSwitch == 7) {
-        FragColor = vec4(ToneMap(Diffuse), 1);
-    } else if (r_outputSwitch == 8) {
-        FragColor = vec4(ToneMap(Specular), 1);
-    } else if (r_outputSwitch == 9)
-        FragColor = vec4(Emission, 1);
-    else if (r_outputSwitch == 10)
-        FragColor = vec4(vec3(SSAO), 1);
-    else if (r_outputSwitch == 11) {
         FragColor = vec4(ToneMap((Albedo*Diffuse + Specular)*Ambient) + Emission, 1);
-    } else
+    else if (r_outputSwitch == 1)
+        FragColor = vec4(Albedo, 1);
+    else if (r_outputSwitch == 2)
+        FragColor = vec4(Normal, 1);
+    else if (r_outputSwitch == 3)
+        FragColor = vec4(Ambient, Ambient, Ambient, 1);
+    else if (r_outputSwitch == 4)
+        FragColor = vec4(Metalness, Metalness, Metalness, 1);
+    else if (r_outputSwitch == 5)
+        FragColor = vec4(Roughness, Roughness, Roughness, 1);
+    else if (r_outputSwitch == 6)
+        FragColor = vec4(rt3.rgb, 1);
+    else if (r_outputSwitch == 7)
+        FragColor = vec4(vec3(makeDepthPretty(depth)), 1);
+    else if (r_outputSwitch == 8) {
+        FragColor = vec4(ToneMap(Diffuse), 1);
+    } else if (r_outputSwitch == 9) {
+        FragColor = vec4(ToneMap(Specular), 1);
+    } else if (r_outputSwitch == 10)
+        FragColor = vec4(Emission, 1);
+    else if (r_outputSwitch == 11)
+        FragColor = vec4(vec3(SSAO), 1);
+    else
         FragColor = vec4(1, 0, 0, 1);
 
     // Gamma correct

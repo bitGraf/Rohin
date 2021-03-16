@@ -192,15 +192,22 @@ namespace Engine {
             s_Data.screenBuffer = Framebuffer::Create(spec);
         }
 
-        s_Data.OutputMode = 7;
-        //s_Data.OutputMode = 0;
+        s_Data.OutputMode = 0;
         s_Data.ToneMap = true;
         s_Data.Gamma = true;
+
+        Precompute();
+    }
+
+    void Renderer::Precompute() {
+        // do startup computations (calc IBL and image probes)
+        // TODO: the scene probably runs this code instead of the renderer...
     }
 
     void Renderer::NextOutputMode() {
         s_Data.OutputMode++;
         std::vector<std::string> outputModes = {
+            "Combined Output",
             "Albedo",
             "View-Space Normals",
             "Baked Ambient Occlusion",
@@ -211,8 +218,7 @@ namespace Engine {
             "Diffuse Lighting",
             "Specular Lighting",
             "Emission",
-            "SSAO + Baked ao",
-            "Combined Output"
+            "SSAO + Baked ao"
         };
         if (s_Data.OutputMode == outputModes.size())
             s_Data.OutputMode = 0;

@@ -40,6 +40,11 @@ def write_string(f, string, e):
     write_num(f, len(string), 2, e)
     f.write(bytearray(string, encoding='utf-8'))
     
+def write_tag_string(f, name, value, e):
+    write_tag(f, 8)
+    write_string(f, name, e)
+    write_string(f, value, e)
+    
 def pack_verts(vertices, e):
     packed = []
     for vert in vertices:
@@ -104,39 +109,19 @@ def write_mesh_data(f, vertices, indices, e):
 def write_end_compound(f):
     # tag_end: end of "mesh_data" compound
     write_tag(f, 0)
-
-def write_texture_data(f, albedo_path, normal_path, metalness_path, roughness_path, e):
-    # tag_string: u_albedo_path
-    write_tag(f, 8)
-    write_string(f, "u_albedo_path", e)
-    if albedo_path is None:
-        write_string(f, 'run_tree/Data/Images/frog.png', e)
-    else:
-        write_string(f, albedo_path, e)
-
-    # tag_string: u_normal_path
-    write_tag(f, 8)
-    write_string(f, "u_normal_path", e)
-    if normal_path is None:
-        write_string(f, 'run_tree/Data/Images/frog.png', e)
-    else:
-        write_string(f, normal_path, e)
-
-    # tag_string: u_metalness_path
-    write_tag(f, 8)
-    write_string(f, "u_metalness_path", e)
-    if metalness_path is None:
-        write_string(f, 'run_tree/Data/Images/frog.png', e)
-    else:
-        write_string(f, metalness_path, e)
-
-    # tag_string: u_roughness_path
-    write_tag(f, 8)
-    write_string(f, "u_roughness_path", e)
-    if roughness_path is None:
-        write_string(f, 'run_tree/Data/Images/frog.png', e)
-    else:
-        write_string(f, roughness_path, e)
+    
+def write_bonus_data(f, obj, props, e):
+    print('Found bonus data: ')
+    for name in props:
+        value = (obj['prop_' + name])
+        if type(value) == str:
+            value = value.replace('\\', '/')
+            print('Writing string [' + name + ']: ' + value)
+            write_tag_string(f, name, value, e)
+        else:
+            print('Can\'t handle that type yet... Sorry!')
+        
+        #write_string(f, emissive_path, e)
     
 
 def triangulate_mesh(mesh):
@@ -196,12 +181,6 @@ def getUV(dupes):
     # TODO: add error checking
     return dupes[0]
 
-def getCustomString(obj, key):
-    if key in obj:
-        return obj[key]
-    else:
-        return None
-
 def nbt_write_test(context, filepath, global_matrix): #-- , apply_modifiers, export_selection, global_matrix, path_mode):
     print("Writing mesh to .nbt file!")
 
@@ -215,16 +194,9 @@ def nbt_write_test(context, filepath, global_matrix): #-- , apply_modifiers, exp
     triangulate_mesh(mesh)
     mesh.calc_tangents()
 
-    # get texture strings
-    albedo_path = getCustomString(obj, 'u_albedo_path')
-    normal_path = getCustomString(obj, 'u_normal_path')
-    metalness_path = getCustomString(obj, 'u_metalness_path')
-    roughness_path = getCustomString(obj, 'u_roughness_path')
-
-    print('u_albedo_path', albedo_path)
-    print('u_normal_path', normal_path)
-    print('u_metalness_path', metalness_path)
-    print('u_roughness_path', roughness_path)
+    # get custom properties
+    custom_props = obj.keys()
+    custom_props = [str[5:] for str in custom_props if str.startswith('prop_')] #only those starting with prop_
 
     # indices: point to index of vertex in mesh.vertices
     indices = []
@@ -302,7 +274,7 @@ def nbt_write_test(context, filepath, global_matrix): #-- , apply_modifiers, exp
         write_header(f, version_major, version_minor, endianness)
         write_start_compound(f, endianness)
         write_mesh_data(f, vertices, indices, endianness)
-        write_texture_data(f, albedo_path, normal_path, metalness_path, roughness_path, endianness)
+        write_bonus_data(f, obj, custom_props, endianness)
         write_end_compound(f)
         
         print('done!')
@@ -327,7 +299,7 @@ if __name__ == "__main__":
     global_scale = 1.0
     global_matrix = Matrix.Scale(global_scale, 4)
     path_mode = "uhh"
-    filepath = "D:\\Desktop\\Gamedev\\rohin\\Game\\run_tree\\Data\\Models\\guard.nbt"
+    filepath = "D:\\Desktop\\Gamedev\\rohin\\Game\\run_tree\\Data\\Models\\test.nbt"
     
     save(context, filepath)
     #nbt_write_test(context, filepath, apply_modifiers, export_selection, global_matrix, path_mode)

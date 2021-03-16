@@ -175,4 +175,35 @@ namespace nbt {
         return false;
 
     }
+
+    // Safe/Gauranteed accessors
+    std::string SafeGetString(const tag_compound& comp, const std::string& key, const std::string& default) {
+        if (comp.has_key(key)) {
+            ENGINE_LOG_ASSERT(comp.at(key).get_type() == nbt::tag_type::String, "Value at key must be a string");
+            return comp.at(key).as<tag_string>().get();
+        }
+        else {
+            return default;
+        }
+    }
+
+    math::vec3 SafeGetVec3(const tag_compound& comp, const std::string& key, const math::vec3& default) {
+        if (comp.has_key(key)) {
+            ENGINE_LOG_ASSERT(comp.at(key).get_type() == nbt::tag_type::Vector3, "Value at key must be a vec3");
+            return comp.at(key).as<tag_vec3>().get();
+        }
+        else {
+            return default;
+        }
+    }
+
+    float SafeGetFloat(const tag_compound& comp, const std::string& key, float default) {
+        if (comp.has_key(key)) {
+            ENGINE_LOG_ASSERT(comp.at(key).get_type() == nbt::tag_type::Float, "Value at key must be a float");
+            return comp.at(key).as<tag_float>().get();
+        }
+        else {
+            return default;
+        }
+    }
 }
