@@ -55,6 +55,7 @@ void GameLayer::OnAttach() {
         trans.translate(vec3(0, 0, 0));
 
         UID_t hull = cWorld.CreateNewCapsule(vec3(0, 0, 0), 1, 0.5f);
+        player.AddComponent<Engine::ColliderComponent>(hull);
     }
     { // Platform
         auto platform = m_ActiveScene->CreateGameObject("Platform");
