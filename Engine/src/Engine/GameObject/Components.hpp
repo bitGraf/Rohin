@@ -6,6 +6,7 @@
 #include "Engine/Renderer/Mesh.hpp"
 #include "Engine/Renderer/Light.hpp"
 #include "Engine/GameObject/ScriptableBase.hpp"
+#include "Engine/Collision/CollisionWorld.hpp"
 #include <ostream>
 
 namespace Engine {
@@ -64,7 +65,17 @@ namespace Engine {
         DEBUG_OSTR_IMPL(LightComponent)
     };
 
-    
+    struct ColliderComponent {
+        UID_t HullID;
+
+        ColliderComponent() = default;
+        ColliderComponent(const ColliderComponent&) = default;
+        ColliderComponent(UID_t hull) : HullID(hull) {}
+
+        DEBUG_OSTR_IMPL(ColliderComponent)
+    };
+
+
 
     struct NativeScriptComponent {
         ScriptableBase* Script = nullptr;

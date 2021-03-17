@@ -344,13 +344,27 @@ namespace Engine {
                 }
             }
             Renderer::End3DScene();
+
+            // Render collision hulls
+            if (m_showCollisionHulls) {
+                for (const auto& hull : cWorld.m_static) {
+                    math::mat4 transform;
+                    transform.translate(hull.position);
+                    transform *= math::mat4(hull.rotation);
+                    Renderer::Submit(*mainCamera, *mainTransform, hull.wireframe, transform, vec3(1,.05,.1));
+                }
+                for (const auto& hull : cWorld.m_dynamic) {
+                    math::mat4 transform;
+                    transform.translate(hull.position);
+                    transform *= math::mat4(hull.rotation);
+                    Renderer::Submit(*mainCamera, *mainTransform, hull.wireframe, transform, vec3(.1, .05, 1));
+                }
+            }
         }
 
-        TextRenderer::BeginTextRendering();
-        if (m_showEntityLocations) {
+        if (m_showEntityLocations) { // TODO: rename this/come up with less bad solution for these things
             TextRenderer::SubmitText("Showing entity locations", 5, 5, 32, math::vec3(.7, .1, .5));
         }
-        TextRenderer::EndTextRendering();
     }
 
     void Scene::OnViewportResize(u32 width, u32 height) {

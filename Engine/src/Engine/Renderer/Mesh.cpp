@@ -282,6 +282,8 @@ namespace Engine {
                 m_VertexArray->SetIndexBuffer(ib);
             }
         }
+
+        m_VertexArray->Unbind();
     }
     
     Mesh::~Mesh() {

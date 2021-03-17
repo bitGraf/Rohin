@@ -2,6 +2,7 @@
 #define COLLISION_HULL_H
 
 #include "Engine/Core/GameMath.hpp"
+#include "Engine/Renderer/VertexArray.hpp"
 
 using namespace math;
 typedef u64 UID_t;
@@ -21,7 +22,7 @@ public:
 
     vec3 position;
     mat3 rotation;
-    u32 wireframeVAO;
+    Engine::Ref<Engine::VertexArray> wireframe; // for visualizing
 
     void bufferData();
 

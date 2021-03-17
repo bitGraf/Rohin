@@ -28,11 +28,13 @@ uniform vec3 r_CamPos;
 uniform vec3 r_LineColor;
 uniform float r_LineFadeStart;
 uniform float r_LineFadeEnd;
+uniform float r_LineFadeMaximum;
+uniform float r_LineFadeMinimum;
 
 void main()
 {
 	float start = r_LineFadeStart, end = r_LineFadeEnd;
 	float distance = length(r_CamPos - vs_Input.WorldPos);
-	float strength = min(max((end-distance)/(end-start), 0), .75f);
+	float strength = min(max((end-distance)/(end-start), r_LineFadeMinimum), r_LineFadeMaximum);
 	FragColor = vec4(r_LineColor, 1.0) * strength;
 }

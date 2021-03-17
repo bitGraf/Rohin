@@ -98,4 +98,9 @@ namespace Engine {
         if (enabled) glEnable(GL_DEPTH_TEST);
         else         glDisable(GL_DEPTH_TEST);
     }
+
+    void OpenGLRendererAPI::SetWireframe(bool enabled) {
+        if (enabled) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        else         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    }
 }

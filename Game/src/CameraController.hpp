@@ -76,6 +76,13 @@ public:
                 firstFrame = true;
             }
 
+            if (Input::IsKeyPressed(KEY_CODE_LEFT_SHIFT)) {
+                moveSpeed = 20;
+            }
+            else {
+                moveSpeed = 5.0f;
+            }
+
             if (Input::IsKeyPressed(KEY_CODE_A)) {
                 position -= Right * moveSpeed * ts;
                 updateTransform = true;

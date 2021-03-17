@@ -446,6 +446,32 @@ namespace Engine {
         //RenderCommand::DrawIndexed(s_Data.VertexArray);
     }
 
+    void Renderer::Submit(const Camera& camera, const math::mat4& camTrans, 
+        const Ref<VertexArray>& vao, const math::mat4& transform,
+        const math::vec3& color) {
+
+        auto shader = s_Data.ShaderLibrary->Get("Line");
+        shader->Bind();
+
+        math::mat4 ViewMatrix = math::invertViewMatrix(camTrans);
+        math::mat4 ProjectionMatrix = camera.GetProjection();
+        math::vec3 camPos = camTrans.col4().XYZ();
+
+        shader->SetMat4("r_VP", ProjectionMatrix * ViewMatrix);
+        shader->SetMat4("r_Transform", transform);
+        shader->SetVec3("r_CamPos", camPos);
+        shader->SetVec3("r_LineColor", color);
+        shader->SetFloat("r_LineFadeStart", 5);
+        shader->SetFloat("r_LineFadeEnd", 20);
+        shader->SetFloat("r_LineFadeMaximum", 0.75f);
+        shader->SetFloat("r_LineFadeMinimum", 0.25f);
+
+        vao->Bind();
+        RenderCommand::SetWireframe(true);
+        RenderCommand::DrawIndexed(vao, true);
+        RenderCommand::SetWireframe(false);
+    }
+
     void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform) {
         mesh->GetVertexArray()->Bind();
         auto shader = mesh->GetMeshShader();

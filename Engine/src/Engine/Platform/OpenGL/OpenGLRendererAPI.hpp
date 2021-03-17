@@ -20,5 +20,6 @@ namespace Engine {
 
         virtual void SetCullFace(int face) override;
         virtual void SetDepthTest(bool enabled) override;
+        virtual void SetWireframe(bool enabled) override;
     };
 }

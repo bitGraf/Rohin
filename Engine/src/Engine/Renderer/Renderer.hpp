@@ -37,6 +37,7 @@ namespace Engine {
         static void ToggleGammaCorrection();
 
         static void Submit(const math::mat4& transform = math::mat4());
+        static void Submit(const Camera& camera, const math::mat4& camTrans, const Ref<VertexArray>& vao, const math::mat4& transform, const math::vec3& color);
         static void SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform);
         static void SubmitMesh_drawNormals(const Ref<Mesh>& mesh, const math::mat4& transform);
 

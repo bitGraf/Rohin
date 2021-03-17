@@ -53,19 +53,30 @@ void GameLayer::OnAttach() {
         auto& trans = player.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
         trans.translate(vec3(0, 0, 0));
+
+        UID_t hull = cWorld.CreateNewCapsule(vec3(0, 0, 0), 1, 0.5f);
     }
     { // Platform
         auto platform = m_ActiveScene->CreateGameObject("Platform");
         auto rectMesh = Engine::MeshCatalog::Get("mesh_plane");
         auto material = rectMesh->GetMaterial(0);
-        material->Set<float>("u_TextureScale", 5.0f);
+        float platformSize = 20.0f;
+        float platformThickness = 3.0f;
+        material->Set<float>("u_TextureScale", platformSize);
         material->Set("u_AlbedoTexture", Engine::Texture2D::Create("run_tree/Data/Images/grid/PNG/Dark/texture_07.png"));
         platform.AddComponent<Engine::MeshRendererComponent>(rectMesh);
 
         auto& trans = platform.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
-        trans.scale(vec3(5.0f, .25f, 5.0f));
-        trans.translate(vec3(0, -1.0f, 0));
+        trans.scale(vec3(platformSize, 1, platformSize));
+        trans.translate(vec3(0, 0.0f, 0));
+
+        UID_t floor = cWorld.CreateNewCubeHull(vec3(0, -platformThickness/2.0f, 0), 2*platformSize, platformThickness, 2*platformSize);
+
+        // TODO: do we want the ability to have "floating" hulls, 
+        // that are not assigned to any gameobect they are only tracked by the collision world.
+        // If they are entirely static, that might be fine
+        //platform.AddComponent<ColliderComponent>(floor);
     }
 
     { // Lights
@@ -106,19 +117,20 @@ void GameLayer::OnAttach() {
     }
 
     /* Collision code TODO: Remove this */
-    UID_t floor = cWorld.CreateNewCubeHull(vec3(0, -2.5, 0), 75, 5, 75);
-    cWorld.CreateNewCubeHull(vec3(0, 1.5, -4), 8, 3, 3);
-    UID_t crate = cWorld.CreateNewCubeHull(vec3(-2, 1.5, -8), 8, 3, 3);
+    cWorld.CreateNewCubeHull(vec3(0, 1.5, -4), 8, 3, 3); // container +X
+    
+    UID_t crate = cWorld.CreateNewCubeHull(vec3(-2, 1.5, -8), 8, 3, 3); // container +Y
     cWorld.getHullFromID(crate)->rotation.toYawPitchRoll(90, 0, 0);
-
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(-2, 1.5, -6), 8, 3, 3))
+    
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(-2, 1.5, -6), 8, 3, 3)) // corner container
         ->rotation.toYawPitchRoll(135, 0, 0);
-
-    UID_t id = cWorld.CreateNewCubeHull(vec3(-5.42, 1, 1.88), 2);
+    
+    UID_t id = cWorld.CreateNewCubeHull(vec3(-5.42, 1, 1.88), 2); // Wooden Crate
     cWorld.getHullFromID(id)->rotation.toYawPitchRoll(38.27, 0, 0);
-    cWorld.CreateNewCubeHull(vec3(-3.41, 0.5, -0.89), .75, 1.5, .75);
-    cWorld.CreateNewCubeHull(vec3(-1.47, 0.5, 2.09), .75, 1.5, .75);
-
+    
+    cWorld.CreateNewCubeHull(vec3(-3.41, 0.5, -0.89), .75, 1.5, .75); // Barrel 1
+    cWorld.CreateNewCubeHull(vec3(-1.47, 0.5, 2.09), .75, 1.5, .75); // Barrel 2
+    
     // Ramps at various angles
     cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 0, 5), 10, 1, 3))
         ->rotation.toYawPitchRoll(0, 10, 0);
@@ -232,6 +244,9 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     }
     if (e.GetKeyCode() == KEY_CODE_G) {
         Renderer::ToggleGammaCorrection();
+    }
+    if (e.GetKeyCode() == KEY_CODE_3) {
+        m_ActiveScene->ToggleCollisionHulls();
     }
     return false;
 }

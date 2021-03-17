@@ -31,6 +31,7 @@ namespace Engine {
 
         inline void ToggleShowEntityLocations() { ENGINE_LOG_WARN("Showing entity locations: {0}", !m_showEntityLocations); m_showEntityLocations = !m_showEntityLocations; }
         inline void ToggleShowNormals() { ENGINE_LOG_WARN("Showing normals: {0}", !m_showNormals); m_showNormals = !m_showNormals; }
+        inline void ToggleCollisionHulls() { ENGINE_LOG_WARN("Showing collision hulls: {0}", !m_showCollisionHulls); m_showCollisionHulls = !m_showCollisionHulls; }
 
         Registry& GetRegistry() { return m_Registry; }
 
@@ -40,6 +41,7 @@ namespace Engine {
 
         bool m_Playing = false;
         bool m_showEntityLocations = false;
+        bool m_showCollisionHulls = false;
         bool m_showNormals = false;
 
         friend class GameObject;

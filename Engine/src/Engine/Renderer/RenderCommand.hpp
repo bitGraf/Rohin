@@ -48,6 +48,9 @@ namespace Engine {
         inline static void EnableDepthTest() {
             s_RendererAPI->SetDepthTest(true);
         }
+        inline static void SetWireframe(bool enabled) {
+            s_RendererAPI->SetWireframe(enabled);
+        }
     private:
         static RendererAPI * s_RendererAPI;
     };

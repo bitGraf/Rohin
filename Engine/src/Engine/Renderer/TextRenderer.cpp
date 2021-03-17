@@ -22,10 +22,14 @@ namespace Engine {
     void TextRenderer::Init() {
         s_Data.ShaderLibrary = std::make_unique<ShaderLibrary>();
         auto textShader = GetShaderLibrary()->Load("run_tree/Data/Shaders/Text.glsl");
-        textShader->SetFloat("r_fontTex", 0);
 
         // create font-rendering globals
         s_Data.orthoMat.orthoProjection(0, 1280, 720, 0, -1, 1);
+
+        // initialize texture shader values
+        textShader->Bind();
+        textShader->SetMat4("u_Projection", s_Data.orthoMat);
+        textShader->SetFloat("r_fontTex", 0);
 
         // create Text quad
         {
@@ -63,19 +67,19 @@ namespace Engine {
     void TextRenderer::Shutdown() {
     }
 
-    void TextRenderer::BeginTextRendering() {
-        auto textShader = s_Data.ShaderLibrary->Get("Text");
-        textShader->Bind();
-        textShader->SetMat4("r_orthoProjection", s_Data.orthoMat);
-    }
-    
-    void TextRenderer::EndTextRendering() {
-        Flush();
-    }
-
-    void TextRenderer::Flush() {
-        // currently doing nothing ^_^
-    }
+    //void TextRenderer::BeginTextRendering() {
+    //    auto textShader = s_Data.ShaderLibrary->Get("Text");
+    //    textShader->Bind();
+    //    textShader->SetMat4("r_orthoProjection", s_Data.orthoMat);
+    //}
+    //
+    //void TextRenderer::EndTextRendering() {
+    //    Flush();
+    //}
+    //
+    //void TextRenderer::Flush() {
+    //    // currently doing nothing ^_^
+    //}
 
     void TextRenderer::OnWindowResize(uint32_t width, uint32_t height)
     {

@@ -26,6 +26,7 @@ namespace Engine {
 
         virtual void SetCullFace(int face) = 0;
         virtual void SetDepthTest(bool enabled) = 0;
+        virtual void SetWireframe(bool enabled) = 0;
 
         static inline API GetAPI() { return s_API; }
 

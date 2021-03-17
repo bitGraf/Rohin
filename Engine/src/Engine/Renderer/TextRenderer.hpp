@@ -10,9 +10,9 @@ namespace Engine {
         static void Init();
         static void Shutdown();
 
-        static void BeginTextRendering();
-        static void EndTextRendering();
-        static void Flush();
+        //static void BeginTextRendering();
+        //static void EndTextRendering();
+        //static void Flush();
 
         static void SubmitText(const std::string& text, float startX, float startY, float size, math::vec3 color);
 
