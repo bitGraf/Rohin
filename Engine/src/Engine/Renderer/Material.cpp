@@ -141,15 +141,20 @@ namespace Engine {
     }
 
     void MaterialInstance::Bind() {
+
+        // bind the base material
+        m_Material->Bind();
+
+        // if the material instance has anything to override, bind that
         m_Material->m_Shader->Bind();
 
         if (m_VertStorage)
-            m_Material->m_Shader->SetVertUniformBuffer(m_VertStorage);
+            m_Material->m_Shader->SetVertUniformBuffer(m_VertStorage, m_OverriddenValues);
 
         if (m_FragStorage)
-            m_Material->m_Shader->SetFragUniformBuffer(m_FragStorage);
+            m_Material->m_Shader->SetFragUniformBuffer(m_FragStorage, m_OverriddenValues);
 
-        m_Material->BindTextures();
+        //m_Material->BindTextures();
         for (size_t i = 0; i < m_Textures.size(); i++)
         {
             auto& texture = m_Textures[i];

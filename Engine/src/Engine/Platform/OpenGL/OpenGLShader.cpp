@@ -594,6 +594,18 @@ namespace Engine {
         ResolveAndSetUniforms(m_FragUniformGroup, buffer);
     }
 
+    /////////////////////////////////////////////////////////////////////////////
+    // TODO: Duplicating these functions is kinda dumb, could be consolidated...
+    void OpenGLShader::SetVertUniformBuffer(Buffer buffer, const std::unordered_set<std::string>& overrides) {
+        glUseProgram(m_ShaderID);
+        ResolveAndSetUniforms(m_VertexUniformGroup, buffer, overrides);
+    }
+
+    void OpenGLShader::SetFragUniformBuffer(Buffer buffer, const std::unordered_set<std::string>& overrides) {
+        glUseProgram(m_ShaderID);
+        ResolveAndSetUniforms(m_FragUniformGroup, buffer, overrides);
+    }
+
     void OpenGLShader::ResolveAndSetUniforms(const Ref<OpenGLShaderUniformGroupDeclaration>& decl, Buffer buffer)
     {
         const std::vector<ShaderUniformDeclaration*>& uniforms = decl->GetUniformDeclarations();
@@ -604,6 +616,23 @@ namespace Engine {
                 ResolveAndSetUniformArray(uniform, buffer);
             else
                 ResolveAndSetUniform(uniform, buffer);
+        }
+    }
+    /////////////////////////////////////////////////////////////////////////////
+
+    void OpenGLShader::ResolveAndSetUniforms(const Ref<OpenGLShaderUniformGroupDeclaration>& decl, Buffer buffer, const std::unordered_set<std::string>& overrides)
+    {
+        const std::vector<ShaderUniformDeclaration*>& uniforms = decl->GetUniformDeclarations();
+        for (size_t i = 0; i < uniforms.size(); i++)
+        {
+            OpenGLShaderUniformDeclaration* uniform = (OpenGLShaderUniformDeclaration*)uniforms[i];
+            // only resolve if its in the list of overrides
+            if (overrides.find(uniform->GetName()) != overrides.end()) {
+                if (uniform->m_Count > 1)
+                    ResolveAndSetUniformArray(uniform, buffer);
+                else
+                    ResolveAndSetUniform(uniform, buffer);
+            }
         }
     }
 

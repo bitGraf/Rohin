@@ -15,8 +15,9 @@ namespace Engine {
         Ref<Texture2D> Roughness;
         Ref<Texture2D> Emissive;
         math::vec3 AlbedoBase;
-        float RoughnessBase;
-        float MetalnessBase;
+        float RoughnessBase = 1;
+        float MetalnessBase = 0;
+        float TextureScale = 1;
     };
 
     class MaterialCatalog {

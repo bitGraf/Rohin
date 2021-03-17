@@ -36,6 +36,10 @@ namespace Engine {
         glGetFloatv(GL_LINE_WIDTH, &lineWidth);
         ENGINE_LOG_WARN("New line width: {0}", lineWidth);
 
+        GLfloat maxAniso;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAniso);
+        ENGINE_LOG_WARN("Max Anisotropy value: {0}", maxAniso);
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }

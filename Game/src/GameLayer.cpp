@@ -6,6 +6,7 @@
 
 /* native scripts */
 #include "CameraController.hpp"
+#include "Player.hpp"
 #include "Gem.hpp"
 
 bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene* scene, GameObject gameobject) {
@@ -39,35 +40,24 @@ void GameLayer::OnAttach() {
     m_ActiveScene = std::make_shared<Engine::Scene>();
     //m_ActiveScene->loadFromFile("run_tree/Data/Levels/nbtTest.scene");
 
-    std::vector<std::string> meshes{
-        "mesh_guard",
-        "mesh_helmet",
-        "mesh_cylinder",
-        "mesh_cube",
-        "mesh_sphere",
-        "mesh_plane",
-        "mesh_guard"
-    };
+    Engine::MeshCatalog::Register("mesh_guard", "run_tree/Data/Models/guard.nbt", true);
+    Engine::MeshCatalog::Register("mesh_plane", "run_tree/Data/Models/plane.nbt", true);
+    { // Player
+        auto player = m_ActiveScene->CreateGameObject("Player");
+        auto mesh = MeshCatalog::Get("mesh_guard");
+        player.AddComponent<Engine::MeshRendererComponent>(mesh);
+        player.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(player);
 
-    Engine::MeshCatalog::Register("mesh_guard",    "run_tree/Data/Models/guard.nbt", true);
-    Engine::MeshCatalog::Register("mesh_helmet",   "run_tree/Data/Models/helmet.nbt", true); // TODO: this loads slow
-    Engine::MeshCatalog::Register("mesh_cylinder", "run_tree/Data/Models/cylinder.nbt", true);
-    Engine::MeshCatalog::Register("mesh_cube",     "run_tree/Data/Models/cube.nbt", true);
-    Engine::MeshCatalog::Register("mesh_sphere",   "run_tree/Data/Models/sphere.nbt", true);
-    Engine::MeshCatalog::Register("mesh_plane",    "run_tree/Data/Models/plane.nbt", true);
-    for (int nx = 0; nx < 7; nx++) {
-        auto ball = m_ActiveScene->CreateGameObject("mesh " + nx);
-        auto mesh = Engine::MeshCatalog::Get(meshes[nx]);
-        ball.AddComponent<Engine::MeshRendererComponent>(mesh);
-
-        auto& trans = ball.GetComponent<Engine::TransformComponent>().Transform;
+        auto& trans = player.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
-        trans.translate(vec3(nx-3, 1.0f, 0));
-        trans.scale(vec3(.45f, .45f, .45f));
+        trans.translate(vec3(0, 0, 0));
     }
     { // Platform
         auto platform = m_ActiveScene->CreateGameObject("Platform");
         auto rectMesh = Engine::MeshCatalog::Get("mesh_plane");
+        auto material = rectMesh->GetMaterial(0);
+        material->Set<float>("u_TextureScale", 5.0f);
+        material->Set("u_AlbedoTexture", Engine::Texture2D::Create("run_tree/Data/Images/grid/PNG/Dark/texture_07.png"));
         platform.AddComponent<Engine::MeshRendererComponent>(rectMesh);
 
         auto& trans = platform.GetComponent<Engine::TransformComponent>().Transform;
@@ -99,15 +89,18 @@ void GameLayer::OnAttach() {
         trans = math::createYawPitchRollMatrix(45, 0, -80);
     }
 
-    { // Player
+    { // Camera
         m_Camera = m_ActiveScene->CreateGameObject("Camera");
-        m_Camera.AddComponent<Engine::CameraComponent>().camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+        auto& camera = m_Camera.AddComponent<Engine::CameraComponent>().camera;
+        camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+        camera.SetPerspective(75, .01, 100);
         m_Camera.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(m_Camera);
-        //m_Camera.AddComponent<Engine::LightComponent>(Engine::LightType::Spot, vec3(0, 1, 0), 1, cos(d2r * 12.5), cos(d2r * 17.5));
 
         auto& trans = m_Camera.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
-        trans.translate(vec3(0, 1, 2));
+        //trans.translate(vec3(0, 1, 2));
+        trans.translate(vec3(0, 4, 5));
+        trans *= math::createYawPitchRollMatrix(0, 0, -45);
     }
 
     if (false) {
@@ -264,10 +257,15 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
             Input::CaptureMouse(false);
         else
             Input::CaptureMouse(true);
+    }
 
+    if (e.GetKeyCode() == KEY_CODE_C) {
         if (m_Camera) {
-            auto camController = m_Camera.GetComponent<NativeScriptComponent>().GetScript<CameraController>();
-            camController->ExternalAcess(); // test
+            if (m_Camera.HasComponent<NativeScriptComponent>()) {
+                auto scriptComp = m_Camera.GetComponent<NativeScriptComponent>();
+                auto script = scriptComp.GetScript<CameraController>();
+                script->ToggleControl();
+            }
         }
     }
 

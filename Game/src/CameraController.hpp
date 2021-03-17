@@ -35,8 +35,12 @@ public:
         LOG_INFO("Camera controller created on GameObject {0}!", GetGameObjectID());
     }
 
-    void ExternalAcess() {
-        LOG_INFO("Accessed outside of the script OwO");
+    void ToggleControl() {
+        BeingControlled = !BeingControlled;
+        if (BeingControlled)
+            LOG_INFO("CameraController now in control of the camera");
+        else
+            LOG_INFO("CameraController no longer in control");
     }
 
     virtual void OnUpdate(double ts) override {
@@ -44,82 +48,86 @@ public:
         static float oldMousePosX = 0, oldMousePosY = 0;
         float offX = 0.0f, offY = 0.0f;
 
-        if (Input::IsMouseCaptured()) {
-            auto[newMousePosX, newMousePosY] = Input::GetMousePosition();
+        if (BeingControlled) {
+            if (Input::IsMouseCaptured()) {
+                auto[newMousePosX, newMousePosY] = Input::GetMousePosition();
 
-            offX = newMousePosX - oldMousePosX;
-            offY = newMousePosY - oldMousePosY;
+                offX = newMousePosX - oldMousePosX;
+                offY = newMousePosY - oldMousePosY;
 
-            oldMousePosX = newMousePosX; // update old values
-            oldMousePosY = newMousePosY;
-        }
+                oldMousePosX = newMousePosX; // update old values
+                oldMousePosY = newMousePosY;
+            }
 
-        if (!firstFrame) {
-            if (offX != 0.0f) {
-                // mouse moved in x dir
-                yaw -= offX * 0.3f;
+            if (!firstFrame) {
+                if (offX != 0.0f) {
+                    // mouse moved in x dir
+                    yaw -= offX * 0.3f;
+                    updateTransform = true;
+                }
+                if (offY != 0.0f) {
+                    // mouse moved in y dir
+                    pitch -= offY * 0.2f;
+                    updateTransform = true;
+                }
+            }
+            firstFrame = false;
+            if (!Input::IsMouseCaptured()) {
+                firstFrame = true;
+            }
+
+            if (Input::IsKeyPressed(KEY_CODE_A)) {
+                position -= Right * moveSpeed * ts;
+                updateTransform = true;
+            } if (Input::IsKeyPressed(KEY_CODE_D)) {
+                position += Right * moveSpeed * ts;
+                updateTransform = true;
+            } if (Input::IsKeyPressed(KEY_CODE_W)) {
+                position += Forward * moveSpeed * ts;
+                updateTransform = true;
+            } if (Input::IsKeyPressed(KEY_CODE_S)) {
+                position -= Forward * moveSpeed * ts;
+                updateTransform = true;
+            } if (Input::IsKeyPressed(KEY_CODE_SPACE)) {
+                position += Up * moveSpeed * ts;
+                updateTransform = true;
+            } if (Input::IsKeyPressed(KEY_CODE_LEFT_CONTROL)) {
+                position -= Up * moveSpeed * ts;
+                updateTransform = true;
+            } if (Input::IsKeyPressed(KEY_CODE_Q)) {
+                yaw += rotSpeed * ts;
+                updateTransform = true;
+            } if (Input::IsKeyPressed(KEY_CODE_E)) {
+                yaw -= rotSpeed * ts;
+                updateTransform = true;
+            } if (Input::IsKeyPressed(KEY_CODE_R)) {
+                pitch += rotSpeed * ts;
+                updateTransform = true;
+            } if (Input::IsKeyPressed(KEY_CODE_F)) {
+                pitch -= rotSpeed * ts;
                 updateTransform = true;
             }
-            if (offY != 0.0f) {
-                // mouse moved in y dir
-                pitch -= offY * 0.2f;
+
+            if (Input::IsKeyPressed(KEY_CODE_R)) {
+                yaw = 0;
+                pitch = 0;
                 updateTransform = true;
             }
-        }
-        firstFrame = false;
-        if (!Input::IsMouseCaptured()) {
+
+            if (updateTransform) {
+                auto& transform = transformComponent->Transform;
+
+                transform = mat4();
+                transform.translate(position);
+                transform *= math::createYawPitchRollMatrix(yaw, 0.0f, pitch);
+                auto[f, r, u] = math::GetUnitVectors(transform);
+                Forward = f;
+                Right = r;
+                Up = u;
+                updateTransform = false;
+            }
+        } else {
             firstFrame = true;
-        }
-
-        if (Input::IsKeyPressed(KEY_CODE_A)) {
-            position -= Right * moveSpeed * ts;
-            updateTransform = true;
-        } if (Input::IsKeyPressed(KEY_CODE_D)) {
-            position += Right * moveSpeed * ts;
-            updateTransform = true;
-        } if (Input::IsKeyPressed(KEY_CODE_W)) {
-            position += Forward * moveSpeed * ts;
-            updateTransform = true;
-        } if (Input::IsKeyPressed(KEY_CODE_S)) {
-            position -= Forward * moveSpeed * ts;
-            updateTransform = true;
-        } if (Input::IsKeyPressed(KEY_CODE_SPACE)) {
-            position += Up * moveSpeed * ts;
-            updateTransform = true;
-        } if (Input::IsKeyPressed(KEY_CODE_LEFT_CONTROL)) {
-            position -= Up * moveSpeed * ts;
-            updateTransform = true;
-        } if (Input::IsKeyPressed(KEY_CODE_Q)) {
-            yaw += rotSpeed * ts;
-            updateTransform = true;
-        } if (Input::IsKeyPressed(KEY_CODE_E)) {
-            yaw -= rotSpeed * ts;
-            updateTransform = true;
-        } if (Input::IsKeyPressed(KEY_CODE_R)) {
-            pitch += rotSpeed * ts;
-            updateTransform = true;
-        } if (Input::IsKeyPressed(KEY_CODE_F)) {
-            pitch -= rotSpeed * ts;
-            updateTransform = true;
-        }
-
-        if (Input::IsKeyPressed(KEY_CODE_R)) {
-            yaw = 0;
-            pitch = 0;
-            updateTransform = true;
-        }
-
-        if (updateTransform) {
-            auto& transform = transformComponent->Transform;
-
-            transform = mat4();
-            transform.translate(position);
-            transform *= math::createYawPitchRollMatrix(yaw, 0.0f, pitch);
-            auto[f, r, u] = math::GetUnitVectors(transform);
-            Forward = f;
-            Right = r;
-            Up = u;
-            updateTransform = false;
         }
     }
 
@@ -135,4 +143,6 @@ private:
     vec3 position{0, 0, 2};
     float yaw = 0, pitch = 0;
     bool updateTransform = true;
+
+    bool BeingControlled = false;
 };

@@ -142,6 +142,8 @@ namespace Engine {
         /* Access uniform declarations */
         virtual void SetVertUniformBuffer(Buffer buffer) override;
         virtual void SetFragUniformBuffer(Buffer buffer) override;
+        virtual void SetVertUniformBuffer(Buffer buffer, const std::unordered_set<std::string>& overrides) override;
+        virtual void SetFragUniformBuffer(Buffer buffer, const std::unordered_set<std::string>& overrides) override;
 
         virtual bool HasFragUniformBuffer() const override { return (bool)m_FragUniformGroup; }
         virtual bool HasVertUniformBuffer() const override { return (bool)m_VertexUniformGroup; }
@@ -157,6 +159,7 @@ namespace Engine {
         s32 GetUniformLocation(const std::string& name) const;
 
         void ResolveAndSetUniforms(const Ref<OpenGLShaderUniformGroupDeclaration>& decl, Buffer buffer);
+        void ResolveAndSetUniforms(const Ref<OpenGLShaderUniformGroupDeclaration>& decl, Buffer buffer, const std::unordered_set<std::string>& overrides);
         void ResolveAndSetUniform(OpenGLShaderUniformDeclaration* uniform, Buffer buffer);
         void ResolveAndSetUniformArray(OpenGLShaderUniformDeclaration* uniform, Buffer buffer);
         void ResolveAndSetUniformField(const OpenGLShaderUniformDeclaration& field, byte* data, int32_t offset);

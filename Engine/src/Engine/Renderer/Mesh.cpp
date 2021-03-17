@@ -82,6 +82,7 @@ namespace Engine {
                     mat_spec.AlbedoBase = nbt::SafeGetVec3(comp, "albedo_color", mat_spec.AlbedoBase);
                     mat_spec.MetalnessBase = nbt::SafeGetFloat(comp, "metalness", mat_spec.MetalnessBase);
                     mat_spec.RoughnessBase = nbt::SafeGetFloat(comp, "roughness", mat_spec.RoughnessBase);
+                    mat_spec.TextureScale = nbt::SafeGetFloat(comp, "texture_scale", mat_spec.TextureScale);
 
                     if (comp.has_key("albedo_path")) {
                         const auto& albedo_path = comp.at("albedo_path").as<nbt::tag_string>().get();
@@ -125,6 +126,7 @@ namespace Engine {
                     m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
                     m_BaseMaterial->Set<float>("u_Metalness", mat_spec.MetalnessBase);
                     m_BaseMaterial->Set<float>("u_Roughness", mat_spec.RoughnessBase);
+                    m_BaseMaterial->Set<float>("u_TextureScale", mat_spec.TextureScale);
 
                     m_BaseMaterial->Set("u_AlbedoTexture",    mat_spec.Albedo);
                     m_BaseMaterial->Set("u_NormalTexture",    mat_spec.Normal);
@@ -136,9 +138,10 @@ namespace Engine {
                     /// mat1
                     Ref<MaterialInstance> mat = std::make_shared<MaterialInstance>(m_BaseMaterial, "mat1");
 
-                    mat->Set<math::vec3>("u_AlbedoColor", math::vec3(1, .5, .5));
-                    mat->Set<float>("u_Metalness", 0.0f);
-                    mat->Set<float>("u_Roughness", 0.75f);
+                    //mat->Set<math::vec3>("u_AlbedoColor", math::vec3(1, .5, .5));
+                    //mat->Set<float>("u_Metalness", 1.0f);
+                    //mat->Set<float>("u_Roughness", 0.75f);
+                    //mat->Set<float>("u_TextureScale", 2.0f);
                     m_Materials.push_back(mat);
                 }
 

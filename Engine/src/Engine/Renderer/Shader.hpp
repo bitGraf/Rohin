@@ -78,6 +78,8 @@ namespace Engine {
 
         virtual void SetVertUniformBuffer(Buffer buffer) = 0;
         virtual void SetFragUniformBuffer(Buffer buffer) = 0;
+        virtual void SetVertUniformBuffer(Buffer buffer, const std::unordered_set<std::string>& overrides) = 0;
+        virtual void SetFragUniformBuffer(Buffer buffer, const std::unordered_set<std::string>& overrides) = 0;
 
         virtual bool HasFragUniformBuffer() const = 0;
         virtual bool HasVertUniformBuffer() const = 0;
