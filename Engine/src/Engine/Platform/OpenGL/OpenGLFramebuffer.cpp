@@ -103,10 +103,14 @@ namespace Engine {
 
     OpenGLFramebuffer::~OpenGLFramebuffer() {
         glDeleteFramebuffers(1, &m_FramebufferID);
-        glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
-        glDeleteTextures(1, &m_DepthAttachment);
+        if (m_ColorAttachments.size() > 0)
+            glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
+        if (m_DepthAttachmentFormat != FramebufferTextureFormat::None)
+            glDeleteTextures(1, &m_DepthAttachment);
 
+        m_FramebufferID = 0;
         m_ColorAttachments.clear();
+        m_ColorAttachmentFormats.clear();
     }
 
     void OpenGLFramebuffer::ClearBuffers() const {

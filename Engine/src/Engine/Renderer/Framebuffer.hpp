@@ -1,7 +1,7 @@
 #pragma once
 
+#include <memory>
 #include "Engine/Core/Base.hpp"
-#include "Engine/Core/GameMath.hpp"
 
 namespace Engine {
 
@@ -51,7 +51,6 @@ namespace Engine {
     struct FramebufferSpecification {
         u32 Width = 1280;
         u32 Height = 720;
-        math::vec4 ClearColor;
         FramebufferAttachmentSpecification Attachments;
 
         bool NoResize = false;
@@ -61,7 +60,7 @@ namespace Engine {
     class Framebuffer
     {
     public:
-        virtual ~Framebuffer() = default;
+        virtual ~Framebuffer() {}
         
         virtual void Bind() const = 0;
         virtual void Unbind() const = 0;

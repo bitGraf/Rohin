@@ -8,7 +8,7 @@
 
 namespace Engine {
 
-    struct RendererData {
+    struct TextRendererData {
         std::unique_ptr<ShaderLibrary> ShaderLibrary;
 
         Ref<VertexArray> TextQuad;
@@ -17,7 +17,7 @@ namespace Engine {
         DynamicFont font;
     };
 
-    static RendererData s_Data;
+    static TextRendererData s_Data;
 
     void TextRenderer::Init() {
         s_Data.ShaderLibrary = std::make_unique<ShaderLibrary>();

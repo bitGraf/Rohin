@@ -3,6 +3,8 @@
 
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/Framebuffer.hpp"
+#include "Engine/Renderer/Buffer.hpp"
+#include "Engine/Renderer/TextRenderer.hpp"
 
 namespace Engine {
 
@@ -29,7 +31,6 @@ namespace Engine {
         Ref<Framebuffer> DiffuseSpecularLighting;
         Ref<Framebuffer> SSAO;
         Ref<Framebuffer> screenBuffer;
-        //std::unordered_map<std::string, size_t> targetMap; // TODO: good idea, needs further thought
 
         Lightingdata Lights;
 
@@ -38,7 +39,7 @@ namespace Engine {
         bool Gamma;
     };
 
-    static RendererData s_Data;
+    RendererData s_Data;
 
     void InitLights(const Ref<Shader> shader) {
         // uploads lights to shader in view-space
@@ -328,8 +329,6 @@ namespace Engine {
         UpdateLighting(ViewMatrix, numPointLights, pointLights, numSpotLights, spotLights, sun, ProjectionMatrix);
 
         s_Data.gBuffer->Bind();
-        //RenderCommand::SetClearColor(math::vec4(0, 0, 0, 0));
-        //RenderCommand::Clear(); //same for all color attachments
         s_Data.gBuffer->ClearBuffers();
         auto prePassShader = s_Data.ShaderLibrary->Get("PrePass");
         prePassShader->Bind();
@@ -403,6 +402,24 @@ namespace Engine {
 
         SubmitFullscreenQuad();
         s_Data.screenBuffer->Unbind();
+
+        // Render text
+        std::vector<std::string> outputModes = {
+            "Combined Output",
+            "Albedo",
+            "View-Space Normals",
+            "Baked Ambient Occlusion",
+            "Metalness",
+            "Roughness",
+            "Ambient/Metallic/Roughness",
+            "Depth",
+            "Diffuse Lighting",
+            "Specular Lighting",
+            "Emission",
+            "SSAO + Baked ao"
+        };
+
+        TextRenderer::SubmitText(outputModes[s_Data.OutputMode], 10, 10, 32, math::vec3(.1f,.9f,.75f));
 
         Flush();
     }

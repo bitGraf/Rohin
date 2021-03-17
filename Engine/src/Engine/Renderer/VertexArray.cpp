@@ -1,7 +1,7 @@
 #include <enpch.hpp>
 #include "VertexArray.hpp"
-#include "Renderer.hpp"
 
+#include "Renderer.hpp"
 #include "Engine/Platform/OpenGL/OpenGLVertexArray.hpp"
 
 namespace Engine {
