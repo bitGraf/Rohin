@@ -23,7 +23,7 @@ GameLayer::GameLayer() : EngineLayer("Game") {
 void GameLayer::OnAttach() {
     LOG_INFO("Game layer attached");
 
-    Input::CaptureMouse(true);
+    Input::CaptureMouse(false);
     
     m_ViewportSize = { 
         (float)Engine::Application::Get().GetWindow().GetWidth(), 
@@ -47,6 +47,8 @@ void GameLayer::OnAttach() {
         auto mesh = MeshCatalog::Get("mesh_guard");
         player.AddComponent<Engine::MeshRendererComponent>(mesh);
         player.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(player);
+
+        mesh->GetSubmeshes()[0].Transform = math::createYawPitchRollMatrix(90, 0, 0);
 
         auto& trans = player.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
@@ -103,78 +105,6 @@ void GameLayer::OnAttach() {
         trans *= math::createYawPitchRollMatrix(0, 0, -45);
     }
 
-    if (false) {
-        // Load all meshes into the game
-        {
-            // this should be read from some sort of resource pack file
-            std::vector<std::pair<std::string, std::string>> meshList = {
-                { "cube_mesh", "run_tree/Data/Models/cube.mesh" },
-            { "rect_mesh", "run_tree/Data/Models/cube.mesh" },
-            { "guard_mesh", "run_tree/Data/Models/guard.nbt" }
-
-            };
-            for (auto p : meshList) {
-                Engine::MeshCatalog::Register(p.first, p.second, false);
-            }
-        }
-
-        { // Platform
-            auto platform = m_ActiveScene->CreateGameObject("Platform");
-            auto rectMesh = Engine::MeshCatalog::Get("cube_mesh");
-            platform.AddComponent<Engine::MeshRendererComponent>(rectMesh);
-
-            auto& trans = platform.GetComponent<Engine::TransformComponent>().Transform;
-            trans = mat4();
-            trans.scale(vec3(5.0f, .25f, 5.0f));
-            trans.translate(vec3(0, -1.0f, 0));
-        }
-        { // Frog Cube 1
-            auto frog = m_ActiveScene->CreateGameObject("Frog Cube 1");
-            auto cubeMesh = Engine::MeshCatalog::Get("cube_mesh");
-            frog.AddComponent<Engine::MeshRendererComponent>(cubeMesh);
-            frog.AddComponent<Engine::NativeScriptComponent>().Bind<Gem>(frog);
-
-            auto& trans = frog.GetComponent<Engine::TransformComponent>().Transform;
-            trans = mat4();
-            trans.translate(vec3(2, 1, -2));
-        }
-        { // Frog Cube 2
-            auto frog = m_ActiveScene->CreateGameObject("Frog Cube 2");
-            auto cubeMesh = Engine::MeshCatalog::Get("cube_mesh");
-            frog.AddComponent<Engine::MeshRendererComponent>(cubeMesh);
-            frog.AddComponent<Engine::NativeScriptComponent>().Bind<Gem>(frog);
-
-            auto& trans = frog.GetComponent<Engine::TransformComponent>().Transform;
-            trans = mat4();
-            trans.translate(vec3(-2, 1, -2));
-        }
-        { // Frog Cube 3
-            auto frog = m_ActiveScene->CreateGameObject("Frog Cube 3");
-            //auto mesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/robot.nbt", true);
-            auto mesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/blimp.nbt", true);
-            frog.AddComponent<Engine::MeshRendererComponent>(mesh);
-            frog.AddComponent<Engine::NativeScriptComponent>().Bind<Gem>(frog);
-
-            auto& trans = frog.GetComponent<Engine::TransformComponent>().Transform;
-            trans = mat4();
-            trans.translate(vec3(2, 1, 2));
-        }
-
-        { // Player
-            m_Camera = m_ActiveScene->CreateGameObject("Camera");
-            m_Camera.AddComponent<Engine::CameraComponent>().camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-            m_Camera.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(m_Camera);
-
-            auto& trans = m_Camera.GetComponent<Engine::TransformComponent>().Transform;
-            trans = mat4();
-            trans.translate(vec3(0, 1, 5));
-        }
-    }
-
-    //m_ActiveScene->writeToFile("output.scene");
-
-    m_ActiveScene->OnRuntimeStart();
-
     /* Collision code TODO: Remove this */
     UID_t floor = cWorld.CreateNewCubeHull(vec3(0, -2.5, 0), 75, 5, 75);
     cWorld.CreateNewCubeHull(vec3(0, 1.5, -4), 8, 3, 3);
@@ -200,6 +130,8 @@ void GameLayer::OnAttach() {
         ->rotation.toYawPitchRoll(0, 40, 0);
     cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 3.5, 17), 10, 1, 3))
         ->rotation.toYawPitchRoll(0, 50, 0);
+
+    m_ActiveScene->OnRuntimeStart();
 }
 
 void GameLayer::OnDetach() {
@@ -266,6 +198,12 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
                 auto script = scriptComp.GetScript<CameraController>();
                 script->ToggleControl();
             }
+        }
+
+        auto player = m_ActiveScene->FindByName("Player");
+        if (player) {
+            auto script = player.GetComponent<NativeScriptComponent>().GetScript<PlayerController>();
+            script->ToggleControl();
         }
     }
 

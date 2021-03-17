@@ -43,7 +43,7 @@ namespace Engine {
             m_Scene->m_Registry.erase<Component>(m_GameObjectHandle);
         }
 
-        operator bool() const { return m_GameObjectHandle != 0; }
+        operator bool() const { return m_GameObjectHandle != 0; } // TODO: should check if scene is null?
 
         GameObject_type GetHandle() const { return m_GameObjectHandle; }
         operator uint32_t() const { return (uint32_t)m_GameObjectHandle; }
