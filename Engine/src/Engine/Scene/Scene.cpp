@@ -326,6 +326,7 @@ namespace Engine {
         if (mainCamera) {
             Renderer::Begin3DScene(*mainCamera, *mainTransform, numPointLight, scenePointLights, numSpotLight, sceneSpotLights, sceneSun);
 
+            Renderer::BeginDeferredPrepass();
             // messy group
             // TODO: figure out how to get the group function to work
             for (auto n : m_Registry.GetRegList()) {
@@ -343,28 +344,34 @@ namespace Engine {
                     }
                 }
             }
-            Renderer::End3DScene();
+            Renderer::EndDeferredPrepass();
 
+            Renderer::BeginSobelPass();
             // Render collision hulls
             if (m_showCollisionHulls) {
                 for (const auto& hull : cWorld.m_static) {
                     math::mat4 transform;
                     transform.translate(hull.position);
                     transform *= math::mat4(hull.rotation);
-                    Renderer::Submit(*mainCamera, *mainTransform, hull.wireframe, transform, vec3(1,.05,.1));
+                    Renderer::Submit(hull.wireframe, transform, vec3(1, .05, .1));
                 }
                 for (const auto& hull : cWorld.m_dynamic) {
                     math::mat4 transform;
                     transform.translate(hull.position);
                     transform *= math::mat4(hull.rotation);
-                    Renderer::Submit(*mainCamera, *mainTransform, hull.wireframe, transform, vec3(.1, .05, 1));
+                    Renderer::Submit(hull.wireframe, transform, vec3(.1, .05, 1));
                 }
             }
-        }
+            Renderer::EndSobelPass();
 
-        if (m_showEntityLocations) { // TODO: rename this/come up with less bad solution for these things
-            TextRenderer::SubmitText("Showing entity locations", 5, 5, 32, math::vec3(.7, .1, .5));
+            Renderer::End3DScene();
+
+            Renderer::RenderDebugUI();
+            if (m_showEntityLocations) { // TODO: rename this/come up with less bad solution for these things
+                TextRenderer::SubmitText("Showing entity locations", 5, 40, 32, math::vec3(.7, .1, .5));
+            }
         }
+        
     }
 
     void Scene::OnViewportResize(u32 width, u32 height) {

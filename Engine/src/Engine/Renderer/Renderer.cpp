@@ -31,6 +31,8 @@ namespace Engine {
         Ref<Framebuffer> DiffuseSpecularLighting;
         Ref<Framebuffer> SSAO;
         Ref<Framebuffer> screenBuffer;
+        Ref<Framebuffer> sobelBuffer;
+        Ref<Framebuffer> mixBuffer1, mixBuffer2;
 
         Lightingdata Lights;
 
@@ -71,15 +73,17 @@ namespace Engine {
         RenderCommand::Init();
 
         s_Data.ShaderLibrary = std::make_unique<ShaderLibrary>();
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PBR_static.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Skybox.glsl");
+        //Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PBR_static.glsl");
+        //Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Skybox.glsl");
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Line.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Normals.glsl");
+        //Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Normals.glsl");
 
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PrePass.glsl");
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Lighting.glsl");
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/SSAO.glsl");
         Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Screen.glsl");
+        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Sobel.glsl");
+        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Mix.glsl");
 
         //s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/DebugCubeMap.tga");
         s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/snowbox.png");
@@ -159,39 +163,47 @@ namespace Engine {
         }
 
         // create the pipeline buffers
-        {
-            FramebufferSpecification spec;
-            spec.Attachments = {
-                FramebufferTextureFormat::RGBA8, // Albedo
-                FramebufferTextureFormat::RGBA16F, // View-space normal
-                FramebufferTextureFormat::RGBA8, // Ambient/Metallic/Roughness
-                {FramebufferTextureFormat::RGBA16F, 100, 100, 100, 1},  // Distance
-                FramebufferTextureFormat::RGBA8,  // Emissive
-                FramebufferTextureFormat::Depth  // Depth-buffer
-            };
-            s_Data.gBuffer = Framebuffer::Create(spec);
-        }
-        {
-            FramebufferSpecification spec;
-            spec.Attachments = {
-                FramebufferTextureFormat::RGBA16F, // Diffuse
-                FramebufferTextureFormat::RGBA16F, // Specular
-            };
-            s_Data.DiffuseSpecularLighting = Framebuffer::Create(spec);
-        }
-        {
-            FramebufferSpecification spec;
-            spec.Attachments = {
-                FramebufferTextureFormat::RGBA8, // SSAO output
-            };
-            s_Data.SSAO = Framebuffer::Create(spec);
-        }
+        FramebufferSpecification gBufferSpec;
+        gBufferSpec.Attachments = {
+            FramebufferTextureFormat::RGBA8, // Albedo
+            FramebufferTextureFormat::RGBA16F, // View-space normal
+            FramebufferTextureFormat::RGBA8, // Ambient/Metallic/Roughness
+            {FramebufferTextureFormat::RGBA16F, 100, 100, 100, 1},  // Distance
+            FramebufferTextureFormat::RGBA8,  // Emissive
+            FramebufferTextureFormat::Depth  // Depth-buffer
+        };
+        s_Data.gBuffer = Framebuffer::Create(gBufferSpec);
 
-        {
-            FramebufferSpecification spec;
-            spec.SwapChainTarget = true;
-            s_Data.screenBuffer = Framebuffer::Create(spec);
-        }
+        FramebufferSpecification LightingBufferSpec;
+        LightingBufferSpec.Attachments = {
+            FramebufferTextureFormat::RGBA16F, // Diffuse
+            FramebufferTextureFormat::RGBA16F, // Specular
+        };
+        s_Data.DiffuseSpecularLighting = Framebuffer::Create(LightingBufferSpec);
+
+        FramebufferSpecification SSAOBufferSpec;
+        SSAOBufferSpec.Attachments = {
+            FramebufferTextureFormat::RGBA8, // SSAO output
+        };
+        s_Data.SSAO = Framebuffer::Create(SSAOBufferSpec);
+
+        FramebufferSpecification ScreenBufferSpec;
+        ScreenBufferSpec.SwapChainTarget = true;
+        s_Data.screenBuffer = Framebuffer::Create(ScreenBufferSpec);
+
+        FramebufferSpecification SobelBufferSpec;
+        SobelBufferSpec.Attachments = {
+            {FramebufferTextureFormat::RGBA8, 0, 0, 0, 0},
+            FramebufferTextureFormat::Depth
+        };
+        s_Data.sobelBuffer = Framebuffer::Create(SobelBufferSpec);
+
+        FramebufferSpecification MixBufferSpec;
+        MixBufferSpec.Attachments = {
+            { FramebufferTextureFormat::RGBA8, 0, 0, 0, 0 },
+        };
+        s_Data.mixBuffer1 = Framebuffer::Create(MixBufferSpec);
+        s_Data.mixBuffer2 = Framebuffer::Create(MixBufferSpec);
 
         s_Data.OutputMode = 0;
         s_Data.ToneMap = true;
@@ -328,56 +340,36 @@ namespace Engine {
         math::vec3 camPos = transform.col4().XYZ();
         UpdateLighting(ViewMatrix, numPointLights, pointLights, numSpotLights, spotLights, sun, ProjectionMatrix);
 
-        s_Data.gBuffer->Bind();
-        s_Data.gBuffer->ClearBuffers();
+        // PrePass Shader
         auto prePassShader = s_Data.ShaderLibrary->Get("PrePass");
         prePassShader->Bind();
         prePassShader->SetMat4("r_Projection", ProjectionMatrix);
         prePassShader->SetMat4("r_View", ViewMatrix);
-
-        // set toggles
         prePassShader->SetFloat("r_AlbedoTexToggle",    1.0f);
         prePassShader->SetFloat("r_NormalTexToggle",    0.0f);
         prePassShader->SetFloat("r_MetalnessTexToggle", 1.0f);
         prePassShader->SetFloat("r_RoughnessTexToggle", 1.0f);
         prePassShader->SetFloat("r_AmbientTexToggle",   1.0f);
         prePassShader->SetFloat("r_EmissiveTexToggle",  1.0f);
-
         prePassShader->SetFloat("r_gammaCorrect", s_Data.Gamma ? 1.0 : 0.0);
-    }
-    
-    void Renderer::End3DScene() {
-        s_Data.gBuffer->Unbind();
 
         // Lighting Pass
-        s_Data.DiffuseSpecularLighting->Bind();
         auto lightingShader = s_Data.ShaderLibrary->Get("Lighting");
         lightingShader->Bind();
         lightingShader->SetInt("u_normal", 0);
         lightingShader->SetInt("u_distance", 1);
         lightingShader->SetInt("u_amr", 2);
         lightingShader->SetInt("u_albedo", 3);
-        s_Data.gBuffer->BindTexture(1, 0);
-        s_Data.gBuffer->BindTexture(3, 1);
-        s_Data.gBuffer->BindTexture(2, 2);
-        s_Data.gBuffer->BindTexture(0, 3);
         UploadLights(lightingShader);
         lightingShader->SetMat4("r_Projection", s_Data.Lights.projection);
         lightingShader->SetMat4("r_View", s_Data.Lights.view);
-        SubmitFullscreenQuad();
-        s_Data.DiffuseSpecularLighting->Unbind();
 
-        // SSAO pass
-        s_Data.SSAO->Bind();
+        // SSAO Pass
         auto ssaoShader = s_Data.ShaderLibrary->Get("SSAO");
         ssaoShader->Bind();
         ssaoShader->SetInt("u_amr", 0);
-        s_Data.gBuffer->BindTexture(2, 0);
-        SubmitFullscreenQuad();
-        s_Data.SSAO->Unbind();
 
-        // Output to screen
-        s_Data.screenBuffer->Bind();
+        // Screen Output Pass
         auto screenShader = s_Data.ShaderLibrary->Get("Screen");
         screenShader->Bind();
         screenShader->SetInt("u_albedo", 0);
@@ -391,6 +383,59 @@ namespace Engine {
         screenShader->SetInt("r_outputSwitch", s_Data.OutputMode);
         screenShader->SetFloat("r_toneMap", s_Data.ToneMap ? 1.0 : 0.0);
         screenShader->SetFloat("r_gammaCorrect", s_Data.Gamma ? 1.0 : 0.0);
+
+        // Line/Simple mesh Pass
+        auto lineShader = s_Data.ShaderLibrary->Get("Line");
+        lineShader->Bind();
+        lineShader->SetMat4("r_VP", ProjectionMatrix * ViewMatrix);
+        lineShader->SetVec3("r_CamPos", camPos);
+        lineShader->SetFloat("r_LineFadeStart", 5);
+        lineShader->SetFloat("r_LineFadeEnd", 20);
+        lineShader->SetFloat("r_LineFadeMaximum", 0.5f);
+        lineShader->SetFloat("r_LineFadeMinimum", 0.25f);
+
+        // Sobel pass
+        auto sobelShader = s_Data.ShaderLibrary->Get("Sobel");
+        sobelShader->SetInt("r_texture", 0);
+        auto mixShader = s_Data.ShaderLibrary->Get("Mix");
+        mixShader->SetInt("r_tex1", 0);
+        mixShader->SetInt("r_tex2", 1);
+    }
+
+    void Renderer::BeginDeferredPrepass() {
+        // Clear G-Buffer
+        s_Data.gBuffer->Bind();
+        s_Data.gBuffer->ClearBuffers();
+        auto prePassShader = s_Data.ShaderLibrary->Get("PrePass");
+        prePassShader->Bind();
+    }
+
+    void Renderer::EndDeferredPrepass() {
+        s_Data.gBuffer->Unbind();
+
+        // Lighting Pass
+        s_Data.DiffuseSpecularLighting->Bind();
+        auto lightingShader = s_Data.ShaderLibrary->Get("Lighting");
+        lightingShader->Bind();
+        s_Data.gBuffer->BindTexture(1, 0);
+        s_Data.gBuffer->BindTexture(3, 1);
+        s_Data.gBuffer->BindTexture(2, 2);
+        s_Data.gBuffer->BindTexture(0, 3);
+        SubmitFullscreenQuad();
+        s_Data.DiffuseSpecularLighting->Unbind();
+
+        // SSAO pass
+        s_Data.SSAO->Bind();
+        auto ssaoShader = s_Data.ShaderLibrary->Get("SSAO");
+        ssaoShader->Bind();
+        s_Data.gBuffer->BindTexture(2, 0);
+        SubmitFullscreenQuad();
+        s_Data.SSAO->Unbind();
+
+        // Output to mixBuffer1
+        s_Data.mixBuffer1->Bind();
+        auto screenShader = s_Data.ShaderLibrary->Get("Screen");
+        screenShader->Bind();
         s_Data.gBuffer->BindTexture(0, 0);
         s_Data.gBuffer->BindTexture(1, 1);
         s_Data.gBuffer->BindTexture(2, 2);
@@ -399,9 +444,11 @@ namespace Engine {
         s_Data.DiffuseSpecularLighting->BindTexture(1, 5);
         s_Data.gBuffer->BindTexture(4, 6);
         s_Data.SSAO->BindTexture(0, 7);
-
         SubmitFullscreenQuad();
-        s_Data.screenBuffer->Unbind();
+    }
+
+    void Renderer::RenderDebugUI() {
+        s_Data.screenBuffer->Bind();
 
         // Render text
         std::vector<std::string> outputModes = {
@@ -419,7 +466,35 @@ namespace Engine {
             "SSAO + Baked ao"
         };
 
-        TextRenderer::SubmitText(outputModes[s_Data.OutputMode], 10, 10, 32, math::vec3(.1f,.9f,.75f));
+        TextRenderer::SubmitText(outputModes[s_Data.OutputMode], 10, 10, 32, math::vec3(.1f, .9f, .75f));
+
+        s_Data.screenBuffer->Unbind();
+    }
+
+    void Renderer::BeginSobelPass() {
+        // prep the sobel buffer
+        s_Data.sobelBuffer->Bind();
+        s_Data.sobelBuffer->ClearBuffers();
+    }
+
+    void Renderer::EndSobelPass() {
+        // prep the screenbuffer, and urn the sobel shader
+        s_Data.sobelBuffer->Unbind();
+
+        s_Data.mixBuffer2->Bind();
+        auto sobelShader = s_Data.ShaderLibrary->Get("Sobel");
+        sobelShader->Bind();
+        s_Data.sobelBuffer->BindTexture(0, 0);
+        SubmitFullscreenQuad();
+    }
+    
+    void Renderer::End3DScene() {
+        s_Data.screenBuffer->Bind();
+        auto mixShader = s_Data.ShaderLibrary->Get("Mix");
+        mixShader->Bind();
+        s_Data.mixBuffer1->BindTexture(0, 0);
+        s_Data.mixBuffer2->BindTexture(0, 1);
+        SubmitFullscreenQuad();
 
         Flush();
     }
@@ -446,30 +521,18 @@ namespace Engine {
         //RenderCommand::DrawIndexed(s_Data.VertexArray);
     }
 
-    void Renderer::Submit(const Camera& camera, const math::mat4& camTrans, 
-        const Ref<VertexArray>& vao, const math::mat4& transform,
+    void Renderer::Submit(const Ref<VertexArray>& vao, const math::mat4& transform,
         const math::vec3& color) {
 
         auto shader = s_Data.ShaderLibrary->Get("Line");
         shader->Bind();
-
-        math::mat4 ViewMatrix = math::invertViewMatrix(camTrans);
-        math::mat4 ProjectionMatrix = camera.GetProjection();
-        math::vec3 camPos = camTrans.col4().XYZ();
-
-        shader->SetMat4("r_VP", ProjectionMatrix * ViewMatrix);
         shader->SetMat4("r_Transform", transform);
-        shader->SetVec3("r_CamPos", camPos);
         shader->SetVec3("r_LineColor", color);
-        shader->SetFloat("r_LineFadeStart", 5);
-        shader->SetFloat("r_LineFadeEnd", 20);
-        shader->SetFloat("r_LineFadeMaximum", 0.75f);
-        shader->SetFloat("r_LineFadeMinimum", 0.25f);
 
         vao->Bind();
-        RenderCommand::SetWireframe(true);
+        //RenderCommand::SetWireframe(true);
         RenderCommand::DrawIndexed(vao, true);
-        RenderCommand::SetWireframe(false);
+        //RenderCommand::SetWireframe(false);
     }
 
     void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform) {

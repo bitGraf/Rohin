@@ -15,14 +15,50 @@ namespace Engine {
         static void Init();
         static void Shutdown();
 
-        // start writing to pre-pass buffers
+        /*  Anatomy of a frame
+
+        - Once lighting and camera data has been determined:
+        Begin3DScene(camera, lights)
+
+            BeginDeferedPrepass();
+                - Render all 3d meshes to fill the G-Buffer
+            EndDeferedPrepass(); - perform lighting pipeline on G-Buffer
+
+            RenderSkybox();
+
+            - Prep a buffer to render to
+            BeginSobel()
+                - Render meshes normally
+            - Perform sobel operator on the buffer
+            EndSobel()
+
+        - End scene, flush to screen
+        End3DScene()
+
+        RenderDebugUI();
+        */
+
+        // Set all shader constants and save for later
         static void Begin3DScene(const Camera& camera, const math::mat4& transform, 
             u32 numPointLights, const Light pointLights[32],
             u32 numSpotLights,  const Light spotLights[32],
             const Light& sun);
+        static void End3DScene();
+
+        // start writing to pre-pass buffers
+        static void BeginDeferredPrepass();
+        // End pre-pass, and perform lighting stages
+        static void EndDeferredPrepass();
+
+        // Prepare buffer to be filled with color
+        static void BeginSobelPass();
+        // Perform sobel operator on
+        static void EndSobelPass();
+
+        // Render text and other UI to the screen
+        static void RenderDebugUI();
 
         // end pre-pass and begin render pipeline
-        static void End3DScene();
         static void UpdateLighting(const math::mat4& ViewMatrix,
             u32 numPointLights, const Light pointLights[32],
             u32 numSpotLights, const Light spotLights[32],
@@ -37,7 +73,7 @@ namespace Engine {
         static void ToggleGammaCorrection();
 
         static void Submit(const math::mat4& transform = math::mat4());
-        static void Submit(const Camera& camera, const math::mat4& camTrans, const Ref<VertexArray>& vao, const math::mat4& transform, const math::vec3& color);
+        static void Submit(const Ref<VertexArray>& vao, const math::mat4& transform, const math::vec3& color);
         static void SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform);
         static void SubmitMesh_drawNormals(const Ref<Mesh>& mesh, const math::mat4& transform);
 
