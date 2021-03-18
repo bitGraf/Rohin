@@ -28,6 +28,7 @@ public:
         ///TEMP
 
         hull_offset = math::vec3(0, .5, 0);
+        m_floorAngleLimit = 35;
 
         LOG_INFO("Player controller created on GameObject {0}!", GetGameObjectID());
     }
@@ -42,52 +43,49 @@ public:
 
     virtual void OnUpdate(double ts) override {
         if (BeingControlled) {
-            math::vec3 velocity(0,0,0);
 
             // handle translation
             if (Input::IsKeyPressed(KEY_CODE_Q)) {
                 velocity -= Right * moveSpeed; // Strafe Left
-                updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_E)) {
                 velocity += Right * moveSpeed; // Strafe Right
-                updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_W)) {
                 velocity += Forward * moveSpeed; // Walk Forward
-                updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_S)) {
                 velocity -= Forward * moveSpeed; // Walk Backward
-                updateTransform = true;
-            } if (Input::IsKeyPressed(KEY_CODE_SPACE)) {
-                velocity += Up * moveSpeed; // Float up
-                updateTransform = true;
-            } if (Input::IsKeyPressed(KEY_CODE_LEFT_CONTROL)) {
-                velocity -= Up * moveSpeed; // Descend Down
-                updateTransform = true;
-            } 
+            } if (Input::IsKeyPressed(KEY_CODE_SPACE) && grounded) {
+                velocity += Up * jumpPower; // Float up
+                grounded = false;
+                m_floorUp = vec3(0, 1, 0);
+            }
             
             // handle rotation
             if (Input::IsKeyPressed(KEY_CODE_A)) {
                 yaw += rotSpeed * ts; // Rotate Left
-                updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_D)) {
                 yaw -= rotSpeed * ts; // Rotate Right
-                updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_R)) {
                 pitch += rotSpeed * ts; // Pitch Up
-                updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_F)) {
                 pitch -= rotSpeed * ts; // Pitch Down
-                updateTransform = true;
+            }
+
+            auto collisionHullID = colliderComponent->HullID;
+            if (!grounded) {
+                velocity.y -= 9.8 * ts;
+            }
+            else {
+                // Raycast down to see if there is anything beneath us
+                // TODO: Cache the currect collisionID of the ground and check against that.
+                RaycastResult rc = cWorld.Raycast(position + hull_offset, vec3(0, -1, 0), .6);
+
+                if (rc.colliderID == 0) {
+                    grounded = false;
+                    m_floorUp = vec3(0, 1, 0);
+                }
             }
 
             int iterations = 0;
-            auto collisionHullID = colliderComponent->HullID;
-            ShapecastResult_multi res;
-            vec3 ghostPosition;
-            float m_floorAngleLimit = 35;
-            bool grounded = false;
-            vec3 m_floorUp;
-
             // Perform collision logic
             if (collisionHullID > 0) {
                 // it has collision info
@@ -167,20 +165,17 @@ public:
                 velocity = vec3(0, velocity.y, 0);
             }
 
-            if (updateTransform) {
-                auto& transform = transformComponent->Transform;
+            auto& transform = transformComponent->Transform;
 
-                position += velocity * ts;
+            //position += velocity * ts;
 
-                transform = mat4();
-                transform.translate(position);
-                transform *= math::createYawPitchRollMatrix(yaw, 0.0f, pitch);
-                auto[f, r, u] = math::GetUnitVectors(transform);
-                Forward = f;
-                Right = r;
-                Up = u;
-                updateTransform = false;
-            }
+            transform = mat4();
+            transform.translate(position);
+            transform *= math::createYawPitchRollMatrix(yaw, 0.0f, pitch);
+            auto[f, r, u] = math::GetUnitVectors(transform);
+            Forward = f;
+            Right = r;
+            Up = u;
         }
     }
 
@@ -188,14 +183,25 @@ private:
     Engine::TransformComponent* transformComponent;
     Engine::ColliderComponent* colliderComponent;
 
+    // State
     math::vec3 Forward, Right, Up;
-
-    float moveSpeed = 4.0f;
-    float rotSpeed = 360.0f;
-    math::vec3 hull_offset;
-    //bool gounded = false;
     math::vec3 position;
+    math::vec3 velocity;
     float yaw, pitch;
-    bool updateTransform = true;
+    vec3 ghostPosition;
+    vec3 m_floorUp;
+
+    // Flags
+    bool grounded = false;
     bool BeingControlled = true;
+
+    // Parameters
+    math::vec3 hull_offset;
+    float moveSpeed = 4.0f;
+    float jumpPower = 5.5f;
+    float rotSpeed = 360.0f;
+    float m_floorAngleLimit = 35;
+
+
+    ShapecastResult_multi res;
 };

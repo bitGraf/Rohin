@@ -52,9 +52,9 @@ void GameLayer::OnAttach() {
 
         auto& trans = player.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
-        trans.translate(vec3(0, 0, 0));
+        trans.translate(vec3(0, 1, 0));
 
-        UID_t hull = cWorld.CreateNewCapsule(vec3(0, 0, 0), 1, 0.5f);
+        UID_t hull = cWorld.CreateNewCapsule(vec3(0, 1, 0) + vec3(0,.5,0), 1, 0.5f);
         player.AddComponent<Engine::ColliderComponent>(hull);
     }
     { // Platform
