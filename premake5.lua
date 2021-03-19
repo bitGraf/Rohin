@@ -131,7 +131,8 @@ project "Game"
 
     links
     {
-        "Engine"
+        "Engine",
+        "OpenAL32"
     }
 
     libdirs
