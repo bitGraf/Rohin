@@ -5,8 +5,15 @@
 #include "AL/alc.h"
 
 namespace Engine {
-    ALCdevice* openALDevice = nullptr; // audio device
-    ALCcontext* openALContext = nullptr; // openAL context?
+
+    struct SoundEngineData {
+        ALCdevice* openALDevice = nullptr; // audio device
+        ALCcontext* openALContext = nullptr; // openAL context?
+        ALuint buffer;
+        ALuint source;
+    };
+
+    static SoundEngineData s_SoundData;
 
 #define checkError(device) check_alc_errors(__FILE__, __LINE__, device)
 
@@ -214,8 +221,8 @@ namespace Engine {
     }
 
     void SoundEngine::Init() {
-        openALDevice = alcOpenDevice(nullptr);
-        if (!openALDevice)
+        s_SoundData.openALDevice = alcOpenDevice(nullptr);
+        if (!s_SoundData.openALDevice)
         {
             __debugbreak();
         }
@@ -236,10 +243,10 @@ namespace Engine {
         }
         ENGINE_LOG_INFO("----------------------------");
 
-        openALContext = alcCreateContext(openALDevice, nullptr);
+        s_SoundData.openALContext = alcCreateContext(s_SoundData.openALDevice, nullptr);
 
         ALCboolean contextMadeCurrent = false;
-        contextMadeCurrent = alcMakeContextCurrent(openALContext);
+        contextMadeCurrent = alcMakeContextCurrent(s_SoundData.openALContext);
         if (contextMadeCurrent != ALC_TRUE) {
             __debugbreak();
         }
@@ -256,9 +263,8 @@ namespace Engine {
             return;
         }
 
-        ALuint buffer;
-        alGenBuffers(1, &buffer);
-        checkError(openALDevice);
+        alGenBuffers(1, &s_SoundData.buffer);
+        checkError(s_SoundData.openALDevice);
 
         ALenum format;
         if (channels == 1 && bitsPerSample == 8)
@@ -278,45 +284,41 @@ namespace Engine {
             return;
         }
 
-        alBufferData(buffer, format, soundData, size, sampleRate);
-        checkError(openALDevice);
+        alBufferData(s_SoundData.buffer, format, soundData, size, sampleRate);
+        checkError(s_SoundData.openALDevice);
+    }
 
-        ALuint source;
-        alGenSources(1, &source);
-        checkError(openALDevice);
-        alSourcef(source, AL_PITCH, 1);
-        checkError(openALDevice);
-        alSourcef(source, AL_GAIN, 0.25f);
-        checkError(openALDevice);
-        alSource3f(source, AL_POSITION, 0, 0, 0);
-        checkError(openALDevice);
-        alSource3f(source, AL_VELOCITY, 0, 0, 0);
-        checkError(openALDevice);
-        alSourcei(source, AL_LOOPING, AL_FALSE);
-        checkError(openALDevice);
-        alSourcei(source, AL_BUFFER, buffer);
-        checkError(openALDevice);
+    void SoundEngine::StartSource() {
+        alGenSources(1, &s_SoundData.source);
+        alSourcef(s_SoundData.source, AL_PITCH, 1);
+        alSourcef(s_SoundData.source, AL_GAIN, 0.25f);
+        alSource3f(s_SoundData.source, AL_POSITION, 0, 0, 0);
+        alSource3f(s_SoundData.source, AL_VELOCITY, 20, 0, 0);
+        alSourcei(s_SoundData.source, AL_LOOPING, AL_FALSE);
+        alSourcei(s_SoundData.source, AL_BUFFER, s_SoundData.buffer);
 
-        alSourcePlay(source);
-        checkError(openALDevice);
+        alSourcePlay(s_SoundData.source);
+        checkError(s_SoundData.openALDevice);
+    }
 
+    void SoundEngine::Update(double dt) {
         ALint state = AL_PLAYING;
+        alGetSourcei(s_SoundData.source, AL_SOURCE_STATE, &state);
+        checkError(s_SoundData.openALDevice);
 
-        while (state == AL_PLAYING)
-        {
-            alGetSourcei(source, AL_SOURCE_STATE, &state);
-            checkError(openALDevice);
+        if (state != AL_PLAYING) {
+            // done with the sound.
+            alDeleteSources(1, &s_SoundData.source);
         }
-
-        alDeleteSources(1, &source);
-        alDeleteBuffers(1, &buffer);
     }
 
     void SoundEngine::Shutdown() {
-        alcMakeContextCurrent(openALContext);
-        alcDestroyContext(openALContext);
+        alDeleteBuffers(1, &s_SoundData.buffer);
 
-        if (!alcCloseDevice(openALDevice)) {
+        alcMakeContextCurrent(s_SoundData.openALContext);
+        alcDestroyContext(s_SoundData.openALContext);
+
+        if (!alcCloseDevice(s_SoundData.openALDevice)) {
             ENGINE_LOG_ASSERT(false, "Failed to close OpenAL????");
         }
     }

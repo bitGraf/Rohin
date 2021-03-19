@@ -4,6 +4,8 @@
 
 #include "Engine/Collision/CollisionWorld.hpp"
 
+#include "Engine/Sound/Sound.hpp"
+
 /* native scripts */
 #include "CameraController.hpp"
 #include "Player.hpp"
@@ -248,6 +250,9 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     }
     if (e.GetKeyCode() == KEY_CODE_3) {
         m_ActiveScene->ToggleCollisionHulls();
+    }
+    if (e.GetKeyCode() == KEY_CODE_2) {
+        Engine::SoundEngine::StartSource();
     }
     return false;
 }

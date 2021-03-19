@@ -59,6 +59,8 @@ namespace Engine {
             Timestep timestep = time - m_LastFrameTime;
             m_LastFrameTime = time;
 
+            SoundEngine::Update(timestep);
+
             if (!m_Minimized) {
                 /* Run all engine layer updates */
                 for (EngineLayer* layer : m_layerStack)
