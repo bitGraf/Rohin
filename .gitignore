@@ -7,3 +7,4 @@ bin-intermediate/
 *.sln
 *.blend1
 *.blend2
+Engine/deps/OpenAL_soft/obj/
