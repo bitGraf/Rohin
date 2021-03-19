@@ -134,6 +134,11 @@ project "Game"
         "Engine"
     }
 
+    libdirs
+    {
+        "%{wks.location}/Engine/deps/OpenAL_soft/libs/Win64"
+    }
+
     defines {
         "ROHIN_GAME"
     }
