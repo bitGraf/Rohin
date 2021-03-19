@@ -16,10 +16,12 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "%{wks.location}/Engine/deps/GLFW/include"
 IncludeDir["GLAD"] = "%{wks.location}/Engine/deps/GLAD/include"
 IncludeDir["ImGui"] = "%{wks.location}/Engine/deps/imgui"
+IncludeDir["OpenAL_soft"] = "%{wks.location}/Engine/deps/OpenAL_soft/include"
 
 include "Engine/deps/GLFW"
 include "Engine/deps/GLAD"
 include "Engine/deps/imgui"
+include "Engine/deps/OpenAL_soft"
 
 project "Engine"
     location "Engine"
@@ -51,6 +53,7 @@ project "Engine"
         "%{IncludeDir.GLFW}",
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.ImGui}",
+        "%{IncludeDir.OpenAL_soft}",
         "%{prj.name}/deps/picojson",
         "%{prj.name}/deps/stb"
     }
@@ -60,6 +63,7 @@ project "Engine"
         "GLFW",
         "GLAD",
         "ImGui",
+        --"OpenAL_soft",
         "opengl32.lib"
     }
 

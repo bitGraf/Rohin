@@ -1,0 +1,17 @@
+﻿Build started 3/18/2021 11:33:41 PM.
+     1>Project "D:\Desktop\Gamedev\Rohin\Engine\deps\OpenAL_soft\OpenAL_soft.vcxproj" on node 2 (Build target(s)).
+     1>PrepareForNMakeBuild:
+         Creating directory "bin\Debug\".
+     1>C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.MakeFile.Targets(43,5): warning MSB8005: The property 'NMakeBuildCommandLine' doesn't exist.  Skipping...
+     1>Done Building Project "D:\Desktop\Gamedev\Rohin\Engine\deps\OpenAL_soft\OpenAL_soft.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+       "D:\Desktop\Gamedev\Rohin\Engine\deps\OpenAL_soft\OpenAL_soft.vcxproj" (Build target) (1) ->
+       (Build target) -> 
+         C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.MakeFile.Targets(43,5): warning MSB8005: The property 'NMakeBuildCommandLine' doesn't exist.  Skipping...
+
+    1 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:00.02

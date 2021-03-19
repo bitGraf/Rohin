@@ -6,6 +6,7 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/TextRenderer.hpp"
 #include "Engine/Resources/MaterialCatalog.hpp"
+#include "Engine/Sound/Sound.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -23,6 +24,7 @@ namespace Engine {
         Renderer::Init();
         TextRenderer::Init();
         MaterialCatalog::Init();
+        SoundEngine::Init();
 
         m_GuiLayer = new GuiLayer();
         PushOverlay(m_GuiLayer);
@@ -32,6 +34,7 @@ namespace Engine {
         Renderer::Shutdown();
         TextRenderer::Shutdown();
         MaterialCatalog::Shutdown();
+        SoundEngine::Shutdown();
     }
 
     void Application::Close() {
