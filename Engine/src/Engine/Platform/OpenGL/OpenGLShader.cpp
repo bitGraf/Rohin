@@ -353,7 +353,7 @@ namespace Engine {
     }
 
     void OpenGLShader::ParseUniform(const std::string& statement, ShaderDomain domain) {
-        ENGINE_LOG_TRACE("Shader parsing uniform statement: ({0})", statement);
+        ///ENGINE_LOG_TRACE("Shader parsing uniform statement: ({0})", statement);
         // read the uniform and determine how much data to allocate in the buffer
 
         // split by all whitespace and newline characters
@@ -422,7 +422,7 @@ namespace Engine {
     }
 
     void OpenGLShader::ParseUniformStruct(const std::string& block, ShaderDomain domain) {
-        ENGINE_LOG_TRACE("Shader found token struct: ({0})", block);
+        ///ENGINE_LOG_TRACE("Shader found token struct: ({0})", block);
         // read the uniform and determine how much data to allocate in the buffer
 
         // split by all whitespace and newline characters

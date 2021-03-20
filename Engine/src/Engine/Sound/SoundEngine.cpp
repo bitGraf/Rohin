@@ -1,54 +1,25 @@
 #include <enpch.hpp>
 
-#include "Sound.hpp"
-#include "AL/al.h"
-#include "AL/alc.h"
+#include "SoundEngine.hpp"
+
+#include "Engine/Sound/SoundDevice.hpp"
+#include "Engine/Sound/SoundContext.hpp"
+#include "Engine/Sound/SoundBuffer.hpp"
+#include "Engine/Sound/SoundSource.hpp"
 
 namespace Engine {
 
     struct SoundEngineData {
-        ALCdevice* openALDevice = nullptr; // audio device
-        ALCcontext* openALContext = nullptr; // openAL context?
-        ALuint buffer;
-        ALuint source;
+        //ALuint source;
+
+        Ref<SoundDevice> device;
+        Ref<SoundContext> context;
+        Ref<SoundBuffer> buffer;
+        Ref<SoundSource> source;
     };
 
     static SoundEngineData s_SoundData;
-
-#define checkError(device) check_alc_errors(__FILE__, __LINE__, device)
-
-    bool check_alc_errors(const std::string& filename, const std::uint_fast32_t line, ALCdevice* device)
-    {
-        ALCenum error = alcGetError(device);
-        if (error != ALC_NO_ERROR)
-        {
-            std::cerr << "***ERROR*** (" << filename << ": " << line << ")\n";
-            switch (error)
-            {
-            case ALC_INVALID_VALUE:
-                std::cerr << "ALC_INVALID_VALUE: an invalid value was passed to an OpenAL function";
-                break;
-            case ALC_INVALID_DEVICE:
-                std::cerr << "ALC_INVALID_DEVICE: a bad device was passed to an OpenAL function";
-                break;
-            case ALC_INVALID_CONTEXT:
-                std::cerr << "ALC_INVALID_CONTEXT: a bad context was passed to an OpenAL function";
-                break;
-            case ALC_INVALID_ENUM:
-                std::cerr << "ALC_INVALID_ENUM: an unknown enum value was passed to an OpenAL function";
-                break;
-            case ALC_OUT_OF_MEMORY:
-                std::cerr << "ALC_OUT_OF_MEMORY: an unknown enum value was passed to an OpenAL function";
-                break;
-            default:
-                std::cerr << "UNKNOWN ALC ERROR: " << error;
-            }
-            std::cerr << std::endl;
-            return false;
-        }
-        return true;
-    }
-
+    
     std::int32_t convert_to_int(char* buffer, std::size_t len)
     {
         std::int32_t a = 0;
@@ -59,17 +30,17 @@ namespace Engine {
                 reinterpret_cast<char*>(&a)[3 - i] = buffer[i];
         return a;
     }
-
+    
     bool load_wav_file_header(std::ifstream& file,
         std::uint8_t& channels,
         std::int32_t& sampleRate,
         std::uint8_t& bitsPerSample,
-        ALsizei& size)
+        int& size)
     {
         char buffer[4];
         if (!file.is_open())
             return false;
-
+    
         // the RIFF
         if (!file.read(buffer, 4))
         {
@@ -81,14 +52,14 @@ namespace Engine {
             std::cerr << "ERROR: file is not a valid WAVE file (header doesn't begin with RIFF)" << std::endl;
             return false;
         }
-
+    
         // the size of the file
         if (!file.read(buffer, 4))
         {
             std::cerr << "ERROR: could not read size of file" << std::endl;
             return false;
         }
-
+    
         // the WAVE
         if (!file.read(buffer, 4))
         {
@@ -100,28 +71,28 @@ namespace Engine {
             std::cerr << "ERROR: file is not a valid WAVE file (header doesn't contain WAVE)" << std::endl;
             return false;
         }
-
+    
         // "fmt/0"
         if (!file.read(buffer, 4))
         {
             std::cerr << "ERROR: could not read fmt/0" << std::endl;
             return false;
         }
-
+    
         // this is always 16, the size of the fmt data chunk
         if (!file.read(buffer, 4))
         {
             std::cerr << "ERROR: could not read the 16" << std::endl;
             return false;
         }
-
+    
         // PCM should be 1?
         if (!file.read(buffer, 2))
         {
             std::cerr << "ERROR: could not read PCM" << std::endl;
             return false;
         }
-
+    
         // the number of channels
         if (!file.read(buffer, 2))
         {
@@ -129,7 +100,7 @@ namespace Engine {
             return false;
         }
         channels = convert_to_int(buffer, 2);
-
+    
         // sample rate
         if (!file.read(buffer, 4))
         {
@@ -137,21 +108,21 @@ namespace Engine {
             return false;
         }
         sampleRate = convert_to_int(buffer, 4);
-
+    
         // (sampleRate * bitsPerSample * channels) / 8
         if (!file.read(buffer, 4))
         {
             std::cerr << "ERROR: could not read (sampleRate * bitsPerSample * channels) / 8" << std::endl;
             return false;
         }
-
+    
         // ?? dafaq
         if (!file.read(buffer, 2))
         {
             std::cerr << "ERROR: could not read dafaq" << std::endl;
             return false;
         }
-
+    
         // bitsPerSample
         if (!file.read(buffer, 2))
         {
@@ -159,7 +130,7 @@ namespace Engine {
             return false;
         }
         bitsPerSample = convert_to_int(buffer, 2);
-
+    
         // data chunk header "data"
         if (!file.read(buffer, 4))
         {
@@ -171,7 +142,7 @@ namespace Engine {
             std::cerr << "ERROR: file is not a valid WAVE file (doesn't have 'data' tag)" << std::endl;
             return false;
         }
-
+    
         // size of data
         if (!file.read(buffer, 4))
         {
@@ -179,7 +150,7 @@ namespace Engine {
             return false;
         }
         size = convert_to_int(buffer, 4);
-
+    
         /* cannot be at the end of file */
         if (file.eof())
         {
@@ -191,15 +162,15 @@ namespace Engine {
             std::cerr << "ERROR: fail state set on the file" << std::endl;
             return false;
         }
-
+    
         return true;
     }
-
+    
     char* load_wav(const std::string& filename,
         std::uint8_t& channels,
         std::int32_t& sampleRate,
         std::uint8_t& bitsPerSample,
-        ALsizei& size)
+        int& size)
     {
         std::ifstream in(filename, std::ios::binary);
         if (!in.is_open())
@@ -212,69 +183,51 @@ namespace Engine {
             std::cerr << "ERROR: Could not load wav header of \"" << filename << "\"" << std::endl;
             return nullptr;
         }
-
+    
         char* data = new char[size];
-
+    
         in.read(data, size);
-
+    
         return data;
     }
 
     void SoundEngine::Init() {
-        s_SoundData.openALDevice = alcOpenDevice(nullptr);
-        if (!s_SoundData.openALDevice)
-        {
-            __debugbreak();
-        }
-
-        std::vector<std::string> devicesVec;
-        const ALCchar* devices;
-        devices = alcGetString(nullptr, ALC_DEVICE_SPECIFIER);
-        const char* ptr = devices;
-
-        do {
-            devicesVec.push_back(std::string(ptr));
-            ptr += devicesVec.back().size() + 1;
-        } while (*(ptr + 1) != '\0');
-
-        ENGINE_LOG_INFO("OpenAL Devices:");
-        for (const auto& str : devicesVec) {
-            ENGINE_LOG_INFO("  {0}", str);
+        auto devices = SoundDevice::GetDevices();
+        ENGINE_LOG_INFO("----------------------------");
+        ENGINE_LOG_INFO("Sound devices found: ");
+        for (auto dev : devices) {
+            ENGINE_LOG_TRACE(">  {0}", dev);
         }
         ENGINE_LOG_INFO("----------------------------");
-
-        s_SoundData.openALContext = alcCreateContext(s_SoundData.openALDevice, nullptr);
-
-        ALCboolean contextMadeCurrent = false;
-        contextMadeCurrent = alcMakeContextCurrent(s_SoundData.openALContext);
-        if (contextMadeCurrent != ALC_TRUE) {
-            __debugbreak();
-        }
-
+        
+        s_SoundData.device = SoundDevice::Create();
+        s_SoundData.device->Open();
+        
+        s_SoundData.context = SoundContext::Create(s_SoundData.device);
+        s_SoundData.context->MakeCurrent();
+        
         // load wav file
         std::uint8_t channels;
         std::int32_t sampleRate;
         std::uint8_t bitsPerSample;
-        ALsizei size;
+        int size;
         char* soundData = load_wav("run_tree/Data/Sounds/sound.wav", channels, sampleRate, bitsPerSample, size);
         if (soundData == nullptr)
         {
             std::cerr << "ERROR: Could not load wav" << std::endl;
             return;
         }
-
-        alGenBuffers(1, &s_SoundData.buffer);
-        checkError(s_SoundData.openALDevice);
-
-        ALenum format;
+        
+        
+        int format;
         if (channels == 1 && bitsPerSample == 8)
-            format = AL_FORMAT_MONO8;
+            format = 0x1100;// AL_FORMAT_MONO8;
         else if (channels == 1 && bitsPerSample == 16)
-            format = AL_FORMAT_MONO16;
+            format = 0x1101; // AL_FORMAT_MONO16;
         else if (channels == 2 && bitsPerSample == 8)
-            format = AL_FORMAT_STEREO8;
+            format = 0x1102; // AL_FORMAT_STEREO8;
         else if (channels == 2 && bitsPerSample == 16)
-            format = AL_FORMAT_STEREO16;
+            format = 0x1103; //AL_FORMAT_STEREO16;
         else
         {
             std::cerr
@@ -283,43 +236,35 @@ namespace Engine {
                 << bitsPerSample << " bps" << std::endl;
             return;
         }
-
-        alBufferData(s_SoundData.buffer, format, soundData, size, sampleRate);
-        checkError(s_SoundData.openALDevice);
+        
+        s_SoundData.buffer = SoundBuffer::Create();
+        s_SoundData.buffer->BufferData(format, soundData, size, sampleRate);
     }
 
     void SoundEngine::StartSource() {
-        alGenSources(1, &s_SoundData.source);
-        alSourcef(s_SoundData.source, AL_PITCH, 1);
-        alSourcef(s_SoundData.source, AL_GAIN, 0.25f);
-        alSource3f(s_SoundData.source, AL_POSITION, 0, 0, 0);
-        alSource3f(s_SoundData.source, AL_VELOCITY, 20, 0, 0);
-        alSourcei(s_SoundData.source, AL_LOOPING, AL_FALSE);
-        alSourcei(s_SoundData.source, AL_BUFFER, s_SoundData.buffer);
+        s_SoundData.source = SoundSource::Create();
 
-        alSourcePlay(s_SoundData.source);
-        checkError(s_SoundData.openALDevice);
+        s_SoundData.source->SetPitch(1.0f);
+        s_SoundData.source->SetGain(0.25f);
+        s_SoundData.source->SetPosition(0, 0, 0);
+        s_SoundData.source->SetVelocity(0, 0, 0);
+        s_SoundData.source->SetLooping(false);
+        s_SoundData.source->SetBuffer(s_SoundData.buffer);
+
+        s_SoundData.source->Play();
     }
 
     void SoundEngine::Update(double dt) {
-        ALint state = AL_PLAYING;
-        alGetSourcei(s_SoundData.source, AL_SOURCE_STATE, &state);
-        checkError(s_SoundData.openALDevice);
-
-        if (state != AL_PLAYING) {
-            // done with the sound.
-            alDeleteSources(1, &s_SoundData.source);
+        if (s_SoundData.source && !s_SoundData.source->IsPlaying()) {
+            s_SoundData.source->Destroy();
         }
     }
 
     void SoundEngine::Shutdown() {
-        alDeleteBuffers(1, &s_SoundData.buffer);
-
-        alcMakeContextCurrent(s_SoundData.openALContext);
-        alcDestroyContext(s_SoundData.openALContext);
-
-        if (!alcCloseDevice(s_SoundData.openALDevice)) {
-            ENGINE_LOG_ASSERT(false, "Failed to close OpenAL????");
-        }
+        s_SoundData.buffer->Destroy();
+        
+        s_SoundData.context->Destroy();
+        
+        s_SoundData.device->Close();
     }
 }

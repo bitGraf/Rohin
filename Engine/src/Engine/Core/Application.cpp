@@ -6,7 +6,7 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/TextRenderer.hpp"
 #include "Engine/Resources/MaterialCatalog.hpp"
-#include "Engine/Sound/Sound.hpp"
+#include "Engine/Sound/SoundEngine.hpp"
 
 #include <GLFW/glfw3.h>
 

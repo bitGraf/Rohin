@@ -17,7 +17,7 @@ namespace Engine {
         if (s_Data.LoadedTextures.find(path) == s_Data.LoadedTextures.end()) {
             // not currently loaded
             s_Data.LoadedTextures.emplace(path, Texture2D::Create(path));
-            ENGINE_LOG_TRACE("texture {1}[{0}] loaded!", path, s_Data.LoadedTextures[path]->GetID());
+            ///ENGINE_LOG_TRACE("texture {1}[{0}] loaded!", path, s_Data.LoadedTextures[path]->GetID());
         }
         
         return s_Data.LoadedTextures.at(path);

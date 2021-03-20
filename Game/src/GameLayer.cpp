@@ -4,7 +4,7 @@
 
 #include "Engine/Collision/CollisionWorld.hpp"
 
-#include "Engine/Sound/Sound.hpp"
+#include "Engine/Sound/SoundEngine.hpp"
 
 /* native scripts */
 #include "CameraController.hpp"
