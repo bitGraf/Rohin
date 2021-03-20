@@ -24,13 +24,14 @@ namespace Engine {
         virtual void SetVelocity(float vx, float vy, float vz) override;
         virtual void SetLooping(bool looping) override;
         virtual void SetBuffer(Ref<SoundBuffer> buffer) override;
+        virtual void SetBuffer(u32 buffer) override;
         
         virtual float GetPitch() const override { return m_pitch; }
         virtual float GetGain() const override { return m_gain; }
         virtual float* GetPosition() const override { return (float*)m_position; }
         virtual float* GetVelocity() const override { return (float*)m_velocity; }
         virtual bool GetLooping() const override { return m_looping; }
-        virtual Ref<SoundBuffer> GetBuffer() const override { return m_buffer; }
+        //virtual Ref<SoundBuffer> GetBuffer() const override { return m_buffer; }
 
         virtual u32 GetNativeID() const { return m_source; }
 
@@ -43,7 +44,5 @@ namespace Engine {
         ALfloat m_position[3];
         ALfloat m_velocity[3];
         ALboolean m_looping;
-
-        Ref<SoundBuffer> m_buffer;
     };
 }

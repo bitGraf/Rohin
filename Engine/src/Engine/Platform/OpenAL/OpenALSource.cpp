@@ -82,4 +82,8 @@ namespace Engine {
         alSourcei(m_source, AL_BUFFER, buffer->GetNativeID());
     }
 
+    void OpenALSource::SetBuffer(u32 buffer) {
+        alSourcei(m_source, AL_BUFFER, buffer);
+    }
+
 }

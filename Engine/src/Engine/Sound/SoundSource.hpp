@@ -24,8 +24,10 @@ namespace Engine {
         virtual float* GetVelocity() const = 0;
         virtual void SetLooping(bool looping) = 0;
         virtual bool GetLooping() const = 0;
+
         virtual void SetBuffer(Ref<SoundBuffer> buffer) = 0;
-        virtual Ref<SoundBuffer> GetBuffer() const = 0;
+        virtual void SetBuffer(u32 buffer) = 0;
+        //virtual Ref<SoundBuffer> GetBuffer() const = 0;
         
         static Ref<SoundSource> Create();
     };

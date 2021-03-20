@@ -21,6 +21,8 @@ namespace Engine {
 
         Ref<SoundDevice> device;
         Ref<SoundContext> context;
+
+        Ref<SoundSource> sources[NumSoundChannels];
     };
 
     static SoundEngineData s_SoundData;
@@ -37,11 +39,17 @@ namespace Engine {
             s_SoundData.status.channels[n].length = 1;
             s_SoundData.status.channels[n].active = false;
             s_SoundData.status.channels[n].soundID = 0;
+
+            s_SoundData.sources[n] = SoundSource::Create();
         }
         s_SoundData.status.queueSize = 0;
     }
 
     void SoundEngine::Shutdown() {
+        for (int n = 0; n < NumSoundChannels; n++) {
+            s_SoundData.sources[n]->Destroy();
+        }
+
         s_SoundData.context->MakeCurrent();
         s_SoundData.context->Destroy();
 
@@ -55,35 +63,39 @@ namespace Engine {
             if (chan.active) {
                 chan.current += dt;
                 if (chan.current > chan.length) {
-                    // remove this sound from the channel.
-                    // if there is another sound queued up, play that.
-                    if (s_SoundData.soundsToPlay.size() > 0) {
-                        chan.cue = s_SoundData.soundsToPlay.front();
-                        const auto& soundSpec = s_SoundData.soundCues[chan.cue];
-
-                        chan.active = true;
-                        chan.current = 0;
-                        chan.length = soundSpec.length;
-                        chan.soundID = soundSpec.soundID;
-                        s_SoundData.soundsToPlay.pop();
-                    }
-                    chan.active = false;
+                    chan.active = false; // mark as inactive
+                    //const auto& source = s_SoundData.sources[n];
                 }
             }
-            else {
-                // Check to see if a new sound can be added to this channel
-                if (s_SoundData.soundsToPlay.size() > 0) {
+        }
+
+        // loop through and add new sounds to inactive channels
+        for (int n = 0; n < NumSoundChannels; n++) {
+            if (s_SoundData.soundsToPlay.size() > 0) {
+                auto& chan = s_SoundData.status.channels[n];
+
+                if (!chan.active) {
+                    // Get next sound to play
                     chan.cue = s_SoundData.soundsToPlay.front();
+                    s_SoundData.soundsToPlay.pop();
+
                     const auto& soundSpec = s_SoundData.soundCues[chan.cue];
+                    auto source = s_SoundData.sources[n];
 
                     chan.active = true;
                     chan.current = 0;
                     chan.length = soundSpec.length;
                     chan.soundID = soundSpec.soundID;
-                    s_SoundData.soundsToPlay.pop();
+
+                    source->SetBuffer(chan.soundID);
+                    source->Play();
                 }
             }
+            else {
+                break;
+            }
         }
+
         s_SoundData.status.queueSize = s_SoundData.soundsToPlay.size();
     }
 
@@ -150,7 +162,6 @@ namespace Engine {
 
         auto sound = cues.at(cue);
         s_SoundData.soundsToPlay.push(cue);
-        // play sound
     }
 
     void SoundEngine::CreateBackingTrack(const std::string& track, BackingTrackSpec spec) {

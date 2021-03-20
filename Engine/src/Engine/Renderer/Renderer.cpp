@@ -479,7 +479,7 @@ namespace Engine {
         // Render sound debug
         if (s_Data.soundDebug) {
             auto status = SoundEngine::GetStatus();
-            float startx = 10, starty = 300;
+            float startx = 10, starty = 150;
             float fontSize = 20;
             char text[64];
             TextRenderer::SubmitText("Sound Engine Status:", startx, starty, math::vec3(.6f, .8f, .75f));
