@@ -210,7 +210,7 @@ namespace Engine {
         s_Data.OutputMode = 0;
         s_Data.ToneMap = true;
         s_Data.Gamma = true;
-        s_Data.soundDebug = true;
+        s_Data.soundDebug = false;
 
         Precompute();
     }
@@ -367,7 +367,6 @@ namespace Engine {
         lightingShader->SetInt("u_normal", 0);
         lightingShader->SetInt("u_distance", 1);
         lightingShader->SetInt("u_amr", 2);
-        lightingShader->SetInt("u_albedo", 3);
         UploadLights(lightingShader);
         lightingShader->SetMat4("r_Projection", s_Data.Lights.projection);
         lightingShader->SetMat4("r_View", s_Data.Lights.view);
@@ -429,7 +428,6 @@ namespace Engine {
         s_Data.gBuffer->BindTexture(1, 0);
         s_Data.gBuffer->BindTexture(3, 1);
         s_Data.gBuffer->BindTexture(2, 2);
-        s_Data.gBuffer->BindTexture(0, 3);
         SubmitFullscreenQuad();
         s_Data.DiffuseSpecularLighting->Unbind();
 
