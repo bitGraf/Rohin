@@ -11,10 +11,10 @@ namespace Engine {
     public:
 
         OpenALBuffer();
-        OpenALBuffer(ALenum format, const ALvoid* soundData, ALsizei numBytes, ALsizei sampleRate);
+        OpenALBuffer(SoundFormat format, const ALvoid* soundData, ALsizei numBytes, ALsizei sampleRate);
         virtual ~OpenALBuffer();
 
-        virtual void BufferData(int format, const void* soundData, int numBytes, int sampleRate) override;
+        virtual void BufferData(SoundFormat format, const void* soundData, int numBytes, int sampleRate) override;
         virtual void Destroy() override;
 
         virtual u32 GetNativeID() const { return m_buffer; }

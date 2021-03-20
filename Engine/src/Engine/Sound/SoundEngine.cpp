@@ -7,11 +7,11 @@
 #include "Engine/Sound/SoundBuffer.hpp"
 #include "Engine/Sound/SoundSource.hpp"
 
+#include "Engine/Sound/OggVorbisLoader.hpp"
+
 namespace Engine {
 
     struct SoundEngineData {
-        //ALuint source;
-
         Ref<SoundDevice> device;
         Ref<SoundContext> context;
         Ref<SoundBuffer> buffer;
@@ -206,46 +206,30 @@ namespace Engine {
         s_SoundData.context = SoundContext::Create(s_SoundData.device);
         s_SoundData.context->MakeCurrent();
         
-        // load wav file
+        // load ogg file
         std::uint8_t channels;
         std::int32_t sampleRate;
         std::uint8_t bitsPerSample;
         int size;
-        char* soundData = load_wav("run_tree/Data/Sounds/sound.wav", channels, sampleRate, bitsPerSample, size);
+        short* soundData = load_ogg("run_tree/Data/Sounds/death.ogg", channels, sampleRate, bitsPerSample, size);
+        //short* soundData = load_ogg("run_tree/Data/Sounds/ahhh.ogg", channels, sampleRate, bitsPerSample, size);
         if (soundData == nullptr)
         {
-            std::cerr << "ERROR: Could not load wav" << std::endl;
+            std::cerr << "ERROR: Could not load ogg" << std::endl;
             return;
         }
+
+        ENGINE_LOG_INFO("Ogg file loaded. {0} channels, {1} bits, {2} bytes of sound, {3}Hz", channels, bitsPerSample, size, sampleRate);
         
-        
-        int format;
-        if (channels == 1 && bitsPerSample == 8)
-            format = 0x1100;// AL_FORMAT_MONO8;
-        else if (channels == 1 && bitsPerSample == 16)
-            format = 0x1101; // AL_FORMAT_MONO16;
-        else if (channels == 2 && bitsPerSample == 8)
-            format = 0x1102; // AL_FORMAT_STEREO8;
-        else if (channels == 2 && bitsPerSample == 16)
-            format = 0x1103; //AL_FORMAT_STEREO16;
-        else
-        {
-            std::cerr
-                << "ERROR: unrecognised wave format: "
-                << channels << " channels, "
-                << bitsPerSample << " bps" << std::endl;
-            return;
-        }
-        
+        auto format = GetSoundFormat(channels, bitsPerSample);        
         s_SoundData.buffer = SoundBuffer::Create();
         s_SoundData.buffer->BufferData(format, soundData, size, sampleRate);
     }
 
     void SoundEngine::StartSource() {
         s_SoundData.source = SoundSource::Create();
-
         s_SoundData.source->SetPitch(1.0f);
-        s_SoundData.source->SetGain(0.25f);
+        s_SoundData.source->SetGain(0.15f);
         s_SoundData.source->SetPosition(0, 0, 0);
         s_SoundData.source->SetVelocity(0, 0, 0);
         s_SoundData.source->SetLooping(false);

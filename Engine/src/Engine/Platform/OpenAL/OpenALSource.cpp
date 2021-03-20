@@ -1,9 +1,9 @@
 #include <enpch.hpp>
 
-#include"OpenALSource.hpp"
+#include "OpenALSource.hpp"
+#include "OpenALError.hpp"
 
 #include "AL/al.h"
-#include "AL/alc.h"
 
 namespace Engine {
 
@@ -13,6 +13,7 @@ namespace Engine {
 
     OpenALSource::OpenALSource() {
         alGenSources(1, &m_source);
+        CheckAlError(__FILE__, __LINE__);
 
         // set reasonable defaults
         alSourcef(m_source, AL_PITCH, 1.0f);
@@ -20,18 +21,26 @@ namespace Engine {
         alSource3f(m_source, AL_POSITION, 0.0f, 0.0f, 0.0f);
         alSource3f(m_source, AL_VELOCITY, 0.0f, 0.0f, 0.0f);
         alSourcei(m_source, AL_LOOPING, AL_FALSE);
+        CheckAlError(__FILE__, __LINE__);
     }
 
     OpenALSource::~OpenALSource() {
     }
 
     void OpenALSource::Destroy() {
+        if (m_source == 0) return;
+
         alDeleteSources(1, &m_source);
+        CheckAlError(__FILE__, __LINE__);
+
         m_source = 0;
     }
 
     void OpenALSource::Play() {
+        if (m_source == 0) return;
+
         alSourcePlay(m_source);
+        CheckAlError(__FILE__, __LINE__);
     }
 
     void OpenALSource::Pause() {
@@ -43,6 +52,7 @@ namespace Engine {
 
         ALint state;
         alGetSourcei(m_source, AL_SOURCE_STATE, &state);
+        CheckAlError(__FILE__, __LINE__);
         m_playing = state == AL_PLAYING;
         return m_playing;
     }
