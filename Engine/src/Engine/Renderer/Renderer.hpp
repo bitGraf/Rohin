@@ -71,6 +71,7 @@ namespace Engine {
         static void PrintState();
         static void ToggleToneMapping();
         static void ToggleGammaCorrection();
+        static void ToggleDebugSoundOutput();
 
         static void Submit(const math::mat4& transform = math::mat4());
         static void Submit(const Ref<VertexArray>& vao, const math::mat4& transform, const math::vec3& color);

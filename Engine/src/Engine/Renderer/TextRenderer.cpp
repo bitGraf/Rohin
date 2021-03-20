@@ -61,7 +61,7 @@ namespace Engine {
         }
 
         // load fonts
-        s_Data.font.create("run_tree/Data/Fonts/UbuntuMono-Regular.ttf", 32);
+        s_Data.font.create("run_tree/Data/Fonts/UbuntuMono-Regular.ttf", 20);
     }
 
     void TextRenderer::Shutdown() {
@@ -91,7 +91,7 @@ namespace Engine {
         return s_Data.ShaderLibrary;
     }
 
-    void TextRenderer::SubmitText(const std::string& text, float startX, float startY, float size, math::vec3 color) {
+    void TextRenderer::SubmitText(const std::string& text, float startX, float startY, math::vec3 color) {
         auto shader = s_Data.ShaderLibrary->Get("Text");
         shader->Bind();
         s_Data.TextQuad->Bind();

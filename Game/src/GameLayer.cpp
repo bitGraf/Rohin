@@ -146,6 +146,18 @@ void GameLayer::OnAttach() {
     cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 3.5, 17), 10, 1, 3))
         ->rotation.toYawPitchRoll(0, 50, 0);
 
+    // Sound stuff
+    SoundCueSpec guard_death;
+    guard_death.soundFile = "run_tree/Data/Sounds/death.ogg";
+    SoundEngine::CreateSoundCue("guard_death", guard_death);
+    SoundCueSpec footstep;
+    footstep.soundFile = "run_tree/Data/Sounds/death.ogg";
+    SoundEngine::CreateSoundCue("footstep", footstep);
+
+    BackingTrackSpec music;
+    music.soundFile = "run_tree/Data/Sounds/ahhh.ogg";
+    SoundEngine::CreateBackingTrack("music", music);
+
     m_ActiveScene->OnRuntimeStart();
 }
 
@@ -252,7 +264,10 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
         m_ActiveScene->ToggleCollisionHulls();
     }
     if (e.GetKeyCode() == KEY_CODE_2) {
-        Engine::SoundEngine::StartSource();
+        Engine::SoundEngine::CueSound("guard_death");
+    }
+    if (e.GetKeyCode() == KEY_CODE_M) {
+        Renderer::ToggleDebugSoundOutput();
     }
     return false;
 }

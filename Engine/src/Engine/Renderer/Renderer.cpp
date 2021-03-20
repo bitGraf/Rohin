@@ -5,6 +5,7 @@
 #include "Engine/Renderer/Framebuffer.hpp"
 #include "Engine/Renderer/Buffer.hpp"
 #include "Engine/Renderer/TextRenderer.hpp"
+#include "Engine/Sound/SoundEngine.hpp"
 
 namespace Engine {
 
@@ -39,6 +40,7 @@ namespace Engine {
         u32 OutputMode;
         bool ToneMap;
         bool Gamma;
+        bool soundDebug;
     };
 
     RendererData s_Data;
@@ -208,6 +210,7 @@ namespace Engine {
         s_Data.OutputMode = 0;
         s_Data.ToneMap = true;
         s_Data.Gamma = true;
+        s_Data.soundDebug = true;
 
         Precompute();
     }
@@ -302,6 +305,11 @@ namespace Engine {
     void Renderer::ToggleGammaCorrection() {
         s_Data.Gamma = !s_Data.Gamma;
         ENGINE_LOG_INFO("Gamma Correction: {0}", s_Data.Gamma);
+    }
+
+    void Renderer::ToggleDebugSoundOutput() {
+        s_Data.soundDebug = !s_Data.soundDebug;
+        ENGINE_LOG_INFO("Showing Sound Debug: {0}", s_Data.soundDebug);
     }
 
     void Renderer::UploadLights(const Ref<Shader> shader) {
@@ -466,7 +474,30 @@ namespace Engine {
             "SSAO + Baked ao"
         };
 
-        TextRenderer::SubmitText(outputModes[s_Data.OutputMode], 10, 10, 32, math::vec3(.1f, .9f, .75f));
+        TextRenderer::SubmitText(outputModes[s_Data.OutputMode], 10, 10, math::vec3(.1f, .9f, .75f));
+
+        // Render sound debug
+        if (s_Data.soundDebug) {
+            auto status = SoundEngine::GetStatus();
+            float startx = 10, starty = 300;
+            float fontSize = 20;
+            char text[64];
+            TextRenderer::SubmitText("Sound Engine Status:", startx, starty, math::vec3(.6f, .8f, .75f));
+            for (int n = 0; n < NumSoundChannels; n++) {
+                if (status.channels[n].active) {
+                    sprintf_s(text, 64, "Channel %2d: %0.2f/%0.2f [%s]", n, 
+                        status.channels[n].current, 
+                        status.channels[n].length,
+                        status.channels[n].cue.c_str());
+                    TextRenderer::SubmitText(text, startx + 15, starty += fontSize, math::vec3(.6f, .8f, .75f));
+                } else {
+                    sprintf_s(text, 64, "Channel %2d: inactive", n);
+                    TextRenderer::SubmitText(text, startx+15, starty+= fontSize, math::vec3(.4f, .6f, .55f));
+                }
+            }
+            sprintf_s(text, 64, "Sounds in queue: %d", status.queueSize);
+            TextRenderer::SubmitText(text, startx, starty += fontSize, math::vec3(.6f, .8f, .75f));
+        }
 
         s_Data.screenBuffer->Unbind();
     }

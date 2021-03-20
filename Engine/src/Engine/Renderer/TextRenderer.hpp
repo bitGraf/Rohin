@@ -14,7 +14,7 @@ namespace Engine {
         //static void EndTextRendering();
         //static void Flush();
 
-        static void SubmitText(const std::string& text, float startX, float startY, float size, math::vec3 color);
+        static void SubmitText(const std::string& text, float startX, float startY, math::vec3 color);
 
         static void OnWindowResize(uint32_t width, uint32_t height);
 

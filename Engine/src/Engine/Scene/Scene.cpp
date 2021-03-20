@@ -368,7 +368,7 @@ namespace Engine {
 
             Renderer::RenderDebugUI();
             if (m_showEntityLocations) { // TODO: rename this/come up with less bad solution for these things
-                TextRenderer::SubmitText("Showing entity locations", 5, 40, 32, math::vec3(.7, .1, .5));
+                TextRenderer::SubmitText("Showing entity locations", 5, 40, math::vec3(.7, .1, .5));
             }
         }
         
