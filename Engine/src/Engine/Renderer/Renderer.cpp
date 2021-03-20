@@ -423,6 +423,7 @@ namespace Engine {
 
         // Lighting Pass
         s_Data.DiffuseSpecularLighting->Bind();
+        s_Data.DiffuseSpecularLighting->ClearBuffers();
         auto lightingShader = s_Data.ShaderLibrary->Get("Lighting");
         lightingShader->Bind();
         s_Data.gBuffer->BindTexture(1, 0);
@@ -434,6 +435,7 @@ namespace Engine {
 
         // SSAO pass
         s_Data.SSAO->Bind();
+        s_Data.SSAO->ClearBuffers();
         auto ssaoShader = s_Data.ShaderLibrary->Get("SSAO");
         ssaoShader->Bind();
         s_Data.gBuffer->BindTexture(2, 0);
@@ -442,6 +444,7 @@ namespace Engine {
 
         // Output to mixBuffer1
         s_Data.mixBuffer1->Bind();
+        s_Data.mixBuffer1->ClearBuffers();
         auto screenShader = s_Data.ShaderLibrary->Get("Screen");
         screenShader->Bind();
         s_Data.gBuffer->BindTexture(0, 0);
@@ -480,6 +483,7 @@ namespace Engine {
         if (s_Data.soundDebug) {
             auto status = SoundEngine::GetStatus();
             float startx = 10, starty = 150;
+            if (NumSoundChannels > 16) starty = 30;
             float fontSize = 20;
             char text[64];
             TextRenderer::SubmitText("Sound Engine Status:", startx, starty, math::vec3(.6f, .8f, .75f));
@@ -514,6 +518,7 @@ namespace Engine {
         s_Data.sobelBuffer->Unbind();
 
         s_Data.mixBuffer2->Bind();
+        s_Data.mixBuffer2->ClearBuffers();
         auto sobelShader = s_Data.ShaderLibrary->Get("Sobel");
         sobelShader->Bind();
         s_Data.sobelBuffer->BindTexture(0, 0);
@@ -522,6 +527,7 @@ namespace Engine {
     
     void Renderer::End3DScene() {
         s_Data.screenBuffer->Bind();
+        s_Data.screenBuffer->ClearBuffers();
         auto mixShader = s_Data.ShaderLibrary->Get("Mix");
         mixShader->Bind();
         s_Data.mixBuffer1->BindTexture(0, 0);

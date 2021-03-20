@@ -2,7 +2,8 @@
 
 namespace Engine {
 
-    const u8 NumSoundChannels = 8;
+    // number of simultaneous sound cues that can play
+    const u8 NumSoundChannels = 32;
 
     struct SoundCueSpec {
         std::string soundFile;
