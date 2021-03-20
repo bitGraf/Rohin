@@ -147,12 +147,9 @@ void GameLayer::OnAttach() {
         ->rotation.toYawPitchRoll(0, 50, 0);
 
     // Sound stuff
-    SoundCueSpec guard_death;
-    guard_death.soundFile = "run_tree/Data/Sounds/death.ogg";
-    SoundEngine::CreateSoundCue("guard_death", guard_death);
-    SoundCueSpec footstep;
-    footstep.soundFile = "run_tree/Data/Sounds/death.ogg";
-    SoundEngine::CreateSoundCue("footstep", footstep);
+    SoundEngine::CreateSoundCue("guard_death", { "run_tree/Data/Sounds/death.ogg" });
+    SoundEngine::CreateSoundCue("protector", { "run_tree/Data/Sounds/sound.wav" });
+    SoundEngine::CreateSoundCue("ahhh", { "run_tree/Data/Sounds/ahhh.ogg" });
 
     BackingTrackSpec music;
     music.soundFile = "run_tree/Data/Sounds/ahhh.ogg";
@@ -263,8 +260,21 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     if (e.GetKeyCode() == KEY_CODE_3) {
         m_ActiveScene->ToggleCollisionHulls();
     }
-    if (e.GetKeyCode() == KEY_CODE_2) {
+
+    if (e.GetKeyCode() == KEY_CODE_KP_1) {
         Engine::SoundEngine::CueSound("guard_death");
+    }
+    if (e.GetKeyCode() == KEY_CODE_KP_2) {
+        Engine::SoundEngine::CueSound("protector");
+    }
+    if (e.GetKeyCode() == KEY_CODE_KP_3) {
+        Engine::SoundEngine::CueSound("ahhh");
+    }
+    if (e.GetKeyCode() == KEY_CODE_KP_4) {
+        Engine::SoundEngine::CueSound("guard_death1");
+    }
+    if (e.GetKeyCode() == KEY_CODE_KP_5) {
+        Engine::SoundEngine::CueSound("guard_death2");
     }
     if (e.GetKeyCode() == KEY_CODE_M) {
         Renderer::ToggleDebugSoundOutput();

@@ -485,9 +485,10 @@ namespace Engine {
             TextRenderer::SubmitText("Sound Engine Status:", startx, starty, math::vec3(.6f, .8f, .75f));
             for (int n = 0; n < NumSoundChannels; n++) {
                 if (status.channels[n].active) {
-                    sprintf_s(text, 64, "Channel %2d: %0.2f/%0.2f [%s]", n, 
+                    sprintf_s(text, 64, "Channel %2d: %0.2f/%0.2f %2d:[%s]", n, 
                         status.channels[n].current, 
                         status.channels[n].length,
+                        status.channels[n].soundID,
                         status.channels[n].cue.c_str());
                     TextRenderer::SubmitText(text, startx + 15, starty += fontSize, math::vec3(.6f, .8f, .75f));
                 } else {

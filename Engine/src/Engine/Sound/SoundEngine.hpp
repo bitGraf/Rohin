@@ -6,16 +6,20 @@ namespace Engine {
 
     struct SoundCueSpec {
         std::string soundFile;
+        u32 soundID;
+        f32 length;
     };
 
     struct BackingTrackSpec {
         std::string soundFile;
+        u32 soundID;
     };
 
     struct SoundChannelStatus {
         bool active;
         float length, current;
         std::string cue;
+        u32 soundID;
     };
 
     struct SoundEngineStatus {

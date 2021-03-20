@@ -24,6 +24,7 @@ namespace Engine {
         virtual void BufferData(SoundFormat format, const void* soundData, int numBytes, int sampleRate) = 0;
 
         virtual u32 GetNativeID() const = 0;
+        virtual float GetLength_s() const = 0;
 
         // Create empty buffer
         static Ref<SoundBuffer> Create();

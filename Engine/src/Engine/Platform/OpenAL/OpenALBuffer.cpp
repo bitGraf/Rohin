@@ -32,12 +32,12 @@ namespace Engine {
         }
     }
 
-    OpenALBuffer::OpenALBuffer() : m_buffer(0) {
+    OpenALBuffer::OpenALBuffer() {
         alGenBuffers(1, &m_buffer);
         CheckAlError(__FILE__, __LINE__);
     }
 
-    OpenALBuffer::OpenALBuffer(SoundFormat format, const ALvoid* soundData, ALsizei numBytes, ALsizei sampleRate) : m_buffer(0) {
+    OpenALBuffer::OpenALBuffer(SoundFormat format, const ALvoid* soundData, ALsizei numBytes, ALsizei sampleRate) {
         alGenBuffers(1, &m_buffer);
         CheckAlError(__FILE__, __LINE__);
 
@@ -63,6 +63,21 @@ namespace Engine {
         ALenum alFormat = GetALFormat(format);
         alBufferData(m_buffer, alFormat, soundData, numBytes, sampleRate);
         CheckAlError(__FILE__, __LINE__);
+
+        switch (format) {
+        case SoundFormat::Mono8:
+        case SoundFormat::Mono16:   m_numChannels = 1;
+        case SoundFormat::Stereo8:
+        case SoundFormat::Stereo16: m_numChannels = 2;
+        }
+        switch (format) {
+        case SoundFormat::Mono8:
+        case SoundFormat::Stereo8:  m_bitsPerSample = 8;
+        case SoundFormat::Mono16:
+        case SoundFormat::Stereo16: m_bitsPerSample = 16;
+        }
+        m_sampleRate = sampleRate;
+        m_numSamples = numBytes * 8 / (m_bitsPerSample * m_numChannels);
     }
 
     OpenALBuffer::~OpenALBuffer() {

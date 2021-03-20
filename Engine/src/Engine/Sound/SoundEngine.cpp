@@ -11,22 +11,41 @@
 namespace Engine {
 
     struct SoundEngineData {
-        std::unordered_map<std::string, SoundCueSpec> soundCues; // should hold actual sound cues, not jus tthe spec?
+        std::unordered_map<std::string, SoundCueSpec> soundCues; // should hold actual sound cues, not jus the spec?
         std::unordered_map<std::string, BackingTrackSpec> backingTracks;
         SoundEngineStatus status;
 
         std::queue<std::string> soundsToPlay;
+
+        std::unordered_map<std::string, Ref<SoundBuffer>> loadedSounds;
+
+        Ref<SoundDevice> device;
+        Ref<SoundContext> context;
     };
 
     static SoundEngineData s_SoundData;
 
     void SoundEngine::Init() {
+        s_SoundData.device = SoundDevice::Create();
+        s_SoundData.device->Open();
+
+        s_SoundData.context = SoundContext::Create(s_SoundData.device);
+        s_SoundData.context->MakeCurrent();
+
         for (int n = 0; n < NumSoundChannels; n++) {
             s_SoundData.status.channels[n].current = 0;
             s_SoundData.status.channels[n].length = 1;
             s_SoundData.status.channels[n].active = false;
+            s_SoundData.status.channels[n].soundID = 0;
         }
         s_SoundData.status.queueSize = 0;
+    }
+
+    void SoundEngine::Shutdown() {
+        s_SoundData.context->MakeCurrent();
+        s_SoundData.context->Destroy();
+
+        s_SoundData.device->Close();
     }
 
     void SoundEngine::Update(double dt) {
@@ -39,9 +58,13 @@ namespace Engine {
                     // remove this sound from the channel.
                     // if there is another sound queued up, play that.
                     if (s_SoundData.soundsToPlay.size() > 0) {
-                        chan.current = 0;
-                        chan.length = 3;
                         chan.cue = s_SoundData.soundsToPlay.front();
+                        const auto& soundSpec = s_SoundData.soundCues[chan.cue];
+
+                        chan.active = true;
+                        chan.current = 0;
+                        chan.length = soundSpec.length;
+                        chan.soundID = soundSpec.soundID;
                         s_SoundData.soundsToPlay.pop();
                     }
                     chan.active = false;
@@ -50,10 +73,13 @@ namespace Engine {
             else {
                 // Check to see if a new sound can be added to this channel
                 if (s_SoundData.soundsToPlay.size() > 0) {
+                    chan.cue = s_SoundData.soundsToPlay.front();
+                    const auto& soundSpec = s_SoundData.soundCues[chan.cue];
+
                     chan.active = true;
                     chan.current = 0;
-                    chan.length = 3;
-                    chan.cue = s_SoundData.soundsToPlay.front();
+                    chan.length = soundSpec.length;
+                    chan.soundID = soundSpec.soundID;
                     s_SoundData.soundsToPlay.pop();
                 }
             }
@@ -61,14 +87,59 @@ namespace Engine {
         s_SoundData.status.queueSize = s_SoundData.soundsToPlay.size();
     }
 
-    void SoundEngine::Shutdown() {
+    bool LoadSound(const std::string& filename) {
+        if (s_SoundData.loadedSounds.find(filename) != s_SoundData.loadedSounds.end()) {
+            // sound already loaded
+            return true;
+        }
+
+        size_t extLoc = filename.find_last_of('.');
+        if (extLoc == std::string::npos) {
+            ENGINE_LOG_ERROR("Tried to load sound file [{0}], but could not determine file type", filename);
+            return false;
+        }
+        std::string ext = filename.substr(extLoc);
+        if (ext.compare(".ogg") == 0) {
+            // load .ogg
+            u8 channels, bitsPerSample;
+            s32 sampleRate, size;
+            short* data = load_ogg(filename, channels, sampleRate, bitsPerSample, size);
+            auto format = GetSoundFormat(channels, bitsPerSample);
+            s_SoundData.loadedSounds.emplace(filename, SoundBuffer::Create(format, data, size, sampleRate));
+            free(data); // I think this is okay
+            ENGINE_LOG_INFO("Loaded [{0}] ({4:.1f}Kb of {1} {2}-bit channels at {3}Hz)", 
+                filename, channels, bitsPerSample, sampleRate, size/1024.0f);
+        } else if (ext.compare(".wav") == 0) {
+            // load .wav
+            u8 channels, bitsPerSample;
+            s32 sampleRate, size;
+            char* data = load_wav(filename, channels, sampleRate, bitsPerSample, size);
+            auto format = GetSoundFormat(channels, bitsPerSample);
+            s_SoundData.loadedSounds.emplace(filename, SoundBuffer::Create(format, data, size, sampleRate));
+            free(data); // I think this is okay
+            ENGINE_LOG_INFO("Loaded [{0}] ({4:.1f}Kb of {1} {2}-bit channels at {3}Hz)",
+                filename, channels, bitsPerSample, sampleRate, size/1024.0f);
+        }
+        else {
+            ENGINE_LOG_ERROR("Cannot load sound file of {0} type", ext);
+            return false;
+        }
+
+        return true;
     }
 
     void SoundEngine::CreateSoundCue(const std::string& cue, SoundCueSpec spec) {
         // create sound
-        auto sound = spec;
+        if (!LoadSound(spec.soundFile)) {
+            ENGINE_LOG_ERROR("Could not create sound cue [{0}]", cue);
+            return;
+        }
 
-        s_SoundData.soundCues.emplace(cue, sound);
+        auto newSpec = spec;
+        newSpec.soundID = s_SoundData.loadedSounds[spec.soundFile]->GetNativeID();
+        newSpec.length = s_SoundData.loadedSounds[spec.soundFile]->GetLength_s();
+
+        s_SoundData.soundCues.emplace(cue, newSpec);
     }
     void SoundEngine::CueSound(const std::string& cue) {
         const auto& cues = s_SoundData.soundCues;

@@ -19,7 +19,7 @@ namespace Engine {
         channels = chan;
         sampleRate = sample_rate;
         bitsPerSample = sizeof(short)*8;
-        size = samples * sizeof(short);
+        size = samples * sizeof(short) * channels;
         return output;
     }
 
