@@ -44,7 +44,11 @@ namespace Engine {
     }
 
     void OpenALSource::Pause() {
+        alSourcePause(m_source);
+    }
 
+    void OpenALSource::Stop() {
+        alSourceStop(m_source);
     }
 
     bool OpenALSource::IsPlaying() {

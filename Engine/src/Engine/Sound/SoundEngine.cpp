@@ -64,7 +64,8 @@ namespace Engine {
                 chan.current += dt;
                 if (chan.current > chan.length) {
                     chan.active = false; // mark as inactive
-                    //const auto& source = s_SoundData.sources[n];
+                    const auto& source = s_SoundData.sources[n];
+                    source->Stop(); // or source->Pause();??
                 }
             }
         }
@@ -86,8 +87,10 @@ namespace Engine {
                     chan.current = 0;
                     chan.length = soundSpec.length;
                     chan.soundID = soundSpec.soundID;
+                    chan.volume = soundSpec.volume;
 
                     source->SetBuffer(chan.soundID);
+                    source->SetGain(chan.volume);
                     source->Play();
                 }
             }
@@ -148,8 +151,10 @@ namespace Engine {
         }
 
         auto newSpec = spec;
-        newSpec.soundID = s_SoundData.loadedSounds[spec.soundFile]->GetNativeID();
-        newSpec.length = s_SoundData.loadedSounds[spec.soundFile]->GetLength_s();
+        if (spec.length <= 0.0f) // allow for manual overrides
+            newSpec.length = s_SoundData.loadedSounds[spec.soundFile]->GetLength_s();
+        if (spec.soundID <= 0) // allow for manual overrides
+            newSpec.soundID = s_SoundData.loadedSounds[spec.soundFile]->GetNativeID();
 
         s_SoundData.soundCues.emplace(cue, newSpec);
     }

@@ -148,8 +148,8 @@ void GameLayer::OnAttach() {
 
     // Sound stuff
     SoundEngine::CreateSoundCue("guard_death", { "run_tree/Data/Sounds/death.ogg" });
-    SoundEngine::CreateSoundCue("protector", { "run_tree/Data/Sounds/sound.wav" });
-    SoundEngine::CreateSoundCue("ahhh", { "run_tree/Data/Sounds/ahhh.ogg" });
+    SoundEngine::CreateSoundCue("protector", { "run_tree/Data/Sounds/sound.wav", 0.2f });
+    SoundEngine::CreateSoundCue("ahhh", { "run_tree/Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
 
     BackingTrackSpec music;
     music.soundFile = "run_tree/Data/Sounds/ahhh.ogg";

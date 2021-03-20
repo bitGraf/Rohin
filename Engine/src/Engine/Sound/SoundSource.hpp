@@ -12,6 +12,7 @@ namespace Engine {
 
         virtual void Play() = 0;
         virtual void Pause() = 0;
+        virtual void Stop() = 0;
         virtual bool IsPlaying() = 0;
 
         virtual void SetPitch(float pitch) = 0;

@@ -16,6 +16,7 @@ namespace Engine {
 
         virtual void Play() override;
         virtual void Pause() override;
+        virtual void Stop() override;
         virtual bool IsPlaying() override;
 
         virtual void SetPitch(float pitch) override;
