@@ -2,6 +2,7 @@
 #define GAME_MATH_H
 
 #include "Engine/Core/DataTypes.hpp"
+#include "Engine/Core/Base.hpp"
 
 namespace math {
     typedef f32 scalar;

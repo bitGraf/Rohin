@@ -282,6 +282,9 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
             Engine::SoundEngine::CueSound("golem", _pos);
         }
     }
+    if (e.GetKeyCode() == KEY_CODE_KP_6) {
+        Engine::SoundEngine::StopSteam();
+    }
     if (e.GetKeyCode() == KEY_CODE_M) {
         Renderer::ToggleDebugSoundOutput();
     }

@@ -8,6 +8,7 @@
 
 #include "Engine/Resources/nbt/nbt.hpp"
 #include "Engine/Resources/MeshCatalog.hpp"
+#include "Engine/Sound/SoundEngine.hpp"
 
 namespace Engine {
 
@@ -210,6 +211,8 @@ namespace Engine {
                     ENGINE_LOG_ASSERT(script.Script, "Native script not instantiated");
                 }
             }
+
+            SoundEngine::StartSteam();
         }
 
         m_Playing = true;

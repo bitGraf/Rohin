@@ -7,6 +7,7 @@
 #include "Engine/Sound/SoundBuffer.hpp"
 #include "Engine/Sound/SoundSource.hpp"
 #include "Engine/Sound/SoundFileFormats.hpp"
+#include "Engine/Sound/SoundStream.hpp"
 
 namespace Engine {
 
@@ -30,6 +31,7 @@ namespace Engine {
         Ref<SoundContext> context;
 
         Ref<SoundSource> sources[NumSoundChannels];
+        Ref<SoundStream> stream;
     };
 
     static SoundEngineData s_SoundData;
@@ -50,6 +52,8 @@ namespace Engine {
             s_SoundData.sources[n] = SoundSource::Create();
         }
         s_SoundData.status.queueSize = 0;
+
+        s_SoundData.stream = SoundStream::Create("run_tree/Data/Sounds/tape.ogg");
     }
 
     void SoundEngine::Shutdown() {
@@ -110,6 +114,16 @@ namespace Engine {
         }
 
         s_SoundData.status.queueSize = s_SoundData.soundsToPlay.size();
+
+        s_SoundData.stream->UpdateStream(dt);
+    }
+
+    void SoundEngine::StartSteam() {
+        s_SoundData.stream->PlayStream();
+    }
+
+    void SoundEngine::StopSteam() {
+        s_SoundData.stream->StopStream();
     }
 
     bool LoadSound(const std::string& filename) {

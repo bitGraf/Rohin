@@ -31,6 +31,60 @@ namespace Engine {
         return output;
     }
 
+    void* load_ogg_header(const std::string& filename, int* error) {
+        int error_;
+        auto vorb = stb_vorbis_open_filename(filename.c_str(), &error_, nullptr);
+
+        *error = error_;
+        return (void*)vorb;
+    }
+
+    int get_ogg_samples(void* vorb, short* buffer, int buffer_size) {
+        stb_vorbis* v = (stb_vorbis*)vorb;
+        int num_shorts = buffer_size / 2;
+        return (v->channels * stb_vorbis_get_samples_short_interleaved(v, v->channels, buffer, num_shorts));
+    }
+
+    int get_ogg_channels(void* vorb) {
+        stb_vorbis* v = (stb_vorbis*)vorb;
+        return v->channels;
+    }
+
+    int get_ogg_sampleRate(void* vorb) {
+        stb_vorbis* v = (stb_vorbis*)vorb;
+        return v->sample_rate;
+    }
+
+    void close_ogg_file(void* vorb) {
+        stb_vorbis* v = (stb_vorbis*)vorb;
+        stb_vorbis_close(v);
+    }
+
+    void ogg_seek_start(void* vorb) {
+        stb_vorbis* v = (stb_vorbis*)vorb;
+        stb_vorbis_seek_start(v);
+    }
+
+    short* load_ogg_test(const std::string& filename) {
+        int error;
+        auto vorb = stb_vorbis_open_filename(filename.c_str(), &error, nullptr);
+
+        const int num_buffers = 4;
+        const int buffer_size = 65536; //32 kB
+        u32 buffers[num_buffers];
+        int bitsPerSample = 16;
+        int samplesPerBuffer = buffer_size * 8 / bitsPerSample;
+        int num_shorts = buffer_size / 2;
+
+        short* buffer = (short*)malloc(buffer_size);
+
+        int num = stb_vorbis_get_samples_short_interleaved(vorb, vorb->channels, buffer, 32);
+
+        free(buffer);
+
+        return nullptr;
+    }
+
     std::int32_t convert_to_int(char* buffer, std::size_t len)
     {
         std::int32_t a = 0;

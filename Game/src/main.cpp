@@ -36,127 +36,40 @@ Engine::Application* Engine::CreateApplication() {
 
 #ifdef RUN_TEST_CODE
 #ifndef RUN_MESH_CODE
-#include "Engine\Resources\nbt\nbt.hpp"
 
-#include "Engine\Core\GameMath.hpp"
-#include <assert.h>
-//#include "Engine\Resources\nbt\test.hpp"
+#include <stdlib.h>
+#include "Engine/Sound/SoundEngine.hpp"
+#include "Engine/Sound/SoundDevice.hpp"
+#include "Engine/Sound/SoundContext.hpp"
+#include "Engine/Sound/SoundSource.hpp"
+#include "Engine/Sound/SoundBuffer.hpp"
+#include "Engine/Sound/SoundFileFormats.hpp"
+#include "Engine/Sound/SoundStream.hpp"
+using namespace Engine;
 
 int main(int argc, char** argv) {
-    //nbtTest::test5();
-    
-    // try to generate a level file in .nbt format
-    using namespace nbt;
-    tag_compound comp{
-        {"name", "Level NBT Test"},
-        {"meshes", tag_list::of<tag_compound>({ //TODO: add tag_string_list possibly?
-            {{"mesh_name", "cube_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.nbt" }, {"nbt", true}},
-            {{"mesh_name", "rect_mesh"}, {"mesh_path", "run_tree/Data/Models/cube.mesh" }},
-            {{"mesh_name", "guard_mesh"}, {"mesh_path", "run_tree/Data/Models/guard.nbt" }, {"nbt", true}} // flag as an nbt file
-            })},
-        {"entities", tag_list::of<tag_compound>({
-            { // entity 1
-                {"name", "Platform"}, 
-                {"transform", tag_compound{
-                    {"position", math::vec3(0,-1,0)},
-                    //{"rotation", math::vec4(0,0,0,1)},
-                    {"scale", math::vec3(5,.25,5)}
-                }},
-                {"components", tag_list::of<tag_compound>({
-                    {{"type", "MeshRenderer"}, {"mesh_name", "rect_mesh"}}
-                    })
-                }},
-            { // entity 2
-                {"name", "Frog Cube 1"},
-                {"transform", tag_compound{
-                    {"position", math::vec3(2,1,-2)}
-                }},
-                {"components", tag_list::of<tag_compound>({
-                    {{"type", "MeshRenderer"},{"mesh_name", "cube_mesh"}},
-                    {{"type", "NativeScript"},{"script_tag", "script_gem"}}
-                    })
-                }},
-            {  // entity 3
-                { "name", "Frog Cube 2" },
-                { "transform", tag_compound{
-                    { "position", math::vec3(-2,1,-2) }
-                } },
-                { "components", tag_list::of<tag_compound>({
-                    { { "type", "MeshRenderer" },{ "mesh_name", "cube_mesh" } },
-                    { { "type", "NativeScript" },{ "script_tag", "script_gem" } }
-                    })
-                } },
-            {  // entity 4
-                { "name", "Frog Cube 3" },
-                { "transform", tag_compound{
-                    { "position", math::vec3(2,1,2) }
-                } },
-                { "components", tag_list::of<tag_compound>({
-                    { { "type", "MeshRenderer" },{ "mesh_name", "guard_mesh" } },
-                    { { "type", "NativeScript" },{ "script_tag", "script_gem" } }
-                    })
-                } },
-            { // entity 5
-                { "name", "Camera" },
-                { "transform", tag_compound{
-                    { "position", math::vec3(0, 1, 5) }
-                } },
-                { "components", tag_list::of<tag_compound>({
-                    { { "type", "Camera" } },
-                    { { "type", "NativeScript" },{ "script_tag", "script_camera_controller" } }
-                    })
-                }}
-            })}
-    };
+    auto devs = SoundDevice::GetDevices();
+    for (auto d : devs)
+        printf("%s\n", d.c_str());
+    Ref<SoundDevice> device = SoundDevice::Create();
+    device->Open();
 
-    bool result = nbt::write_to_file("run_tree/Data/Levels/nbtTest.scene", nbt::file_data({ "level_data", std::make_unique<tag_compound>(comp) }), 0, 1);
-    if (!result)
-        __debugbreak();
+    Ref<SoundContext> context = SoundContext::Create(device);
+    context->MakeCurrent();
 
-    tag_compound mat_copper{
-        { "name", "PBR Copper" },
-        { "albedo_path",    "run_tree/Data/Images/copper/albedo.png" },
-        { "normal_path",    "run_tree/Data/Images/copper/normal.png" },
-        { "ambient_path",   "run_tree/Data/Images/copper/ao.png" },
-        { "metalness_path", "run_tree/Data/Images/copper/metallic.png" },
-        { "roughness_path", "run_tree/Data/Images/copper/roughness.png" }
-    };
+    Ref<SoundStream> stream = SoundStream::Create("run_tree/Data/Sounds/ahhh.ogg");
+    stream->PlayStream();
 
-    tag_compound mat_concrete {
-        { "name", "Waffle Concrete" },
-        { "albedo_path",    "run_tree/Data/Images/waffle/WaffleSlab2_albedo.png" },
-        { "normal_path",    "run_tree/Data/Images/waffle/WaffleSlab2_normal.png" },
-        { "ambient_path",   "run_tree/Data/Images/waffle/WaffleSlab2_ao.png" },
-        { "roughness_path", "run_tree/Data/Images/waffle/WaffleSlab2_roughness.png" }
-    };
+    while (true) {
+        stream->UpdateStream();
+    }
 
-    tag_compound mat_damaged_helmet{
-        { "name", "Damaged Helmet" },
-        { "albedo_path",    "run_tree/Data/Images/helmet/albedo.png" },
-        { "normal_path",    "run_tree/Data/Images/helmet/normal.png" },
-        { "ambient_path",   "run_tree/Data/Images/helmet/ambient.png" },
-        { "metalness_path", "run_tree/Data/Images/helmet/metallic.png" },
-        { "roughness_path", "run_tree/Data/Images/helmet/roughness.png" },
-        { "emissive_path",  "run_tree/Data/Images/helmet/emission.png" }
-    };
+    // cleanup
+    context->MakeCurrent();
+    context->Destroy();
+    device->Close();
 
-    tag_compound mat_guard {
-        { "name", "Guard Man" },
-        { "albedo_path",    "run_tree/Data/Images/guard.png" }
-    };
-
-    tag_compound material_catalog {
-        { "mat_copper", tag_compound(mat_copper) },
-        { "mat_concrete", tag_compound(mat_concrete) },
-        { "mat_damaged_helmet", tag_compound(mat_damaged_helmet) },
-        { "mat_guard", tag_compound(mat_guard) }
-    };
-
-    result = nbt::write_to_file("run_tree/Data/Materials/materials.nbt", nbt::file_data({ "material_catalog", std::make_unique<tag_compound>(material_catalog) }), 0, 1);
-    if (!result)
-        __debugbreak();
-
-    system("pause");
+    return 0;
 }
 
 #endif
