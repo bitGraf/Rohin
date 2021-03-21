@@ -56,8 +56,13 @@ namespace Engine {
 
         s_SoundData.stream = SoundStream::Create("run_tree/Data/Sounds/tape.ogg");
 
+        // create effects
         SoundEffect::Init(s_SoundData.device);
-        s_SoundData.stream->SetEffectSlot(SoundEffect::GetReverbSlot());
+        SoundEffect::CreateReverbEffect("reverb_default");
+        SoundEffect::CreateEffectSlot("slot_reverb");
+
+        SoundEffect::BindEffectToSlot("reverb_default", "slot_reverb");
+        s_SoundData.stream->SetEffectSlot(SoundEffect::GetEffectSlot("slot_reverb"));
     }
 
     void SoundEngine::Shutdown() {

@@ -35,8 +35,8 @@ static LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 namespace Engine {
 
     struct EffectData {
-        ALuint effect;
-        ALuint slot;
+        std::unordered_map<std::string, ALuint> m_effects;
+        std::unordered_map<std::string, ALuint> m_slots;
     };
 
     static EffectData s_EffectData;
@@ -150,27 +150,132 @@ namespace Engine {
         LOAD_PROC(LPALGETAUXILIARYEFFECTSLOTF, alGetAuxiliaryEffectSlotf);
         LOAD_PROC(LPALGETAUXILIARYEFFECTSLOTFV, alGetAuxiliaryEffectSlotfv);
 #undef LOAD_PROC
+    }
 
+    void SoundEffect::Destroy() {
+        for (auto slot : s_EffectData.m_slots) {
+            alDeleteAuxiliaryEffectSlots(1, &slot.second);
+        }
+        for (auto effect : s_EffectData.m_effects) {
+            alDeleteEffects(1, &effect.second);
+        }
+    }
+
+    void SoundEffect::CreateEffectSlot(const std::string& slot_name) {
+        ALuint slot = 0;
+        alGenAuxiliaryEffectSlots(1, &slot);
+
+        s_EffectData.m_slots.emplace(slot_name, slot);
+    }
+
+    u32 SoundEffect::GetEffectSlot(const std::string& slot_name) {
+        if (s_EffectData.m_slots.find(slot_name) == s_EffectData.m_slots.end()) {
+            ENGINE_LOG_WARN("Effect slot {0} does not exist!", slot_name);
+            return 0;
+        }
+
+        return s_EffectData.m_slots.at(slot_name);
+    }
+
+    void SoundEffect::CreateReverbEffect(const std::string& reverb_name) {
         EFXEAXREVERBPROPERTIES reverb = EFX_REVERB_PRESET_GENERIC;
-        s_EffectData.effect = LoadEffect(&reverb);
+        auto effect = LoadEffect(&reverb);
 
-        s_EffectData.slot = 0;
-        alGenAuxiliaryEffectSlots(1, &s_EffectData.slot);
+        s_EffectData.m_effects.emplace(reverb_name, effect);
+    }
 
+    void SoundEffect::CreateReverbEffect(const std::string& reverb_name,
+        float Density, float Diffusion,
+        float Gain, float GainHF, float GainLF,
+        float DecayTime, float DecayHFRatio, float DecayLFRatio,
+        float ReflectionsGain, float ReflectionsDelay, float ReflectionsPan[3],
+        float LateReverbGain, float LateReverbDelay, float LateReverbPan[3],
+        float EchoTime, float EchoDepth,
+        float ModulationTime, float ModulationDepth,
+        float AirAbsorptionGainHF,
+        float HFReference, float LFReference,
+        float RoomRolloffFactor,
+        int DecayHFLimit) {
+
+        EFXEAXREVERBPROPERTIES reverb;
+        reverb.flDensity = Density;
+        reverb.flDiffusion = Diffusion;
+        reverb.flGain = Gain;
+        reverb.flGainHF = GainHF;
+        reverb.flGainLF = GainLF;
+        reverb.flDecayTime = DecayTime;
+        reverb.flDecayHFRatio = DecayHFRatio;
+        reverb.flDecayLFRatio = DecayLFRatio;
+        reverb.flReflectionsGain = ReflectionsGain;
+        reverb.flReflectionsDelay = ReflectionsDelay;
+        memcpy(reverb.flReflectionsPan, ReflectionsPan, sizeof(reverb.flReflectionsPan));
+        reverb.flLateReverbGain = LateReverbGain;
+        reverb.flLateReverbDelay = LateReverbDelay;
+        memcpy(reverb.flLateReverbPan, LateReverbPan, sizeof(reverb.flLateReverbPan));
+        reverb.flEchoTime = EchoTime;
+        reverb.flEchoDepth = EchoDepth;
+        reverb.flModulationTime = ModulationTime;
+        reverb.flModulationDepth = ModulationDepth;
+        reverb.flAirAbsorptionGainHF = AirAbsorptionGainHF;
+        reverb.flHFReference = HFReference;
+        reverb.flLFReference = LFReference;
+        reverb.flRoomRolloffFactor = RoomRolloffFactor;
+        reverb.iDecayHFLimit = DecayHFLimit;
+
+        auto effect = LoadEffect(&reverb);
+
+        s_EffectData.m_effects.emplace(reverb_name, effect);
+    }
+
+    void SoundEffect::CreateReverbEffect(const std::string& reverb_name,
+        float Density, float Diffusion,
+        float Gain, float GainHF,
+        float DecayTime, float DecayHFRatio,
+        float ReflectionsGain, float ReflectionsDelay,
+        float LateReverbGain, float LateReverbDelay,
+        float AirAbsorptionGainHF,
+        float RoomRolloffFactor,
+        int DecayHFLimit) {
+
+        EFXEAXREVERBPROPERTIES reverb;
+        reverb.flDensity = Density;
+        reverb.flDiffusion = Diffusion;
+        reverb.flGain = Gain;
+        reverb.flGainHF = GainHF;
+        reverb.flDecayTime = DecayTime;
+        reverb.flDecayHFRatio = DecayHFRatio;
+        reverb.flReflectionsGain = ReflectionsGain;
+        reverb.flReflectionsDelay = ReflectionsDelay;
+        reverb.flLateReverbGain = LateReverbGain;
+        reverb.flLateReverbDelay = LateReverbDelay;
+        reverb.flAirAbsorptionGainHF = AirAbsorptionGainHF;
+        reverb.flRoomRolloffFactor = RoomRolloffFactor;
+        reverb.iDecayHFLimit = DecayHFLimit;
+
+        auto effect = LoadEffect(&reverb);
+
+        s_EffectData.m_effects.emplace(reverb_name, effect);
+    }
+
+
+
+    u32  SoundEffect::GetReverbEffect(const std::string& reverb_name) {
+        if (s_EffectData.m_effects.find(reverb_name) == s_EffectData.m_effects.end()) {
+            ENGINE_LOG_WARN("Reverb {0} does not exist!", reverb_name);
+            return 0;
+        }
+
+        return s_EffectData.m_effects.at(reverb_name);
+    }
+
+    void SoundEffect::BindEffectToSlot(const std::string& effect_name, const std::string& slot_name) {
+        auto effect = s_EffectData.m_effects.at(effect_name);
+        auto slot   = s_EffectData.m_slots.at(slot_name);
         /* Tell the effect slot to use the loaded effect object. Note that the this
          * effectively copies the effect properties. You can modify or delete the
          * effect object afterward without affecting the effect slot.
          */
-        alAuxiliaryEffectSloti(s_EffectData.slot, AL_EFFECTSLOT_EFFECT, (ALint)s_EffectData.effect);
+        alAuxiliaryEffectSloti(slot, AL_EFFECTSLOT_EFFECT, (ALint)effect);
         assert(alGetError() == AL_NO_ERROR && "Failed to set effect slot");
-    }
-
-    void SoundEffect::Destroy() {
-        alDeleteAuxiliaryEffectSlots(1, &s_EffectData.slot);
-        alDeleteEffects(1, &s_EffectData.effect);
-    }
-
-    u32 SoundEffect::GetReverbSlot() {
-        return s_EffectData.slot;
     }
 }
