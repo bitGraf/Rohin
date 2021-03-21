@@ -26,6 +26,7 @@ namespace Engine {
         auto res = alcMakeContextCurrent(m_context);
         if (!res) {
             ENGINE_LOG_ERROR("Failed to make OpenAL context current");
+            return;
         }
     }
 

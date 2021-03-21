@@ -20,6 +20,7 @@ namespace Engine {
         virtual void PauseStream() const override;
         virtual void StopStream() const override;
         virtual void UpdateStream(float dt) override;
+        virtual void SetEffectSlot(u32 slot) override;
 
     private:
 

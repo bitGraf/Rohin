@@ -8,6 +8,7 @@
 #include "Engine/Sound/SoundSource.hpp"
 #include "Engine/Sound/SoundFileFormats.hpp"
 #include "Engine/Sound/SoundStream.hpp"
+#include "Engine/Sound/SoundEffect.hpp"
 
 namespace Engine {
 
@@ -54,6 +55,9 @@ namespace Engine {
         s_SoundData.status.queueSize = 0;
 
         s_SoundData.stream = SoundStream::Create("run_tree/Data/Sounds/tape.ogg");
+
+        SoundEffect::Init(s_SoundData.device);
+        s_SoundData.stream->SetEffectSlot(SoundEffect::GetReverbSlot());
     }
 
     void SoundEngine::Shutdown() {

@@ -1,6 +1,7 @@
 #include <enpch.hpp>
 
 #include "OpenALSoundStream.hpp"
+#include "AL/efx.h"
 
 namespace Engine {
 
@@ -55,6 +56,11 @@ namespace Engine {
 
     void OpenALSoundStream::StopStream() const {
         alSourceStop(m_source);
+    }
+
+    void OpenALSoundStream::SetEffectSlot(u32 slot) {
+        alSource3i(m_source, AL_AUXILIARY_SEND_FILTER, (ALint)slot, 0, AL_FILTER_NULL);
+        assert(alGetError() == AL_NO_ERROR && "Failed to setup sound source");
     }
 
     void OpenALSoundStream::UpdateStream(float dt) {
