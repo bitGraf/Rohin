@@ -57,6 +57,8 @@ public:
                 velocity += Up * jumpPower; // Float up
                 grounded = false;
                 m_floorUp = vec3(0, 1, 0);
+                // play sound?
+                SoundEngine::CueSound("guard_death", position);
             }
             
             // handle rotation
@@ -126,6 +128,8 @@ public:
                                         grounded = true;
                                         velocity.y = 0;
                                         m_floorUp = plane->contact_normal;
+                                        // play sound?
+                                        SoundEngine::CueSound("golem", position);
                                     }
                                 }
                             }

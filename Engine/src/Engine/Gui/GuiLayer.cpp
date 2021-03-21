@@ -1,5 +1,5 @@
-#include "enpch.hpp"
-#include "GuiLayer.hpp"
+#include <enpch.hpp>
+#include "Engine/Gui/GuiLayer.hpp"
 
 #include <imgui.h>
 #include <examples/imgui_impl_glfw.h>

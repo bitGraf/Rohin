@@ -1,5 +1,5 @@
-#include "enpch.hpp"
-#include "GameMath.hpp"
+#include <enpch.hpp>
+#include "Engine/Core/GameMath.hpp"
 
 namespace math {
     /* vec2 Constructors */
@@ -7,12 +7,6 @@ namespace math {
     vec2::vec2(scalar v) : x(v), y(v) {}
     vec2::vec2(scalar a, scalar b) : x(a), y(b) {}
     vec2::vec2(double* data) : x(data[0]), y(data[1]) {}
-    vec2::vec2(picojson::array& arr) {
-        if (arr.size() > 0)
-            x = arr[0].get<double>();
-        if (arr.size() > 1)
-            y = arr[1].get<double>();
-    }
     vec2::vec2(int v) : x(v), y(v) {}
 
     /* vec3 constructors */
@@ -23,14 +17,6 @@ namespace math {
     vec3::vec3(vec2 v, scalar c) : x(v.x), y(v.y), z(c) {}
     vec3::vec3(vec4 v) : x(v.x), y(v.y), z(v.z) {}
     vec3::vec3(int v) : x(v), y(v), z(v) {}
-    vec3::vec3(picojson::array& arr) {
-        if (arr.size() > 0)
-            x = arr[0].get<double>();
-        if (arr.size() > 1)
-            y = arr[1].get<double>();
-        if (arr.size() > 2)
-            z = arr[2].get<double>();
-    }
 
     /* vec4 constructors */
     vec4::vec4() : x(0), y(0), z(0), w(0) {}
@@ -39,16 +25,6 @@ namespace math {
     vec4::vec4(double* data) : x(data[0]), y(data[1]), z(data[2]), w(data[3]) {}
     vec4::vec4(vec3 v, scalar d) : x(v.x), y(v.y), z(v.z), w(d) {}
     vec4::vec4(int v) : x(v), y(v), z(v), w(v) {}
-    vec4::vec4(picojson::array& arr) {
-        if (arr.size() > 0)
-            x = arr[0].get<double>();
-        if (arr.size() > 1)
-            y = arr[1].get<double>();
-        if (arr.size() > 2)
-            z = arr[2].get<double>();
-        if (arr.size() > 3)
-            w = arr[3].get<double>();
-    }
 
     /* length operator */
     scalar vec2::length() { return sqrt(x*x + y * y); }

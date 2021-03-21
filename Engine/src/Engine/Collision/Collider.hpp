@@ -1,7 +1,7 @@
 #ifndef COLLIDER_H
 #define COLLIDER_H
 
-#include "CollisionHull.hpp"
+#include "Engine/Collision/CollisionHull.hpp"
 
 class Collider {
 public:

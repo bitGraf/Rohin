@@ -5,28 +5,6 @@
 #include "Engine/Core/Logger.hpp"
 #include "Engine/Benchmark.hpp"
 
-#include "picojson.h"
-
-typedef picojson::object& jsonObj;
-
-template<typename T>
-T safeAccess(jsonObj node, std::string key, T defaultVal) {
-    if (node.find(key) != node.end()) {
-        return node[key].get<T>();
-    }
-    return defaultVal;
-}
-
-template<typename T>
-T safeAccessVec(jsonObj node, std::string key, T defaultVec) {
-    if (node.find(key) != node.end()) {
-        if (node[key].is<picojson::array>()) {
-            return T(node[key].get<picojson::array>());
-        }
-    }
-    return defaultVec;
-}
-
 /// Convert character string to Unsigned 32-bit Hash
 u32 hash_djb2(unsigned char* str);
 

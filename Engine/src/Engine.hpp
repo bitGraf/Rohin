@@ -37,5 +37,4 @@
 
 /* Dependencies */
 #include "spdlog/spdlog.h"
-#include "picojson.h"
 #include "imgui/imgui.h"

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Logger.hpp"
-#include "Platform.hpp"
-#include "DataTypes.hpp"
+#include "Engine/Core/Logger.hpp"
+#include "Engine/Core/Platform.hpp"
+#include "Engine/Core/DataTypes.hpp"
 #include <memory>
 
 /* Assertion macros */

@@ -1,5 +1,5 @@
-#include "enpch.hpp"
-#include "CollisionMath.hpp"
+#include <enpch.hpp>
+#include "Engine/Collision/CollisionMath.hpp"
 
 /* Initialisors */
 VerletIntegrator::VerletIntegrator() :

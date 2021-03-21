@@ -10,12 +10,19 @@
 
 namespace Engine {
 
+    struct SoundQueueEntry {
+        std::string cueName;
+
+        math::vec3 position;
+        math::vec3 velocty;
+    };
+
     struct SoundEngineData {
         std::unordered_map<std::string, SoundCueSpec> soundCues; // should hold actual sound cues, not jus the spec?
         std::unordered_map<std::string, BackingTrackSpec> backingTracks;
         SoundEngineStatus status;
 
-        std::queue<std::string> soundsToPlay;
+        std::queue<SoundQueueEntry> soundsToPlay;
 
         std::unordered_map<std::string, Ref<SoundBuffer>> loadedSounds;
 
@@ -77,8 +84,9 @@ namespace Engine {
 
                 if (!chan.active) {
                     // Get next sound to play
-                    chan.cue = s_SoundData.soundsToPlay.front();
+                    auto cueInfo = s_SoundData.soundsToPlay.front();
                     s_SoundData.soundsToPlay.pop();
+                    chan.cue = cueInfo.cueName;
 
                     const auto& soundSpec = s_SoundData.soundCues[chan.cue];
                     auto source = s_SoundData.sources[n];
@@ -91,6 +99,8 @@ namespace Engine {
 
                     source->SetBuffer(chan.soundID);
                     source->SetGain(chan.volume);
+                    source->SetPosition(cueInfo.position.x, cueInfo.position.y, cueInfo.position.z);
+                    source->SetVelocity(cueInfo.velocty.x, cueInfo.velocty.y, cueInfo.velocty.z);
                     source->Play();
                 }
             }
@@ -119,6 +129,7 @@ namespace Engine {
             u8 channels, bitsPerSample;
             s32 sampleRate, size;
             short* data = load_ogg(filename, channels, sampleRate, bitsPerSample, size);
+            if (data == nullptr) return false;
             auto format = GetSoundFormat(channels, bitsPerSample);
             s_SoundData.loadedSounds.emplace(filename, SoundBuffer::Create(format, data, size, sampleRate));
             free(data); // I think this is okay
@@ -158,15 +169,17 @@ namespace Engine {
 
         s_SoundData.soundCues.emplace(cue, newSpec);
     }
-    void SoundEngine::CueSound(const std::string& cue) {
+    void SoundEngine::CueSound(const std::string& cue, math::vec3 position) {
         const auto& cues = s_SoundData.soundCues;
         if (cues.find(cue) == cues.end()) {
             ENGINE_LOG_WARN("Could not find sound cue [{0}]", cue);
             return;
         }
 
-        auto sound = cues.at(cue);
-        s_SoundData.soundsToPlay.push(cue);
+        s_SoundData.soundsToPlay.push({ cue, position, {0,0,0} });
+    }
+    void SoundEngine::CueSound(const std::string& cue) {
+        CueSound(cue, math::vec3());
     }
 
     void SoundEngine::CreateBackingTrack(const std::string& track, BackingTrackSpec spec) {
@@ -185,5 +198,17 @@ namespace Engine {
 
     SoundEngineStatus SoundEngine::GetStatus() {
         return s_SoundData.status;
+    }
+
+    void SoundEngine::SetListenerPosition(math::vec3 position) {
+        s_SoundData.context->SetListenerPosition(position);
+    }
+
+    void SoundEngine::SetListenerVelocity(math::vec3 velocity) {
+        s_SoundData.context->SetListenerVelocity(velocity);
+    }
+
+    void SoundEngine::SetListenerOrientation(math::vec3 at, math::vec3 up) {
+        s_SoundData.context->SetListenerOrientation(at, up);
     }
 }

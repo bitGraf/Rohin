@@ -147,7 +147,8 @@ void GameLayer::OnAttach() {
         ->rotation.toYawPitchRoll(0, 50, 0);
 
     // Sound stuff
-    SoundEngine::CreateSoundCue("guard_death", { "run_tree/Data/Sounds/death.ogg" });
+    SoundEngine::CreateSoundCue("guard_death", { "run_tree/Data/Sounds/death.ogg", 0.05f });
+    SoundEngine::CreateSoundCue("golem", { "run_tree/Data/Sounds/golem.ogg", 0.1f }); //MONO, has 3D sound
     SoundEngine::CreateSoundCue("protector", { "run_tree/Data/Sounds/sound.wav", 0.2f });
     SoundEngine::CreateSoundCue("ahhh", { "run_tree/Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
 
@@ -271,10 +272,15 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
         Engine::SoundEngine::CueSound("ahhh");
     }
     if (e.GetKeyCode() == KEY_CODE_KP_4) {
-        Engine::SoundEngine::CueSound("guard_death1");
+        Engine::SoundEngine::CueSound("golem");
     }
     if (e.GetKeyCode() == KEY_CODE_KP_5) {
-        Engine::SoundEngine::CueSound("guard_death2");
+        auto player = m_ActiveScene->FindByName("Player");
+        if (player) {
+            auto trans = player.GetComponent<TransformComponent>().Transform;
+            auto[_pos, _yaw, _pitch, _roll, _forward, _right, _up] = math::Decompose(trans);
+            Engine::SoundEngine::CueSound("golem", _pos);
+        }
     }
     if (e.GetKeyCode() == KEY_CODE_M) {
         Renderer::ToggleDebugSoundOutput();

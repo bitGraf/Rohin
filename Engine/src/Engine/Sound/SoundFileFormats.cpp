@@ -12,9 +12,17 @@ namespace Engine {
         std::uint8_t& bitsPerSample,
         int& size) {
 
+        int error;
+        auto vorb = stb_vorbis_open_filename(filename.c_str(), &error, nullptr);
+        auto vorb_info = stb_vorbis_get_info(vorb);
+
         int chan, sample_rate;
         short* output;
         int samples = stb_vorbis_decode_filename(filename.c_str(), &chan, &sample_rate, &output);
+        if (samples < 0) {
+            // failed to open/read .ogg file
+            return nullptr;
+        }
 
         channels = chan;
         sampleRate = sample_rate;

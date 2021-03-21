@@ -1,7 +1,7 @@
-#include "enpch.hpp"
-#include "Logger.hpp"
+#include <enpch.hpp>
+#include "Engine/Core/Logger.hpp"
 
-#include "spdlog\sinks\stdout_color_sinks.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 namespace Engine {
     std::shared_ptr<spdlog::logger> Logger::_Engine_Logger;

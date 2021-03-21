@@ -1,8 +1,8 @@
 #ifndef COLLISION_WORLD_H
 #define COLLISION_WORLD_H
 
-#include "CollisionHull.hpp"
-#include "CollisionMath.hpp"
+#include "Engine/Collision/CollisionWorld.hpp"
+#include "Engine/Collision/CollisionHull.hpp"
 
 struct RaycastResult {
     f32 t;

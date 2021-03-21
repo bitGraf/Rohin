@@ -83,23 +83,24 @@ public:
                 moveSpeed = 5.0f;
             }
 
+            vec3 velocity;
             if (Input::IsKeyPressed(KEY_CODE_A)) {
-                position -= Right * moveSpeed * ts;
+                velocity -= Right * moveSpeed;
                 updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_D)) {
-                position += Right * moveSpeed * ts;
+                velocity += Right * moveSpeed;
                 updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_W)) {
-                position += Forward * moveSpeed * ts;
+                velocity += Forward * moveSpeed;
                 updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_S)) {
-                position -= Forward * moveSpeed * ts;
+                velocity -= Forward * moveSpeed;
                 updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_SPACE)) {
-                position += Up * moveSpeed * ts;
+                velocity += Up * moveSpeed;
                 updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_LEFT_CONTROL)) {
-                position -= Up * moveSpeed * ts;
+                velocity -= Up * moveSpeed ;
                 updateTransform = true;
             } if (Input::IsKeyPressed(KEY_CODE_Q)) {
                 yaw += rotSpeed * ts;
@@ -123,6 +124,7 @@ public:
 
             if (updateTransform) {
                 auto& transform = transformComponent->Transform;
+                position += velocity * ts;
 
                 transform = mat4();
                 transform.translate(position);
@@ -132,6 +134,11 @@ public:
                 Right = r;
                 Up = u;
                 updateTransform = false;
+
+                // update listener
+                SoundEngine::SetListenerPosition(position);
+                SoundEngine::SetListenerVelocity(velocity);
+                SoundEngine::SetListenerOrientation(Forward, Up);
             }
         } else {
             firstFrame = true;

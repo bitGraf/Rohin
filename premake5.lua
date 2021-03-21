@@ -54,7 +54,6 @@ project "Engine"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.OpenAL_soft}",
-        "%{prj.name}/deps/picojson",
         "%{prj.name}/deps/stb"
     }
 
@@ -124,7 +123,6 @@ project "Game"
     includedirs
     {
         "Engine/deps/spdlog/include",
-        "Engine/deps/picojson",
         "Engine/src",
         "Engine/deps/"
     }

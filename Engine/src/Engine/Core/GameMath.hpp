@@ -2,7 +2,6 @@
 #define GAME_MATH_H
 
 #include "Engine/Core/DataTypes.hpp"
-#include "picojson.h"
 
 namespace math {
     typedef f32 scalar;
@@ -19,8 +18,6 @@ namespace math {
         vec2(scalar a, scalar b); ///< Specific-value constructor
         vec2(double* data); ///< Initialize by array
         vec2(int v);
-
-        vec2(picojson::array& arr);
 
         scalar length(); ///< Find magnitude of vector
         scalar length_2(); ///< Find squared magnitude of vector
@@ -46,8 +43,6 @@ namespace math {
         vec3(vec4 v); ///< Initialize from larger vector
         vec3(int v);
 
-        vec3(picojson::array& arr);
-
         scalar length(); ///< Find magnitude of vector
         scalar length_2(); ///< Find squared magnitude of vector
         vec3 get_unit(); ///< Get unit vector (doesn't modify)
@@ -69,8 +64,6 @@ namespace math {
         vec4(double* data); ///< Initialize by array
         vec4(vec3 v, scalar d); ///< Initialize from smaller vector
         vec4(int v);
-
-        vec4(picojson::array& arr);
 
         scalar length(); ///< Find magnitude of vector
         scalar length_2(); ///< Find squared magnitude of vector

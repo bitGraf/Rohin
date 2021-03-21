@@ -13,6 +13,9 @@ namespace Engine {
         if (!device->CheckError() || !m_context) {
             ENGINE_LOG_ERROR("Failed to create OpenAL context");
         }
+
+        alListener3f(AL_POSITION, 0, 0, 0);
+        alListener3f(AL_VELOCITY, 0, 0, 0);
     }
 
     OpenALContext::~OpenALContext() {
@@ -29,5 +32,18 @@ namespace Engine {
     void OpenALContext::Destroy() {
         MakeCurrent();
         alcDestroyContext(m_context);
+    }
+
+    void OpenALContext::SetListenerPosition(math::vec3 position) const {
+        alListener3f(AL_POSITION, position.x, position.y, position.z);
+    }
+
+    void OpenALContext::SetListenerVelocity(math::vec3 velocity) const {
+        alListener3f(AL_VELOCITY, velocity.x, velocity.y, velocity.z);
+    }
+
+    void OpenALContext::SetListenerOrientation(math::vec3 at, math::vec3 up) const {
+        ALfloat vector[6] = { at.x, at.y, at.z, up.x, up.y, up.z };
+        alListenerfv(AL_ORIENTATION, vector);
     }
 }
