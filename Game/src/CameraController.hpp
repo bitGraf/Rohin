@@ -32,6 +32,11 @@ public:
         yaw = 0;
         ///TEMP
 
+        // update listener
+        SoundEngine::SetListenerPosition(position);
+        SoundEngine::SetListenerVelocity(math::vec3(0,0,0));
+        SoundEngine::SetListenerOrientation(Forward, Up);
+
         LOG_INFO("Camera controller created on GameObject {0}!", GetGameObjectID());
     }
 
