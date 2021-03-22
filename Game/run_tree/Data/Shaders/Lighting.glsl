@@ -67,8 +67,8 @@ void IBL(vec3 F0, vec3 R);
 
 void main() {
     vec4 amr_ = texture(u_amr, texcoord);
-    m_Params.Roughness = amr_.b;
-    m_Params.Metalness = max(amr_.g, 0.05);
+    m_Params.Metalness = amr_.g;
+    m_Params.Roughness = max(amr_.b, 0.05);
     m_Params.Normal = normalize(texture(u_normal, texcoord).rgb);
     float viewDistance = texture(u_distance, texcoord).r;
     vec3 FragPos = normalize(viewRay) * viewDistance;

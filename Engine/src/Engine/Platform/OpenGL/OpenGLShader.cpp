@@ -18,7 +18,7 @@ namespace Engine {
         return 0;
     }
 
-    OpenGLShader::OpenGLShader(const std::string& path) : m_Loaded(false) {
+    OpenGLShader::OpenGLShader(const std::string& path) : m_Loaded(false), m_filepath(path) {
         std::string source = ReadFile(path);
         m_ShaderSources = PreProcess(source);
 
@@ -30,18 +30,32 @@ namespace Engine {
 
         m_Name = path.substr(lastSlash, count);
 
-        Reload();
+        CompileAndValidate();
     }
 
     OpenGLShader::OpenGLShader(const std::string& name,  const std::string& vertexSrc, const std::string& fragmentSrc) 
-            : m_Name(name) {
+            : m_Name(name), m_filepath("Error, no path given") {
         m_ShaderSources[GL_VERTEX_SHADER] = vertexSrc;
         m_ShaderSources[GL_FRAGMENT_SHADER] = fragmentSrc;
 
-        Reload();
+        CompileAndValidate();
     }
 
     void OpenGLShader::Reload() {
+        m_Loaded = false;
+        std::string source = ReadFile(m_filepath);
+        m_ShaderSources = PreProcess(source);
+
+        CompileAndValidate();
+    }
+
+    void OpenGLShader::CompileAndValidate() {
+        // clear existing data if exists
+        m_Samplers.clear();
+        m_Structs.clear();
+        if (m_FragUniformGroup)   m_FragUniformGroup->Reset();
+        if (m_VertexUniformGroup) m_VertexUniformGroup->Reset();
+
         // cpu side
         IdentifyUniforms();
 
@@ -491,6 +505,11 @@ namespace Engine {
             delete uniCast;
             uniCast = nullptr;
         }
+    }
+
+    void OpenGLShaderUniformGroupDeclaration::Reset() {
+        m_Uniforms.clear();
+        m_Size = 0;
     }
 
     OpenGLShaderUniformDeclaration::OpenGLShaderUniformDeclaration(ShaderDomain domain, Type type, const std::string& name, u32 count) 

@@ -32,6 +32,10 @@ namespace Engine {
             internalFormat = GL_RG8;
             format = GL_RG;
         }
+        else if (channels == 1) {
+            internalFormat = GL_R8;
+            format = GL_RED;
+        }
 
         ENGINE_LOG_ASSERT(internalFormat & format, "Unsupported image format");
 

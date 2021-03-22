@@ -109,4 +109,12 @@ namespace Engine {
             free(data);
         }
     }
+
+    void OpenALSoundStream::SetPosition(float x, float y, float z) {
+        alSource3f(m_source, AL_POSITION, x, y, z);
+    }
+
+    void OpenALSoundStream::SetVelocty(float vx, float vy, float vz) {
+        alSource3f(m_source, AL_VELOCITY, vx, vy, vz);
+    }
 }

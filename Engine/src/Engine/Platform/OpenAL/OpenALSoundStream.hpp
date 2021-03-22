@@ -22,6 +22,9 @@ namespace Engine {
         virtual void UpdateStream(float dt) override;
         virtual void SetEffectSlot(u32 slot) override;
 
+        virtual void SetPosition(float x, float y, float z) override;
+        virtual void SetVelocty(float vx, float vy, float vz) override;
+
     private:
 
         u32 m_source;

@@ -91,6 +91,8 @@ namespace Engine {
         void AddUniform(OpenGLShaderUniformDeclaration* uniform);
         ShaderDomain GetDomain() const { return m_Domain; }
 
+        void Reset();
+
     private:
         std::string m_Name;
         u32 m_Size;
@@ -106,6 +108,8 @@ namespace Engine {
 
         virtual void Bind() const override;
         virtual void UnBind() const override;
+        virtual void Reload() override;
+        void CompileAndValidate();
 
         virtual const std::string& GetName() const override { return m_Name; }
 
@@ -151,7 +155,6 @@ namespace Engine {
         virtual const ShaderUniformGroupDeclaration& GetFragUniformGroup() const override { return *m_FragUniformGroup; }
         virtual const std::vector<ShaderSamplerDeclaration*>& GetSamplers() const override { return m_Samplers; }
 
-        void Reload();
 
     private:
         std::string ReadFile(const std::string& path);
@@ -182,6 +185,7 @@ namespace Engine {
         std::vector<ShaderSamplerDeclaration*> m_Samplers;
 
         std::string m_Name;
+        std::string m_filepath;
         u32 m_ShaderID;
         bool m_Loaded;
     };

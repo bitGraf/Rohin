@@ -44,6 +44,7 @@ void GameLayer::OnAttach() {
 
     Engine::MeshCatalog::Register("mesh_guard", "run_tree/Data/Models/guard.nbt", true);
     Engine::MeshCatalog::Register("mesh_plane", "run_tree/Data/Models/plane.nbt", true);
+    Engine::MeshCatalog::Register("mesh_tape_recorder", "run_tree/Data/Models/tape_player.nbt", true);
     { // Player
         auto player = m_ActiveScene->CreateGameObject("Player");
         auto mesh = MeshCatalog::Get("mesh_guard");
@@ -80,6 +81,15 @@ void GameLayer::OnAttach() {
         // that are not assigned to any gameobect they are only tracked by the collision world.
         // If they are entirely static, that might be fine
         //platform.AddComponent<ColliderComponent>(floor);
+    }
+    { // Tape Recorder
+        auto tape = m_ActiveScene->CreateGameObject("Tape Recorder");
+        auto mesh = Engine::MeshCatalog::Get("mesh_tape_recorder");
+        tape.AddComponent<Engine::MeshRendererComponent>(mesh);
+
+        auto& trans = tape.GetComponent<Engine::TransformComponent>().Transform;
+        trans = mat4();
+        trans.translate(vec3(2.0f, 0, 0));
     }
 
     { // Lights
@@ -287,6 +297,9 @@ bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     }
     if (e.GetKeyCode() == KEY_CODE_M) {
         Renderer::ToggleDebugSoundOutput();
+    }
+    if (e.GetKeyCode() == KEY_CODE_BACKSLASH) {
+        Renderer::RecompileShaders();
     }
     return false;
 }

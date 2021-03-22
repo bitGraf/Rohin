@@ -604,4 +604,8 @@ namespace Engine {
         s_Data.FullscreenQuad->Bind();
         RenderCommand::DrawIndexed(s_Data.FullscreenQuad, false);
     }
+
+    void Renderer::RecompileShaders() {
+        s_Data.ShaderLibrary->ReloadAll();
+    }
 }

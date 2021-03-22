@@ -47,7 +47,68 @@ Engine::Application* Engine::CreateApplication() {
 #include "Engine/Sound/SoundStream.hpp"
 using namespace Engine;
 
+#include "Engine/Resources/nbt/nbt.hpp"
+using namespace nbt;
+
 int main(int argc, char** argv) {
+
+    tag_compound mat_copper{
+        { "name", "PBR Copper" },
+        { "albedo_path",    "run_tree/Data/Images/copper/albedo.png" },
+        { "normal_path",    "run_tree/Data/Images/copper/normal.png" },
+        { "ambient_path",   "run_tree/Data/Images/copper/ao.png" },
+        { "metalness_path", "run_tree/Data/Images/copper/metallic.png" },
+        { "roughness_path", "run_tree/Data/Images/copper/roughness.png" }
+    };
+
+    tag_compound mat_concrete{
+        { "name", "Waffle Concrete" },
+        { "albedo_path",    "run_tree/Data/Images/waffle/WaffleSlab2_albedo.png" },
+        { "normal_path",    "run_tree/Data/Images/waffle/WaffleSlab2_normal.png" },
+        { "ambient_path",   "run_tree/Data/Images/waffle/WaffleSlab2_ao.png" },
+        { "roughness_path", "run_tree/Data/Images/waffle/WaffleSlab2_roughness.png" }
+    };
+
+    tag_compound mat_damaged_helmet{
+        { "name", "Damaged Helmet" },
+        { "albedo_path",    "run_tree/Data/Images/helmet/albedo.png" },
+        { "normal_path",    "run_tree/Data/Images/helmet/normal.png" },
+        { "ambient_path",   "run_tree/Data/Images/helmet/ambient.png" },
+        { "metalness_path", "run_tree/Data/Images/helmet/metallic.png" },
+        { "roughness_path", "run_tree/Data/Images/helmet/roughness.png" },
+        { "emissive_path",  "run_tree/Data/Images/helmet/emission.png" }
+    };
+
+    tag_compound mat_tape_recorder {
+        { "name", "Tape Player" },
+        { "albedo_path",    "run_tree/Data/Images/tape/albedo.png" },
+        //{ "normal_path",    "run_tree/Data/Images/tape/normal.png" },
+        { "ambient_path",   "run_tree/Data/Images/tape/ambient.png" },
+        { "metalness_path", "run_tree/Data/Images/tape/metallic.png" },
+        { "roughness_path", "run_tree/Data/Images/tape/roughness.png" },
+        { "emissive_path",  "run_tree/Data/Images/tape/emission.png" }
+    };
+
+    tag_compound mat_guard{
+        { "name", "Guard Man" },
+        { "albedo_path",    "run_tree/Data/Images/guard.png" }
+    };
+
+    tag_compound material_catalog{
+        { "mat_copper", tag_compound(mat_copper) },
+        { "mat_concrete", tag_compound(mat_concrete) },
+        { "mat_damaged_helmet", tag_compound(mat_damaged_helmet) },
+        { "mat_guard", tag_compound(mat_guard) },
+        { "mat_tape_recorder", tag_compound(mat_tape_recorder) }
+    };
+
+    auto result = nbt::write_to_file("run_tree/Data/Materials/materials.nbt", nbt::file_data({ "material_catalog", std::make_unique<tag_compound>(material_catalog) }), 0, 1);
+    if (!result)
+        __debugbreak();
+
+    system("pause");
+
+#if 0
     auto devs = SoundDevice::GetDevices();
     for (auto d : devs)
         printf("%s\n", d.c_str());
@@ -70,6 +131,7 @@ int main(int argc, char** argv) {
     device->Close();
 
     return 0;
+#endif
 }
 
 #endif

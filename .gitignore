@@ -8,3 +8,4 @@ bin-intermediate/
 *.blend1
 *.blend2
 Engine/deps/OpenAL_soft/obj/
+*.nbt.bak

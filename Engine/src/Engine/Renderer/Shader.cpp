@@ -69,6 +69,13 @@ namespace Engine {
         return m_Shaders.find(name) != m_Shaders.end();
     }
 
+    void ShaderLibrary::ReloadAll() {
+        for (auto& shader : m_Shaders) {
+            shader.second->Reload();
+            ENGINE_LOG_INFO("Shader {0} recompiled.", shader.first);
+        }
+    }
+
     /* Shader Struct */
     void ShaderStruct::AddField(ShaderUniformDeclaration* field) {
         m_Size += field->GetSize();

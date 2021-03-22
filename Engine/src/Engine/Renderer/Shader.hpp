@@ -73,6 +73,7 @@ namespace Engine {
 
         virtual void Bind() const = 0;
         virtual void UnBind() const = 0;
+        virtual void Reload() = 0;
 
         virtual const std::string& GetName() const = 0;
 
@@ -108,6 +109,8 @@ namespace Engine {
         Ref<Shader> Get(const std::string& name);
 
         bool Exists(const std::string& name) const;
+
+        void ReloadAll();
 
     private:
         std::unordered_map<std::string, Ref<Shader>> m_Shaders;

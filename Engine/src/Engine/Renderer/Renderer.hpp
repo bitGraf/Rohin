@@ -80,6 +80,7 @@ namespace Engine {
 
         static void SubmitFullscreenQuad();
 
+        static void RecompileShaders();
         static void OnWindowResize(uint32_t width, uint32_t height);
 
         static inline RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }

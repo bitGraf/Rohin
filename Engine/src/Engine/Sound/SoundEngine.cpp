@@ -63,6 +63,7 @@ namespace Engine {
 
         SoundEffect::BindEffectToSlot("reverb_default", "slot_reverb");
         s_SoundData.stream->SetEffectSlot(SoundEffect::GetEffectSlot("slot_reverb"));
+        s_SoundData.stream->SetPosition(2, 0, 0);
     }
 
     void SoundEngine::Shutdown() {
