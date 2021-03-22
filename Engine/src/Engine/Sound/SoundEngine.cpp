@@ -38,6 +38,8 @@ namespace Engine {
     static SoundEngineData s_SoundData;
 
     void SoundEngine::Init() {
+        BENCHMARK_FUNCTION();
+
         s_SoundData.device = SoundDevice::Create();
         s_SoundData.device->Open();
 
@@ -78,6 +80,7 @@ namespace Engine {
     }
 
     void SoundEngine::Update(double dt) {
+        BENCHMARK_FUNCTION();
         for (int n = 0; n < NumSoundChannels; n++) {
             auto& chan = s_SoundData.status.channels[n];
 
@@ -194,6 +197,8 @@ namespace Engine {
         s_SoundData.soundCues.emplace(cue, newSpec);
     }
     void SoundEngine::CueSound(const std::string& cue, math::vec3 position) {
+        BENCHMARK_FUNCTION();
+
         const auto& cues = s_SoundData.soundCues;
         if (cues.find(cue) == cues.end()) {
             ENGINE_LOG_WARN("Could not find sound cue [{0}]", cue);

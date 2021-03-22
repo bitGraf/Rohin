@@ -54,6 +54,8 @@ public:
         float offX = 0.0f, offY = 0.0f;
 
         if (BeingControlled) {
+            BENCHMARK_FUNCTION();
+
             if (Input::IsMouseCaptured()) {
                 auto[newMousePosX, newMousePosY] = Input::GetMousePosition();
 

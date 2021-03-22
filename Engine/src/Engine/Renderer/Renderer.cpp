@@ -72,6 +72,7 @@ namespace Engine {
     }
 
     void Renderer::Init() {
+        BENCHMARK_FUNCTION();
         RenderCommand::Init();
 
         s_Data.ShaderLibrary = std::make_unique<ShaderLibrary>();
@@ -266,6 +267,7 @@ namespace Engine {
         u32 numPointLights, const Light pointLights[32],
         u32 numSpotLights, const Light spotLights[32],
         const Light& sun, const math::mat4& projection) {
+        BENCHMARK_FUNCTION();
 
         s_Data.Lights.NumPointLights = numPointLights;
         s_Data.Lights.NumSpotLights = numSpotLights;
@@ -342,6 +344,7 @@ namespace Engine {
         u32 numPointLights, const Light pointLights[32],
         u32 numSpotLights, const Light spotLights[32],
         const Light& sun) {
+        BENCHMARK_FUNCTION();
 
         math::mat4 ViewMatrix = math::invertViewMatrix(transform);
         math::mat4 ProjectionMatrix = camera.GetProjection();
@@ -410,6 +413,7 @@ namespace Engine {
     }
 
     void Renderer::BeginDeferredPrepass() {
+        BENCHMARK_FUNCTION();
         // Clear G-Buffer
         s_Data.gBuffer->Bind();
         s_Data.gBuffer->ClearBuffers();
@@ -418,6 +422,7 @@ namespace Engine {
     }
 
     void Renderer::EndDeferredPrepass() {
+        BENCHMARK_FUNCTION();
         s_Data.gBuffer->Unbind();
 
         // Lighting Pass
@@ -457,6 +462,8 @@ namespace Engine {
     }
 
     void Renderer::RenderDebugUI() {
+        BENCHMARK_FUNCTION();
+
         s_Data.screenBuffer->Bind();
 
         // Render text
@@ -506,12 +513,16 @@ namespace Engine {
     }
 
     void Renderer::BeginSobelPass() {
+        BENCHMARK_FUNCTION();
+
         // prep the sobel buffer
         s_Data.sobelBuffer->Bind();
         s_Data.sobelBuffer->ClearBuffers();
     }
 
     void Renderer::EndSobelPass() {
+        BENCHMARK_FUNCTION();
+
         // prep the screenbuffer, and urn the sobel shader
         s_Data.sobelBuffer->Unbind();
 
@@ -524,6 +535,8 @@ namespace Engine {
     }
     
     void Renderer::End3DScene() {
+        BENCHMARK_FUNCTION();
+
         s_Data.screenBuffer->Bind();
         s_Data.screenBuffer->ClearBuffers();
         auto mixShader = s_Data.ShaderLibrary->Get("Mix");
@@ -572,6 +585,8 @@ namespace Engine {
     }
 
     void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform) {
+        BENCHMARK_FUNCTION();
+
         mesh->GetVertexArray()->Bind();
         auto shader = mesh->GetMeshShader();
         shader->Bind();

@@ -57,6 +57,8 @@ namespace Engine {
     }
 
     void MaterialCatalog::Init() {
+        BENCHMARK_FUNCTION();
+
         nbt::file_data data;
         nbt::nbt_byte major, minor;
         endian::endian endianness;

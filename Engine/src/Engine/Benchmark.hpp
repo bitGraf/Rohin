@@ -8,10 +8,10 @@
 #include <string>
 #include <iostream>
 
-#define BENCHMARK_ENABLE 0
+#define BENCHMARK_ENABLE 1
 #if BENCHMARK_ENABLE
 #define BENCHMARK_SCOPE(name) BenchmarkTimer timer##__LINE__(name)
-#define BENCHMARK_FUNCTION() BENCHMARK_SCOPE(__FUNCSIG__)
+#define BENCHMARK_FUNCTION() BENCHMARK_SCOPE(__FUNCTION__)
 #define BENCHMARK_START_SESSION(name,filepath) Benchmark::Get()->BeginSession(name,filepath);
 #define BENCHMARK_END_SESSION() Benchmark::Get()->EndSession();
 #else

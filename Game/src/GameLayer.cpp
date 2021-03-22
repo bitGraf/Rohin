@@ -23,6 +23,7 @@ GameLayer::GameLayer() : EngineLayer("Game") {
 }
 
 void GameLayer::OnAttach() {
+    BENCHMARK_FUNCTION();
     LOG_INFO("Game layer attached");
 
     Input::CaptureMouse(false);
@@ -41,10 +42,12 @@ void GameLayer::OnAttach() {
 
     m_ActiveScene = std::make_shared<Engine::Scene>();
     //m_ActiveScene->loadFromFile("run_tree/Data/Levels/nbtTest.scene");
-
-    Engine::MeshCatalog::Register("mesh_guard", "run_tree/Data/Models/guard.nbt", true);
-    Engine::MeshCatalog::Register("mesh_plane", "run_tree/Data/Models/plane.nbt", true);
-    Engine::MeshCatalog::Register("mesh_tape_recorder", "run_tree/Data/Models/tape_player.nbt", true);
+    {
+        BENCHMARK_SCOPE("Loading Meshes");
+        Engine::MeshCatalog::Register("mesh_guard", "run_tree/Data/Models/guard.nbt", true);
+        Engine::MeshCatalog::Register("mesh_plane", "run_tree/Data/Models/plane.nbt", true);
+        Engine::MeshCatalog::Register("mesh_tape_recorder", "run_tree/Data/Models/tape_player.nbt", true);
+    }
     { // Player
         auto player = m_ActiveScene->CreateGameObject("Player");
         auto mesh = MeshCatalog::Get("mesh_guard");
@@ -157,14 +160,17 @@ void GameLayer::OnAttach() {
         ->rotation.toYawPitchRoll(0, 50, 0);
 
     // Sound stuff
-    SoundEngine::CreateSoundCue("guard_death", { "run_tree/Data/Sounds/death.ogg", 0.05f });
-    SoundEngine::CreateSoundCue("golem", { "run_tree/Data/Sounds/golem.ogg", 0.1f }); //MONO, has 3D sound
-    SoundEngine::CreateSoundCue("protector", { "run_tree/Data/Sounds/sound.wav", 0.2f });
-    SoundEngine::CreateSoundCue("ahhh", { "run_tree/Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
+    {
+        BENCHMARK_SCOPE("Create soundcues");
+        SoundEngine::CreateSoundCue("guard_death", { "run_tree/Data/Sounds/death.ogg", 0.05f });
+        SoundEngine::CreateSoundCue("golem", { "run_tree/Data/Sounds/golem.ogg", 0.1f }); //MONO, has 3D sound
+        SoundEngine::CreateSoundCue("protector", { "run_tree/Data/Sounds/sound.wav", 0.2f });
+        SoundEngine::CreateSoundCue("ahhh", { "run_tree/Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
 
-    BackingTrackSpec music;
-    music.soundFile = "run_tree/Data/Sounds/ahhh.ogg";
-    SoundEngine::CreateBackingTrack("music", music);
+        BackingTrackSpec music;
+        music.soundFile = "run_tree/Data/Sounds/ahhh.ogg";
+        SoundEngine::CreateBackingTrack("music", music);
+    }
 
     m_ActiveScene->OnRuntimeStart();
 }

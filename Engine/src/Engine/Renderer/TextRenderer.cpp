@@ -20,6 +20,8 @@ namespace Engine {
     static TextRendererData s_Data;
 
     void TextRenderer::Init() {
+        BENCHMARK_FUNCTION();
+
         s_Data.ShaderLibrary = std::make_unique<ShaderLibrary>();
         auto textShader = GetShaderLibrary()->Load("run_tree/Data/Shaders/Text.glsl");
 
@@ -92,6 +94,8 @@ namespace Engine {
     }
 
     void TextRenderer::SubmitText(const std::string& text, float startX, float startY, math::vec3 color) {
+        BENCHMARK_FUNCTION();
+
         auto shader = s_Data.ShaderLibrary->Get("Text");
         shader->Bind();
         s_Data.TextQuad->Bind();

@@ -43,6 +43,7 @@ public:
 
     virtual void OnUpdate(double ts) override {
         if (BeingControlled) {
+            BENCHMARK_FUNCTION();
 
             // handle translation
             if (Input::IsKeyPressed(KEY_CODE_Q)) {

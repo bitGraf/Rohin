@@ -36,6 +36,7 @@ namespace Engine {
     }
 
     void Scene::loadFromFile(const std::string& filename) {
+        BENCHMARK_FUNCTION();
         /*
         
         1. read all strings
@@ -199,6 +200,7 @@ namespace Engine {
     }
 
     void Scene::OnRuntimeStart() {
+        BENCHMARK_FUNCTION();
         if (!m_Playing) {
             // Initialize all scripts
             auto& scriptComponents = m_Registry.view<NativeScriptComponent>();
@@ -227,6 +229,7 @@ namespace Engine {
     }
 
     void Scene::OnRuntimeStop() {
+        BENCHMARK_FUNCTION();
         if (m_Playing) {
             // Destroy all scripts
             auto& scriptComponents = m_Registry.view<NativeScriptComponent>();
@@ -243,7 +246,9 @@ namespace Engine {
     }
 
     void Scene::OnUpdate(double dt) {
+        BENCHMARK_FUNCTION();
         if (m_Playing) {
+            BENCHMARK_SCOPE("Update Scripts");
             // Update
             auto& scriptComponents = m_Registry.view<NativeScriptComponent>();
             for (auto& script : scriptComponents) {
@@ -259,6 +264,7 @@ namespace Engine {
         Camera* mainCamera = nullptr;
         math::mat4* mainTransform = nullptr;
         {
+            BENCHMARK_SCOPE("Find main camera");
             // messy group
             // TODO: figure out how to get the group function to work
             for (auto n : m_Registry.GetRegList()) {
@@ -283,6 +289,7 @@ namespace Engine {
         Light sceneSun;
         int numPointLight = 0, numSpotLight = 0;
         {
+            BENCHMARK_SCOPE("Determine lights");
             // messy group
             // TODO: figure out how to get the group function to work
             for (auto n : m_Registry.GetRegList()) {
@@ -327,6 +334,7 @@ namespace Engine {
 
         // Render
         if (mainCamera) {
+            BENCHMARK_SCOPE("Render");
             Renderer::Begin3DScene(*mainCamera, *mainTransform, numPointLight, scenePointLights, numSpotLight, sceneSpotLights, sceneSun);
 
             Renderer::BeginDeferredPrepass();

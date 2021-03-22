@@ -15,6 +15,7 @@ namespace Engine {
     Application* Application::s_Instance = nullptr;
 
     Application::Application()  {
+        BENCHMARK_START_SESSION("Application Startup", "benchmark/startup.json");
         ENGINE_LOG_ASSERT(!s_Instance, "App already exists");
         s_Instance = this;
 
@@ -28,13 +29,16 @@ namespace Engine {
 
         m_GuiLayer = new GuiLayer();
         PushOverlay(m_GuiLayer);
+        BENCHMARK_END_SESSION();
     }
 
     Application::~Application() {
+        BENCHMARK_START_SESSION("Application Shutdown", "benchmark/shutdown.json");
         Renderer::Shutdown();
         TextRenderer::Shutdown();
         MaterialCatalog::Shutdown();
         SoundEngine::Shutdown();
+        BENCHMARK_END_SESSION();
     }
 
     void Application::Close() {
@@ -54,7 +58,9 @@ namespace Engine {
     }
 
     void Application::Run() {
+        BENCHMARK_START_SESSION("Runtime", "benchmark/runtime.json");
         while (!m_Done) {
+            BENCHMARK_SCOPE("Update");
             float time = glfwGetTime(); // TODO: Get to platform
             Timestep timestep = time - m_LastFrameTime;
             m_LastFrameTime = time;
@@ -75,6 +81,7 @@ namespace Engine {
 
             m_Window->Update();
         }
+        BENCHMARK_END_SESSION();
     }
 
     bool Application::OnWindowClose(WindowCloseEvent& event) {
