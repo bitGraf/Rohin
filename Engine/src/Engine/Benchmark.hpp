@@ -8,7 +8,7 @@
 #include <string>
 #include <iostream>
 
-#define BENCHMARK_ENABLE 1
+#define BENCHMARK_ENABLE 0
 #if BENCHMARK_ENABLE
 #define BENCHMARK_SCOPE(name) BenchmarkTimer timer##__LINE__(name)
 #define BENCHMARK_FUNCTION() BENCHMARK_SCOPE(__FUNCTION__)
