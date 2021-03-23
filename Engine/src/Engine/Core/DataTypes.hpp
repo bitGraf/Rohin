@@ -27,6 +27,19 @@ using GameObject_type = u32;
 /* Index type */
 typedef u16                     index_t;
 
+/* Text alignmnet */
+enum TextAlignment {
+    ALIGN_TOP_LEFT = 0,
+    ALIGN_MID_LEFT,
+    ALIGN_BOT_LEFT,
+    ALIGN_TOP_MID,
+    ALIGN_MID_MID,
+    ALIGN_BOT_MID,
+    ALIGN_TOP_RIGHT,
+    ALIGN_MID_RIGHT,
+    ALIGN_BOT_RIGHT
+};
+
 /* Ensure base data types are the correct size */
 static_assert(sizeof(f32) == 4, "Float32 not 32-bits");
 static_assert(sizeof(f64) == 8, "Float64 not 64-bits");

@@ -93,7 +93,7 @@ namespace Engine {
         return s_Data.ShaderLibrary;
     }
 
-    void TextRenderer::SubmitText(const std::string& text, float startX, float startY, math::vec3 color) {
+    void TextRenderer::SubmitText(const std::string& text, float startX, float startY, math::vec3 color, TextAlignment align) {
         BENCHMARK_FUNCTION();
 
         auto shader = s_Data.ShaderLibrary->Get("Text");
@@ -105,7 +105,6 @@ namespace Engine {
         RenderCommand::DisableDepthTest();
 
         auto& font = s_Data.font;
-        auto align = TextAlignment::ALIGN_TOP_LEFT; // should pass in
         const char* _text = text.c_str();
 
         if (font.initialized) {

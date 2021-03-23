@@ -12,12 +12,8 @@ class Game : public Engine::Application {
 public:
     Game() {
 
-        m_GameLayer = new GameLayer();
-        PushLayer(m_GameLayer);
-
-        //m_MainMenuLayer = new MenuLayer();
-        //m_MainMenuLayer->createMenu();
-        //PushLayer(m_MainMenuLayer);
+        m_MainMenuLayer = new MenuLayer();
+        PushLayer(m_MainMenuLayer);
     }
 
     ~Game() {

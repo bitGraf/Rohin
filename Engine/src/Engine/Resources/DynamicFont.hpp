@@ -12,18 +12,6 @@ typedef struct // copied from <stb_trutype.h>
 
 namespace Engine {
 
-    enum TextAlignment {
-        ALIGN_TOP_LEFT = 0,
-        ALIGN_MID_LEFT,
-        ALIGN_BOT_LEFT,
-        ALIGN_TOP_MID,
-        ALIGN_MID_MID,
-        ALIGN_BOT_MID,
-        ALIGN_TOP_RIGHT,
-        ALIGN_MID_RIGHT,
-        ALIGN_BOT_RIGHT
-    };
-
     class DynamicFont {
     public:
         void create(std::string filename, float fontSize, int res = 512);

@@ -6,6 +6,8 @@
 
 #include "Engine/Sound/SoundEngine.hpp"
 
+#include "PauseMenuLayer.hpp"
+
 /* native scripts */
 #include "CameraController.hpp"
 #include "Player.hpp"
@@ -221,7 +223,11 @@ void GameLayer::OnEvent(Engine::Event& event) {
 bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     // quit game
     if (e.GetKeyCode() == KEY_CODE_ESCAPE) {
-        Engine::Application::Get().Close();
+        //Engine::Application::Get().Close();
+
+        PauseLayer* pause = new PauseLayer();
+        Engine::Application::Get().PushLayerNextFrame(pause);
+        m_LayerActive = false;
     }
 
     // toggle mouse controll for camera

@@ -25,6 +25,11 @@ namespace Engine {
         void PushLayer(EngineLayer* layer);
         void PushOverlay(EngineLayer* overlay);
 
+        void RemoveLayer(EngineLayer* layer);
+
+        void PushLayerNextFrame(EngineLayer* layer);
+        void RemoveLayerNextFrame(EngineLayer* layer);
+
         inline static Application& Get() { return *s_Instance; }
         inline Window& GetWindow() { return *m_Window; }
 
@@ -43,6 +48,10 @@ namespace Engine {
         float m_LastFrameTime = 0;
 
         LayerStack m_layerStack;
+
+        // Temp
+        EngineLayer* nextLayer = nullptr;
+        EngineLayer* nextRemoveLayer = nullptr;
 
     private:
         static Application * s_Instance;

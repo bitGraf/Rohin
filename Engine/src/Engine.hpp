@@ -23,6 +23,7 @@
 /* Renderer stuff */
 #include "Engine/Renderer/RenderCommand.hpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Renderer/TextRenderer.hpp"
 #include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/Buffer.hpp"
 #include "Engine/Renderer/VertexArray.hpp"
@@ -33,6 +34,7 @@
 
 /* Resource stuff */
 #include "Engine/Resources/MeshCatalog.hpp"
+#include "Engine/Resources/MaterialCatalog.hpp"
 #include "Engine/Resources/nbt/nbt.hpp"
 
 /* Dependencies */

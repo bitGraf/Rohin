@@ -50,10 +50,12 @@ namespace Engine {
         dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
         dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 
-        for (auto it = m_layerStack.end(); it != m_layerStack.begin();) {
-            (*--it)->OnEvent(event);
-            if (event.Handled)
-                break;
+        for (auto it = m_layerStack.rbegin(); it != m_layerStack.rend(); ++it) {
+            if ((*it)->IsActive()) {
+                (*it)->OnEvent(event);
+                if (event.Handled)
+                    break;
+            }
         }
     }
 
@@ -69,17 +71,32 @@ namespace Engine {
 
             if (!m_Minimized) {
                 /* Run all engine layer updates */
-                for (EngineLayer* layer : m_layerStack)
-                    layer->OnUpdate(timestep);
+                for (EngineLayer* layer : m_layerStack) {
+                    if (layer->IsActive()) {
+                        layer->OnUpdate(timestep);
+                    }
+                }
             }
 
             /* put on render thread */
             m_GuiLayer->Begin();
-            for (EngineLayer* layer : m_layerStack)
-                layer->OnGuiRender();
+            for (EngineLayer* layer : m_layerStack) {
+                if (layer->IsActive()) {
+                    layer->OnGuiRender();
+                }
+            }
             m_GuiLayer->End();
 
             m_Window->Update();
+
+            if (nextRemoveLayer) {
+                RemoveLayer(nextRemoveLayer);
+                nextRemoveLayer = nullptr;
+            }
+            if (nextLayer) { // new layer to add
+                PushLayer(nextLayer);
+                nextLayer = nullptr;
+            }
         }
         BENCHMARK_END_SESSION();
     }
@@ -104,10 +121,32 @@ namespace Engine {
     void Application::PushLayer(EngineLayer* layer) {
         m_layerStack.PushLayer(layer);
         layer->OnAttach();
+        layer->m_LayerActive = true;
     }
 
     void Application::PushOverlay(EngineLayer* overlay) {
         m_layerStack.PushOverlay(overlay);
         overlay->OnAttach();
+        overlay->m_LayerActive = true;
+    }
+
+    void Application::RemoveLayer(EngineLayer* layer) {
+        layer->m_LayerActive = false;
+        m_layerStack.PopLayer(layer);
+
+        // TODO: better way of handling this?
+        for (auto it = m_layerStack.rbegin(); it != m_layerStack.rend(); it++) {
+            if ((*it)->GetName().compare("Game") == 0) {
+                (*it)->m_LayerActive = true;
+            }
+        }
+    }
+
+    void Application::PushLayerNextFrame(EngineLayer* layer) {
+        nextLayer = layer;
+    }
+
+    void Application::RemoveLayerNextFrame(EngineLayer* layer) {
+        nextRemoveLayer = layer;
     }
 }
