@@ -48,7 +48,6 @@ void GameLayer::OnAttach() {
         BENCHMARK_SCOPE("Loading Meshes");
         Engine::MeshCatalog::Register("mesh_guard", "run_tree/Data/Models/guard.nbt", true);
         Engine::MeshCatalog::Register("mesh_plane", "run_tree/Data/Models/plane.nbt", true);
-        Engine::MeshCatalog::Register("mesh_tape_recorder", "run_tree/Data/Models/tape_player.nbt", true);
     }
     { // Player
         auto player = m_ActiveScene->CreateGameObject("Player");
@@ -66,11 +65,13 @@ void GameLayer::OnAttach() {
         player.AddComponent<Engine::ColliderComponent>(hull);
     }
     { // Platform
-        auto platform = m_ActiveScene->CreateGameObject("Platform");
-        auto rectMesh = Engine::MeshCatalog::Get("mesh_plane");
-        auto material = rectMesh->GetMaterial(0);
         float platformSize = 20.0f;
         float platformThickness = 3.0f;
+
+        auto platform = m_ActiveScene->CreateGameObject("Platform");
+
+        auto rectMesh = Engine::MeshCatalog::Get("mesh_plane");
+        auto material = rectMesh->GetMaterial(0);
         material->Set<float>("u_TextureScale", platformSize);
         material->Set("u_AlbedoTexture", Engine::Texture2D::Create("run_tree/Data/Images/grid/PNG/Dark/texture_07.png"));
         platform.AddComponent<Engine::MeshRendererComponent>(rectMesh);
@@ -81,37 +82,9 @@ void GameLayer::OnAttach() {
         trans.translate(vec3(0, 0.0f, 0));
 
         UID_t floor = cWorld.CreateNewCubeHull(vec3(0, -platformThickness/2.0f, 0), 2*platformSize, platformThickness, 2*platformSize);
-
-        // TODO: do we want the ability to have "floating" hulls, 
-        // that are not assigned to any gameobect they are only tracked by the collision world.
-        // If they are entirely static, that might be fine
-        //platform.AddComponent<ColliderComponent>(floor);
-    }
-    { // Tape Recorder
-        auto tape = m_ActiveScene->CreateGameObject("Tape Recorder");
-        auto mesh = Engine::MeshCatalog::Get("mesh_tape_recorder");
-        tape.AddComponent<Engine::MeshRendererComponent>(mesh);
-
-        auto& trans = tape.GetComponent<Engine::TransformComponent>().Transform;
-        trans = mat4();
-        trans.translate(vec3(2.0f, 0, 0));
     }
 
     { // Lights
-        auto light = m_ActiveScene->CreateGameObject("light 1");
-        light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(1,.2,.3), 6, 0, 0);
-        auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
-        trans = mat4();
-        trans.translate(vec3(0, 2, 0));
-    }
-    {
-        auto light = m_ActiveScene->CreateGameObject("light 2");
-        light.AddComponent<Engine::LightComponent>(Engine::LightType::Point, vec3(.2, .8, .6), 4, 0, 0);
-        auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
-        trans = mat4();
-        trans.translate(vec3(2.5, 3.6, 2));
-    }
-    {
         auto light = m_ActiveScene->CreateGameObject("Sun");
         // 255, 236, 224
         light.AddComponent<Engine::LightComponent>(Engine::LightType::Directional, vec3(1.0f, 236.0f/255.0f, 225.0f/255.0f), 5, 0, 0);
@@ -134,44 +107,13 @@ void GameLayer::OnAttach() {
         trans *= math::createYawPitchRollMatrix(0, 0, -45);
     }
 
-    /* Collision code TODO: Remove this */
-    cWorld.CreateNewCubeHull(vec3(0, 1.5, -4), 8, 3, 3); // container +X
-    
-    UID_t crate = cWorld.CreateNewCubeHull(vec3(-2, 1.5, -8), 8, 3, 3); // container +Y
-    cWorld.getHullFromID(crate)->rotation.toYawPitchRoll(90, 0, 0);
-    
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(-2, 1.5, -6), 8, 3, 3)) // corner container
-        ->rotation.toYawPitchRoll(135, 0, 0);
-    
-    UID_t id = cWorld.CreateNewCubeHull(vec3(-5.42, 1, 1.88), 2); // Wooden Crate
-    cWorld.getHullFromID(id)->rotation.toYawPitchRoll(38.27, 0, 0);
-    
-    cWorld.CreateNewCubeHull(vec3(-3.41, 0.5, -0.89), .75, 1.5, .75); // Barrel 1
-    cWorld.CreateNewCubeHull(vec3(-1.47, 0.5, 2.09), .75, 1.5, .75); // Barrel 2
-    
-    // Ramps at various angles
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 0, 5), 10, 1, 3))
-        ->rotation.toYawPitchRoll(0, 10, 0);
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 1, 8), 10, 1, 3))
-        ->rotation.toYawPitchRoll(0, 20, 0);
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 2, 11), 10, 1, 3))
-        ->rotation.toYawPitchRoll(0, 30, 0);
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 3, 14), 10, 1, 3))
-        ->rotation.toYawPitchRoll(0, 40, 0);
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 3.5, 17), 10, 1, 3))
-        ->rotation.toYawPitchRoll(0, 50, 0);
-
     // Sound stuff
     {
         BENCHMARK_SCOPE("Create soundcues");
-        SoundEngine::CreateSoundCue("guard_death", { "run_tree/Data/Sounds/death.ogg", 0.05f });
+        SoundEngine::CreateSoundCue("guard_death", { "run_tree/Data/Sounds/death.ogg", 0.02f });
         SoundEngine::CreateSoundCue("golem", { "run_tree/Data/Sounds/golem.ogg", 0.1f }); //MONO, has 3D sound
         SoundEngine::CreateSoundCue("protector", { "run_tree/Data/Sounds/sound.wav", 0.2f });
         SoundEngine::CreateSoundCue("ahhh", { "run_tree/Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
-
-        BackingTrackSpec music;
-        music.soundFile = "run_tree/Data/Sounds/ahhh.ogg";
-        SoundEngine::CreateBackingTrack("music", music);
     }
 
     m_ActiveScene->OnRuntimeStart();
@@ -223,11 +165,11 @@ void GameLayer::OnEvent(Engine::Event& event) {
 bool GameLayer::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     // quit game
     if (e.GetKeyCode() == KEY_CODE_ESCAPE) {
-        //Engine::Application::Get().Close();
+        Engine::Application::Get().Close();
 
-        PauseLayer* pause = new PauseLayer();
-        Engine::Application::Get().PushLayerNextFrame(pause);
-        m_LayerActive = false;
+        //PauseLayer* pause = new PauseLayer();
+        //Engine::Application::Get().PushLayerNextFrame(pause);
+        //m_LayerActive = false;
     }
 
     // toggle mouse controll for camera
