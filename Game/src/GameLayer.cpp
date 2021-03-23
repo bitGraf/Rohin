@@ -43,7 +43,6 @@ void GameLayer::OnAttach() {
     */
 
     m_ActiveScene = std::make_shared<Engine::Scene>();
-    //m_ActiveScene->loadFromFile("run_tree/Data/Levels/nbtTest.scene");
     {
         BENCHMARK_SCOPE("Loading Meshes");
         Engine::MeshCatalog::Register("mesh_guard", "run_tree/Data/Models/guard.nbt", true);
@@ -86,10 +85,8 @@ void GameLayer::OnAttach() {
 
     { // Lights
         auto light = m_ActiveScene->CreateGameObject("Sun");
-        // 255, 236, 224
         light.AddComponent<Engine::LightComponent>(Engine::LightType::Directional, vec3(1.0f, 236.0f/255.0f, 225.0f/255.0f), 5, 0, 0);
         auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
-        //trans = mat4();
         trans = math::createYawPitchRollMatrix(45, 0, -80);
     }
 
@@ -102,10 +99,21 @@ void GameLayer::OnAttach() {
 
         auto& trans = m_Camera.GetComponent<Engine::TransformComponent>().Transform;
         trans = mat4();
-        //trans.translate(vec3(0, 1, 2));
         trans.translate(vec3(0, 4, 5));
         trans *= math::createYawPitchRollMatrix(0, 0, -45);
     }
+
+    // Ramps at various angles
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 0, -5), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 10, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 1, -2), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 20, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 2, 1), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 30, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 3, 4), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 40, 0);
+    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 3.5, 7), 10, 1, 3))
+        ->rotation.toYawPitchRoll(0, 50, 0);
 
     // Sound stuff
     {
