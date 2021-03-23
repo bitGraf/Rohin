@@ -138,6 +138,10 @@ project "Game"
         "%{wks.location}/Engine/deps/OpenAL_soft/libs/Win64"
     }
 
+    postbuildcommands {
+        "{COPY} %{cfg.targetdir}/Game.exe %{wks.location}/Game/"
+    }
+
     defines {
         "ROHIN_GAME"
     }
