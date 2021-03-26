@@ -22,8 +22,8 @@ namespace Engine {
     GameObject Scene::FindByName(const std::string& name) {
         // TODO: why can't I just get all entities that have tags, and return the dameOgject id then?
         // since all GameObjects created are given a tag by default, this might not be bad...
-        const auto& entities = m_Registry.GetRegList();
-        for (const auto& ent : entities) {
+        //const auto& entities = m_Registry.GetRegList();
+        for (const auto& ent : m_Registry.GetRegList()) {
             if (m_Registry.has<TagComponent>(ent)) {
                 const auto& tag_name = m_Registry.get<TagComponent>(ent).Name;
                 if (tag_name.compare(name) == 0) {

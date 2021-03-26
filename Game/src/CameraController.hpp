@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine.hpp"
+#include "Player.hpp"
 
 using namespace Engine;
 using namespace math;
@@ -15,6 +16,10 @@ public:
 
         LOG_ASSERT(transformComponent, "CamController could not find a transform component");
         LOG_ASSERT(cameraComponent,    "CamController could not find a camera component");
+
+        playerScript = nullptr;
+        playerScript = GetScene().FindByName("Player").GetComponent<NativeScriptComponent>().GetScript<PlayerController>();
+        LOG_ASSERT(playerScript, "CamController could not find player controller script");
 
         cameraComponent->camera.SetOrthographic(6, -3, 3);
         cameraComponent->camera.SetPerspective(75.0f, 0.01f, 100.0f);
@@ -52,6 +57,7 @@ public:
         static bool firstFrame = true;
         static float oldMousePosX = 0, oldMousePosY = 0;
         float offX = 0.0f, offY = 0.0f;
+        vec3 velocity;
 
         if (BeingControlled) {
             BENCHMARK_FUNCTION();
@@ -65,6 +71,8 @@ public:
                 oldMousePosX = newMousePosX; // update old values
                 oldMousePosY = newMousePosY;
             }
+
+            bool updateTransform = false;
 
             if (!firstFrame) {
                 if (offX != 0.0f) {
@@ -90,7 +98,6 @@ public:
                 moveSpeed = 5.0f;
             }
 
-            vec3 velocity;
             if (Input::IsKeyPressed(KEY_CODE_A)) {
                 velocity -= Right * moveSpeed;
                 updateTransform = true;
@@ -130,29 +137,62 @@ public:
             }
 
             if (updateTransform) {
-                auto& transform = transformComponent->Transform;
                 position += velocity * ts;
-
-                transform = mat4();
-                transform.translate(position);
-                transform *= math::createYawPitchRollMatrix(yaw, 0.0f, pitch);
-                auto[f, r, u] = math::GetUnitVectors(transform);
-                Forward = f;
-                Right = r;
-                Up = u;
-                updateTransform = false;
-
-                // update listener
-                SoundEngine::SetListenerPosition(position);
-                SoundEngine::SetListenerVelocity(velocity);
-                SoundEngine::SetListenerOrientation(Forward, Up);
+                CalcTransformFromYawPitch(velocity);
             }
         } else {
             firstFrame = true;
+            oldMousePosX = 0;
+            oldMousePosY = 0;
+            vec3 target = playerScript->GetCameraTarget();
+            velocity = (target - position) * (1/ts);
+            CalcTransformFromLookDir(target, playerScript->GetPosition(), velocity);
         }
     }
 
 private:
+    void CalcTransformFromYawPitch(vec3 velocity) {
+        auto& transform = transformComponent->Transform;
+        transform = mat4();
+        transform.translate(position);
+        transform *= math::createYawPitchRollMatrix(yaw, 0.0f, pitch);
+        auto[f, r, u] = math::GetUnitVectors(transform);
+        Forward = f;
+        Right = r;
+        Up = u;
+
+        // update listener
+        SoundEngine::SetListenerPosition(position);
+        SoundEngine::SetListenerVelocity(velocity);
+        SoundEngine::SetListenerOrientation(Forward, Up);
+    }
+
+    void CalcTransformFromLookDir(vec3 at, vec3 lookAt, vec3 velocity) {
+        position = at;
+        Forward = (lookAt - at).get_unit();
+        Right = Forward.cross(vec3(0, 1, 0)).get_unit();
+        Up = Right.cross(Forward).get_unit();
+        auto& transform = transformComponent->Transform;
+
+        transform = mat4();
+        transform.translate(position);
+        transform *= mat4(mat3(Right, Up, -Forward));
+
+        // TODO: calculate these based on new unit vectors
+        pitch = 0;
+        yaw = 0;
+
+        // update listener
+        SoundEngine::SetListenerPosition(position);
+        SoundEngine::SetListenerVelocity(velocity);
+        SoundEngine::SetListenerOrientation(Forward, Up);
+    }
+
+
+private:
+    // Player
+    PlayerController* playerScript;
+
     TransformComponent* transformComponent;
     CameraComponent* cameraComponent;
 
@@ -163,7 +203,7 @@ private:
 
     vec3 position{0, 0, 2};
     float yaw = 0, pitch = 0;
-    bool updateTransform = true;
+    //bool updateTransform = true;
 
     bool BeingControlled = false;
 };

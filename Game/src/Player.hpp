@@ -43,30 +43,38 @@ public:
 
     void RotateCharacter(double ts) {
         // handle rotation
-        if (Input::IsKeyPressed(KEY_CODE_A)) {
+        if (Engine::Input::IsKeyPressed(KEY_CODE_A)) {
             yaw += rotSpeed * ts; // Rotate Left
-        } if (Input::IsKeyPressed(KEY_CODE_D)) {
+        } if (Engine::Input::IsKeyPressed(KEY_CODE_D)) {
             yaw -= rotSpeed * ts; // Rotate Right
         }
     }
 
     vec3 GenerateDesiredMovement() {
+        if (Engine::Input::IsKeyPressed(KEY_CODE_LEFT_SHIFT)) {
+            moveSpeed = 20;
+        }
+        else {
+            moveSpeed = 7.0f;
+        }
+
         vec3 vel(0,0,0);
         if (grounded) {
+            // get floor-based local frame
             vec3 localU = m_floorUp.get_unit();
             vec3 localR = Forward.cross(localU).get_unit();
             vec3 localF = localU.cross(localR).get_unit();
 
             // handle translation
-            if (Input::IsKeyPressed(KEY_CODE_Q)) {
+            if (Engine::Input::IsKeyPressed(KEY_CODE_Q)) {
                 vel -= localR * moveSpeed; // Strafe Left
-            } if (Input::IsKeyPressed(KEY_CODE_E)) {
+            } if (Engine::Input::IsKeyPressed(KEY_CODE_E)) {
                 vel += localR * moveSpeed; // Strafe Right
-            } if (Input::IsKeyPressed(KEY_CODE_W)) {
+            } if (Engine::Input::IsKeyPressed(KEY_CODE_W)) {
                 vel += localF * moveSpeed; // Walk Forward
-            } if (Input::IsKeyPressed(KEY_CODE_S)) {
+            } if (Engine::Input::IsKeyPressed(KEY_CODE_S)) {
                 vel -= localF * moveSpeed; // Walk Backward
-            } if (Input::IsKeyPressed(KEY_CODE_SPACE) && grounded) {
+            } if (Engine::Input::IsKeyPressed(KEY_CODE_SPACE) && grounded) {
                 vel += Up * jumpPower; // still jump vertically, not off ramp
                 grounded = false;
                 m_floorUp = vec3(0, 1, 0);
@@ -76,6 +84,14 @@ public:
             vel = velocity;
         }
         return vel;
+    }
+
+    math::vec3 GetCameraTarget() {
+        return position - (Forward * CameraDistance) + (Up * CameraHeight);
+    }
+
+    const math::vec3& GetPosition() const {
+        return position;
     }
 
     virtual void OnUpdate(double ts) override {
@@ -192,8 +208,6 @@ public:
 
             auto& transform = transformComponent->Transform;
 
-            //position += velocity * ts;
-
             transform = mat4();
             transform.translate(position);
             transform *= math::createYawPitchRollMatrix(yaw, 0.0f, pitch);
@@ -207,6 +221,11 @@ public:
 private:
     Engine::TransformComponent* transformComponent;
     Engine::ColliderComponent* colliderComponent;
+
+    // Camera state
+    //math::vec3 CameraTargetPosition;
+    float CameraHeight = 5;
+    float CameraDistance = 10;
 
     // State
     math::vec3 Forward, Right, Up;
@@ -223,7 +242,7 @@ private:
 
     // Parameters
     math::vec3 hull_offset;
-    float moveSpeed = 4.0f;
+    float moveSpeed = 7.0f;
     float jumpPower = 5.5f;
     float rotSpeed = 360.0f;
     float m_floorAngleLimit = 35;

@@ -150,7 +150,7 @@ namespace nbt {
             // signature
             char sig[4];
             memcpy(sig, header, 4);
-            assert(strcmp(sig, "1234") != 0);
+            assert(strncmp(sig, "1234", 4) == 0);
 
             // version
             major = header[4];
