@@ -9,6 +9,7 @@ namespace Engine {
         int keycodeMinus = -1;
 
         int joystickAxis = -1;
+        bool negate = false;
     };
 
     struct GamepadState {
@@ -24,6 +25,8 @@ namespace Engine {
         bool present = false;
         bool valid = false;
         const char* name = nullptr;
+        bool apply_dead_zone = true;
+        float dead_zone = 0.1f;
     };
 
     class Input {

@@ -29,10 +29,10 @@ void GameLayer::OnAttach() {
     LOG_INFO("Game layer attached");
 
     Input::CaptureMouse(false);
-    Input::BindAxis("AxisMoveForward", { KEY_CODE_W, KEY_CODE_S, GAMEPAD_AXIS_LEFT_Y });
+    Input::BindAxis("AxisMoveForward", { KEY_CODE_W, KEY_CODE_S, GAMEPAD_AXIS_LEFT_Y, true });
     Input::BindAxis("AxisMoveRight",   { KEY_CODE_D, KEY_CODE_A, GAMEPAD_AXIS_LEFT_X });
     Input::BindAxis("AxisRotateRight", { KEY_CODE_E, KEY_CODE_Q, GAMEPAD_AXIS_RIGHT_X });
-    Input::BindAxis("AxisRotateUp",    { KEY_CODE_R, KEY_CODE_F, GAMEPAD_AXIS_RIGHT_Y });
+    Input::BindAxis("AxisRotateUp",    { KEY_CODE_R, KEY_CODE_F, GAMEPAD_AXIS_RIGHT_Y, true });
     
     m_ViewportSize = { 
         (float)Engine::Application::Get().GetWindow().GetWidth(), 
@@ -158,14 +158,6 @@ void GameLayer::OnUpdate(Engine::Timestep ts) {
     Engine::RenderCommand::Clear();
 
     m_ActiveScene->OnUpdate(ts);
-
-    /*
-    char text[64];
-    sprintf_s(text, 64, "AxisForward: %.1f", Input::GetAxis("AxisForward"));
-    TextRenderer::SubmitText(text, 100, 500, math::vec3(1, 1, .5));
-    sprintf_s(text, 64, "AxisRight: %.1f", Input::GetAxis("AxisRight"));
-    TextRenderer::SubmitText(text, 100, 550, math::vec3(1, 1, .5));
-    */
 }
 
 void GameLayer::OnEvent(Engine::Event& event) {

@@ -1,6 +1,7 @@
 #include <enpch.hpp>
 #include "Engine/Core/Input.hpp"
 
+#include "Engine/Core/GameMath.hpp"
 #include <Engine/Core/Application.hpp>
 #include <glfw/glfw3.h>
 
@@ -31,6 +32,43 @@ namespace Engine {
 
             // TODO: don't know how safe this might be, should be good tho ;)
             s_GamepadState.valid = glfwGetGamepadState(GLFW_JOYSTICK_1, (GLFWgamepadstate*)(&s_GamepadState));
+            if (s_GamepadState.valid && s_GamepadState.apply_dead_zone) {
+                auto& axes = s_GamepadState.axes;
+
+                /* left stick */
+                float x = axes[GLFW_GAMEPAD_AXIS_LEFT_X];
+                float y = axes[GLFW_GAMEPAD_AXIS_LEFT_Y];
+                float mag_2 = x * x + y * y;
+                if (mag_2 < s_GamepadState.dead_zone*s_GamepadState.dead_zone) {
+                    // clamp to zero
+                    axes[GLFW_GAMEPAD_AXIS_LEFT_X] = 0.0f;
+                    axes[GLFW_GAMEPAD_AXIS_LEFT_Y] = 0.0f;
+                }
+                else {
+                    // remap from dead_zone to outer radius
+                    math::vec2 v(x, y);
+                    v = v.get_unit() * (sqrt(mag_2) - s_GamepadState.dead_zone) / (1.0f - s_GamepadState.dead_zone);
+                    axes[GLFW_GAMEPAD_AXIS_LEFT_X] = v.x;
+                    axes[GLFW_GAMEPAD_AXIS_LEFT_Y] = v.y;
+                }
+
+                /* right stick */
+                x = axes[GLFW_GAMEPAD_AXIS_RIGHT_X];
+                y = axes[GLFW_GAMEPAD_AXIS_RIGHT_Y];
+                mag_2 = x * x + y * y;
+                if (mag_2 < s_GamepadState.dead_zone*s_GamepadState.dead_zone) {
+                    // clamp to zero
+                    axes[GLFW_GAMEPAD_AXIS_RIGHT_X] = 0.0f;
+                    axes[GLFW_GAMEPAD_AXIS_RIGHT_Y] = 0.0f;
+                }
+                else {
+                    // remap from dead_zone to outer radius
+                    math::vec2 v(x, y);
+                    v = v.get_unit() * (sqrt(mag_2) - s_GamepadState.dead_zone) / (1.0f - s_GamepadState.dead_zone);
+                    axes[GLFW_GAMEPAD_AXIS_RIGHT_X] = v.x;
+                    axes[GLFW_GAMEPAD_AXIS_RIGHT_Y] = v.y;
+                }
+            }
         }
         else if (s_GamepadState.present) {
             ENGINE_LOG_INFO("Gamepad [{0}] disconnected", s_GamepadState.name);
@@ -53,7 +91,8 @@ namespace Engine {
         const auto& spec = s_InputMap.at(axisName);
         float value = 0;
         if (spec.joystickAxis >= 0 && s_GamepadState.valid) {
-            value = s_GamepadState.axes[spec.joystickAxis];
+            float raw_value = s_GamepadState.axes[spec.joystickAxis];
+            value = spec.negate ? -raw_value : raw_value;
         }
         if (spec.keycodePlus >= 0 && spec.keycodeMinus >= 0) {
             auto plus = IsKeyPressed(spec.keycodePlus);

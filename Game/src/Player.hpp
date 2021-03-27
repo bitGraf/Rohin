@@ -43,11 +43,7 @@ public:
 
     void RotateCharacter(double ts) {
         // handle rotation
-        if (Engine::Input::IsKeyPressed(KEY_CODE_A)) {
-            yaw += rotSpeed * ts; // Rotate Left
-        } if (Engine::Input::IsKeyPressed(KEY_CODE_D)) {
-            yaw -= rotSpeed * ts; // Rotate Right
-        }
+        yaw -= Engine::Input::GetAxis("AxisRotateRight") * rotSpeed * ts;
     }
 
     vec3 GenerateDesiredMovement() {
@@ -66,15 +62,12 @@ public:
             vec3 localF = localU.cross(localR).get_unit();
 
             // handle translation
-            if (Engine::Input::IsKeyPressed(KEY_CODE_Q)) {
-                vel -= localR * moveSpeed; // Strafe Left
-            } if (Engine::Input::IsKeyPressed(KEY_CODE_E)) {
-                vel += localR * moveSpeed; // Strafe Right
-            } if (Engine::Input::IsKeyPressed(KEY_CODE_W)) {
-                vel += localF * moveSpeed; // Walk Forward
-            } if (Engine::Input::IsKeyPressed(KEY_CODE_S)) {
-                vel -= localF * moveSpeed; // Walk Backward
-            } if (Engine::Input::IsKeyPressed(KEY_CODE_SPACE) && grounded) {
+            vel += localR * (moveSpeed * Engine::Input::GetAxis("AxisMoveRight"));
+            vel += localF * (moveSpeed * Engine::Input::GetAxis("AxisMoveForward"));
+            CameraHeight += 0.65f * Engine::Input::GetAxis("AxisRotateUp");
+            CameraHeight = std::clamp(CameraHeight, CameraHeightMin, CameraHeightMax);
+
+            if (Engine::Input::IsKeyPressed(KEY_CODE_SPACE) && grounded) {
                 vel += Up * jumpPower; // still jump vertically, not off ramp
                 grounded = false;
                 m_floorUp = vec3(0, 1, 0);
@@ -87,7 +80,8 @@ public:
     }
 
     math::vec3 GetCameraTarget() {
-        return position - (Forward * CameraDistance) + (Up * CameraHeight);
+        float horiz_dist = sqrt(CameraDistance*CameraDistance - CameraHeight * CameraHeight);
+        return position - (Forward * horiz_dist) + (Up * CameraHeight);
     }
 
     const math::vec3& GetPosition() const {
@@ -225,6 +219,8 @@ private:
     // Camera state
     //math::vec3 CameraTargetPosition;
     float CameraHeight = 5;
+    float CameraHeightMin = 1;
+    float CameraHeightMax = 8;
     float CameraDistance = 10;
 
     // State
