@@ -7,6 +7,7 @@
 namespace Engine {
     static bool s_IsMouseCaptured = false;
     static std::unordered_map<std::string, InputAxisSpec> s_InputMap;
+    GamepadState s_GamepadState;
 
     bool Input::IsKeyPressed(int keycode) {
         auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -14,6 +15,29 @@ namespace Engine {
         auto state = glfwGetKey(window, keycode);
 
         return state == GLFW_PRESS || state == GLFW_REPEAT;
+    }
+
+    const GamepadState& Input::GetState() {
+        return s_GamepadState;
+    }
+
+    void Input::Poll(double dt) {
+        if (glfwJoystickIsGamepad(GLFW_JOYSTICK_1)) {
+            if (!s_GamepadState.present) {
+                s_GamepadState.name = glfwGetGamepadName(GLFW_JOYSTICK_1);
+                ENGINE_LOG_INFO("Gamepad [{0}] connected", s_GamepadState.name);
+                s_GamepadState.present = true;
+            }
+
+            // TODO: don't know how safe this might be, should be good tho ;)
+            s_GamepadState.valid = glfwGetGamepadState(GLFW_JOYSTICK_1, (GLFWgamepadstate*)(&s_GamepadState));
+        }
+        else if (s_GamepadState.present) {
+            ENGINE_LOG_INFO("Gamepad [{0}] disconnected", s_GamepadState.name);
+            s_GamepadState.name = nullptr;
+            s_GamepadState.present = false;
+            s_GamepadState.valid = false;
+        }
     }
 
     void Input::BindAxis(const std::string& axisName, InputAxisSpec spec) {
@@ -27,7 +51,22 @@ namespace Engine {
         }
 
         const auto& spec = s_InputMap.at(axisName);
-        return ((float)IsKeyPressed(spec.keycodePlus)) - ((float)IsKeyPressed(spec.keycodeMinus));
+        float value = 0;
+        if (spec.joystickAxis >= 0 && s_GamepadState.valid) {
+            value = s_GamepadState.axes[spec.joystickAxis];
+        }
+        if (spec.keycodePlus >= 0 && spec.keycodeMinus >= 0) {
+            auto plus = IsKeyPressed(spec.keycodePlus);
+            auto minus = IsKeyPressed(spec.keycodeMinus);
+            if (plus) {
+                if (minus) value = 0;
+                else value = 1;
+            }
+            else {
+                if (minus) value = -1;
+            }
+        }
+        return value;
     }
 
     bool Input::IsMouseButtonPressed(int button) {

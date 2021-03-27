@@ -123,3 +123,55 @@
 #define KEY_CODE_RIGHT_ALT          346
 #define KEY_CODE_RIGHT_SUPER        347
 #define KEY_CODE_MENU               348
+
+
+/* Joystick/Controller bindings (From glfw3.h) */
+#define JOYSTICK_DEVICE_1             0
+#define JOYSTICK_DEVICE_2             1
+#define JOYSTICK_DEVICE_3             2
+#define JOYSTICK_DEVICE_4             3
+#define JOYSTICK_DEVICE_5             4
+#define JOYSTICK_DEVICE_6             5
+#define JOYSTICK_DEVICE_7             6
+#define JOYSTICK_DEVICE_8             7
+#define JOYSTICK_DEVICE_9             8
+#define JOYSTICK_DEVICE_10            9
+#define JOYSTICK_DEVICE_11            10
+#define JOYSTICK_DEVICE_12            11
+#define JOYSTICK_DEVICE_13            12
+#define JOYSTICK_DEVICE_14            13
+#define JOYSTICK_DEVICE_15            14
+#define JOYSTICK_DEVICE_16            15
+#define JOYSTICK_DEVICE_LAST          JOYSTICK_DEVICE_16
+
+/* Gamepad buttons (SDL_GameControllerDB based)*/
+#define GAMEPAD_BUTTON_A               0
+#define GAMEPAD_BUTTON_B               1
+#define GAMEPAD_BUTTON_X               2
+#define GAMEPAD_BUTTON_Y               3
+#define GAMEPAD_BUTTON_LEFT_BUMPER     4
+#define GAMEPAD_BUTTON_RIGHT_BUMPER    5
+#define GAMEPAD_BUTTON_BACK            6
+#define GAMEPAD_BUTTON_START           7
+#define GAMEPAD_BUTTON_GUIDE           8
+#define GAMEPAD_BUTTON_LEFT_THUMB      9
+#define GAMEPAD_BUTTON_RIGHT_THUMB     10
+#define GAMEPAD_BUTTON_DPAD_UP         11
+#define GAMEPAD_BUTTON_DPAD_RIGHT      12
+#define GAMEPAD_BUTTON_DPAD_DOWN       13
+#define GAMEPAD_BUTTON_DPAD_LEFT       14
+#define GAMEPAD_BUTTON_LAST            GAMEPAD_BUTTON_DPAD_LEFT
+
+#define GAMEPAD_BUTTON_CROSS       GAMEPAD_BUTTON_A
+#define GAMEPAD_BUTTON_CIRCLE      GAMEPAD_BUTTON_B
+#define GAMEPAD_BUTTON_SQUARE      GAMEPAD_BUTTON_X
+#define GAMEPAD_BUTTON_TRIANGLE    GAMEPAD_BUTTON_Y
+
+#define GAMEPAD_AXIS_NONE         -1
+#define GAMEPAD_AXIS_LEFT_X        0
+#define GAMEPAD_AXIS_LEFT_Y        1
+#define GAMEPAD_AXIS_RIGHT_X       2
+#define GAMEPAD_AXIS_RIGHT_Y       3
+#define GAMEPAD_AXIS_LEFT_TRIGGER  4
+#define GAMEPAD_AXIS_RIGHT_TRIGGER 5
+#define GAMEPAD_AXIS_LAST          GAMEPAD_AXIS_RIGHT_TRIGGER
