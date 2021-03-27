@@ -6,6 +6,7 @@
 
 namespace Engine {
     static bool s_IsMouseCaptured = false;
+    static std::unordered_map<std::string, InputAxisSpec> s_InputMap;
 
     bool Input::IsKeyPressed(int keycode) {
         auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
@@ -13,6 +14,20 @@ namespace Engine {
         auto state = glfwGetKey(window, keycode);
 
         return state == GLFW_PRESS || state == GLFW_REPEAT;
+    }
+
+    void Input::BindAxis(const std::string& axisName, InputAxisSpec spec) {
+        s_InputMap[axisName] = spec;
+    }
+
+    float Input::GetAxis(const std::string& axisName) {
+        if (s_InputMap.find(axisName) == s_InputMap.end()) {
+            ENGINE_LOG_WARN("Could not find input axis {0}", axisName);
+            return 0;
+        }
+
+        const auto& spec = s_InputMap.at(axisName);
+        return ((float)IsKeyPressed(spec.keycodePlus)) - ((float)IsKeyPressed(spec.keycodeMinus));
     }
 
     bool Input::IsMouseButtonPressed(int button) {

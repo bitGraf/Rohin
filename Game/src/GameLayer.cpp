@@ -29,6 +29,8 @@ void GameLayer::OnAttach() {
     LOG_INFO("Game layer attached");
 
     Input::CaptureMouse(false);
+    Input::BindAxis("AxisForward", { KEY_CODE_W, KEY_CODE_S });
+    Input::BindAxis("AxisRight",   { KEY_CODE_D, KEY_CODE_A });
     
     m_ViewportSize = { 
         (float)Engine::Application::Get().GetWindow().GetWidth(), 
@@ -204,6 +206,12 @@ void GameLayer::OnUpdate(Engine::Timestep ts) {
     Engine::RenderCommand::Clear();
 
     m_ActiveScene->OnUpdate(ts);
+
+    char text[64];
+    sprintf_s(text, 64, "AxisForward: %.1f", Input::GetAxis("AxisForward"));
+    TextRenderer::SubmitText(text, 100, 500, math::vec3(1, 1, .5));
+    sprintf_s(text, 64, "AxisRight: %.1f", Input::GetAxis("AxisRight"));
+    TextRenderer::SubmitText(text, 100, 550, math::vec3(1, 1, .5));
 }
 
 void GameLayer::OnEvent(Engine::Event& event) {
