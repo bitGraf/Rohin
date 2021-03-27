@@ -5,7 +5,9 @@
 #include "Engine/Renderer/Framebuffer.hpp"
 #include "Engine/Renderer/Buffer.hpp"
 #include "Engine/Renderer/TextRenderer.hpp"
+
 #include "Engine/Sound/SoundEngine.hpp"
+#include "Engine/Core/Input.hpp"
 
 namespace Engine {
 
@@ -41,6 +43,7 @@ namespace Engine {
         bool ToneMap;
         bool Gamma;
         bool soundDebug;
+        bool controllerDebug;
     };
 
     RendererData s_Data;
@@ -212,6 +215,7 @@ namespace Engine {
         s_Data.ToneMap = true;
         s_Data.Gamma = true;
         s_Data.soundDebug = false;
+        s_Data.controllerDebug = false;
 
         Precompute();
     }
@@ -312,6 +316,11 @@ namespace Engine {
     void Renderer::ToggleDebugSoundOutput() {
         s_Data.soundDebug = !s_Data.soundDebug;
         ENGINE_LOG_INFO("Showing Sound Debug: {0}", s_Data.soundDebug);
+    }
+
+    void Renderer::ToggleDebugControllerOutput() {
+        s_Data.controllerDebug = !s_Data.controllerDebug;
+        ENGINE_LOG_INFO("Showing Controller Debug: {0}", s_Data.controllerDebug);
     }
 
     void Renderer::UploadLights(const Ref<Shader> shader) {
@@ -507,6 +516,25 @@ namespace Engine {
             }
             sprintf_s(text, 64, "Sounds in queue: %d", status.queueSize);
             TextRenderer::SubmitText(text, startx, starty += fontSize, math::vec3(.6f, .8f, .75f));
+        }
+
+        // Render input debug
+        if (s_Data.controllerDebug) {
+            const auto& state = Input::GetState();
+            float startx = 10, starty = 150;
+            if (s_Data.soundDebug) startx = 250;
+            float fontSize = 20;
+            char text[64];
+            if (!state.present || !state.valid) {
+                TextRenderer::SubmitText("Gamepad Status: disconnected", startx, starty, math::vec3(.6f, .8f, .75f));
+            } else {
+                sprintf_s(text, 64, "Gamepad state: [%s]", state.name);
+                TextRenderer::SubmitText(text, startx, starty, math::vec3(.6f, .8f, .75f));
+                for (int n = 0; n < 6; n++) {
+                    sprintf_s(text, 64, "Axis %d: %.2f", n, state.axes[n]);
+                    TextRenderer::SubmitText(text, startx + 15, starty += fontSize, math::vec3(.6f, .8f, .75f));
+                }
+            }
         }
 
         s_Data.screenBuffer->Unbind();

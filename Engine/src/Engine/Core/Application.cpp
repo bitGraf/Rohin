@@ -68,6 +68,7 @@ namespace Engine {
             m_LastFrameTime = time;
 
             SoundEngine::Update(timestep);
+            Input::Poll(timestep);
 
             if (!m_Minimized) {
                 /* Run all engine layer updates */
