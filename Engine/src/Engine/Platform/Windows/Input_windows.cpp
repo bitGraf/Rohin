@@ -7,7 +7,8 @@
 
 namespace Engine {
     static bool s_IsMouseCaptured = false;
-    static std::unordered_map<std::string, InputAxisSpec> s_InputMap;
+    static std::unordered_map<std::string, InputAxisSpec> s_InputAxisMap;
+    static std::unordered_map<std::string, InputActionSpec> s_InputActionMap;
     GamepadState s_GamepadState;
 
     bool Input::IsKeyPressed(int keycode) {
@@ -78,17 +79,31 @@ namespace Engine {
         }
     }
 
+    void Input::BindAction(const std::string& axisName, InputActionSpec spec) {
+        s_InputActionMap[axisName] = spec;
+    }
+
+    bool Input::GetAction(const std::string& actionName) {
+        if (s_InputActionMap.find(actionName) == s_InputActionMap.end()) {
+            ENGINE_LOG_WARN("Could not find input action {0}", actionName);
+            return false;
+        }
+
+        const auto& spec = s_InputActionMap.at(actionName);
+        return (IsKeyPressed(spec.keycode) || s_GamepadState.buttons[spec.gamepadButton]);
+    }
+
     void Input::BindAxis(const std::string& axisName, InputAxisSpec spec) {
-        s_InputMap[axisName] = spec;
+        s_InputAxisMap[axisName] = spec;
     }
 
     float Input::GetAxis(const std::string& axisName) {
-        if (s_InputMap.find(axisName) == s_InputMap.end()) {
+        if (s_InputAxisMap.find(axisName) == s_InputAxisMap.end()) {
             ENGINE_LOG_WARN("Could not find input axis {0}", axisName);
             return 0;
         }
 
-        const auto& spec = s_InputMap.at(axisName);
+        const auto& spec = s_InputAxisMap.at(axisName);
         float value = 0;
         if (spec.joystickAxis >= 0 && s_GamepadState.valid) {
             float raw_value = s_GamepadState.axes[spec.joystickAxis];

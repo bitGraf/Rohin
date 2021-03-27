@@ -67,7 +67,7 @@ public:
             CameraHeight += 0.65f * Engine::Input::GetAxis("AxisRotateUp");
             CameraHeight = std::clamp(CameraHeight, CameraHeightMin, CameraHeightMax);
 
-            if (Engine::Input::IsKeyPressed(KEY_CODE_SPACE) && grounded) {
+            if (Engine::Input::GetAction("ActionJump") && grounded) {
                 vel += Up * jumpPower; // still jump vertically, not off ramp
                 grounded = false;
                 m_floorUp = vec3(0, 1, 0);

@@ -12,6 +12,11 @@ namespace Engine {
         bool negate = false;
     };
 
+    struct InputActionSpec {
+        int keycode = -1;
+        int gamepadButton = -1;
+    };
+
     struct GamepadState {
         /*! The states of each [gamepad button](@ref gamepad_buttons), `GLFW_PRESS`
          *  or `GLFW_RELEASE`.
@@ -37,6 +42,9 @@ namespace Engine {
         static void Poll(double dt);
         static void BindAxis(const std::string& axisName, InputAxisSpec spec);
         static float GetAxis(const std::string& axisName);
+
+        static void BindAction(const std::string& actionName, InputActionSpec spec);
+        static bool GetAction(const std::string& actionName); // TODO: have this send keyPressedEvents
 
         static const GamepadState& GetState();
 
