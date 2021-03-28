@@ -33,6 +33,7 @@ void GameLayer::OnAttach() {
     Input::BindAxis("AxisMoveRight",   { KEY_CODE_D, KEY_CODE_A, GAMEPAD_AXIS_LEFT_X });
     Input::BindAxis("AxisRotateRight", { KEY_CODE_E, KEY_CODE_Q, GAMEPAD_AXIS_RIGHT_X });
     Input::BindAxis("AxisRotateUp",    { KEY_CODE_R, KEY_CODE_F, GAMEPAD_AXIS_RIGHT_Y, true });
+    Input::BindAxis("AxisBoost",       { KEY_CODE_LEFT_SHIFT, KEY_CODE_F12, GAMEPAD_AXIS_LEFT_TRIGGER });
 
     Input::BindAction("ActionJump", {KEY_CODE_SPACE, GAMEPAD_BUTTON_A});
     

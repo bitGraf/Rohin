@@ -47,7 +47,7 @@ public:
     }
 
     vec3 GenerateDesiredMovement() {
-        if (Engine::Input::IsKeyPressed(KEY_CODE_LEFT_SHIFT)) {
+        if (Engine::Input::GetAxis("AxisBoost") > 0.0f) {
             moveSpeed = 20;
         }
         else {
@@ -64,7 +64,7 @@ public:
             // handle translation
             vel += localR * (moveSpeed * Engine::Input::GetAxis("AxisMoveRight"));
             vel += localF * (moveSpeed * Engine::Input::GetAxis("AxisMoveForward"));
-            CameraHeight += 0.65f * Engine::Input::GetAxis("AxisRotateUp");
+            CameraHeight -= 0.65f * Engine::Input::GetAxis("AxisRotateUp");
             CameraHeight = std::clamp(CameraHeight, CameraHeightMin, CameraHeightMax);
 
             if (Engine::Input::GetAction("ActionJump") && grounded) {
