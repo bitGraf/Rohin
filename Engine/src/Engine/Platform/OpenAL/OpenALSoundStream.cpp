@@ -72,7 +72,7 @@ namespace Engine {
         }
 
         while (buffersProcessed--) {
-            printf("%d buffers done (%.2f)\n", buffersProcessed+1, m_time);
+            //printf("%d buffers done (%.2f)\n", buffersProcessed+1, m_time);
 
             ALuint buffer;
             alSourceUnqueueBuffers(m_source, 1, &buffer);

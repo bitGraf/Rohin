@@ -26,7 +26,7 @@ namespace Engine {
             return nextID;
         }
 
-        const std::vector<reg_type>& GetRegList() {
+        const std::vector<reg_type>& GetRegList() const {
             return m_RegList;
         }
 

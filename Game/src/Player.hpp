@@ -41,51 +41,77 @@ public:
             LOG_INFO("PlayerController no longer in control");
     }
 
+    void RotateCharacter(double ts) {
+        // handle rotation
+        yaw -= Engine::Input::GetAxis("AxisRotateRight") * rotSpeed * ts;
+    }
+
+    vec3 GenerateDesiredMovement() {
+        if (Engine::Input::GetAxis("AxisBoost") > 0.0f) {
+            moveSpeed = 20;
+        }
+        else {
+            moveSpeed = 7.0f;
+        }
+
+        vec3 vel(0,0,0);
+        if (grounded) {
+            // get floor-based local frame
+            vec3 localU = m_floorUp.get_unit();
+            vec3 localR = Forward.cross(localU).get_unit();
+            vec3 localF = localU.cross(localR).get_unit();
+
+            // handle translation
+            vel += localR * (moveSpeed * Engine::Input::GetAxis("AxisMoveRight"));
+            vel += localF * (moveSpeed * Engine::Input::GetAxis("AxisMoveForward"));
+            CameraHeight -= 0.65f * Engine::Input::GetAxis("AxisRotateUp");
+            CameraHeight = std::clamp(CameraHeight, CameraHeightMin, CameraHeightMax);
+
+            if (Engine::Input::GetAction("ActionJump") && grounded) {
+                vel += Up * jumpPower; // still jump vertically, not off ramp
+                grounded = false;
+                m_floorUp = vec3(0, 1, 0);
+            }
+        }
+        else {
+            vel = velocity;
+        }
+        return vel;
+    }
+
+    math::vec3 GetCameraTarget() {
+        float horiz_dist = sqrt(CameraDistance*CameraDistance - CameraHeight * CameraHeight);
+        return position - (Forward * horiz_dist) + (Up * CameraHeight);
+    }
+
+    const math::vec3& GetPosition() const {
+        return position;
+    }
+
     virtual void OnUpdate(double ts) override {
         if (BeingControlled) {
             BENCHMARK_FUNCTION();
 
-            // handle translation
-            if (Input::IsKeyPressed(KEY_CODE_Q)) {
-                velocity -= Right * moveSpeed; // Strafe Left
-            } if (Input::IsKeyPressed(KEY_CODE_E)) {
-                velocity += Right * moveSpeed; // Strafe Right
-            } if (Input::IsKeyPressed(KEY_CODE_W)) {
-                velocity += Forward * moveSpeed; // Walk Forward
-            } if (Input::IsKeyPressed(KEY_CODE_S)) {
-                velocity -= Forward * moveSpeed; // Walk Backward
-            } if (Input::IsKeyPressed(KEY_CODE_SPACE) && grounded) {
-                velocity += Up * jumpPower; // Float up
-                grounded = false;
-                m_floorUp = vec3(0, 1, 0);
-                // play sound?
-                SoundEngine::CueSound("guard_death", position);
-            }
-            
-            // handle rotation
-            if (Input::IsKeyPressed(KEY_CODE_A)) {
-                yaw += rotSpeed * ts; // Rotate Left
-            } if (Input::IsKeyPressed(KEY_CODE_D)) {
-                yaw -= rotSpeed * ts; // Rotate Right
-            } if (Input::IsKeyPressed(KEY_CODE_R)) {
-                pitch += rotSpeed * ts; // Pitch Up
-            } if (Input::IsKeyPressed(KEY_CODE_F)) {
-                pitch -= rotSpeed * ts; // Pitch Down
-            }
+            velocity = GenerateDesiredMovement();
+            RotateCharacter(ts);
 
             auto collisionHullID = colliderComponent->HullID;
-            if (!grounded) {
-                velocity.y -= 9.8 * ts;
-            }
-            else {
+            if (grounded) {
                 // Raycast down to see if there is anything beneath us
                 // TODO: Cache the currect collisionID of the ground and check against that.
                 RaycastResult rc = cWorld.Raycast(position + hull_offset, vec3(0, -1, 0), .6);
 
                 if (rc.colliderID == 0) {
+                    // no ground beneath me
                     grounded = false;
                     m_floorUp = vec3(0, 1, 0);
+                    m_floorID = 0;
                 }
+                else {
+                    m_floorID = rc.colliderID;
+                }
+            } else {
+                velocity.y -= 9.8 * ts;
             }
 
             int iterations = 0;
@@ -128,9 +154,13 @@ public:
                                     if (acos(contactNormal.dot(vec3(0, 1, 0))) < (m_floorAngleLimit * d2r)) {
                                         grounded = true;
                                         velocity.y = 0;
+
+                                        // this isn't the normal of the surface, 
+                                        // so it might not be ideal for the floor normal
                                         m_floorUp = plane->contact_normal;
+                                        m_floorID = plane->colliderID;
                                         // play sound?
-                                        SoundEngine::CueSound("golem", position);
+                                        //SoundEngine::CueSound("golem", position);
                                     }
                                 }
                             }
@@ -167,12 +197,10 @@ public:
                 velocity = vec3(0, 0, 0);
             }
             else {
-                velocity = vec3(0, velocity.y, 0);
+                //velocity = vec3(0, velocity.y, 0);
             }
 
             auto& transform = transformComponent->Transform;
-
-            //position += velocity * ts;
 
             transform = mat4();
             transform.translate(position);
@@ -188,6 +216,13 @@ private:
     Engine::TransformComponent* transformComponent;
     Engine::ColliderComponent* colliderComponent;
 
+    // Camera state
+    //math::vec3 CameraTargetPosition;
+    float CameraHeight = 5;
+    float CameraHeightMin = 1;
+    float CameraHeightMax = 8;
+    float CameraDistance = 10;
+
     // State
     math::vec3 Forward, Right, Up;
     math::vec3 position;
@@ -195,6 +230,7 @@ private:
     float yaw, pitch;
     vec3 ghostPosition;
     vec3 m_floorUp;
+    UID_t m_floorID = 0;
 
     // Flags
     bool grounded = false;
@@ -202,7 +238,7 @@ private:
 
     // Parameters
     math::vec3 hull_offset;
-    float moveSpeed = 4.0f;
+    float moveSpeed = 7.0f;
     float jumpPower = 5.5f;
     float rotSpeed = 360.0f;
     float m_floorAngleLimit = 35;

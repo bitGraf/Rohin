@@ -51,6 +51,7 @@ namespace Engine {
         bool operator!=(const GameObject& other) const { return ~operator==(other); }
 
         const Scene& GetScene() const { return *m_Scene; }
+        Scene& GetScene() { return *m_Scene; }
 
     private:
         GameObject_type m_GameObjectHandle{ 0 };

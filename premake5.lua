@@ -88,17 +88,17 @@ project "Engine"
         }
     
     filter "configurations:Debug"
-        defines "RH_DEBUG"
+        defines { "RH_DEBUG", "_DEBUG" }
         runtime "Debug"
         symbols "on"
     
     filter "configurations:Release"
-        defines "RH_RELEASE"
+        defines { "RH_RELEASE", "NDEBUG" }
         runtime "Release"
         optimize "on"
 
     filter "configurations:Dist"
-        defines "RH_DIST"
+        defines { "RH_DIST", "NDEBUG" }
         runtime "Release"
         optimize "on"
 
@@ -138,6 +138,10 @@ project "Game"
         "%{wks.location}/Engine/deps/OpenAL_soft/libs/Win64"
     }
 
+    postbuildcommands {
+        "{COPY} %{cfg.targetdir}/Game.exe %{wks.location}/Game/"
+    }
+
     defines {
         "ROHIN_GAME"
     }
@@ -153,17 +157,17 @@ project "Game"
         systemversion "latest"
     
     filter "configurations:Debug"
-        defines "RH_DEBUG"
+        defines { "RH_DEBUG", "_DEBUG" }
         runtime "Debug"
         symbols "on"
     
     filter "configurations:Release"
-        defines "RH_RELEASE"
+        defines { "RH_RELEASE", "NDEBUG" }
         runtime "Release"
         optimize "on"
 
     filter "configurations:Dist"
-        defines "RH_DIST"
+        defines { "RH_DIST", "NDEBUG" }
         runtime "Release"
         optimize "on"
 

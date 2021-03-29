@@ -831,9 +831,9 @@ namespace math {
             vec3(t._12, t._22, t._32),
             vec3(t._13, t._23, t._33));
 
-        vec3 forward = -rotation.col3();
         vec3 right = rotation.col1();
         vec3 up = rotation.col2();
+        vec3 forward = -rotation.col3();
 
         return std::tuple<vec3, vec3, vec3>(
             forward, right, up);

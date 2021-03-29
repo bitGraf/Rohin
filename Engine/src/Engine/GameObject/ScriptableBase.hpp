@@ -22,6 +22,7 @@ namespace Engine {
         virtual void OnDestroy() {};
         virtual void OnUpdate(double ts) {};
 
+        Scene& GetScene() { return m_GameObject.GetScene(); }
     private:
         GameObject m_GameObject; // the GameObject its attached to
         friend class Scene;

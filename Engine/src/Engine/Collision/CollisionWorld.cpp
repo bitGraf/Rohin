@@ -404,6 +404,7 @@ scalar CollisionWorld::TimeOfImpact(CollisionHull* hull1, vec3 vel1, CollisionHu
 
     if (n.length_2() == 0) {
         *out_normal = -v.get_unit();
+        ENGINE_LOG_WARN("Why is this happening?");
     }
     else {
         *out_normal = n;
