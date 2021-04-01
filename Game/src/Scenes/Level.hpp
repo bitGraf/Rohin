@@ -1,14 +1,14 @@
 #pragma once
-#include <Engine.hpp>
 
-class GameLayer : public Engine::EngineLayer {
+#include "Engine.hpp"
+
+class Level : public Engine::Scene {
 public:
-    GameLayer();
-    virtual ~GameLayer() = default;
+    Level(const std::string& levelName);
+    ~Level();
 
     virtual void OnAttach() override;
     virtual void OnDetach() override;
-
     virtual void OnUpdate(Engine::Timestep ts) override;
     virtual void OnEvent(Engine::Event& event) override;
     virtual void OnGuiRender() override;
@@ -16,11 +16,11 @@ public:
 private:
     void CheckViewportSize();
     bool OnKeyPressedEvent(Engine::KeyPressedEvent& e);
+    math::vec2 m_ViewportSize;
 
 private:
-    Engine::Ref<Engine::Scene> m_ActiveScene;
-
+    f32 m_levelTime = 0.0f;
+    Engine::Ref<Engine::Scene3D> m_3DScene;
     Engine::GameObject m_Camera;
-    
-    math::vec2 m_ViewportSize;
+    bool successful = false;
 };

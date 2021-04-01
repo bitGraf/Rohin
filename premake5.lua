@@ -18,10 +18,12 @@ IncludeDir["GLAD"] = "%{wks.location}/Engine/deps/GLAD/include"
 IncludeDir["ImGui"] = "%{wks.location}/Engine/deps/imgui"
 IncludeDir["OpenAL_soft"] = "%{wks.location}/Engine/deps/OpenAL_soft/include"
 
-include "Engine/deps/GLFW"
-include "Engine/deps/GLAD"
-include "Engine/deps/imgui"
-include "Engine/deps/OpenAL_soft"
+group "Deps"
+    include "Engine/deps/GLFW"
+    include "Engine/deps/GLAD"
+    include "Engine/deps/imgui"
+    include "Engine/deps/OpenAL_soft"
+group "" -- end of "Deps"
 
 project "Engine"
     location "Engine"
@@ -111,7 +113,8 @@ project "Game"
     cppdialect "C++17"
     staticruntime "On"
 
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    --targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    targetdir ("Game/run_tree")
     objdir ("bin-intermediate/" .. outputdir .. "/%{prj.name}")
 
     files
@@ -138,19 +141,20 @@ project "Game"
         "%{wks.location}/Engine/deps/OpenAL_soft/libs/Win64"
     }
 
-    postbuildcommands {
-        "{COPY} %{cfg.targetdir}/Game.exe %{wks.location}/Game/"
-    }
-
     defines {
         "ROHIN_GAME"
     }
+
+    debugdir "Game/run_tree/"
 
     -- Clean function --
     if _ACTION == "clean" then
         os.remove("Game/Game.vcxproj")
         os.remove("Game/Game.vcxproj.filters")
         os.remove("Game/Game.vcxproj.user")
+        os.remove("Game/run_tree/Game.exe")
+        os.remove("Game/run_tree/Game.ilk")
+        os.remove("Game/run_tree/Game.pdb")
      end
 
     filter "system:windows"

@@ -16,9 +16,11 @@ namespace Engine {
         OpenALSoundStream(const std::string& filename);
         virtual ~OpenALSoundStream();
 
-        virtual void PlayStream() const override;
-        virtual void PauseStream() const override;
+        virtual void StartStream() const override;
         virtual void StopStream() const override;
+        virtual void PauseStream() const override;
+        virtual void ResumeStream() const override;
+
         virtual void UpdateStream(float dt) override;
         virtual void SetEffectSlot(u32 slot) override;
 

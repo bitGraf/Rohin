@@ -34,7 +34,7 @@ namespace Engine {
         Component& emplace(reg_type go, Args &&... args) {
             Component c(std::forward<Args>(args)...);
             if (assure<Component>().insert(go, c)) {
-                ENGINE_LOG_TRACE("GameObject {0} given component {1}!", go, DEBUG_OSTR(c));
+                //ENGINE_LOG_TRACE("GameObject {0} given component {1}!", go, DEBUG_OSTR(c));
                 return assure<Component>().searchComp(go);
             }
         }

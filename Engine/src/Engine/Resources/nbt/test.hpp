@@ -41,7 +41,7 @@ namespace nbtTest {
 	void test2() {
 		{
 			// test if the nbt format can be easily used to store mesh data
-			auto mesh = std::make_shared<Engine::Mesh>("run_tree/Data/Models/cube.mesh", true);
+			auto mesh = std::make_shared<Engine::Mesh>("Data/Models/cube.mesh", true);
 
 			auto verts = mesh->GetVertices();
 			auto inds = mesh->GetIndices();

@@ -1,5 +1,5 @@
 #include <enpch.hpp>
-#include "Scene.hpp"
+#include "Scene3D.hpp"
 
 #include "Engine/GameObject/GameObject.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -10,16 +10,19 @@
 #include "Engine/Resources/MeshCatalog.hpp"
 #include "Engine/Sound/SoundEngine.hpp"
 
+// hard-coded levels
+#include "Engine/Examples/ExampleLevels.hpp"
+
 namespace Engine {
 
-    GameObject Scene::CreateGameObject(const std::string& name) {
+    GameObject Scene3D::CreateGameObject(const std::string& name) {
         GameObject go = { m_Registry.Create(), this };
         go.AddComponent<TransformComponent>();
         go.AddComponent<TagComponent>(name.empty() ? "GameObject" : name);
         return go;
     }
 
-    GameObject Scene::FindByName(const std::string& name) {
+    GameObject Scene3D::FindByName(const std::string& name) {
         // TODO: why can't I just get all entities that have tags, and return the dameOgject id then?
         // since all GameObjects created are given a tag by default, this might not be bad...
         //const auto& entities = m_Registry.GetRegList();
@@ -35,171 +38,26 @@ namespace Engine {
         return GameObject(0, nullptr);
     }
 
-    void Scene::loadFromFile(const std::string& filename) {
+    bool Scene3D::loadFromLevel(const std::string& levelName) {
         BENCHMARK_FUNCTION();
-        /*
-        
-        1. read all strings
-        2. create all gameobjects
-        3. attach all components
+        std::string filename = "Data/Levels/" + levelName + ".scene";
 
-        */
-
-        nbt::file_data data;
-        nbt::nbt_byte version_major, version_minor;
-        endian::endian endianness;
-        ENGINE_LOG_INFO("Loading .nbt level file from \"{0}\"", filename);
-        bool success = nbt::read_from_file(filename, data, version_major, version_minor, endianness);
-
-        if (!success) {
-            ENGINE_LOG_ERROR("Failed to load /nbt level file \"{0}\"", filename);
-            return;
+        // TEMP
+        // First check if it is one of the hard-coded levels
+        if (LoadExampleLevel(levelName, this)) {
+            return true;
         }
 
-        auto str = data.first;
-        auto& comp = data.second->as<nbt::tag_compound>();
-
-        /* Extract global scene data */
-        auto level_name = comp["name"].as<nbt::tag_string>().get();
-        ENGINE_LOG_INFO("Level name: {0}", level_name);
-
-        /* First get all the meshes that need to be loaded */
-        auto mesh_list = comp["meshes"].as<nbt::tag_list>();
-        ENGINE_LOG_ASSERT(mesh_list.el_type() == nbt::tag_type::Compound, "Mesh list needs to be a lag_list of tag_compound!");
-
-        for (auto& mesh : mesh_list) {
-            auto& tc = mesh.as<nbt::tag_compound>();
-
-            auto mesh_name = tc["mesh_name"].as<nbt::tag_string>();
-            auto mesh_path = tc["mesh_path"].as<nbt::tag_string>();
-            bool is_nbt = tc.has_key("nbt");
-            
-            MeshCatalog::Register(mesh_name, mesh_path, is_nbt);
-        }
-
-        /* loop through entities and create them */
-        auto entity_list = comp["entities"].as<nbt::tag_list>();
-        ENGINE_LOG_ASSERT(entity_list.el_type() == nbt::tag_type::Compound, "Entity list needs to be a lag_list of tag_compound!");
-
-        for (auto& entity : entity_list) {
-            auto& tc = entity.as<nbt::tag_compound>();
-
-            auto& name = tc["name"].as<nbt::tag_string>();
-            // create the entity
-            ENGINE_LOG_TRACE("Entity {0}", name);
-            auto go = CreateGameObject(name);
-
-            auto& transform = tc["transform"].as<nbt::tag_compound>();
-            math::vec3 position, scale(1,1,1);
-            math::vec4 rotation;
-            if (transform.has_key("position"))
-                position = transform["position"].as<nbt::tag_vec3>().get();
-            if (transform.has_key("rotation"))
-                rotation = transform["rotation"].as<nbt::tag_vec4>().get();
-            if (transform.has_key("scale"))
-                scale = transform["scale"].as<nbt::tag_vec3>().get();
-
-            // TODO: allow for rotations (need quaternion to yaw/pitch/roll
-            // TODO: alternatively, ned function to build transform from position/scale vectors and rotation quaternion
-            auto& T = go.GetComponent<TransformComponent>().Transform;
-            T = math::mat4();
-            T.translate(position);
-            //auto q = math::quat2ypr(rotation);
-            T *= math::createYawPitchRollMatrix(0, 0, 0);
-            T *= math::mat4(scale.x, scale.y, scale.z, 1.0f);
-
-            auto& component_list = tc["components"].as<nbt::tag_list>();
-            ENGINE_LOG_ASSERT(component_list.el_type() == nbt::tag_type::Compound, "Component list needs to be a lag_list of tag_compound!");
-
-            for (auto& component : component_list) {
-                auto& comp_type = component["type"].as<nbt::tag_string>().get();
-
-                if (comp_type.compare("MeshRenderer") == 0) {
-                    ENGINE_LOG_INFO("adding a MeshRenderer component");
-
-                    auto& mesh_name = component["mesh_name"].as<nbt::tag_string>().get();
-                    auto __mesh = MeshCatalog::Get(mesh_name);
-                    go.AddComponent<MeshRendererComponent>(__mesh); // TODO: add blockchain
-                } else if (comp_type.compare("Camera") == 0) {
-                    ENGINE_LOG_INFO("adding a Camera component");
-
-                    go.AddComponent<CameraComponent>();
-                } else if (comp_type.compare("NativeScript") == 0) {
-                    ENGINE_LOG_INFO("adding a NativeScript component");
-
-                    auto& script_tag = component["script_tag"].as<nbt::tag_string>().get();
-                    if (script_tag.compare("script_builtin_example") == 0) {
-                        ENGINE_LOG_ERROR("This is nonsnse temporay code");
-                    }
-                    else if (Engine::BindGameScript(script_tag, this, go)) {
-                        //...
-                    }
-                    else {
-                        ENGINE_LOG_WARN("unknown native script component: {0}", script_tag);
-                    }
-                }
-                else {
-                    ENGINE_LOG_WARN("unknown component type!");
-                }
-            }
-        }
+        return false;
     }
 
-    void Scene::writeToFile(const std::string& filename) {
-        std::ofstream fp(filename, std::ios::out | std::ios::binary);
+    void Scene3D::Destroy() {
+        OnRuntimeStop();
 
-        //fp << "Start" << std::endl;
-
-        //fp << "BlockTable";
-        //u8 numBlocks = 8;
-        //fp.write(reinterpret_cast<char*>(&numBlocks), sizeof(numBlocks));
-
-        auto gameObjects = m_Registry.GetRegList();
-
-        for (auto go : gameObjects) {
-            fp << "[GameObject] " << go << std::endl;
-            if (m_Registry.has<TagComponent>(go)) {
-                fp << "  [TagComponent] " << m_Registry.get<TagComponent>(go).Name << std::endl;
-            }
-            if (m_Registry.has<MeshRendererComponent>(go)) {
-                fp << "  [MeshRendererComponent] " << m_Registry.get<MeshRendererComponent>(go).Mesh->GetFilePath() << std::endl;
-            }
-            if (m_Registry.has<TransformComponent>(go)) {
-                fp << "  [TransformComponent] " <<
-                    m_Registry.get<TransformComponent>(go).Transform._11 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._12 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._13 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._14 << " " <<
-
-                    m_Registry.get<TransformComponent>(go).Transform._21 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._22 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._23 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._24 << " " <<
-
-                    m_Registry.get<TransformComponent>(go).Transform._31 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._32 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._33 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._34 << " " <<
-
-                    m_Registry.get<TransformComponent>(go).Transform._41 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._42 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._43 << " " <<
-                    m_Registry.get<TransformComponent>(go).Transform._44 << std::endl;
-            }
-            if (m_Registry.has<CameraComponent>(go)) {
-                fp << "  [CameraComponent] " << m_Registry.get<CameraComponent>(go).camera.GetPerspectiveFoV() << std::endl;
-            }
-            if (m_Registry.has<NativeScriptComponent>(go)) {
-                fp << "  [NativeScriptComponent] " << "scriptType" << std::endl;
-            }
-        }
-
-        //fp << "End" << std::endl;
-
-        fp.close();
+        //m_Registry.clear();
     }
 
-    void Scene::OnRuntimeStart() {
+    void Scene3D::OnRuntimeStart() {
         BENCHMARK_FUNCTION();
         if (!m_Playing) {
             // Initialize all scripts
@@ -214,21 +72,27 @@ namespace Engine {
                 }
             }
 
-            SoundEngine::StartSteam();
+            SoundEngine::StartStream();
         }
 
         m_Playing = true;
     }
 
-    void Scene::OnRuntimePause() {
+    void Scene3D::OnRuntimePause() {
+        SoundEngine::PauseStream();
+
         m_Playing = false;
     }
 
-    void Scene::OnRuntimeResume() {
+    void Scene3D::OnRuntimeResume() {
+        SoundEngine::ResumeStream();
+
         m_Playing = true;
     }
 
-    void Scene::OnRuntimeStop() {
+    void Scene3D::OnRuntimeStop() {
+        SoundEngine::StopStream();
+
         BENCHMARK_FUNCTION();
         if (m_Playing) {
             // Destroy all scripts
@@ -245,7 +109,7 @@ namespace Engine {
         m_Playing = false;
     }
 
-    void Scene::OnUpdate(double dt) {
+    void Scene3D::OnUpdate(double dt) {
         BENCHMARK_FUNCTION();
         if (m_Playing) {
             BENCHMARK_SCOPE("Update Scripts");
@@ -360,17 +224,17 @@ namespace Engine {
             Renderer::BeginSobelPass();
             // Render collision hulls
             if (m_showCollisionHulls) {
-                for (const auto& hull : cWorld.m_static) {
+                for (const auto& hull : m_cWorld.m_static) {
                     math::mat4 transform;
                     transform.translate(hull.position);
                     transform *= math::mat4(hull.rotation);
-                    Renderer::Submit(hull.wireframe, transform, vec3(1, .05, .1));
+                    Renderer::Submit(hull.wireframe, transform, math::vec3(1, .05, .1));
                 }
-                for (const auto& hull : cWorld.m_dynamic) {
+                for (const auto& hull : m_cWorld.m_dynamic) {
                     math::mat4 transform;
                     transform.translate(hull.position);
                     transform *= math::mat4(hull.rotation);
-                    Renderer::Submit(hull.wireframe, transform, vec3(.1, .05, 1));
+                    Renderer::Submit(hull.wireframe, transform, math::vec3(.1, .05, 1));
                 }
             }
             Renderer::EndSobelPass();
@@ -385,7 +249,7 @@ namespace Engine {
         
     }
 
-    void Scene::OnViewportResize(u32 width, u32 height) {
+    void Scene3D::OnViewportResize(u32 width, u32 height) {
         m_ViewportWidth = width;
         m_ViewportHeight = height;
 
@@ -397,9 +261,9 @@ namespace Engine {
         }
     }
 
-    Scene::Scene() {
+    Scene3D::Scene3D() {
     }
 
-    Scene::~Scene() {
+    Scene3D::~Scene3D() {
     }
 }

@@ -1,41 +1,43 @@
 #ifndef COLLISION_HULL_H
 #define COLLISION_HULL_H
 
+#include "Engine/Core/Base.hpp"
 #include "Engine/Core/GameMath.hpp"
 #include "Engine/Renderer/VertexArray.hpp"
 
-using namespace math;
-typedef u64 UID_t;
+namespace Engine {
+    typedef u64 UID_t;
 
-struct Triangle {
-    index_t indices[3];
-    Triangle() : indices{ 0,0,0 } {}
-    Triangle(index_t n1, index_t n2, index_t n3) : indices{ n1,n2,n3 } {}
-};
+    struct CollisionTriangle {
+        index_t indices[3];
+        CollisionTriangle() : indices{ 0,0,0 } {}
+        CollisionTriangle(index_t n1, index_t n2, index_t n3) : indices{ n1,n2,n3 } {}
+    };
 
-class CollisionHull {
-public:
-    CollisionHull();
+    class CollisionHull {
+    public:
+        CollisionHull();
 
-    int GetSupport(vec3 search_dir);
-    vec3 GetVertWorldSpace(int index);
+        int GetSupport(math::vec3 search_dir);
+        math::vec3 GetVertWorldSpace(int index);
 
-    vec3 position;
-    mat3 rotation;
-    Engine::Ref<Engine::VertexArray> wireframe; // for visualizing
+        math::vec3 position;
+        math::mat3 rotation;
+        Engine::Ref<Engine::VertexArray> wireframe; // for visualizing
 
-    void bufferData();
+        void bufferData();
 
-    std::vector<math::vec3> vertices;
-    std::vector<Triangle> faces;
-    float m_radius;
+        std::vector<math::vec3> vertices;
+        std::vector<CollisionTriangle> faces;
+        float m_radius;
 
-    const UID_t m_hullID;
+        const UID_t m_hullID;
 
-private:
-    /// Get the next globally unique ID
-    static UID_t getNextUID();
-    static UID_t nextUID;
-};
+    private:
+        /// Get the next globally unique ID
+        static UID_t getNextUID();
+        static UID_t nextUID;
+    };
+}
 
 #endif

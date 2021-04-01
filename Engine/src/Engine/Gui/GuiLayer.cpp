@@ -12,7 +12,7 @@
 
 namespace Engine {
 
-    GuiLayer::GuiLayer() : EngineLayer("GUILayer") {
+    GuiLayer::GuiLayer() {
     }
 
     void GuiLayer::OnAttach() {

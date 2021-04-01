@@ -7,9 +7,11 @@ namespace Engine {
     class SoundStream {
     public:
 
-        virtual void PlayStream() const = 0;
-        virtual void PauseStream() const = 0;
+        virtual void StartStream() const = 0;
         virtual void StopStream() const = 0;
+        virtual void PauseStream() const = 0;
+        virtual void ResumeStream() const = 0;
+
         virtual void UpdateStream(float dt) = 0;
         virtual void SetEffectSlot(u32 slot) = 0;
 

@@ -1,19 +1,20 @@
 #pragma once
 
-#include "Engine/EngineLayer.hpp"
+#include "Engine/Core/Base.hpp"
+#include "Engine/Event/Event.hpp"
 
 namespace Engine {
 
-    class GuiLayer : public EngineLayer
+    class GuiLayer
     {
     public:
         GuiLayer();
         ~GuiLayer();
 
-        virtual void OnAttach() override;
-        virtual void OnDetach() override;
+        virtual void OnAttach();
+        virtual void OnDetach();
         virtual void OnEvent(Event& event);
-        virtual void OnGuiRender() override;
+        virtual void OnGuiRender();
 
         void Begin();
         void End();

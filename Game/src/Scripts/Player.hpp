@@ -7,8 +7,13 @@ public:
     PlayerController() {}
 
     virtual void OnCreate() override {
-        transformComponent = &GetComponent<Engine::TransformComponent>();
-        colliderComponent  = &GetComponent<Engine::ColliderComponent>();
+        using namespace Engine;
+
+        cWorld = &GetScene().GetCollisionWorld();
+        LOG_ASSERT(cWorld, "PlayerController could not find Collision World");
+
+        transformComponent = &GetComponent<TransformComponent>();
+        colliderComponent  = &GetComponent<ColliderComponent>();
         //auto followTarget = GetScene().FindByName("frog");
 
         LOG_ASSERT(transformComponent, "PlayerController could not find a transform component");
@@ -42,12 +47,16 @@ public:
     }
 
     void RotateCharacter(double ts) {
+        using namespace Engine;
         // handle rotation
-        yaw -= Engine::Input::GetAxis("AxisRotateRight") * rotSpeed * ts;
+        yaw -= Input::GetAxis("AxisRotateRight") * rotSpeed * ts;
     }
 
-    vec3 GenerateDesiredMovement() {
-        if (Engine::Input::GetAxis("AxisBoost") > 0.0f) {
+    math::vec3 GenerateDesiredMovement() {
+        using namespace Engine;
+        using namespace math;
+
+        if (Input::GetAxis("AxisBoost") > 0.0f) {
             moveSpeed = 20;
         }
         else {
@@ -62,12 +71,12 @@ public:
             vec3 localF = localU.cross(localR).get_unit();
 
             // handle translation
-            vel += localR * (moveSpeed * Engine::Input::GetAxis("AxisMoveRight"));
-            vel += localF * (moveSpeed * Engine::Input::GetAxis("AxisMoveForward"));
-            CameraHeight -= 0.65f * Engine::Input::GetAxis("AxisRotateUp");
+            vel += localR * (moveSpeed * Input::GetAxis("AxisMoveRight"));
+            vel += localF * (moveSpeed * Input::GetAxis("AxisMoveForward"));
+            CameraHeight -= 0.65f * Input::GetAxis("AxisRotateUp");
             CameraHeight = std::clamp(CameraHeight, CameraHeightMin, CameraHeightMax);
 
-            if (Engine::Input::GetAction("ActionJump") && grounded) {
+            if (Input::GetAction("ActionJump") && grounded) {
                 vel += Up * jumpPower; // still jump vertically, not off ramp
                 grounded = false;
                 m_floorUp = vec3(0, 1, 0);
@@ -89,6 +98,9 @@ public:
     }
 
     virtual void OnUpdate(double ts) override {
+        using namespace Engine;
+        using namespace math;
+
         if (BeingControlled) {
             BENCHMARK_FUNCTION();
 
@@ -99,7 +111,7 @@ public:
             if (grounded) {
                 // Raycast down to see if there is anything beneath us
                 // TODO: Cache the currect collisionID of the ground and check against that.
-                RaycastResult rc = cWorld.Raycast(position + hull_offset, vec3(0, -1, 0), .6);
+                RaycastResult rc = cWorld->Raycast(position + hull_offset, vec3(0, -1, 0), .6);
 
                 if (rc.colliderID == 0) {
                     // no ground beneath me
@@ -118,7 +130,7 @@ public:
             // Perform collision logic
             if (collisionHullID > 0) {
                 // it has collision info
-                res = cWorld.Shapecast_multi(collisionHullID, velocity);
+                res = cWorld->Shapecast_multi(collisionHullID, velocity);
 
                 if (res.numContacts) {
                     vec3 p_target = position + velocity * ts;
@@ -181,7 +193,7 @@ public:
                     ghostPosition = position;
                 }
 
-                CollisionHull* hull = cWorld.getHullFromID(collisionHullID);
+                CollisionHull* hull = cWorld->getHullFromID(collisionHullID);
                 hull->position = position + hull_offset;
 
                 // TODO: Expand the ShapeCast function to allow for rotation
@@ -215,6 +227,7 @@ public:
 private:
     Engine::TransformComponent* transformComponent;
     Engine::ColliderComponent* colliderComponent;
+    Engine::CollisionWorld* cWorld = nullptr;
 
     // Camera state
     //math::vec3 CameraTargetPosition;
@@ -228,9 +241,9 @@ private:
     math::vec3 position;
     math::vec3 velocity;
     float yaw, pitch;
-    vec3 ghostPosition;
-    vec3 m_floorUp;
-    UID_t m_floorID = 0;
+    math::vec3 ghostPosition;
+    math::vec3 m_floorUp;
+    Engine::UID_t m_floorID = 0;
 
     // Flags
     bool grounded = false;
@@ -244,5 +257,5 @@ private:
     float m_floorAngleLimit = 35;
 
 
-    ShapecastResult_multi res;
+    Engine::ShapecastResult_multi res;
 };

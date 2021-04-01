@@ -3,13 +3,14 @@
 #include "Engine.hpp"
 #include "Player.hpp"
 
-using namespace Engine;
-using namespace math;
 class CameraController : public Engine::ScriptableBase {
 public:
     CameraController() {}
 
     virtual void OnCreate() override {
+        using namespace Engine;
+        using namespace math;
+
         transformComponent = &GetComponent<TransformComponent>();
         cameraComponent = &GetComponent<CameraComponent>();
         //auto followTarget = GetScene().FindByName("frog");
@@ -18,7 +19,9 @@ public:
         LOG_ASSERT(cameraComponent,    "CamController could not find a camera component");
 
         playerScript = nullptr;
-        playerScript = GetScene().FindByName("Player").GetComponent<NativeScriptComponent>().GetScript<PlayerController>();
+        auto player = GetScene().FindByName("Player");
+        if (player)
+            playerScript = GetScene().FindByName("Player").GetComponent<NativeScriptComponent>().GetScript<PlayerController>();
         LOG_ASSERT(playerScript, "CamController could not find player controller script");
 
         cameraComponent->camera.SetOrthographic(6, -3, 3);
@@ -38,9 +41,9 @@ public:
         ///TEMP
 
         // update listener
-        SoundEngine::SetListenerPosition(position);
-        SoundEngine::SetListenerVelocity(math::vec3(0,0,0));
-        SoundEngine::SetListenerOrientation(Forward, Up);
+        Engine::SoundEngine::SetListenerPosition(position);
+        Engine::SoundEngine::SetListenerVelocity(math::vec3(0,0,0));
+        Engine::SoundEngine::SetListenerOrientation(Forward, Up);
 
         LOG_INFO("Camera controller created on GameObject {0}!", GetGameObjectID());
     }
@@ -54,6 +57,9 @@ public:
     }
 
     virtual void OnUpdate(double ts) override {
+        using namespace Engine;
+        using namespace math;
+
         static bool firstFrame = true;
         static float oldMousePosX = 0, oldMousePosY = 0;
         float offX = 0.0f, offY = 0.0f;
@@ -140,7 +146,7 @@ public:
                 position += velocity * ts;
                 CalcTransformFromYawPitch(velocity);
             }
-        } else {
+        } else if (playerScript) {
             firstFrame = true;
             oldMousePosX = 0;
             oldMousePosY = 0;
@@ -151,7 +157,10 @@ public:
     }
 
 private:
-    void CalcTransformFromYawPitch(vec3 velocity) {
+    void CalcTransformFromYawPitch(math::vec3 velocity) {
+        using namespace Engine;
+        using namespace math;
+
         auto& transform = transformComponent->Transform;
         transform = mat4();
         transform.translate(position);
@@ -167,7 +176,10 @@ private:
         SoundEngine::SetListenerOrientation(Forward, Up);
     }
 
-    void CalcTransformFromLookDir(vec3 at, vec3 lookAt, vec3 velocity) {
+    void CalcTransformFromLookDir(math::vec3 at, math::vec3 lookAt, math::vec3 velocity) {
+        using namespace Engine;
+        using namespace math;
+
         position = at;
         Forward = (lookAt - at).get_unit();
         Right = Forward.cross(vec3(0, 1, 0)).get_unit();
@@ -193,15 +205,15 @@ private:
     // Player
     PlayerController* playerScript;
 
-    TransformComponent* transformComponent;
-    CameraComponent* cameraComponent;
+    Engine::TransformComponent* transformComponent;
+    Engine::CameraComponent* cameraComponent;
 
-    vec3 Forward, Right, Up;
+    math::vec3 Forward, Right, Up;
 
     float moveSpeed = 5.0f;
     float rotSpeed = 90.0f;
 
-    vec3 position{0, 0, 2};
+    math::vec3 position{0, 0, 2};
     float yaw = 0, pitch = 0;
     //bool updateTransform = true;
 
