@@ -4,8 +4,6 @@
 namespace Engine {
     using namespace math;
 
-    CollisionWorld cWorld;
-
     CollisionWorld::CollisionWorld() {
 
     }

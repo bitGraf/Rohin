@@ -218,13 +218,13 @@ namespace Engine {
             Renderer::BeginSobelPass();
             // Render collision hulls
             if (m_showCollisionHulls) {
-                for (const auto& hull : cWorld.m_static) {
+                for (const auto& hull : m_cWorld.m_static) {
                     math::mat4 transform;
                     transform.translate(hull.position);
                     transform *= math::mat4(hull.rotation);
                     Renderer::Submit(hull.wireframe, transform, math::vec3(1, .05, .1));
                 }
-                for (const auto& hull : cWorld.m_dynamic) {
+                for (const auto& hull : m_cWorld.m_dynamic) {
                     math::mat4 transform;
                     transform.translate(hull.position);
                     transform *= math::mat4(hull.rotation);

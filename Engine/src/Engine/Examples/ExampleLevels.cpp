@@ -34,6 +34,7 @@ namespace Engine {
     void load_level_1(Scene3D* scene) {
         Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", true);
         Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", true);
+        auto& cWorld = scene->GetCollisionWorld();
 
         { // Player
             auto player = scene->CreateGameObject("Player");
@@ -120,6 +121,7 @@ namespace Engine {
     void load_level_2(Scene3D* scene) {
         Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", true);
         Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", true);
+        auto& cWorld = scene->GetCollisionWorld();
 
         { // Player
             auto player = scene->CreateGameObject("Player");

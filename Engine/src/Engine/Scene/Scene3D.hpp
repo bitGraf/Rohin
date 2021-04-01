@@ -2,6 +2,7 @@
 
 #include "Engine/GameObject/Registry.hpp"
 #include "Engine/Core/GameMath.hpp"
+#include "Engine/Collision/CollisionWorld.hpp"
 
 namespace Engine {
 
@@ -33,9 +34,11 @@ namespace Engine {
         inline void ToggleCollisionHulls() { ENGINE_LOG_WARN("Showing collision hulls: {0}", !m_showCollisionHulls); m_showCollisionHulls = !m_showCollisionHulls; }
 
         Registry& GetRegistry() { return m_Registry; }
+        CollisionWorld& GetCollisionWorld() { return m_cWorld; }
 
     private:
         Registry m_Registry;
+        CollisionWorld m_cWorld;
         u32 m_ViewportWidth = 0, m_ViewportHeight = 0;
 
         bool m_Playing = false;

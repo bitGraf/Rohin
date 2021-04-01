@@ -9,6 +9,9 @@ public:
     virtual void OnCreate() override {
         using namespace Engine;
 
+        cWorld = &GetScene().GetCollisionWorld();
+        LOG_ASSERT(cWorld, "PlayerController could not find Collision World");
+
         transformComponent = &GetComponent<TransformComponent>();
         colliderComponent  = &GetComponent<ColliderComponent>();
         //auto followTarget = GetScene().FindByName("frog");
@@ -108,7 +111,7 @@ public:
             if (grounded) {
                 // Raycast down to see if there is anything beneath us
                 // TODO: Cache the currect collisionID of the ground and check against that.
-                RaycastResult rc = cWorld.Raycast(position + hull_offset, vec3(0, -1, 0), .6);
+                RaycastResult rc = cWorld->Raycast(position + hull_offset, vec3(0, -1, 0), .6);
 
                 if (rc.colliderID == 0) {
                     // no ground beneath me
@@ -127,7 +130,7 @@ public:
             // Perform collision logic
             if (collisionHullID > 0) {
                 // it has collision info
-                res = cWorld.Shapecast_multi(collisionHullID, velocity);
+                res = cWorld->Shapecast_multi(collisionHullID, velocity);
 
                 if (res.numContacts) {
                     vec3 p_target = position + velocity * ts;
@@ -190,7 +193,7 @@ public:
                     ghostPosition = position;
                 }
 
-                CollisionHull* hull = cWorld.getHullFromID(collisionHullID);
+                CollisionHull* hull = cWorld->getHullFromID(collisionHullID);
                 hull->position = position + hull_offset;
 
                 // TODO: Expand the ShapeCast function to allow for rotation
@@ -224,6 +227,7 @@ public:
 private:
     Engine::TransformComponent* transformComponent;
     Engine::ColliderComponent* colliderComponent;
+    Engine::CollisionWorld* cWorld = nullptr;
 
     // Camera state
     //math::vec3 CameraTargetPosition;

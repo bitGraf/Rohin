@@ -134,8 +134,6 @@ namespace Engine {
         std::vector<CollisionHull> m_static;
         std::vector<CollisionHull> m_dynamic;
     };
-
-    extern CollisionWorld cWorld;
 }
 
 #endif
