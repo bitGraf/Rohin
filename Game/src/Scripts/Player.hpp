@@ -7,8 +7,10 @@ public:
     PlayerController() {}
 
     virtual void OnCreate() override {
-        transformComponent = &GetComponent<Engine::TransformComponent>();
-        colliderComponent  = &GetComponent<Engine::ColliderComponent>();
+        using namespace Engine;
+
+        transformComponent = &GetComponent<TransformComponent>();
+        colliderComponent  = &GetComponent<ColliderComponent>();
         //auto followTarget = GetScene().FindByName("frog");
 
         LOG_ASSERT(transformComponent, "PlayerController could not find a transform component");
@@ -42,12 +44,15 @@ public:
     }
 
     void RotateCharacter(double ts) {
+        using namespace Engine;
         // handle rotation
-        yaw -= Engine::Input::GetAxis("AxisRotateRight") * rotSpeed * ts;
+        yaw -= Input::GetAxis("AxisRotateRight") * rotSpeed * ts;
     }
 
     vec3 GenerateDesiredMovement() {
-        if (Engine::Input::GetAxis("AxisBoost") > 0.0f) {
+        using namespace Engine;
+
+        if (Input::GetAxis("AxisBoost") > 0.0f) {
             moveSpeed = 20;
         }
         else {
@@ -62,12 +67,12 @@ public:
             vec3 localF = localU.cross(localR).get_unit();
 
             // handle translation
-            vel += localR * (moveSpeed * Engine::Input::GetAxis("AxisMoveRight"));
-            vel += localF * (moveSpeed * Engine::Input::GetAxis("AxisMoveForward"));
-            CameraHeight -= 0.65f * Engine::Input::GetAxis("AxisRotateUp");
+            vel += localR * (moveSpeed * Input::GetAxis("AxisMoveRight"));
+            vel += localF * (moveSpeed * Input::GetAxis("AxisMoveForward"));
+            CameraHeight -= 0.65f * Input::GetAxis("AxisRotateUp");
             CameraHeight = std::clamp(CameraHeight, CameraHeightMin, CameraHeightMax);
 
-            if (Engine::Input::GetAction("ActionJump") && grounded) {
+            if (Input::GetAction("ActionJump") && grounded) {
                 vel += Up * jumpPower; // still jump vertically, not off ramp
                 grounded = false;
                 m_floorUp = vec3(0, 1, 0);

@@ -20,4 +20,6 @@ private:
 
 private:
     f32 m_levelTime = 0.0f;
+    Engine::Ref<Engine::Scene3D> m_3DScene;
+    Engine::GameObject m_Camera;
 };

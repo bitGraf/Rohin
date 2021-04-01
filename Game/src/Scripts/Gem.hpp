@@ -2,14 +2,12 @@
 
 #include "Engine.hpp"
 
-using namespace Engine;
-using namespace math;
-class Gem : public ScriptableBase {
+class Gem : public Engine::ScriptableBase {
 public:
     Gem() {}
 
     virtual void OnCreate() override {
-        transformComponent = &GetComponent<TransformComponent>();
+        transformComponent = &GetComponent<Engine::TransformComponent>();
 
         LOG_ASSERT(transformComponent, "Gem script could not find a transform component");
 
@@ -45,7 +43,7 @@ public:
     }
 
 private:
-    TransformComponent * transformComponent;
+    Engine::TransformComponent * transformComponent;
 
     float time = 0.0f;
     float rotSpeed = 60.0f;

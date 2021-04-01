@@ -3,22 +3,20 @@
 #include "Engine.hpp"
 #include "Player.hpp"
 
-using namespace Engine;
-using namespace math;
 class CameraController : public Engine::ScriptableBase {
 public:
     CameraController() {}
 
     virtual void OnCreate() override {
-        transformComponent = &GetComponent<TransformComponent>();
-        cameraComponent = &GetComponent<CameraComponent>();
+        transformComponent = &GetComponent<Engine::TransformComponent>();
+        cameraComponent = &GetComponent<Engine::CameraComponent>();
         //auto followTarget = GetScene().FindByName("frog");
 
         LOG_ASSERT(transformComponent, "CamController could not find a transform component");
         LOG_ASSERT(cameraComponent,    "CamController could not find a camera component");
 
         playerScript = nullptr;
-        playerScript = GetScene().FindByName("Player").GetComponent<NativeScriptComponent>().GetScript<PlayerController>();
+        playerScript = GetScene().FindByName("Player").GetComponent<Engine::NativeScriptComponent>().GetScript<PlayerController>();
         LOG_ASSERT(playerScript, "CamController could not find player controller script");
 
         cameraComponent->camera.SetOrthographic(6, -3, 3);
@@ -38,9 +36,9 @@ public:
         ///TEMP
 
         // update listener
-        SoundEngine::SetListenerPosition(position);
-        SoundEngine::SetListenerVelocity(math::vec3(0,0,0));
-        SoundEngine::SetListenerOrientation(Forward, Up);
+        Engine::SoundEngine::SetListenerPosition(position);
+        Engine::SoundEngine::SetListenerVelocity(math::vec3(0,0,0));
+        Engine::SoundEngine::SetListenerOrientation(Forward, Up);
 
         LOG_INFO("Camera controller created on GameObject {0}!", GetGameObjectID());
     }
@@ -54,6 +52,7 @@ public:
     }
 
     virtual void OnUpdate(double ts) override {
+        using namespace Engine;
         static bool firstFrame = true;
         static float oldMousePosX = 0, oldMousePosY = 0;
         float offX = 0.0f, offY = 0.0f;
@@ -152,6 +151,7 @@ public:
 
 private:
     void CalcTransformFromYawPitch(vec3 velocity) {
+        using namespace Engine;
         auto& transform = transformComponent->Transform;
         transform = mat4();
         transform.translate(position);
@@ -168,6 +168,7 @@ private:
     }
 
     void CalcTransformFromLookDir(vec3 at, vec3 lookAt, vec3 velocity) {
+        using namespace Engine;
         position = at;
         Forward = (lookAt - at).get_unit();
         Right = Forward.cross(vec3(0, 1, 0)).get_unit();
@@ -193,8 +194,8 @@ private:
     // Player
     PlayerController* playerScript;
 
-    TransformComponent* transformComponent;
-    CameraComponent* cameraComponent;
+    Engine::TransformComponent* transformComponent;
+    Engine::CameraComponent* cameraComponent;
 
     vec3 Forward, Right, Up;
 

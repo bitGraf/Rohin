@@ -31,6 +31,9 @@
 #include "Engine/Renderer/Framebuffer.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 
+/* Sound stuff */
+#include "Engine/Sound/SoundEngine.hpp"
+
 /* Resource stuff */
 #include "Engine/Resources/MeshCatalog.hpp"
 #include "Engine/Resources/MaterialCatalog.hpp"
