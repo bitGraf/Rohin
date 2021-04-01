@@ -6,12 +6,10 @@
 
 #include "Engine/Sound/SoundEngine.hpp"
 
-#include "PauseMenuLayer.hpp"
-
 /* native scripts */
-#include "CameraController.hpp"
-#include "Player.hpp"
-#include "Gem.hpp"
+#include "Scripts/CameraController.hpp"
+#include "Scripts/Player.hpp"
+#include "Scripts/Gem.hpp"
 
 bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene3D* scene, GameObject gameobject) {
     if (script_tag.compare("script_camera_controller") == 0) {
@@ -21,7 +19,7 @@ bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene3D* scen
     return false;
 }
 
-GameLayer::GameLayer() : EngineLayer("Game") {
+GameLayer::GameLayer() {
 }
 
 void GameLayer::OnAttach() {

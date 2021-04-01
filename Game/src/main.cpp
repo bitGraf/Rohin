@@ -5,25 +5,21 @@
 #include <Engine.hpp>
 #include <Engine/EntryPoint.h>
 
-#include "GameLayer.hpp"
-#include "MenuLayer.hpp"
+// Scenes
+#include "Scenes/MainMenu.hpp"
 
 class Game : public Engine::Application {
 public:
     Game() {
-
-        m_GameLayer = new GameLayer();
-        PushLayer(m_GameLayer);
-        //m_MainMenuLayer = new MenuLayer();
-        //PushLayer(m_MainMenuLayer);
+        // create MainMenu Scene
+        MainMenuScene* m_MainMenuScene = new MainMenuScene();
+        PushNewScene(m_MainMenuScene); // Application Class handles memory
     }
 
     ~Game() {
     }
 
 private:
-    MenuLayer* m_MainMenuLayer;
-    GameLayer* m_GameLayer;
 };
 
 Engine::Application* Engine::CreateApplication() {

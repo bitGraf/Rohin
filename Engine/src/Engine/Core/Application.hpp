@@ -5,10 +5,10 @@
 #include "Engine/Core/Window.hpp"
 #include "Engine/Event/Event.hpp"
 #include "Engine/Event/EventTypes.hpp"
-#include "Engine/LayerStack.hpp"
 #include "Engine/Core/Input.hpp"
 #include "Engine/Gui/GuiLayer.hpp"
 #include "Engine/Core/Timing.hpp"
+#include "Engine/Scene/Scene.hpp"
 
 namespace Engine {
 
@@ -22,18 +22,12 @@ namespace Engine {
 
         void HandleEvent(Event& event);
 
-        void PushLayer(EngineLayer* layer);
-        void PushOverlay(EngineLayer* overlay);
-
-        void RemoveLayer(EngineLayer* layer);
-
-        void PushLayerNextFrame(EngineLayer* layer);
-        void RemoveLayerNextFrame(EngineLayer* layer);
+        void PushNewScene(Scene* newScene);
 
         inline static Application& Get() { return *s_Instance; }
         inline Window& GetWindow() { return *m_Window; }
 
-        GuiLayer* GetGuiLayer() { return m_GuiLayer; }
+        //GuiLayer* GetGuiLayer() { return m_GuiLayer; }
 
     private:
         bool OnWindowClose(WindowCloseEvent& event);
@@ -47,11 +41,9 @@ namespace Engine {
 
         float m_LastFrameTime = 0;
 
-        LayerStack m_layerStack;
-
-        // Temp
-        EngineLayer* nextLayer = nullptr;
-        EngineLayer* nextRemoveLayer = nullptr;
+        //LayerStack m_layerStack;
+        Scene* m_CurrentScene = nullptr;
+        Scene* m_NextScene = nullptr;
 
     private:
         static Application * s_Instance;
