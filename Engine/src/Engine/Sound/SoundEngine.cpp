@@ -131,12 +131,20 @@ namespace Engine {
         s_SoundData.stream->UpdateStream(dt);
     }
 
-    void SoundEngine::StartSteam() {
-        s_SoundData.stream->PlayStream();
+    void SoundEngine::StartStream() {
+        s_SoundData.stream->StartStream();
     }
 
-    void SoundEngine::StopSteam() {
+    void SoundEngine::StopStream() {
         s_SoundData.stream->StopStream();
+    }
+
+    void SoundEngine::PauseStream() {
+        s_SoundData.stream->PauseStream();
+    }
+
+    void SoundEngine::ResumeStream() {
+        s_SoundData.stream->ResumeStream();
     }
 
     bool LoadSound(const std::string& filename) {

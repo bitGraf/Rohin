@@ -72,21 +72,27 @@ namespace Engine {
                 }
             }
 
-            SoundEngine::StartSteam();
+            SoundEngine::StartStream();
         }
 
         m_Playing = true;
     }
 
     void Scene3D::OnRuntimePause() {
+        SoundEngine::PauseStream();
+
         m_Playing = false;
     }
 
     void Scene3D::OnRuntimeResume() {
+        SoundEngine::ResumeStream();
+
         m_Playing = true;
     }
 
     void Scene3D::OnRuntimeStop() {
+        SoundEngine::StopStream();
+
         BENCHMARK_FUNCTION();
         if (m_Playing) {
             // Destroy all scripts
