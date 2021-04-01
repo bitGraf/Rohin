@@ -79,20 +79,20 @@ namespace Engine {
         RenderCommand::Init();
 
         s_Data.ShaderLibrary = std::make_unique<ShaderLibrary>();
-        //Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PBR_static.glsl");
-        //Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Skybox.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Line.glsl");
-        //Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Normals.glsl");
+        //Renderer::GetShaderLibrary()->Load("Data/Shaders/PBR_static.glsl");
+        //Renderer::GetShaderLibrary()->Load("Data/Shaders/Skybox.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Line.glsl");
+        //Renderer::GetShaderLibrary()->Load("Data/Shaders/Normals.glsl");
 
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PrePass.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Lighting.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/SSAO.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Screen.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Sobel.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Mix.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/PrePass.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Lighting.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/SSAO.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Screen.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Sobel.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Mix.glsl");
 
-        //s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/DebugCubeMap.tga");
-        s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/snowbox.png");
+        //s_Data.Skybox = TextureCube::Create("Data/Images/DebugCubeMap.tga");
+        s_Data.Skybox = TextureCube::Create("Data/Images/snowbox.png");
 
         // Create fullscreen quad
         {

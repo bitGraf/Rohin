@@ -52,44 +52,44 @@ int main(int argc, char** argv) {
 
     //tag_compound mat_copper{
     //    { "name", "PBR Copper" },
-    //    { "albedo_path",    "run_tree/Data/Images/copper/albedo.png" },
-    //    { "normal_path",    "run_tree/Data/Images/copper/normal.png" },
-    //    { "ambient_path",   "run_tree/Data/Images/copper/ao.png" },
-    //    { "metalness_path", "run_tree/Data/Images/copper/metallic.png" },
-    //    { "roughness_path", "run_tree/Data/Images/copper/roughness.png" }
+    //    { "albedo_path",    "Data/Images/copper/albedo.png" },
+    //    { "normal_path",    "Data/Images/copper/normal.png" },
+    //    { "ambient_path",   "Data/Images/copper/ao.png" },
+    //    { "metalness_path", "Data/Images/copper/metallic.png" },
+    //    { "roughness_path", "Data/Images/copper/roughness.png" }
     //};
     //
     //tag_compound mat_concrete{
     //    { "name", "Waffle Concrete" },
-    //    { "albedo_path",    "run_tree/Data/Images/waffle/WaffleSlab2_albedo.png" },
-    //    { "normal_path",    "run_tree/Data/Images/waffle/WaffleSlab2_normal.png" },
-    //    { "ambient_path",   "run_tree/Data/Images/waffle/WaffleSlab2_ao.png" },
-    //    { "roughness_path", "run_tree/Data/Images/waffle/WaffleSlab2_roughness.png" }
+    //    { "albedo_path",    "Data/Images/waffle/WaffleSlab2_albedo.png" },
+    //    { "normal_path",    "Data/Images/waffle/WaffleSlab2_normal.png" },
+    //    { "ambient_path",   "Data/Images/waffle/WaffleSlab2_ao.png" },
+    //    { "roughness_path", "Data/Images/waffle/WaffleSlab2_roughness.png" }
     //};
 
     //tag_compound mat_damaged_helmet{
     //    { "name", "Damaged Helmet" },
-    //    { "albedo_path",    "run_tree/Data/Images/helmet/albedo.png" },
-    //    { "normal_path",    "run_tree/Data/Images/helmet/normal.png" },
-    //    { "ambient_path",   "run_tree/Data/Images/helmet/ambient.png" },
-    //    { "metalness_path", "run_tree/Data/Images/helmet/metallic.png" },
-    //    { "roughness_path", "run_tree/Data/Images/helmet/roughness.png" },
-    //    { "emissive_path",  "run_tree/Data/Images/helmet/emission.png" }
+    //    { "albedo_path",    "Data/Images/helmet/albedo.png" },
+    //    { "normal_path",    "Data/Images/helmet/normal.png" },
+    //    { "ambient_path",   "Data/Images/helmet/ambient.png" },
+    //    { "metalness_path", "Data/Images/helmet/metallic.png" },
+    //    { "roughness_path", "Data/Images/helmet/roughness.png" },
+    //    { "emissive_path",  "Data/Images/helmet/emission.png" }
     //};
 
     //tag_compound mat_tape_recorder {
     //    { "name", "Tape Player" },
-    //    { "albedo_path",    "run_tree/Data/Images/tape/albedo.png" },
-    //    //{ "normal_path",    "run_tree/Data/Images/tape/normal.png" },
-    //    { "ambient_path",   "run_tree/Data/Images/tape/ambient.png" },
-    //    { "metalness_path", "run_tree/Data/Images/tape/metallic.png" },
-    //    { "roughness_path", "run_tree/Data/Images/tape/roughness.png" },
-    //    { "emissive_path",  "run_tree/Data/Images/tape/emission.png" }
+    //    { "albedo_path",    "Data/Images/tape/albedo.png" },
+    //    //{ "normal_path",    "Data/Images/tape/normal.png" },
+    //    { "ambient_path",   "Data/Images/tape/ambient.png" },
+    //    { "metalness_path", "Data/Images/tape/metallic.png" },
+    //    { "roughness_path", "Data/Images/tape/roughness.png" },
+    //    { "emissive_path",  "Data/Images/tape/emission.png" }
     //};
 
     tag_compound mat_guard{
         { "name", "Guard Man" },
-        { "albedo_path",    "run_tree/Data/Images/guard.png" }
+        { "albedo_path",    "Data/Images/guard.png" }
     };
 
     tag_compound material_catalog{
@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
         { "mat_guard", tag_compound(mat_guard) }
     };
 
-    auto result = nbt::write_to_file("run_tree/Data/Materials/materials.nbt", nbt::file_data({ "material_catalog", std::make_unique<tag_compound>(material_catalog) }), 0, 1);
+    auto result = nbt::write_to_file("Data/Materials/materials.nbt", nbt::file_data({ "material_catalog", std::make_unique<tag_compound>(material_catalog) }), 0, 1);
     if (!result)
         __debugbreak();
 
@@ -116,7 +116,7 @@ int main(int argc, char** argv) {
     Ref<SoundContext> context = SoundContext::Create(device);
     context->MakeCurrent();
 
-    Ref<SoundStream> stream = SoundStream::Create("run_tree/Data/Sounds/ahhh.ogg");
+    Ref<SoundStream> stream = SoundStream::Create("Data/Sounds/ahhh.ogg");
     stream->PlayStream();
 
     while (true) {
@@ -328,10 +328,10 @@ int main(int argc, char** argv) {
             matBlock.push_byte(numTextures);
 
             // AlbedoTexture
-            std::string albedoPath =    "run_tree/Data/Images/waffle/WaffleSlab2_albedo.png";
-            std::string normalPath =    "run_tree/Data/Images/waffle/WaffleSlab2_normal.png";
-            std::string metalPath =     "run_tree/Data/Images/frog.png"; // not yet
-            std::string roughnessPath = "run_tree/Data/Images/waffle/WaffleSlab2_roughness.png";
+            std::string albedoPath =    "Data/Images/waffle/WaffleSlab2_albedo.png";
+            std::string normalPath =    "Data/Images/waffle/WaffleSlab2_normal.png";
+            std::string metalPath =     "Data/Images/frog.png"; // not yet
+            std::string roughnessPath = "Data/Images/waffle/WaffleSlab2_roughness.png";
             
             matBlock.push_string("u_AlbedoTexture");
             matBlock.push_string(albedoPath);
@@ -425,12 +425,12 @@ int main(int argc, char** argv) {
         file.AddBlock(meshBlock);
         file.AddBlock(skelBlock);
         file.ResolveOffsets();
-        file.WriteToFile("run_tree/Data/Models/cube.mesh");
+        file.WriteToFile("Data/Models/cube.mesh");
     }
 
     /* Read from the file and extract data */
     {
-        fin.ReadFromFile("run_tree/Data/Models/cube.mesh");
+        fin.ReadFromFile("Data/Models/cube.mesh");
         if (fin.fileLength > 0) {
 
             {

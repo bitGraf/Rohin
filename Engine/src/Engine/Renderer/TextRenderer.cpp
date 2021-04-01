@@ -23,7 +23,7 @@ namespace Engine {
         BENCHMARK_FUNCTION();
 
         s_Data.ShaderLibrary = std::make_unique<ShaderLibrary>();
-        auto textShader = GetShaderLibrary()->Load("run_tree/Data/Shaders/Text.glsl");
+        auto textShader = GetShaderLibrary()->Load("Data/Shaders/Text.glsl");
 
         // create font-rendering globals
         s_Data.orthoMat.orthoProjection(0, 1280, 720, 0, -1, 1);
@@ -63,7 +63,7 @@ namespace Engine {
         }
 
         // load fonts
-        s_Data.font.create("run_tree/Data/Fonts/UbuntuMono-Regular.ttf", 20);
+        s_Data.font.create("Data/Fonts/UbuntuMono-Regular.ttf", 20);
     }
 
     void TextRenderer::Shutdown() {

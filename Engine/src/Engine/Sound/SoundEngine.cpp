@@ -56,7 +56,7 @@ namespace Engine {
         }
         s_SoundData.status.queueSize = 0;
 
-        s_SoundData.stream = SoundStream::Create("run_tree/Data/Sounds/tape.ogg");
+        s_SoundData.stream = SoundStream::Create("Data/Sounds/tape.ogg");
 
         // create effects
         SoundEffect::Init(s_SoundData.device);

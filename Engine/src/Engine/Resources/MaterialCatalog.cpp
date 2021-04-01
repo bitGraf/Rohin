@@ -62,7 +62,7 @@ namespace Engine {
         nbt::file_data data;
         nbt::nbt_byte major, minor;
         endian::endian endianness;
-        bool result = nbt::read_from_file("run_tree/Data/Materials/materials.nbt", data, major, minor, endianness);
+        bool result = nbt::read_from_file("Data/Materials/materials.nbt", data, major, minor, endianness);
         ENGINE_LOG_ASSERT(result, "Failed to load material catalog");
 
         for (const auto& material : data.second->as<nbt::tag_compound>()) {
@@ -74,11 +74,11 @@ namespace Engine {
         }
 
         // Load some textures manually that I know we'll need
-        MaterialCatalog::GetTexture("run_tree/Data/Images/frog.png");
-        MaterialCatalog::GetTexture("run_tree/Data/Images/normal.png");
-        MaterialCatalog::GetTexture("run_tree/Data/Images/white.png");
-        MaterialCatalog::GetTexture("run_tree/Data/Images/black.png");
-        MaterialCatalog::GetTexture("run_tree/Data/Images/green.png");
+        MaterialCatalog::GetTexture("Data/Images/frog.png");
+        MaterialCatalog::GetTexture("Data/Images/normal.png");
+        MaterialCatalog::GetTexture("Data/Images/white.png");
+        MaterialCatalog::GetTexture("Data/Images/black.png");
+        MaterialCatalog::GetTexture("Data/Images/green.png");
     }
 
     void MaterialCatalog::Shutdown() {

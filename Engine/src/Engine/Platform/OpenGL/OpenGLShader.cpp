@@ -22,7 +22,7 @@ namespace Engine {
         std::string source = ReadFile(path);
         m_ShaderSources = PreProcess(source);
 
-        // run_tree/Data/Shaders/simple.glsl
+        // Data/Shaders/simple.glsl
         auto lastSlash = path.find_last_of("/\\");
         lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
         auto lastDot = path.rfind('.');

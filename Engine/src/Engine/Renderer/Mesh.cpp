@@ -111,12 +111,12 @@ namespace Engine {
                     
                     // If after the material and texture definitions, some channels are still
                     // not set, set them to the default texture values
-                    if (!mat_spec.Albedo)    mat_spec.Albedo    = MaterialCatalog::GetTexture("run_tree/Data/Images/frog.png");
-                    if (!mat_spec.Normal)    mat_spec.Normal    = MaterialCatalog::GetTexture("run_tree/Data/Images/normal.png");
-                    if (!mat_spec.Ambient)   mat_spec.Ambient   = MaterialCatalog::GetTexture("run_tree/Data/Images/white.png");
-                    if (!mat_spec.Metalness) mat_spec.Metalness = MaterialCatalog::GetTexture("run_tree/Data/Images/black.png");
-                    if (!mat_spec.Roughness) mat_spec.Roughness = MaterialCatalog::GetTexture("run_tree/Data/Images/white.png");
-                    if (!mat_spec.Emissive)  mat_spec.Emissive  = MaterialCatalog::GetTexture("run_tree/Data/Images/black.png");
+                    if (!mat_spec.Albedo)    mat_spec.Albedo    = MaterialCatalog::GetTexture("Data/Images/frog.png");
+                    if (!mat_spec.Normal)    mat_spec.Normal    = MaterialCatalog::GetTexture("Data/Images/normal.png");
+                    if (!mat_spec.Ambient)   mat_spec.Ambient   = MaterialCatalog::GetTexture("Data/Images/white.png");
+                    if (!mat_spec.Metalness) mat_spec.Metalness = MaterialCatalog::GetTexture("Data/Images/black.png");
+                    if (!mat_spec.Roughness) mat_spec.Roughness = MaterialCatalog::GetTexture("Data/Images/white.png");
+                    if (!mat_spec.Emissive)  mat_spec.Emissive  = MaterialCatalog::GetTexture("Data/Images/black.png");
 
                     // print out texture IDs
                     //ENGINE_LOG_INFO("Mesh {0} has texIDs ({1},{2},{3},{4},{5},{6})", filename, mat_spec.Albedo->GetID(), mat_spec.Normal->GetID(), mat_spec.Ambient->GetID(), mat_spec.Metalness->GetID(), mat_spec.Albedo->GetID(), mat_spec.Roughness->GetID());

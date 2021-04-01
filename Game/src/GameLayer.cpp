@@ -52,8 +52,8 @@ void GameLayer::OnAttach() {
     m_ActiveScene = std::make_shared<Engine::Scene>();
     {
         BENCHMARK_SCOPE("Loading Meshes");
-        Engine::MeshCatalog::Register("mesh_guard", "run_tree/Data/Models/guard.nbt", true);
-        Engine::MeshCatalog::Register("mesh_plane", "run_tree/Data/Models/plane.nbt", true);
+        Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", true);
+        Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", true);
     }
     { // Player
         auto player = m_ActiveScene->CreateGameObject("Player");
@@ -79,7 +79,7 @@ void GameLayer::OnAttach() {
         auto rectMesh = Engine::MeshCatalog::Get("mesh_plane");
         auto material = rectMesh->GetMaterial(0);
         material->Set<float>("u_TextureScale", platformSize);
-        material->Set("u_AlbedoTexture", Engine::Texture2D::Create("run_tree/Data/Images/grid/PNG/Dark/texture_07.png"));
+        material->Set("u_AlbedoTexture", Engine::Texture2D::Create("Data/Images/grid/PNG/Dark/texture_07.png"));
         platform.AddComponent<Engine::MeshRendererComponent>(rectMesh);
 
         auto& trans = platform.GetComponent<Engine::TransformComponent>().Transform;
@@ -125,10 +125,10 @@ void GameLayer::OnAttach() {
     // Sound stuff
     {
         BENCHMARK_SCOPE("Create soundcues");
-        SoundEngine::CreateSoundCue("guard_death", { "run_tree/Data/Sounds/death.ogg", 0.02f });
-        SoundEngine::CreateSoundCue("golem", { "run_tree/Data/Sounds/golem.ogg", 0.1f }); //MONO, has 3D sound
-        SoundEngine::CreateSoundCue("protector", { "run_tree/Data/Sounds/sound.wav", 0.2f });
-        SoundEngine::CreateSoundCue("ahhh", { "run_tree/Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
+        SoundEngine::CreateSoundCue("guard_death", { "Data/Sounds/death.ogg", 0.02f });
+        SoundEngine::CreateSoundCue("golem", { "Data/Sounds/golem.ogg", 0.1f }); //MONO, has 3D sound
+        SoundEngine::CreateSoundCue("protector", { "Data/Sounds/sound.wav", 0.2f });
+        SoundEngine::CreateSoundCue("ahhh", { "Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
     }
 
     m_ActiveScene->OnRuntimeStart();

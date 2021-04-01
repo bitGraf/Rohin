@@ -27,7 +27,7 @@ namespace Engine {
         //m_EditorScene = std::make_shared<Scene>();
 
         //auto frog = m_EditorScene->CreateGameObject("Frog Cube 2");
-        //auto& mesh = frog.AddComponent<MeshRendererComponent>(std::make_shared<Engine::Mesh>("run_tree/Data/Models/cube.mesh"));
+        //auto& mesh = frog.AddComponent<MeshRendererComponent>(std::make_shared<Engine::Mesh>("Data/Models/cube.mesh"));
         //mesh.Mesh->GetMaterial(0)->Set("u_color", math::vec4(1, .2, .1, 1));
 
         //m_EditorCamera = m_EditorScene->CreateGameObject("EditorCamera");
