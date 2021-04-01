@@ -19,6 +19,8 @@ namespace Engine {
         ENGINE_LOG_ASSERT(!s_Instance, "App already exists");
         s_Instance = this;
 
+        PrintConfiguration();
+
         m_Window = std::unique_ptr<Window>(Window::Create());
         m_Window->SetEventCallback(BIND_EVENT_FN(Application::HandleEvent));
 

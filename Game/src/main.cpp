@@ -9,32 +9,32 @@
 #include "Scenes/MainMenu.hpp"
 #include "Scenes/Level.hpp"
 
-const int quickstartScene = 1;
+const int quickstartScene = 0;
 
 class Game : public Engine::Application {
 public:
     Game() {
         switch (quickstartScene) {
-        case 0: {
-            // create MainMenu Scene
-            MainMenuScene* m_MainMenuScene = new MainMenuScene();
-            PushNewScene(m_MainMenuScene); // Application Class handles memory
-        } break;
-        case 1: {
-            // create level scene
-            Level* level = new Level("Level_1");
-            PushNewScene(level);
-        } break;
-        case 2: {
-            // create level scene
-            Level* level = new Level("Level_2");
-            PushNewScene(level);
-        } break;
-        case 3: {
-            // create level scene
-            Level* level = new Level("Level_3");
-            PushNewScene(level);
-        } break;
+            case 0: {
+                // create MainMenu Scene
+                MainMenuScene* m_MainMenuScene = new MainMenuScene();
+                PushNewScene(m_MainMenuScene); // Application Class handles memory
+            } break;
+            case 1: {
+                // create level scene
+                Level* level = new Level("Level_1");
+                PushNewScene(level);
+            } break;
+            case 2: {
+                // create level scene
+                Level* level = new Level("Level_2");
+                PushNewScene(level);
+            } break;
+            case 3: {
+                // create level scene
+                Level* level = new Level("Level_3");
+                PushNewScene(level);
+            } break;
         }
     }
 

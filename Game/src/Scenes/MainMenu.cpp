@@ -59,9 +59,12 @@ void MainMenuScene::OnUpdate(Engine::Timestep ts) {
     Engine::RenderCommand::SetClearColor(math::vec4(.1, .1, .1, 1));
     Engine::RenderCommand::Clear();
     
-    // draw menu
-    const std::vector<std::string>& currentMenuButtons = GetCurrentMenu();
+    // draw title
     float x = m_ViewportSize.x / 2.0f;
+    Engine::TextRenderer::SubmitText("font_big", "Bideo Game!", x, 35.0f, math::vec3(.5f, .25f, .7f), TextAlignment::ALIGN_TOP_MID);
+
+    // draw menu buttons
+    const std::vector<std::string>& currentMenuButtons = GetCurrentMenu();
     float y = m_ViewportSize.y * 0.25f;
     math::vec3 color(.6f, .8f, .75f);
     math::vec3 color_select(.1f, .8f, .75f);

@@ -52,6 +52,7 @@ void Level::OnAttach() {
 
     // Start the 3D scene
     m_3DScene->OnRuntimeStart();
+    m_levelTime = 0.0f;
 }
 
 void Level::OnDetach() {
