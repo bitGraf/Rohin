@@ -11,7 +11,7 @@
 #include "Engine/Core/MouseButtonCodes.hpp"
 #include "Engine/Core/Input.hpp"
 
-#include "Engine/Scene/Scene.hpp"
+#include "Engine/Scene/Scene3D.hpp"
 #include "Engine/GameObject/GameObject.hpp"
 #include "Engine/GameObject/Components.hpp"
 

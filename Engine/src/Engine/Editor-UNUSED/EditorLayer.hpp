@@ -20,7 +20,7 @@ namespace Engine {
         virtual void OnEvent(Event& event) override;
         virtual void OnGuiRender() override;
 
-        //virtual Ref<Scene> GetScene() override { return m_EditorScene; }
+        //virtual Ref<Scene3D> GetScene() override { return m_EditorScene; }
 
         void SetGameLayer(EngineLayer* layer) { m_GameLayer = layer; }
 
@@ -33,7 +33,7 @@ namespace Engine {
         SceneHierarchyPanel m_Panel;
         Ref<Framebuffer> m_Framebuffer;
 
-        //Ref<Scene> m_EditorScene;
+        //Ref<Scene3D> m_EditorScene;
         GameObject m_EditorCamera;
 
         // Viewport data

@@ -1,5 +1,5 @@
 #include <enpch.hpp>
-#include "Scene.hpp"
+#include "Scene3D.hpp"
 
 #include "Engine/GameObject/GameObject.hpp"
 #include "Engine/Renderer/Renderer.hpp"
@@ -12,14 +12,14 @@
 
 namespace Engine {
 
-    GameObject Scene::CreateGameObject(const std::string& name) {
+    GameObject Scene3D::CreateGameObject(const std::string& name) {
         GameObject go = { m_Registry.Create(), this };
         go.AddComponent<TransformComponent>();
         go.AddComponent<TagComponent>(name.empty() ? "GameObject" : name);
         return go;
     }
 
-    GameObject Scene::FindByName(const std::string& name) {
+    GameObject Scene3D::FindByName(const std::string& name) {
         // TODO: why can't I just get all entities that have tags, and return the dameOgject id then?
         // since all GameObjects created are given a tag by default, this might not be bad...
         //const auto& entities = m_Registry.GetRegList();
@@ -35,7 +35,7 @@ namespace Engine {
         return GameObject(0, nullptr);
     }
 
-    void Scene::loadFromFile(const std::string& filename) {
+    void Scene3D::loadFromFile(const std::string& filename) {
         BENCHMARK_FUNCTION();
         /*
         
@@ -145,7 +145,7 @@ namespace Engine {
         }
     }
 
-    void Scene::writeToFile(const std::string& filename) {
+    void Scene3D::writeToFile(const std::string& filename) {
         std::ofstream fp(filename, std::ios::out | std::ios::binary);
 
         //fp << "Start" << std::endl;
@@ -199,7 +199,7 @@ namespace Engine {
         fp.close();
     }
 
-    void Scene::OnRuntimeStart() {
+    void Scene3D::OnRuntimeStart() {
         BENCHMARK_FUNCTION();
         if (!m_Playing) {
             // Initialize all scripts
@@ -220,15 +220,15 @@ namespace Engine {
         m_Playing = true;
     }
 
-    void Scene::OnRuntimePause() {
+    void Scene3D::OnRuntimePause() {
         m_Playing = false;
     }
 
-    void Scene::OnRuntimeResume() {
+    void Scene3D::OnRuntimeResume() {
         m_Playing = true;
     }
 
-    void Scene::OnRuntimeStop() {
+    void Scene3D::OnRuntimeStop() {
         BENCHMARK_FUNCTION();
         if (m_Playing) {
             // Destroy all scripts
@@ -245,7 +245,7 @@ namespace Engine {
         m_Playing = false;
     }
 
-    void Scene::OnUpdate(double dt) {
+    void Scene3D::OnUpdate(double dt) {
         BENCHMARK_FUNCTION();
         if (m_Playing) {
             BENCHMARK_SCOPE("Update Scripts");
@@ -385,7 +385,7 @@ namespace Engine {
         
     }
 
-    void Scene::OnViewportResize(u32 width, u32 height) {
+    void Scene3D::OnViewportResize(u32 width, u32 height) {
         m_ViewportWidth = width;
         m_ViewportHeight = height;
 
@@ -397,9 +397,9 @@ namespace Engine {
         }
     }
 
-    Scene::Scene() {
+    Scene3D::Scene3D() {
     }
 
-    Scene::~Scene() {
+    Scene3D::~Scene3D() {
     }
 }

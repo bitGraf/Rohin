@@ -14,7 +14,7 @@ namespace Engine {
 
         GameObject_type GetGameObjectID() const { return m_GameObject.GetHandle(); }
 
-        const Scene& GetScene() const { return m_GameObject.GetScene(); }
+        const Scene3D& GetScene() const { return m_GameObject.GetScene(); }
 
     protected:
         // Interface functions
@@ -22,9 +22,9 @@ namespace Engine {
         virtual void OnDestroy() {};
         virtual void OnUpdate(double ts) {};
 
-        Scene& GetScene() { return m_GameObject.GetScene(); }
+        Scene3D& GetScene() { return m_GameObject.GetScene(); }
     private:
         GameObject m_GameObject; // the GameObject its attached to
-        friend class Scene;
+        friend class Scene3D;
     };
 }

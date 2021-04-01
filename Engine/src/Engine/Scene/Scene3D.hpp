@@ -3,15 +3,13 @@
 #include "Engine/GameObject/Registry.hpp"
 #include "Engine/Core/GameMath.hpp"
 
-class SceneHierarchyPanel;
-
 namespace Engine {
 
     class GameObject;
-    class Scene {
+    class Scene3D {
     public:
-        Scene();
-        ~Scene();
+        Scene3D();
+        ~Scene3D();
 
         GameObject CreateGameObject(const std::string& name = std::string());
         GameObject FindByName(const std::string& name);
@@ -45,8 +43,7 @@ namespace Engine {
         bool m_showNormals = false;
 
         friend class GameObject;
-        friend class SceneHierarchyPanel;
     };
 
-    extern bool BindGameScript(const std::string& script_tag, Scene* scene, GameObject gameobject);
+    extern bool BindGameScript(const std::string& script_tag, Scene3D* scene, GameObject gameobject);
 }

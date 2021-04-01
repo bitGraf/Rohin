@@ -18,7 +18,7 @@ private:
     bool OnKeyPressedEvent(Engine::KeyPressedEvent& e);
 
 private:
-    Engine::Ref<Engine::Scene> m_ActiveScene;
+    Engine::Ref<Engine::Scene3D> m_ActiveScene;
 
     Engine::GameObject m_Camera;
     

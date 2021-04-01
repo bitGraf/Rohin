@@ -7,16 +7,16 @@
 namespace Engine {
 
     /*
-    SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context) {
+    SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene3D>& context) {
         SetContext(context);
     }
 
-    void SceneHierarchyPanel::SetContext(const Ref<Scene>& context) {
+    void SceneHierarchyPanel::SetContext(const Ref<Scene3D>& context) {
         m_Context = context;
     }
 
     void SceneHierarchyPanel::OnImGuiRender() {
-        ImGui::Begin("Scene Hierarchy");
+        ImGui::Begin("Scene3D Hierarchy");
 
         auto& list = m_Context->GetRegistry().GetRegList();
         for (auto go : list) {

@@ -24,7 +24,7 @@ namespace Engine {
         spec.Height = 720.0f;
         m_Framebuffer = Framebuffer::Create(spec);
 
-        //m_EditorScene = std::make_shared<Scene>();
+        //m_EditorScene = std::make_shared<Scene3D>();
 
         //auto frog = m_EditorScene->CreateGameObject("Frog Cube 2");
         //auto& mesh = frog.AddComponent<MeshRendererComponent>(std::make_shared<Engine::Mesh>("Data/Models/cube.mesh"));

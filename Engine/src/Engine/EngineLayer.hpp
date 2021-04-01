@@ -5,7 +5,7 @@
 #include "Engine/Core/Timing.hpp"
 
 namespace Engine {
-    class Scene;
+    class Scene3D;
     class Framebuffer;
 
     class EngineLayer

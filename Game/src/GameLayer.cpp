@@ -13,7 +13,7 @@
 #include "Player.hpp"
 #include "Gem.hpp"
 
-bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene* scene, GameObject gameobject) {
+bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene3D* scene, GameObject gameobject) {
     if (script_tag.compare("script_camera_controller") == 0) {
         gameobject.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(gameobject);
             return true;
@@ -49,7 +49,7 @@ void GameLayer::OnAttach() {
 
     */
 
-    m_ActiveScene = std::make_shared<Engine::Scene>();
+    m_ActiveScene = std::make_shared<Engine::Scene3D>();
     {
         BENCHMARK_SCOPE("Loading Meshes");
         Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", true);
