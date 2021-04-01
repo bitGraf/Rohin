@@ -46,7 +46,7 @@ void Level::OnAttach() {
     // load 3D scene data
     m_3DScene = std::make_shared<Engine::Scene3D>();
 
-    if (!m_3DScene->loadFromFile(Name)) {
+    if (!m_3DScene->loadFromLevel(Name)) {
         ENGINE_LOG_ERROR("Could not find level named [{0}].", Name);
     }
 

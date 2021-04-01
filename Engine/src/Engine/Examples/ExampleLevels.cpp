@@ -146,7 +146,7 @@ namespace Engine {
             auto rectMesh = MeshCatalog::Get("mesh_plane");
             auto material = rectMesh->GetMaterial(0);
             material->Set<float>("u_TextureScale", platformSize);
-            material->Set("u_AlbedoTexture", Texture2D::Create("Data/Images/grid/PNG/Dark/texture_07.png"));
+            material->Set("u_AlbedoTexture", Texture2D::Create("Data/Images/grid/PNG/Orange/texture_09.png"));
             platform.AddComponent<MeshRendererComponent>(rectMesh);
 
             auto& trans = platform.GetComponent<TransformComponent>().Transform;

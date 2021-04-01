@@ -16,8 +16,7 @@ namespace Engine {
 
         void Destroy();
 
-        bool loadFromFile(const std::string& filename);
-        bool writeToFile(const std::string& filename);
+        bool loadFromLevel(const std::string& filename);
 
         void OnUpdate(double dt);
         void OnRuntimeStart();
