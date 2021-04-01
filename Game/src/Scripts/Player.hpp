@@ -49,8 +49,9 @@ public:
         yaw -= Input::GetAxis("AxisRotateRight") * rotSpeed * ts;
     }
 
-    vec3 GenerateDesiredMovement() {
+    math::vec3 GenerateDesiredMovement() {
         using namespace Engine;
+        using namespace math;
 
         if (Input::GetAxis("AxisBoost") > 0.0f) {
             moveSpeed = 20;
@@ -94,6 +95,9 @@ public:
     }
 
     virtual void OnUpdate(double ts) override {
+        using namespace Engine;
+        using namespace math;
+
         if (BeingControlled) {
             BENCHMARK_FUNCTION();
 
@@ -233,9 +237,9 @@ private:
     math::vec3 position;
     math::vec3 velocity;
     float yaw, pitch;
-    vec3 ghostPosition;
-    vec3 m_floorUp;
-    UID_t m_floorID = 0;
+    math::vec3 ghostPosition;
+    math::vec3 m_floorUp;
+    Engine::UID_t m_floorID = 0;
 
     // Flags
     bool grounded = false;
@@ -249,5 +253,5 @@ private:
     float m_floorAngleLimit = 35;
 
 
-    ShapecastResult_multi res;
+    Engine::ShapecastResult_multi res;
 };

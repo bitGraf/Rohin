@@ -222,13 +222,13 @@ namespace Engine {
                     math::mat4 transform;
                     transform.translate(hull.position);
                     transform *= math::mat4(hull.rotation);
-                    Renderer::Submit(hull.wireframe, transform, vec3(1, .05, .1));
+                    Renderer::Submit(hull.wireframe, transform, math::vec3(1, .05, .1));
                 }
                 for (const auto& hull : cWorld.m_dynamic) {
                     math::mat4 transform;
                     transform.translate(hull.position);
                     transform *= math::mat4(hull.rotation);
-                    Renderer::Submit(hull.wireframe, transform, vec3(.1, .05, 1));
+                    Renderer::Submit(hull.wireframe, transform, math::vec3(.1, .05, 1));
                 }
             }
             Renderer::EndSobelPass();
