@@ -10,6 +10,9 @@
 #include "Engine/Resources/MeshCatalog.hpp"
 #include "Engine/Sound/SoundEngine.hpp"
 
+// hard-coded levels
+#include "Engine/Examples/ExampleLevels.hpp"
+
 namespace Engine {
 
     GameObject Scene3D::CreateGameObject(const std::string& name) {
@@ -35,8 +38,19 @@ namespace Engine {
         return GameObject(0, nullptr);
     }
 
-    void Scene3D::loadFromFile(const std::string& filename) {
+    bool Scene3D::loadFromFile(const std::string& levelName) {
         BENCHMARK_FUNCTION();
+        std::string filename = "Data/Levels/" + levelName + ".scene";
+
+        // TEMP
+        // First check if it is one of the hard-coded levels
+        if (LoadExampleLevel(levelName, this)) {
+            return true;
+        }
+
+        return false;
+
+        // TEMP
         /*
         
         1. read all strings
@@ -53,7 +67,7 @@ namespace Engine {
 
         if (!success) {
             ENGINE_LOG_ERROR("Failed to load /nbt level file \"{0}\"", filename);
-            return;
+            return false;
         }
 
         auto str = data.first;
@@ -91,11 +105,11 @@ namespace Engine {
 
             auto& transform = tc["transform"].as<nbt::tag_compound>();
             math::vec3 position, scale(1,1,1);
-            math::vec4 rotation;
+            math::vec3 rotation;
             if (transform.has_key("position"))
                 position = transform["position"].as<nbt::tag_vec3>().get();
             if (transform.has_key("rotation"))
-                rotation = transform["rotation"].as<nbt::tag_vec4>().get();
+                rotation = transform["rotation"].as<nbt::tag_vec3>().get();
             if (transform.has_key("scale"))
                 scale = transform["scale"].as<nbt::tag_vec3>().get();
 
@@ -105,7 +119,7 @@ namespace Engine {
             T = math::mat4();
             T.translate(position);
             //auto q = math::quat2ypr(rotation);
-            T *= math::createYawPitchRollMatrix(0, 0, 0);
+            T *= math::createYawPitchRollMatrix(rotation.x, rotation.y, rotation.z);
             T *= math::mat4(scale.x, scale.y, scale.z, 1.0f);
 
             auto& component_list = tc["components"].as<nbt::tag_list>();
@@ -119,11 +133,59 @@ namespace Engine {
 
                     auto& mesh_name = component["mesh_name"].as<nbt::tag_string>().get();
                     auto __mesh = MeshCatalog::Get(mesh_name);
-                    go.AddComponent<MeshRendererComponent>(__mesh); // TODO: add blockchain
+                    if (__mesh) {
+                        if (name.get().compare("Player") == 0) {
+                            __mesh->GetSubmeshes()[0].Transform = math::createYawPitchRollMatrix(90, 0, 0);
+                        }
+                        if (name.get().compare("Platform") == 0) {
+                            cWorld.CreateNewCubeHull(vec3(0, -1.5f, 0), 40, 3, 40);
+
+                            auto material = __mesh->GetMaterial(0);
+                            material->Set<float>("u_TextureScale", 20);
+                            material->Set("u_AlbedoTexture", Texture2D::Create("Data/Images/grid/PNG/Dark/texture_07.png"));
+                        }
+                        go.AddComponent<MeshRendererComponent>(__mesh); // TODO: add blockchain
+                    }
                 } else if (comp_type.compare("Camera") == 0) {
                     ENGINE_LOG_INFO("adding a Camera component");
 
                     go.AddComponent<CameraComponent>();
+                } else if (comp_type.compare("Collider") == 0) {
+                    ENGINE_LOG_INFO("adding a Camera component");
+
+                    UID_t hull;
+                    if (name.get().compare("Player") == 0) {
+                        hull = cWorld.CreateNewCapsule(vec3(0, 1, 0) + vec3(0, .5, 0), 1, 0.5f);
+                    }
+                    go.AddComponent<ColliderComponent>(hull);
+                }
+                else if (comp_type.compare("Light") == 0) {
+                    LightType type;
+                    const auto& light_type = component["type"].as<nbt::tag_string>().get();
+                    if (light_type.compare("dir") == 0) {
+                        go.AddComponent<LightComponent>(
+                            Engine::LightType::Directional,
+                            component["color"].as<nbt::tag_vec3>().get(), 
+                            component["strength"].as<nbt::tag_float>().get(),
+                            component["inner"].as<nbt::tag_float>().get(),
+                            component["outer"].as<nbt::tag_float>().get());
+                    } else if (light_type.compare("point") == 0) {
+                        go.AddComponent<LightComponent>(
+                            Engine::LightType::Point,
+                            component["color"].as<nbt::tag_vec3>().get(),
+                            component["strength"].as<nbt::tag_float>().get(),
+                            component["inner"].as<nbt::tag_float>().get(),
+                            component["outer"].as<nbt::tag_float>().get());
+                    } else if (light_type.compare("spot") == 0) {
+                        go.AddComponent<LightComponent>(
+                            Engine::LightType::Spot,
+                            component["color"].as<nbt::tag_vec3>().get(),
+                            component["strength"].as<nbt::tag_float>().get(),
+                            component["inner"].as<nbt::tag_float>().get(),
+                            component["outer"].as<nbt::tag_float>().get());
+                    } else {
+                        ENGINE_LOG_WARN("unknown light type!");
+                    }
                 } else if (comp_type.compare("NativeScript") == 0) {
                     ENGINE_LOG_INFO("adding a NativeScript component");
 
@@ -143,9 +205,11 @@ namespace Engine {
                 }
             }
         }
+
+        return true;
     }
 
-    void Scene3D::writeToFile(const std::string& filename) {
+    bool Scene3D::writeToFile(const std::string& filename) {
         std::ofstream fp(filename, std::ios::out | std::ios::binary);
 
         //fp << "Start" << std::endl;
@@ -197,6 +261,14 @@ namespace Engine {
         //fp << "End" << std::endl;
 
         fp.close();
+
+        return true;
+    }
+
+    void Scene3D::Destroy() {
+        OnRuntimeStop();
+
+        //m_Registry.clear();
     }
 
     void Scene3D::OnRuntimeStart() {

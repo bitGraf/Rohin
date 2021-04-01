@@ -56,8 +56,11 @@ namespace Engine {
     class Mesh
     {
     public:
-        Mesh(const std::string& filename, bool nbt, bool mesh_only = false);
+        Mesh(const std::string& filename);
         ~Mesh();
+
+        bool LoadFromFile();
+        bool Loaded() { return m_loaded; }
 
         void OnUpdate(double ts);
         void DumpVertexBuffer();
@@ -100,6 +103,8 @@ namespace Engine {
 
         std::string m_FilePath;
         std::string m_Name;
+
+        bool m_loaded = false;
 
         friend class Renderer;
         friend class SceneHierarchyPanel;

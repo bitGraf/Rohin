@@ -38,7 +38,7 @@ const std::vector<std::string> optionsButtons = {
 const std::vector<std::string> levelSelectButtons = {
         "Level 1",
         "Level 2",
-        "Level 3",
+        "nbtTest",
         "Return"
 };
 
@@ -131,7 +131,7 @@ bool MainMenuScene::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
                 switch (currentSelection) {
                 case 0: {GotoLevel("Level_1"); } break;
                 case 1: {GotoLevel("Level_2"); } break;
-                case 2: {GotoLevel("Level_3"); } break;
+                case 2: {GotoLevel("nbtTest"); } break;
                 case 3: {currentMenuState = 0; currentSelection = 1; } break;
                 }
             } break;

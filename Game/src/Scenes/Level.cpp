@@ -5,7 +5,6 @@
 /* native scripts */
 #include "../Scripts/CameraController.hpp"
 #include "../Scripts/Player.hpp"
-#include "../Scripts/Gem.hpp"
 
 Level::Level(const std::string& levelName) {
     Name = levelName;
@@ -18,6 +17,10 @@ Level::~Level() {
 bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene3D* scene, GameObject gameobject) {
     if (script_tag.compare("script_camera_controller") == 0) {
         gameobject.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(gameobject);
+        return true;
+    }
+    if (script_tag.compare("script_player_controller") == 0) {
+        gameobject.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(gameobject);
         return true;
     }
     return false;
@@ -43,85 +46,8 @@ void Level::OnAttach() {
     // load 3D scene data
     m_3DScene = std::make_shared<Engine::Scene3D>();
 
-    {
-        BENCHMARK_SCOPE("Loading Meshes");
-        Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", true);
-        Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", true);
-    }
-    { // Player
-        auto player = m_3DScene->CreateGameObject("Player");
-        auto mesh = Engine::MeshCatalog::Get("mesh_guard");
-        player.AddComponent<Engine::MeshRendererComponent>(mesh);
-        player.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(player);
-
-        mesh->GetSubmeshes()[0].Transform = math::createYawPitchRollMatrix(90, 0, 0);
-
-        auto& trans = player.GetComponent<Engine::TransformComponent>().Transform;
-        trans = mat4();
-        trans.translate(vec3(0, 1, 0));
-
-        UID_t hull = cWorld.CreateNewCapsule(vec3(0, 1, 0) + vec3(0, .5, 0), 1, 0.5f);
-        player.AddComponent<Engine::ColliderComponent>(hull);
-    }
-    { // Platform
-        float platformSize = 20.0f;
-        float platformThickness = 3.0f;
-
-        auto platform = m_3DScene->CreateGameObject("Platform");
-
-        auto rectMesh = Engine::MeshCatalog::Get("mesh_plane");
-        auto material = rectMesh->GetMaterial(0);
-        material->Set<float>("u_TextureScale", platformSize);
-        material->Set("u_AlbedoTexture", Engine::Texture2D::Create("Data/Images/grid/PNG/Dark/texture_07.png"));
-        platform.AddComponent<Engine::MeshRendererComponent>(rectMesh);
-
-        auto& trans = platform.GetComponent<Engine::TransformComponent>().Transform;
-        trans = mat4();
-        trans.scale(vec3(platformSize, 1, platformSize));
-        trans.translate(vec3(0, 0.0f, 0));
-
-        UID_t floor = cWorld.CreateNewCubeHull(vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
-    }
-
-    { // Lights
-        auto light = m_3DScene->CreateGameObject("Sun");
-        light.AddComponent<Engine::LightComponent>(Engine::LightType::Directional, vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
-        auto& trans = light.GetComponent<Engine::TransformComponent>().Transform;
-        trans = math::createYawPitchRollMatrix(45, 0, -80);
-    }
-
-    { // Camera
-        m_Camera = m_3DScene->CreateGameObject("Camera");
-        auto& camera = m_Camera.AddComponent<Engine::CameraComponent>().camera;
-        camera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-        camera.SetPerspective(75, .01, 100);
-        m_Camera.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(m_Camera);
-
-        auto& trans = m_Camera.GetComponent<Engine::TransformComponent>().Transform;
-        trans = mat4();
-        trans.translate(vec3(0, 4, 5));
-        trans *= math::createYawPitchRollMatrix(0, 0, -45);
-    }
-
-    // Ramps at various angles
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 0, -5), 10, 1, 3))
-        ->rotation.toYawPitchRoll(0, 10, 0);
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 1, -2), 10, 1, 3))
-        ->rotation.toYawPitchRoll(0, 20, 0);
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 2, 1), 10, 1, 3))
-        ->rotation.toYawPitchRoll(0, 30, 0);
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 3, 4), 10, 1, 3))
-        ->rotation.toYawPitchRoll(0, 40, 0);
-    cWorld.getHullFromID(cWorld.CreateNewCubeHull(vec3(5, 3.5, 7), 10, 1, 3))
-        ->rotation.toYawPitchRoll(0, 50, 0);
-
-    // Sound stuff
-    {
-        BENCHMARK_SCOPE("Create soundcues");
-        Engine::SoundEngine::CreateSoundCue("guard_death", { "Data/Sounds/death.ogg", 0.02f });
-        Engine::SoundEngine::CreateSoundCue("golem", { "Data/Sounds/golem.ogg", 0.1f }); //MONO, has 3D sound
-        Engine::SoundEngine::CreateSoundCue("protector", { "Data/Sounds/sound.wav", 0.2f });
-        Engine::SoundEngine::CreateSoundCue("ahhh", { "Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
+    if (!m_3DScene->loadFromFile(Name)) {
+        ENGINE_LOG_ERROR("Could not find level named [{0}].", Name);
     }
 
     // Start the 3D scene
@@ -129,6 +55,8 @@ void Level::OnAttach() {
 }
 
 void Level::OnDetach() {
+    m_3DScene->Destroy();
+
     ENGINE_LOG_INFO("Level {0} Detach", Name);
 }
 

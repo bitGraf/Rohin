@@ -6,13 +6,19 @@ namespace Engine {
     static std::unordered_map<std::string, Ref<Mesh>> m_MeshList;
 
     void MeshCatalog::Register(const std::string& mesh_name, const std::string& mesh_path, bool nbt) {
+        if (!nbt) return; // only support nbt meshes now
         ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, mesh_path);
-        auto mesh = std::make_shared<Engine::Mesh>(mesh_path, nbt);
-        m_MeshList[mesh_name] = mesh;
+        auto mesh = std::make_shared<Engine::Mesh>(mesh_path);
+        if (mesh->LoadFromFile()) {
+            m_MeshList[mesh_name] = mesh;
+        }
     }
 
     Ref<Mesh> MeshCatalog::Get(const std::string& mesh_name) {
-        // TODO: dangerous, need to check if mesh_name exists in the map
+        if (m_MeshList.find(mesh_name) == m_MeshList.end()) {
+            return nullptr;
+        }
+
         return m_MeshList[mesh_name];
     }
 

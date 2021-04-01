@@ -16,7 +16,9 @@ public:
         LOG_ASSERT(cameraComponent,    "CamController could not find a camera component");
 
         playerScript = nullptr;
-        playerScript = GetScene().FindByName("Player").GetComponent<Engine::NativeScriptComponent>().GetScript<PlayerController>();
+        auto player = GetScene().FindByName("Player");
+        if (player)
+            playerScript = GetScene().FindByName("Player").GetComponent<Engine::NativeScriptComponent>().GetScript<PlayerController>();
         LOG_ASSERT(playerScript, "CamController could not find player controller script");
 
         cameraComponent->camera.SetOrthographic(6, -3, 3);
@@ -139,7 +141,7 @@ public:
                 position += velocity * ts;
                 CalcTransformFromYawPitch(velocity);
             }
-        } else {
+        } else if (playerScript) {
             firstFrame = true;
             oldMousePosX = 0;
             oldMousePosY = 0;

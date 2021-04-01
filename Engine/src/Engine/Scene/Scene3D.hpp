@@ -14,8 +14,10 @@ namespace Engine {
         GameObject CreateGameObject(const std::string& name = std::string());
         GameObject FindByName(const std::string& name);
 
-        void loadFromFile(const std::string& filename);
-        void writeToFile(const std::string& filename);
+        void Destroy();
+
+        bool loadFromFile(const std::string& filename);
+        bool writeToFile(const std::string& filename);
 
         void OnUpdate(double dt);
         void OnRuntimeStart();

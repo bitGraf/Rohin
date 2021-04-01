@@ -153,45 +153,48 @@ struct DataFile {
         ENGINE_LOG_ASSERT(end == fileLength, "");
     }
 
-    void ReadFromFile(const std::string& filename) {
+    bool ReadFromFile(const std::string& filename) {
         // open file for reading
         std::ifstream fp(filename, std::ios::in | std::ios::binary);
+        if (fp) {
+            // read file header
+            //fp << "BlockTable";
+            fp.seekg(10, std::ios::beg);
 
-        // read file header
-        //fp << "BlockTable";
-        fp.seekg(10, std::ios::beg);
+            u8 numBlocks = 0;
+            fp.read(reinterpret_cast<char*>(&numBlocks), sizeof(numBlocks));
+            for (int n = 0; n < numBlocks; n++) {
+                Block block;
+                fp.read(reinterpret_cast<char*>(&block.NameSize), sizeof(block.NameSize));
+                char* name = new char[block.NameSize];
+                fp.read(name, block.NameSize);
+                block.Name = std::string(name, block.NameSize);
+                delete[] name;
+                fp.read(reinterpret_cast<char*>(&block.Offset), sizeof(block.Offset));
+                fp.read(reinterpret_cast<char*>(&block.Size), sizeof(block.Size));
+                m_Blocks[block.Name] = block;
+            }
 
-        u8 numBlocks = 0;
-        fp.read(reinterpret_cast<char*>(&numBlocks), sizeof(numBlocks));
-        for (int n = 0; n < numBlocks; n++) {
-            Block block;
-            fp.read(reinterpret_cast<char*>(&block.NameSize), sizeof(block.NameSize));
-            char* name = new char[block.NameSize];
-            fp.read(name, block.NameSize);
-            block.Name = std::string(name, block.NameSize);
-            delete[] name;
-            fp.read(reinterpret_cast<char*>(&block.Offset), sizeof(block.Offset));
-            fp.read(reinterpret_cast<char*>(&block.Size), sizeof(block.Size));
-            m_Blocks[block.Name] = block;
+            for (auto blockKV : m_Blocks) {
+                auto& block = blockKV.second;
+
+                u8* data = new u8[block.Size];
+                fp.read(reinterpret_cast<char*>(data), block.Size);
+                block.data.reserve(block.Size);
+                block.data.assign(data, data + block.Size);
+                delete[] data;
+
+                m_Blocks[block.Name] = block;
+            }
+
+            ENGINE_LOG_ASSERT(!fp.eof(), "");
+            fileLength = fp.tellg().seekpos();
+
+            fp.close();
+            return true;
         }
 
-        for (auto blockKV : m_Blocks) {
-            auto& block = blockKV.second;
-
-            u8* data = new u8[block.Size];
-            fp.read(reinterpret_cast<char*>(data), block.Size);
-            block.data.reserve(block.Size);
-            block.data.assign(data, data + block.Size);
-            delete[] data;
-
-            m_Blocks[block.Name] = block;
-        }
-
-        ENGINE_LOG_ASSERT(!fp.eof(), "");
-        fileLength = fp.tellg().seekpos();
-
-        fp.close();
-
+        return false;
     }
 
     Block& GetBlock(const std::string& blockName) {
