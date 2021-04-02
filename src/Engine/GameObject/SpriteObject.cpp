@@ -11,8 +11,8 @@ SpriteObject::SpriteObject() :
 
 void SpriteObject::Create(istringstream& iss, ResourceManager* resource) {
 	GameObject::Create(iss, resource);
-	std::cout << "Texture id for sprite is " << texture.glTextureID << "\n";
 	texture.loadImage(getNextString(iss));
+	std::cout << "Texture id for sprite is " << texture.glTextureID << "\n";
 	pos = getNextVec2(iss);
 	size = getNextVec2(iss);
 	rotate = getNextFloat(iss);

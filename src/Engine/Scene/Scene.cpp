@@ -334,6 +334,7 @@ void getRenderBatch(RenderBatch* batch, bool useCull) {
         }
 
         // Sprites
+        batch->numSpriteCalls = 0;
         for (int n = 0; n < CurrentScene->objectsByType.Sprites.size(); n++) {
             if (batch->numSpriteCalls >= MAX_CALLS)
                 break;
@@ -341,6 +342,7 @@ void getRenderBatch(RenderBatch* batch, bool useCull) {
 
             if (!useCull || ent->noCull || camera->withinFrustum(ent->Position, 0.25)) {
                 batch->spriteCalls[batch->numSpriteCalls].id = ent->getID();
+                batch->spriteCalls[batch->numSpriteCalls].texId = ent->getTexture().glTextureID;
                 batch->spriteCalls[batch->numSpriteCalls].pos = ent->getPos();
                 batch->spriteCalls[batch->numSpriteCalls].size = ent->getSize();
                 batch->spriteCalls[batch->numSpriteCalls].rotate = ent->getRotate();
