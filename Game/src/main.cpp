@@ -9,7 +9,7 @@
 #include "Scenes/MainMenu.hpp"
 #include "Scenes/Level.hpp"
 
-const int quickstartScene = 0;
+const int quickstartScene = 2;
 
 class Game : public Engine::Application {
 public:
