@@ -94,4 +94,22 @@ namespace Engine {
 
         return s_Data.Map.at(material_name);
     }
+
+
+    // MD5 related
+    void MaterialCatalog::RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap) {
+        for (const auto& matEntry : materialMap) {
+            if (s_Data.Map.find(matEntry.first) != s_Data.Map.end()) continue;
+            
+            // new material to load
+            const auto& mat_name = matEntry.first;
+            const auto& md5mat = matEntry.second;
+            MaterialSpec spec;
+            spec.Name = md5mat.name;
+            spec.Albedo = GetTexture(md5mat.diffusemap);
+            spec.Normal = GetTexture(md5mat.normalmap);
+
+            s_Data.Map.emplace(mat_name, spec);
+        }
+    }
 }

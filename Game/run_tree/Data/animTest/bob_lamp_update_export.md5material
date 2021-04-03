@@ -1,0 +1,44 @@
+MD5Version 10
+commandline "he"
+
+numMaterials 5
+
+material {
+	shader "bob_body"
+
+	diffusemap  "Data/animTest/bob_body.tga"
+    normalmap   "Data/animTest/bob_body_local.tga"
+    specularmap "Data/animTest/bob_body_s.tga"
+}
+
+material {
+	shader "bob_head"
+
+	diffusemap  "Data/animTest/bob_head.tga"
+    normalmap   "Data/animTest/bob_head_local.tga"
+    specularmap "Data/animTest/bob_head_s.tga"
+}
+
+material {
+	shader "bob_helmet"
+
+	diffusemap  "Data/animTest/bob_helmet.tga"
+    normalmap   "Data/animTest/bob_helmet_local.tga"
+    specularmap "Data/animTest/bob_helmet_s.tga"
+}
+
+material {
+	shader "lantern"
+
+	diffusemap  "Data/animTest/lantern.tga"
+    normalmap   "Data/animTest/lantern_local.tga"
+    specularmap "Data/animTest/lantern_s.tga"
+}
+
+material {
+	shader "lantern_top"
+
+	diffusemap  "Data/animTest/lantern_top.tga"
+    normalmap   "Data/animTest/lantern_top_local.tga"
+    specularmap "Data/animTest/lantern_top_s.tga"
+}

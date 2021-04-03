@@ -271,6 +271,12 @@ namespace math {
 
     // Forward, Right, Up
     std::tuple<vec3, vec3, vec3> GetUnitVectors(const mat4& transform);
+
+    // Quaternion math
+    typedef vec4 quat;
+    quat operator* (const quat& q1, const quat& q2);       ///< Vector4 X Vector4
+    vec3 operator* (const quat& q, const vec3& v);         ///< Quat X Vector3
+    vec3 operator* (const vec3& v, const quat& q);         ///< Vector3 X Quat
 }
 
 #endif

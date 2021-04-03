@@ -8,8 +8,9 @@
 // Scenes
 #include "Scenes/MainMenu.hpp"
 #include "Scenes/Level.hpp"
+#include "Scenes/AnimTest.hpp"
 
-const int quickstartScene = 0;
+const int quickstartScene = 3;
 
 class Game : public Engine::Application {
 public:
@@ -35,6 +36,11 @@ public:
                 Level* level = new Level("Level_3");
                 PushNewScene(level);
             } break;
+            case 4: {
+                // create animation test scene
+                AnimationScene* scene = new AnimationScene();
+                PushNewScene(scene);
+            }
         }
     }
 

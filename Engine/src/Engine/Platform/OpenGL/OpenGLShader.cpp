@@ -848,6 +848,15 @@ namespace Engine {
 
     }
 
+    void OpenGLShader::SetVec2(const std::string &name, const math::vec2& value) const {
+        s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
+        if (loc == -1) {
+            //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
+            return;
+        }
+        glUniform2f(loc, value.x, value.y);
+    }
+
     void OpenGLShader::SetVec3(const std::string &name, const math::vec3& value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {

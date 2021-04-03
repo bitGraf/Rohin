@@ -231,7 +231,7 @@ void CalcSpotLightDiffuse(vec3 F0, Light sl) {
 }
 
 void Lighting(vec3 F0) {
-	m_Params.Diffuse = vec3(0.0);
+	m_Params.Diffuse = vec3(0.1); // ambient lighting for now
     m_Params.Specular = vec3(0.0);
 
 	// add directional light

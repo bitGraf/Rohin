@@ -14,6 +14,14 @@ namespace Engine {
         }
     }
 
+    void MeshCatalog::Register(const std::string& mesh_name, const md5::Model& model) {
+        ENGINE_LOG_INFO("Registering Mesh: [{0}] from MD5Model", mesh_name);
+        auto mesh = std::make_shared<Engine::Mesh>(model);
+        if (mesh->LoadFromMD5()) {
+            m_MeshList[mesh_name] = mesh;
+        }
+    }
+
     Ref<Mesh> MeshCatalog::Get(const std::string& mesh_name) {
         if (m_MeshList.find(mesh_name) == m_MeshList.end()) {
             return nullptr;

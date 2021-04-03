@@ -897,5 +897,25 @@ namespace math {
         
         return os;
     }
+
+
+    quat operator* (const quat& q1, const quat& q2) {
+        float a3 = q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z;
+        float b3 = q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y;
+        float c3 = q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x;
+        float d3 = q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w;
+
+        return quat(b3, c3, d3, a3);
+    }
+
+    vec3 operator* (const quat& q, const vec3& v) {
+        quat qp(-q.x, -q.y, -q.z, q.w);
+        return qp * vec4(v, 0) * q;
+    }
+
+    vec3 operator* (const vec3& v, const quat& q) {
+        quat qp(-q.x, -q.y, -q.z, q.w);
+        return q * vec4(v, 0) * qp; //TODO: is this the inverse??
+    }
 }
 

@@ -112,9 +112,10 @@ bool Level::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     }
 
     if (e.GetKeyCode() == KEY_CODE_C) {
-        if (m_Camera) {
-            if (m_Camera.HasComponent<Engine::NativeScriptComponent>()) {
-                auto scriptComp = m_Camera.GetComponent<Engine::NativeScriptComponent>();
+        auto camera = m_3DScene->FindByName("Camera");
+        if (camera) {
+            if (camera.HasComponent<Engine::NativeScriptComponent>()) {
+                auto scriptComp = camera.GetComponent<Engine::NativeScriptComponent>();
                 auto script = scriptComp.GetScript<CameraController>();
                 script->ToggleControl();
             }

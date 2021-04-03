@@ -5,6 +5,7 @@
 
 #include "Engine/GameObject/Components.hpp"
 #include "Engine/Resources/MeshCatalog.hpp"
+#include "Engine/Resources/MaterialCatalog.hpp"
 #include "Engine/Core/Application.hpp"
 #include "Engine/Sound/SoundEngine.hpp"
 
@@ -210,6 +211,76 @@ namespace Engine {
     }
 
     void load_level_3(Scene3D* scene) {
-        ENGINE_LOG_WARN("Level 3 is empty!");
+        // load materials
+        std::unordered_map<std::string, md5::Material> mats;
+        md5::LoadMD5MaterialDefinitionFile("Data/animTest/bob_lamp_update_export.md5material", mats);
+        MaterialCatalog::RegisterMaterial(mats);
+
+        // read md5mesh file
+        md5::Model model;
+        Engine::md5::LoadMD5MeshFile("Data/animTest/bob_lamp_update_export.md5mesh", &model);
+        MeshCatalog::Register("mesh_bob", model);
+        Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", true);
+        Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", true);
+        auto& cWorld = scene->GetCollisionWorld();
+
+
+        { // Player
+            auto player = scene->CreateGameObject("Player");
+            auto mesh = MeshCatalog::Get("mesh_bob");
+            player.AddComponent<MeshRendererComponent>(mesh);
+            //player.AddComponent<NativeScriptComponent>().Bind<PlayerController>(player);
+            BindGameScript("script_player_controller", scene, player);
+
+            auto& trans = player.GetComponent<TransformComponent>().Transform;
+            trans = math::mat4();
+            trans.translate(math::vec3(0, 1, 0));
+
+            UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
+            player.AddComponent<ColliderComponent>(hull);
+        }
+        { // Platform
+            float platformSize = 20.0f;
+            float platformThickness = 3.0f;
+
+            auto platform = scene->CreateGameObject("Platform");
+
+            auto rectMesh = MeshCatalog::Get("mesh_plane");
+            auto material = rectMesh->GetMaterial(0);
+            material->Set<float>("u_TextureScale", platformSize);
+            material->Set("u_AlbedoTexture", Texture2D::Create("Data/Images/grid/PNG/Dark/texture_07.png"));
+            platform.AddComponent<MeshRendererComponent>(rectMesh);
+
+            auto& trans = platform.GetComponent<TransformComponent>().Transform;
+            trans = math::mat4();
+            trans.scale(math::vec3(platformSize, 1, platformSize));
+            trans.translate(math::vec3(0, 0.0f, 0));
+
+            UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
+        }
+
+        { // Lights
+            auto light = scene->CreateGameObject("Sun");
+            light.AddComponent<LightComponent>(LightType::Directional, math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
+            auto& trans = light.GetComponent<TransformComponent>().Transform;
+            trans = math::createYawPitchRollMatrix(45, 0, -80);
+        }
+
+        { // Camera
+            math::vec2 viewportSize = {
+                (float)Application::Get().GetWindow().GetWidth(),
+                (float)Application::Get().GetWindow().GetHeight() };
+
+            auto Camera = scene->CreateGameObject("Camera");
+            auto& camera = Camera.AddComponent<CameraComponent>().camera;
+            camera.SetViewportSize(viewportSize.x, viewportSize.y);
+            camera.SetPerspective(75, .01, 100);
+            BindGameScript("script_camera_controller", scene, Camera);
+
+            auto& trans = Camera.GetComponent<TransformComponent>().Transform;
+            trans = math::mat4();
+            trans.translate(math::vec3(0, 4, 5));
+            trans *= math::createYawPitchRollMatrix(0, 0, -45);
+        }
     }
 }

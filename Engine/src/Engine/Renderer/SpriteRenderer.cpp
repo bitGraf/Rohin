@@ -11,6 +11,7 @@ namespace Engine {
         std::unique_ptr<ShaderLibrary> ShaderLibrary;
 
         Ref<VertexArray> Quad;
+        Ref<VertexArray> Line;
         math::mat4 orthoMat;
     };
 
@@ -21,6 +22,7 @@ namespace Engine {
 
         s_SpriteData.ShaderLibrary = std::make_unique<ShaderLibrary>();
         auto textShader = GetShaderLibrary()->Load("Data/Shaders/Sprite.glsl");
+        auto line2DShader = GetShaderLibrary()->Load("Data/Shaders/Line2D.glsl");
 
         // create font-rendering globals
         s_SpriteData.orthoMat.orthoProjection(0, 1280, 720, 0, 1, -1);
@@ -29,6 +31,9 @@ namespace Engine {
         textShader->Bind();
         textShader->SetMat4("r_orthoProjection", s_SpriteData.orthoMat);
         textShader->SetFloat("r_spriteTex", 0);
+        // initialize line shader values
+        line2DShader->Bind();
+        line2DShader->SetMat4("r_orthoProjection", s_SpriteData.orthoMat);
 
         // create Text quad
         {
@@ -57,6 +62,33 @@ namespace Engine {
             s_SpriteData.Quad->AddVertexBuffer(vbo);
             s_SpriteData.Quad->SetIndexBuffer(ebo);
             s_SpriteData.Quad->Unbind();
+        }
+
+        // create Line
+        {
+            struct _vertex
+            {
+                float Position; // can we remove this entirely?
+            };
+
+            _vertex* data = new _vertex[2];
+
+            data[0].Position = 0;
+            data[1].Position = 1;
+
+            u32 indices[2] = { 0, 1 };
+
+            auto vbo = VertexBuffer::Create(data, 2 * sizeof(_vertex));
+            vbo->SetLayout({
+                { ShaderDataType::Float, "a_Position" }
+                });
+            auto ebo = IndexBuffer::Create(indices, 2);
+
+            s_SpriteData.Line = VertexArray::Create();
+            s_SpriteData.Line->Bind();
+            s_SpriteData.Line->AddVertexBuffer(vbo);
+            s_SpriteData.Line->SetIndexBuffer(ebo);
+            s_SpriteData.Line->Unbind();
         }
     }
 
@@ -164,5 +196,21 @@ namespace Engine {
         //RenderCommand::DisableDepthTest();
         RenderCommand::DrawIndexed(s_SpriteData.Quad, false);
         //RenderCommand::EnableDepthTest();
+    }
+
+    void SpriteRenderer::SubmitLine(u32 screenX0, u32 screenY0, u32 screenX1, u32 screenY1, math::vec4 color) {
+        auto shader = s_SpriteData.ShaderLibrary->Get("Line2D");
+        shader->Bind();
+
+        // defaults
+        math::vec2 verts[2] { { (f32)screenX0, (f32)screenY0}, {(f32)screenX1, (f32)screenY1 } };
+
+        shader->SetVec2("r_verts[0]", verts[0]);
+        shader->SetVec2("r_verts[1]", verts[1]);
+        shader->SetMat4("r_orthoProjection", s_SpriteData.orthoMat);
+        shader->SetVec4("r_Color", color);
+
+        s_SpriteData.Line->Bind();
+        RenderCommand::DrawLines(s_SpriteData.Line, false);
     }
 }
