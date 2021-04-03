@@ -30,7 +30,7 @@ namespace Engine {
 
         // initialize texture shader values
         textShader->Bind();
-        textShader->SetMat4("u_Projection", s_Data.orthoMat);
+        textShader->SetMat4("r_orthoProjection", s_Data.orthoMat);
         textShader->SetFloat("r_fontTex", 0);
 
         // create Text quad
@@ -129,7 +129,7 @@ namespace Engine {
             font->getTextOffset(&hOff, &vOff, align, font->getLength(_text), font->m_fontSize);
 
             shader->SetVec3("r_textColor", color);
-            shader->SetMat4("r_orthoProjection", s_Data.orthoMat);
+            shader->SetMat4("r_orthoProjection", s_Data.orthoMat); // TODO: don't need these always
 
             while (*_text) {
                 if (*_text == '\n') {

@@ -231,10 +231,10 @@ private:
 
     // Camera state
     //math::vec3 CameraTargetPosition;
-    float CameraHeight = 5;
+    float CameraHeight = 2.5f;
     float CameraHeightMin = 1;
-    float CameraHeightMax = 8;
-    float CameraDistance = 10;
+    float CameraHeightMax = 3.5f;
+    float CameraDistance = 4;
 
     // State
     math::vec3 Forward, Right, Up;

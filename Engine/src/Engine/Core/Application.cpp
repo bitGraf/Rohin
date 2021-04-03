@@ -5,6 +5,7 @@
 
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/TextRenderer.hpp"
+#include "Engine/Renderer/SpriteRenderer.hpp"
 #include "Engine/Resources/MaterialCatalog.hpp"
 #include "Engine/Sound/SoundEngine.hpp"
 
@@ -26,6 +27,7 @@ namespace Engine {
 
         Renderer::Init();
         TextRenderer::Init();
+        SpriteRenderer::Init();
         MaterialCatalog::Init();
         SoundEngine::Init();
 
@@ -44,6 +46,7 @@ namespace Engine {
         }
         Renderer::Shutdown();
         TextRenderer::Shutdown();
+        SpriteRenderer::Shutdown();
         MaterialCatalog::Shutdown();
         SoundEngine::Shutdown();
         m_GuiLayer->OnDetach();

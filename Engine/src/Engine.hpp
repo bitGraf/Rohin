@@ -23,6 +23,7 @@
 #include "Engine/Renderer/RenderCommand.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/TextRenderer.hpp"
+#include "Engine/Renderer/SpriteRenderer.hpp"
 #include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/Buffer.hpp"
 #include "Engine/Renderer/VertexArray.hpp"

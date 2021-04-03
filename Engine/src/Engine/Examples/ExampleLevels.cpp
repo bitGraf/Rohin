@@ -119,51 +119,75 @@ namespace Engine {
     }
 
     void load_level_2(Scene3D* scene) {
-        Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", true);
-        Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", true);
+        Engine::MeshCatalog::Register("mesh_guard",      "Data/Models/guard.nbt", true);
+        Engine::MeshCatalog::Register("mesh_breakroom",  "../../Assets/Blender/Level 1/breakroom.nbt", true);
+        Engine::MeshCatalog::Register("mesh_floor",      "../../Assets/Blender/Level 1/floor.nbt", true);
+        Engine::MeshCatalog::Register("mesh_backrooms",  "../../Assets/Blender/Level 1/backrooms.nbt", true);
+        Engine::MeshCatalog::Register("mesh_outerwalls", "../../Assets/Blender/Level 1/outerwalls.nbt", true);
+        Engine::MeshCatalog::Register("mesh_safe",       "../../Assets/Blender/Level 1/safe.nbt", true);
+        Engine::MeshCatalog::Register("mesh_saferoom",   "../../Assets/Blender/Level 1/saferoom.nbt", true);
         auto& cWorld = scene->GetCollisionWorld();
 
         { // Player
             auto player = scene->CreateGameObject("Player");
             auto mesh = MeshCatalog::Get("mesh_guard");
             player.AddComponent<MeshRendererComponent>(mesh);
-            //player.AddComponent<NativeScriptComponent>().Bind<PlayerController>(player);
             BindGameScript("script_player_controller", scene, player);
 
             mesh->GetSubmeshes()[0].Transform = math::createYawPitchRollMatrix(90, 0, 0);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
             trans = math::mat4();
-            trans.translate(math::vec3(0, 1, 0));
+            trans.translate(math::vec3(-8, 1, 12));
 
-            UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
+            UID_t hull = cWorld.CreateNewCapsule(math::vec3(-8, 1, 12) + math::vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
         }
-        { // Platform
-            float platformSize = 20.0f;
-            float platformThickness = 3.0f;
 
-            auto platform = scene->CreateGameObject("Platform");
+        std::vector<std::string> level_meshes{
+            "mesh_breakroom",
+            "mesh_floor",
+            "mesh_backrooms",
+            "mesh_outerwalls",
+            "mesh_safe",
+            "mesh_saferoom"
+        };
 
-            auto rectMesh = MeshCatalog::Get("mesh_plane");
-            auto material = rectMesh->GetMaterial(0);
-            material->Set<float>("u_TextureScale", platformSize);
-            material->Set("u_AlbedoTexture", Texture2D::Create("Data/Images/grid/PNG/Orange/texture_09.png"));
-            platform.AddComponent<MeshRendererComponent>(rectMesh);
+        for (const auto& m : level_meshes) {
+            auto go = scene->CreateGameObject(m);
+            auto mesh = MeshCatalog::Get(m);
+            go.AddComponent<MeshRendererComponent>(mesh);
+        }
+        UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -1.5f, 0), 40, 3, 40);
 
-            auto& trans = platform.GetComponent<TransformComponent>().Transform;
+        std::vector<math::vec3> level_point_lights{
+            {-8.0f, 3, 12.0f},
+            {-10.0f, 3, 10.0f},
+            {-14.75f, 3, 6.25f},
+            {-0.5f, 3, 11.75f},
+            {-4.0f, 3, 6.75f},
+            {5.0f, 3, 10.25f},
+            {5.0f, 3, 4.75f},
+            {5.0f, 3, -2.0f},
+            {-4.25f, 3, 1.75f},
+            {-1.75f, 3, 1.75f},
+            {-12.0f, 3, -1.0f}
+        };
+
+        int n = 0;
+        for (const auto& light_pos : level_point_lights) {
+            auto light = scene->CreateGameObject("Light " + std::to_string(n));
+            light.AddComponent<LightComponent>(LightType::Point, math::vec3(1, 1, 1), 3, 0, 0);
+            auto& trans = light.GetComponent<TransformComponent>().Transform;
             trans = math::mat4();
-            trans.scale(math::vec3(platformSize, 1, platformSize));
-            trans.translate(math::vec3(0, 0.0f, 0));
-
-            UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
+            trans.translate(light_pos);
         }
 
         { // Lights
             auto light = scene->CreateGameObject("Sun");
-            light.AddComponent<LightComponent>(LightType::Directional, math::vec3(2.0f, .15f, .4f), 3, 0, 0);
+            light.AddComponent<LightComponent>(LightType::Directional, math::vec3(.8f, .95f, .9f), 5, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            trans = math::createYawPitchRollMatrix(45, 0, -80);
+            trans = math::createYawPitchRollMatrix(15, 0, -80);
         }
 
         { // Camera
@@ -183,21 +207,6 @@ namespace Engine {
             trans.translate(math::vec3(0, 4, 5));
             trans *= math::createYawPitchRollMatrix(0, 0, -45);
         }
-
-        /* Collision code TODO: Remove this */
-        cWorld.CreateNewCubeHull(math::vec3(0, 1.5, -4), 8, 3, 3); // container +X
-
-        UID_t crate = cWorld.CreateNewCubeHull(math::vec3(-2, 1.5, -8), 8, 3, 3); // container +Y
-        cWorld.getHullFromID(crate)->rotation.toYawPitchRoll(90, 0, 0);
-
-        cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(-2, 1.5, -6), 8, 3, 3)) // corner container
-            ->rotation.toYawPitchRoll(135, 0, 0);
-
-        UID_t id = cWorld.CreateNewCubeHull(math::vec3(-5.42, 1, 1.88), 2); // Wooden Crate
-        cWorld.getHullFromID(id)->rotation.toYawPitchRoll(38.27, 0, 0);
-
-        cWorld.CreateNewCubeHull(math::vec3(-3.41, 0.5, -0.89), .75, 1.5, .75); // Barrel 1
-        cWorld.CreateNewCubeHull(math::vec3(-1.47, 0.5, 2.09), .75, 1.5, .75); // Barrel 2
     }
 
     void load_level_3(Scene3D* scene) {
