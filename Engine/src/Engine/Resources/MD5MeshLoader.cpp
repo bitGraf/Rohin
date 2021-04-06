@@ -23,8 +23,9 @@ namespace Engine {
             }
         }
 
-        void PrepareMesh(Model* model, Mesh& mesh);
         void PrepareNormals(Model* model, Mesh& mesh);
+        void PrepareMesh(Model* model, Mesh& mesh);
+        void PrepareMesh(Model* model, Mesh& mesh, const FrameSkeleton& skel);
 
         bool LoadMD5MeshFile(const std::string& filename, Model* model) {
             if (model == nullptr) return false;
@@ -169,7 +170,7 @@ namespace Engine {
                     Joint& joint = model->Joints[weight.joint];
 
                     // Convert the weight position from Joint local space to object space
-                    math::vec3 rotPos = joint.orientation * weight.pos;
+                    math::vec3 rotPos = math::vec3(math::inv(joint.orientation) * math::quat(weight.pos, 0) * joint.orientation);
 
                     vert.position += (joint.position + rotPos) * weight.bias;
                 }
@@ -192,22 +193,24 @@ namespace Engine {
 
             // normal normals(getting a per-vertex smoothed normal)
 
+            /*
             for (int n = 0; n < mesh.Verts.size(); n++) {
                 Vert& vert = mesh.Verts[n];
 
                 math::vec3 normal = vert.normal.normalize();
 
                 // reset normal to find bind-pose normal in joint space?
-                vert.normal = math::vec3(0);
-
-                // put the bind-pose normal into joint-local space
-                // so the animated normal can be computed faster later
-                for (int j = 0; j < vert.countWeight; j++) {
-                    const Weight& weight = mesh.Weights[vert.startWeight + j];
-                    const Joint& joint = model->Joints[weight.joint];
-                    vert.normal += (normal * joint.orientation) * weight.bias;
-                }
+                //vert.normal = math::vec3(0);
+                //
+                //// put the bind-pose normal into joint-local space
+                //// so the animated normal can be computed faster later
+                //for (int j = 0; j < vert.countWeight; j++) {
+                //    const Weight& weight = mesh.Weights[vert.startWeight + j];
+                //    const Joint& joint = model->Joints[weight.joint];
+                //    vert.normal += math::vec3(joint.orientation * math::quat(normal,0) * math::inv(joint.orientation)) * weight.bias;
+                //}
             }
+            */
         }
 
 
@@ -285,6 +288,255 @@ namespace Engine {
             }
 
             return false;
+        }
+
+
+
+        ///////////////////////////////////////
+        // MD5Anim ////////////////////////////
+        ///////////////////////////////////////
+
+        bool LoadMD5AnimFile(const std::string& filename, Animation* anim) {
+            if (anim == nullptr) return false;
+
+            // get file pointer
+            std::ifstream md5File(filename);
+
+            if (md5File) {
+                // read param by param
+                std::string param, garb;
+                md5File >> param;
+
+                while (!md5File.eof()) {
+                    if (param == "MD5Version") {
+                        int md5Version;
+                        md5File >> md5Version;
+                        assert(md5Version == 10);
+                    }
+                    else if (param == "commandline") {
+                        std::getline(md5File, garb);
+                    }
+                    else if (param == "numFrames") {
+                        md5File >> anim->numFrames;
+                        assert(anim->numFrames > 0);
+                    }
+                    else if (param == "numJoints") {
+                        md5File >> anim->numJoints;
+                        assert(anim->numJoints > 0);
+                        anim->JointInfos.reserve(anim->numJoints);
+                    }
+                    else if (param == "frameRate") {
+                        md5File >> anim->FrameRate;
+                        assert(anim->FrameRate > 0);
+                    }
+                    else if (param == "numAnimatedComponents") {
+                        md5File >> anim->numAnimComponents;
+                        assert(anim->numAnimComponents > 0);
+                    }
+                    else if (param == "hierarchy") {
+                        assert(anim->numJoints > 0);
+                        std::getline(md5File, garb); // go to next line
+                        JointInfo joint;
+                        for (int n = 0; n < anim->numJoints; n++) {
+                            md5File >> garb;
+                            joint.name = garb.substr(1, garb.size() - 2);
+                            md5File >> joint.parentID >> joint.flags >> joint.startIndex;
+                            std::getline(md5File, garb);
+
+                            anim->JointInfos.push_back(joint);
+                        }
+                        md5File >> garb;
+                    }
+                    else if (param == "bounds") {
+                        md5File >> garb;
+                        std::getline(md5File, garb);
+
+                        for (int n = 0; n < anim->numFrames; n++) {
+                            Bound bound;
+                            md5File >> garb >> bound.min.x >> bound.min.y >> bound.min.z >> garb >>
+                                garb >> bound.max.z >> bound.max.y >> bound.max.z >> garb;
+                            anim->Bounds.push_back(bound);
+                        }
+                        md5File >> garb;
+                        std::getline(md5File, garb);
+                    }
+                    else if (param == "baseframe") {
+                        md5File >> garb;
+                        std::getline(md5File, garb);
+
+                        for (int n = 0; n < anim->numJoints; n++) {
+                            BaseFrame frame;
+                            md5File >> garb >> frame.position.x >> frame.position.y >> frame.position.z >> garb >>
+                                garb >> frame.orientation.x >> frame.orientation.y >> frame.orientation.z >> garb;
+
+                            CalcQuatW(frame.orientation);
+
+                            anim->BaseFrames.push_back(frame);
+                        }
+                        md5File >> garb;
+                        std::getline(md5File, garb);
+                    }
+                    else if (param == "frame") {
+                        FrameData frame;
+                        md5File >> frame.frameID >> garb;
+                        std::getline(md5File, garb);
+
+                        for (int n = 0; n < anim->numAnimComponents; n++) {
+                            float data;
+                            md5File >> data;
+                            frame.frameData.push_back(data);
+                        }
+
+                        anim->Frames.push_back(frame);
+
+                        BuildFrameSkeleton(anim->Skeletons, anim->JointInfos, anim->BaseFrames, frame);
+
+                        md5File >> garb;
+                        std::getline(md5File, garb);
+                    }
+
+                    md5File >> param;
+                }
+                // alloc memory for animated skeleton
+                anim->AnimatedSkeleton.Joints.assign(anim->numJoints, SkeletonJoint());
+                
+                anim->frameDuration = 1.0f / (float)anim->FrameRate;
+                anim->animDuration = anim->frameDuration * (float)anim->numFrames;
+                anim->animTime = 0.0f;
+
+                assert(anim->numJoints == anim->JointInfos.size());
+                assert(anim->numFrames == anim->Bounds.size());
+                assert(anim->numJoints == anim->BaseFrames.size());
+                assert(anim->numFrames == anim->Frames.size());
+                assert(anim->numFrames == anim->Skeletons.size());
+
+                md5File.close();
+                return true;
+            }
+
+            return false;
+        }
+
+        // gets called on model load only
+        void BuildFrameSkeleton(
+            std::vector<FrameSkeleton>& skeletons,
+            const std::vector<JointInfo>& jointInfos,
+            const std::vector<BaseFrame>& baseFrames,
+            const FrameData& frameData) {
+
+            FrameSkeleton skeleton;
+
+            for (u32 j = 0; j < jointInfos.size(); j++) {
+                u32 n = 0;
+
+                const JointInfo& jointInfo = jointInfos[j];
+                SkeletonJoint animatedJoint = baseFrames[j];
+
+                animatedJoint.parentID = jointInfo.parentID;
+
+                if (jointInfo.flags & 1) { // Pos.x
+                    animatedJoint.position.x = frameData.frameData[jointInfo.startIndex + n];
+                    n++;
+                }
+                if (jointInfo.flags & 2) { // Pos.y
+                    animatedJoint.position.y = frameData.frameData[jointInfo.startIndex + n];
+                    n++;
+                }
+                if (jointInfo.flags & 4) { // Pos.z
+                    animatedJoint.position.z = frameData.frameData[jointInfo.startIndex + n];
+                    n++;
+                }
+                if (jointInfo.flags & 8) { // Orient.x
+                    animatedJoint.orientation.x = frameData.frameData[jointInfo.startIndex + n];
+                    n++;
+                }
+                if (jointInfo.flags & 16) { // Orient.y
+                    animatedJoint.orientation.y = frameData.frameData[jointInfo.startIndex + n];
+                    n++;
+                }
+                if (jointInfo.flags & 32) { // Orient.z
+                    animatedJoint.orientation.z = frameData.frameData[jointInfo.startIndex + n];
+                    n++;
+                }
+                CalcQuatW(animatedJoint.orientation);
+
+                if (animatedJoint.parentID >= 0) {
+                    SkeletonJoint& parentJoint = skeleton.Joints[animatedJoint.parentID];
+                    math::vec3 rotPos = math::vec3(math::inv(parentJoint.orientation) * math::quat(animatedJoint.position,0) * (parentJoint.orientation)); // TODO: quaternion math
+
+                    animatedJoint.position = parentJoint.position + rotPos;
+                    animatedJoint.orientation = parentJoint.orientation * animatedJoint.orientation; // TODO: quat math
+
+                    animatedJoint.orientation.normalize();
+                }
+
+                skeleton.Joints.push_back(animatedJoint);
+            }
+
+            skeletons.push_back(skeleton);
+        }
+
+        void InterpolateSkeletons(FrameSkeleton& finalSkeleton, const FrameSkeleton& skeleton0, const FrameSkeleton& skeleton1, float interpolate) {
+            for (int j = 0; j < finalSkeleton.Joints.size(); j++) {
+                SkeletonJoint& finalJoint = finalSkeleton.Joints[j];
+                const SkeletonJoint& joint0 = skeleton0.Joints[j];
+                const SkeletonJoint& joint1 = skeleton1.Joints[j];
+
+                finalJoint.parentID = joint0.parentID;
+
+                finalJoint.position = math::lerp(joint0.position, joint1.position, interpolate);
+                finalJoint.orientation = math::slerp(joint0.orientation, joint1.orientation, interpolate);
+            }
+        }
+
+        // gets called every frame - updates current skelton
+        void UpdateMD5Animation(Animation* anim, float deltaTime) {
+            if (anim->numFrames < 1) return;
+
+            anim->animTime += deltaTime;
+
+            // TODO: simpler modulo of frame time I think is possible
+            while (anim->animTime > anim->animDuration) anim->animTime -= anim->animDuration;
+            while (anim->animTime < 0.0f) anim->animTime += anim->animDuration;
+
+            // find frames we are between
+            float frameNum = anim->animTime * (float)anim->FrameRate;
+            int frame0 = (int)floorf(frameNum);
+            int frame1 = (int)ceilf(frameNum);
+            frame0 %= anim->numFrames;  // TODO: is this redundant?
+            frame1 %= anim->numFrames;
+
+            float interp = fmodf(anim->animTime, anim->frameDuration) / anim->frameDuration;
+
+            //frame0 = 2;
+            //frame1 = 3;
+            //interp = 0.0f;
+
+            InterpolateSkeletons(anim->AnimatedSkeleton, anim->Skeletons[frame0], anim->Skeletons[frame1], interp);
+        }
+
+        // TODO: this should happen on the gpu every frame?
+        void PrepareMesh(Model* model, Mesh& mesh, const FrameSkeleton& skel){
+            for (unsigned int i = 0; i < mesh.Verts.size(); ++i){
+                const Vert& vert = mesh.Verts[i];
+
+                math::vec3 pos; //TODO: what are these used for??
+                math::vec3 normal;
+
+                pos = math::vec3(0);
+                normal = math::vec3(0);
+
+                for (int j = 0; j < vert.countWeight; ++j)
+                {
+                    const Weight& weight = mesh.Weights[vert.startWeight + j];
+                    const SkeletonJoint& joint = skel.Joints[weight.joint];
+
+                    math::vec3 rotPos = math::vec3(math::inv(joint.orientation) * math::quat(weight.pos, 0) * joint.orientation); // TODO: quat
+                    pos += (joint.position + rotPos) * weight.bias;
+
+                    normal += math::vec3(math::inv(joint.orientation) * math::quat(vert.normal, 0) * joint.orientation) * weight.bias; // TODO: quat
+                }
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Engine {
         if (!nbt) return; // only support nbt meshes now
         ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, mesh_path);
         auto mesh = std::make_shared<Engine::Mesh>(mesh_path);
-        if (mesh->LoadFromFile()) {
+        if (mesh->Loaded()) {
             m_MeshList[mesh_name] = mesh;
         }
     }
@@ -17,7 +17,7 @@ namespace Engine {
     void MeshCatalog::Register(const std::string& mesh_name, const md5::Model& model) {
         ENGINE_LOG_INFO("Registering Mesh: [{0}] from MD5Model", mesh_name);
         auto mesh = std::make_shared<Engine::Mesh>(model);
-        if (mesh->LoadFromMD5()) {
+        if (mesh->Loaded()) {
             m_MeshList[mesh_name] = mesh;
         }
     }

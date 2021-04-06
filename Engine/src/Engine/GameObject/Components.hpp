@@ -30,6 +30,15 @@ namespace Engine {
 
         DEBUG_OSTR_IMPL(MeshRendererComponent)
     };
+    struct MeshAnimationComponent {
+        Ref<Engine::md5::Animation> Anim;
+
+        MeshAnimationComponent() = default;
+        MeshAnimationComponent(const MeshAnimationComponent&) = default;
+        MeshAnimationComponent(const Ref<Engine::md5::Animation>& anim) : Anim(anim) {}
+
+        DEBUG_OSTR_IMPL(MeshAnimationComponent)
+    };
     struct TransformComponent {
         math::mat4 Transform;
 

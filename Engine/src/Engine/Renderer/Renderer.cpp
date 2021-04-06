@@ -9,6 +9,8 @@
 #include "Engine/Sound/SoundEngine.hpp"
 #include "Engine/Core/Input.hpp"
 
+#include "Engine/Resources/MD5MeshLoader.hpp"
+
 namespace Engine {
 
     struct Lightingdata { // holds view-space lighting data
@@ -28,6 +30,7 @@ namespace Engine {
 
         Ref<VertexArray> FullscreenQuad;
         Ref<VertexArray> debug_coordinate_axis; //lineRender
+        Ref<VertexArray> Line;
 
         // Render buffers
         Ref<Framebuffer> gBuffer;
@@ -82,9 +85,12 @@ namespace Engine {
         //Renderer::GetShaderLibrary()->Load("Data/Shaders/PBR_static.glsl");
         //Renderer::GetShaderLibrary()->Load("Data/Shaders/Skybox.glsl");
         Renderer::GetShaderLibrary()->Load("Data/Shaders/Line.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Line3D.glsl");
         //Renderer::GetShaderLibrary()->Load("Data/Shaders/Normals.glsl");
 
         Renderer::GetShaderLibrary()->Load("Data/Shaders/PrePass.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/PrePass_Anim.glsl");
+
         Renderer::GetShaderLibrary()->Load("Data/Shaders/Lighting.glsl");
         Renderer::GetShaderLibrary()->Load("Data/Shaders/SSAO.glsl");
         Renderer::GetShaderLibrary()->Load("Data/Shaders/Screen.glsl");
@@ -166,6 +172,32 @@ namespace Engine {
             s_Data.debug_coordinate_axis->AddVertexBuffer(vbo);
             s_Data.debug_coordinate_axis->SetIndexBuffer(ebo);
             s_Data.debug_coordinate_axis->Unbind();
+        }
+        // create Line
+        {
+            struct _vertex
+            {
+                float Position; // can we remove this entirely?
+            };
+
+            _vertex* data = new _vertex[2];
+
+            data[0].Position = 0;
+            data[1].Position = 1;
+
+            u32 indices[2] = { 0, 1 };
+
+            auto vbo = VertexBuffer::Create(data, 2 * sizeof(_vertex));
+            vbo->SetLayout({
+                { ShaderDataType::Float, "a_Position" }
+                });
+            auto ebo = IndexBuffer::Create(indices, 2);
+
+            s_Data.Line = VertexArray::Create();
+            s_Data.Line->Bind();
+            s_Data.Line->AddVertexBuffer(vbo);
+            s_Data.Line->SetIndexBuffer(ebo);
+            s_Data.Line->Unbind();
         }
 
         // create the pipeline buffers
@@ -373,6 +405,19 @@ namespace Engine {
         prePassShader->SetFloat("r_EmissiveTexToggle",  1.0f);
         prePassShader->SetFloat("r_gammaCorrect", s_Data.Gamma ? 1.0 : 0.0);
 
+        // PrePass_Anim Shader
+        auto prePassAnimShader = s_Data.ShaderLibrary->Get("PrePass_Anim");
+        prePassAnimShader->Bind();
+        prePassAnimShader->SetMat4("r_Projection", ProjectionMatrix);
+        prePassAnimShader->SetMat4("r_View", ViewMatrix);
+        prePassAnimShader->SetFloat("r_AlbedoTexToggle", 1.0f);
+        prePassAnimShader->SetFloat("r_NormalTexToggle", 0.0f);
+        prePassAnimShader->SetFloat("r_MetalnessTexToggle", 1.0f);
+        prePassAnimShader->SetFloat("r_RoughnessTexToggle", 1.0f);
+        prePassAnimShader->SetFloat("r_AmbientTexToggle", 1.0f);
+        prePassAnimShader->SetFloat("r_EmissiveTexToggle", 1.0f);
+        prePassAnimShader->SetFloat("r_gammaCorrect", s_Data.Gamma ? 1.0 : 0.0);
+
         // Lighting Pass
         auto lightingShader = s_Data.ShaderLibrary->Get("Lighting");
         lightingShader->Bind();
@@ -412,6 +457,12 @@ namespace Engine {
         lineShader->SetFloat("r_LineFadeEnd", 20);
         lineShader->SetFloat("r_LineFadeMaximum", 0.5f);
         lineShader->SetFloat("r_LineFadeMinimum", 0.25f);
+
+        // 3D Line shader
+        auto line3DShader = s_Data.ShaderLibrary->Get("Line3D");
+        line3DShader->Bind();
+        line3DShader->SetMat4("r_Projection", ProjectionMatrix);
+        line3DShader->SetMat4("r_View", ViewMatrix);
 
         // Sobel pass
         auto sobelShader = s_Data.ShaderLibrary->Get("Sobel");
@@ -627,7 +678,43 @@ namespace Engine {
             shader->SetMat4("r_Transform", transform * submesh.Transform);
 
             //RenderCommand::DrawIndexed(mesh->GetVertexArray());
-            RenderCommand::DrawSubIndexed(submesh.BaseIndex, submesh.BaseVertex, submesh.IndexCount);
+            RenderCommand::DrawSubIndexed(submesh.BaseIndex, 0, submesh.IndexCount);
+        }
+    }
+
+    // Animation variant
+    void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform, const Ref<md5::Animation>& anim) {
+        BENCHMARK_FUNCTION();
+
+        mesh->GetVertexArray()->Bind();
+        auto shader = mesh->GetMeshShader();
+        shader->Bind();
+
+        // set bone transforms
+        const auto& bindPose = mesh->GetBindPose();
+        const auto& Pose = anim->AnimatedSkeleton.Joints;
+        assert(bindPose.size() == Pose.size());
+        for (int n = 0; n < bindPose.size(); n++) {
+            const auto& bone0 = bindPose[n];
+            const auto& bone1 = Pose[n];
+
+            math::vec3 T = bone1.position - bone0.position;
+            math::quat Q = (math::inv(bone0.orientation) * bone1.orientation).get_unit();
+            shader->SetVec3("r_Bones[" + std::to_string(n) + "].Position", T);
+            shader->SetVec4("r_Bones[" + std::to_string(n) + "].Orientation", Q);
+            //shader->SetVec3("r_Bones[" + std::to_string(n) + "].Position", math::vec3());
+            //shader->SetVec4("r_Bones[" + std::to_string(n) + "].Orientation", math::vec4(0,0,0,1));
+        }
+
+        auto& materials = mesh->GetMaterials();
+        for (Submesh& submesh : mesh->GetSubmeshes()) {
+            auto material = materials[submesh.MaterialIndex];
+            material->Bind();
+
+            shader->SetMat4("r_Transform", transform * submesh.Transform);
+
+            //RenderCommand::DrawIndexed(mesh->GetVertexArray());
+            RenderCommand::DrawSubIndexed(submesh.BaseIndex, 0, submesh.IndexCount);
         }
     }
 
@@ -639,8 +726,20 @@ namespace Engine {
         for (Submesh& submesh : mesh->GetSubmeshes()) {
             shader->SetMat4("r_Transform", transform * submesh.Transform);
 
-            RenderCommand::DrawSubIndexed_points(submesh.BaseIndex, submesh.BaseVertex, submesh.IndexCount);
+            RenderCommand::DrawSubIndexed_points(submesh.BaseIndex, 0, submesh.IndexCount);
         }
+    }
+
+    void Renderer::SubmitLine(math::vec3 v0, math::vec3 v1, math::vec4 color) {
+        auto shader = s_Data.ShaderLibrary->Get("Line3D");
+        shader->Bind();
+
+        shader->SetVec3("r_verts[0]", v0);
+        shader->SetVec3("r_verts[1]", v1);
+        shader->SetVec4("r_Color", color);
+
+        s_Data.Line->Bind();
+        RenderCommand::DrawLines(s_Data.Line, false);
     }
 
     void Renderer::SubmitFullscreenQuad() {

@@ -80,13 +80,13 @@ namespace math {
     }
 
     /* dot */
-    scalar vec2::dot(vec2 v) { return (x*v.x + y * v.y); }
-    scalar vec3::dot(vec3 v) { return (x*v.x + y * v.y + z * v.z); }
-    scalar vec4::dot(vec4 v) { return (x*v.x + y * v.y + z * v.z + w * v.w); }
+    scalar vec2::dot(vec2 v) const { return (x*v.x + y * v.y); }
+    scalar vec3::dot(vec3 v) const { return (x*v.x + y * v.y + z * v.z); }
+    scalar vec4::dot(vec4 v) const { return (x*v.x + y * v.y + z * v.z + w * v.w); }
 
     /* cross */
-    scalar vec2::cross(vec2 v) { return (x*v.y - y * v.x); }
-    vec3 vec3::cross(vec3 v) { return vec3(y*v.z - z * v.y, z*v.x - x * v.z, x*v.y - y * v.x); }
+    scalar vec2::cross(vec2 v) const { return (x*v.y - y * v.x); }
+    vec3 vec3::cross(vec3 v) const { return vec3(y*v.z - z * v.y, z*v.x - x * v.z, x*v.y - y * v.x); }
 
 
     /* mat2 constructors */
@@ -789,6 +789,27 @@ namespace math {
         return a + f * (b - a);
     }
 
+    vec2 lerp(const vec2& a, const vec2& b, scalar f) {
+        return vec2(
+            a.x + f * (b.x - a.x), 
+            a.y + f * (b.y - a.y));
+    }
+
+    vec3 lerp(const vec3& a, const vec3& b, scalar f) {
+        return vec3(
+            a.x + f * (b.x - a.x), 
+            a.y + f * (b.y - a.y),
+            a.z + f * (b.z - a.z));
+    }
+
+    vec4 lerp(const vec4& a, const vec4& b, scalar f) {
+        return vec4(
+            a.x + f * (b.x - a.x), 
+            a.y + f * (b.y - a.y),
+            a.z + f * (b.z - a.z),
+            a.w + f * (b.w - a.w));
+    }
+
     mat4 invertViewMatrix(const mat4& t) {
         // decompose view matrix into rotation and transform matrix
         mat3 rotation(
@@ -900,12 +921,17 @@ namespace math {
 
 
     quat operator* (const quat& q1, const quat& q2) {
+        vec3 v1 = vec3(q1);
+        vec3 v2 = vec3(q2);
+        return vec4(v1*q2.w + v2*q1.w + v2.cross(v1), q1.w*q2.w - v1.dot(v2)); //TODO: check math
+        /*
         float a3 = q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z;
         float b3 = q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y;
         float c3 = q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x;
         float d3 = q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w;
 
         return quat(b3, c3, d3, a3);
+        */
     }
 
     vec3 operator* (const quat& q, const vec3& v) {
@@ -916,6 +942,66 @@ namespace math {
     vec3 operator* (const vec3& v, const quat& q) {
         quat qp(-q.x, -q.y, -q.z, q.w);
         return q * vec4(v, 0) * qp; //TODO: is this the inverse??
+    }
+
+    /* Fast inverse square root 
+        approximates 1/sqrt(x) in some neighborhood as x as a linear tangent approximation
+        from: http://number-none.com/product/Hacking%20Quaternions/
+    */
+    inline float isqrt_approx_in_neighborhood(float s) {
+        const float NEIGHBORHOOD = 0.959066;
+        const float SCALE = 1.000311;
+        const float ADDITIVE_CONSTANT = SCALE / sqrt(NEIGHBORHOOD);
+        const float FACTOR = SCALE * (-0.5 / (NEIGHBORHOOD * sqrt(NEIGHBORHOOD)));
+
+        return ADDITIVE_CONSTANT + FACTOR * (s - NEIGHBORHOOD);
+    }
+
+    inline void fast_normalize(float vector[3]) {
+        float s = vector[0] * vector[0] + vector[1] * vector[1] + vector[2] * vector[2];
+        float k = isqrt_approx_in_neighborhood(s);
+
+        if (s < 0.83042395) {
+            k *= isqrt_approx_in_neighborhood(s);
+
+            if (s < 0.30174562) {
+                k *= isqrt_approx_in_neighborhood(s);
+            }
+        }
+
+        vector[0] *= k;
+        vector[1] *= k;
+        vector[2] *= k;
+    }
+
+    float correction(float t, double cos_alpha, double k, double attenuation) {
+        double factor = 1 - attenuation * cos_alpha;
+        factor *= factor;
+        k *= factor;
+
+        float b = 2 * k;
+        float c = -3 * k;
+        float d = 1 + k;
+
+        double tprime_divided_by_t = t * (b*t + c) + d;
+        return tprime_divided_by_t;
+    }
+
+    // Instead of doing a proper spherical linear interpolation, 
+    // do a normal linear interpolation (with a corrected interpolation factor), than renormalize.
+    // For small angles between a and b this will suffice
+    quat slerp(const quat& a, const quat& b, scalar f) {
+        //const double correction_k = 0.5069269;
+        //const double correction_s = 0.7878088;
+        //double cos_alpha = a.dot(b);
+        //float fp = correction(f, cos_alpha, correction_k, correction_s);
+        quat res = lerp(a, b, f);
+        fast_normalize(&res.x);
+        return res;
+    }
+
+    quat inv(const quat& q) {
+        return quat(-q.x, -q.y, -q.z, q.w);
     }
 }
 

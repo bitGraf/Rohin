@@ -11,18 +11,16 @@
 
 namespace Engine {
 
-    Mesh::Mesh(const std::string & filename) : m_FilePath(filename) {}
-    
-    bool Mesh::LoadFromFile() {
+    Mesh::Mesh(const std::string & filename) {
         ENGINE_LOG_INFO("Loading a mesh from a .nbt file");
 
         nbt::file_data data;
         nbt::nbt_byte version_major, version_minor;
         endian::endian endianness;
-        if (!nbt::read_from_file(m_FilePath, data, version_major, version_minor, endianness)) {
-            ENGINE_LOG_ERROR("Failed to read nbt dat for mesh [{0}]", m_FilePath);
+        if (!nbt::read_from_file(filename, data, version_major, version_minor, endianness)) {
+            ENGINE_LOG_ERROR("Failed to read nbt dat for mesh [{0}]", filename);
             m_loaded = false;
-            return false;
+            return;
         }
 
         ENGINE_LOG_INFO("Mesh loaded correctly. Version {0}.{1}, {2}-endian", version_major, version_minor,
@@ -41,10 +39,12 @@ namespace Engine {
         ENGINE_LOG_ASSERT(vert_byte_array.size() == sizeof(Vertex)*num_verts, ".nbt mesh data mismatch");
         ENGINE_LOG_ASSERT(ind_int_array.size()*sizeof(nbt::nbt_int)  == sizeof(u32)*num_inds, ".nbt mesh data mismatch");
 
+        std::vector<Vertex> m_Vertices;
         m_Vertices.reserve(num_verts);
         Vertex* _vertex = reinterpret_cast<Vertex*>(vert_byte_array.data());
         m_Vertices.assign(_vertex, _vertex + num_verts);
 
+        std::vector<Triangle> m_Tris;
         m_Tris.reserve(num_tris);
         Triangle* _tris = reinterpret_cast<Triangle*>(ind_int_array.data());
         m_Tris.assign(_tris, _tris+ num_tris);
@@ -56,7 +56,7 @@ namespace Engine {
         sm.Transform = math::mat4();
         sm.BaseIndex = 0;
         sm.IndexCount = num_inds;
-        sm.BaseVertex = 0; // currently not using this
+        //sm.BaseVertex = 0; // currently not using this
         m_Submeshes.push_back(sm);
 
         // Set shader info
@@ -162,7 +162,6 @@ namespace Engine {
         }
 
         m_loaded = true;
-        return true;
     }
     
     Mesh::~Mesh() {
@@ -201,7 +200,10 @@ namespace Engine {
             }
         }
 
+        std::vector<Vertex_Anim> m_Vertices;
         m_Vertices.resize(totalVerts);
+
+        std::vector<Triangle> m_Tris;
         m_Tris.resize(totalTris);
 
         // for every md5::mesh
@@ -218,6 +220,15 @@ namespace Engine {
                 //m_Vertices[totalIndex].Tangent = vert.position;
                 //m_Vertices[totalIndex].Binormal = vert.position;
                 m_Vertices[totalIndex].Texcoord = vert.uv;
+
+                s32 boneIdx[4] = { 0,0,0,0 };
+                f32 boneWeight[4] = { 0,0,0,0 };
+                for (int w = 0; w < vert.countWeight; w++) {
+                    boneIdx[w] = mesh.Weights[vert.startWeight + w].joint;
+                    boneWeight[w] = mesh.Weights[vert.startWeight + w].bias;
+                }
+                memcpy(&m_Vertices[totalIndex].BoneIndices[0], boneIdx,    4 * sizeof(s32));
+                memcpy(&m_Vertices[totalIndex].BoneWeights.x,  boneWeight, 4 * sizeof(f32));
             }
 
             // add indices to total array
@@ -234,21 +245,24 @@ namespace Engine {
             // fill out submesh data
             Submesh sm;
             
-            sm.BaseVertex = mesh_vert_offsets[m];
+            //sm.BaseVertex = mesh_vert_offsets[m];
             sm.BaseIndex = mesh_tri_offsets[m] * 3;
             sm.MaterialIndex = materialIndexMap[mesh.Shader];
             sm.IndexCount = mesh.Tris.size() * 3;
             
-            sm.Transform = math::createYawPitchRollMatrix(180, 0, -90);
-            sm.Transform.scale({ .3f,.3f,.3f });
+            //sm.Transform = math::createYawPitchRollMatrix(180, 0, -90);
+            //sm.Transform.scale({ .3f,.3f,.3f });
 
             sm.SubmeshName = mesh.Shader; // TODO: hehe
 
             m_Submeshes.push_back(sm);
         }
 
+        // Save bind pose info
+        m_BindPose = model.Joints;
+
         // Set shader info
-        m_MeshShader = Renderer::GetShaderLibrary()->Get("PrePass"); // TODO: allow meshes to choose their shader?
+        m_MeshShader = Renderer::GetShaderLibrary()->Get("PrePass_Anim"); // TODO: allow meshes to choose their shader?
         m_BaseMaterial = std::make_shared<Material>(m_MeshShader);
 
         // Create materials
@@ -302,13 +316,15 @@ namespace Engine {
         {
             m_VertexArray = VertexArray::Create();
 
-            auto vb = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex));
+            auto vb = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex_Anim));
             vb->SetLayout({
                 { ShaderDataType::Float3, "a_Position" },
                 { ShaderDataType::Float3, "a_Normal" },
                 { ShaderDataType::Float3, "a_Tangent" },
                 { ShaderDataType::Float3, "a_Binormal" },
                 { ShaderDataType::Float2, "a_TexCoord" },
+                { ShaderDataType::Int4,   "a_BoneIndices"},
+                { ShaderDataType::Float4, "a_BoneWeights" },
                 });
             m_VertexArray->AddVertexBuffer(vb);
 
@@ -319,9 +335,5 @@ namespace Engine {
         }
 
         m_loaded = true;
-    }
-
-    bool Mesh::LoadFromMD5() {
-        return m_loaded;
     }
 }

@@ -24,8 +24,8 @@ namespace math {
         scalar length_2(); ///< Find squared magnitude of vector
         vec2 get_unit(); ///< Get unit vector (doesn't modify)
         vec2 normalize(); ///< Normalize vector and return
-        scalar dot(vec2 v); ///< Dot product with another vec2
-        scalar cross(vec2 v); ///< Cross product with another vec2
+        scalar dot(vec2 v) const; ///< Dot product with another vec2
+        scalar cross(vec2 v) const; ///< Cross product with another vec2
 
         friend ::std::ostream& operator<<(std::ostream& os, const vec2& v); ///< Stream operator overload
 
@@ -48,8 +48,8 @@ namespace math {
         scalar length_2(); ///< Find squared magnitude of vector
         vec3 get_unit(); ///< Get unit vector (doesn't modify)
         vec3 normalize(); ///< Normalize vector and return
-        scalar dot(vec3 v); ///< Dot product with another vec2
-        vec3 cross(vec3 v); ///< Cross product with another vec2
+        scalar dot(vec3 v) const; ///< Dot product with another vec2
+        vec3 cross(vec3 v) const; ///< Cross product with another vec2
 
         friend ::std::ostream& operator<<(std::ostream& os, const vec3& v); ///< Stream operator overload
 
@@ -70,7 +70,7 @@ namespace math {
         scalar length_2(); ///< Find squared magnitude of vector
         vec4 get_unit(); ///< Get unit vector (doesn't modify)
         vec4 normalize(); ///< Normalize vector and return
-        scalar dot(vec4 v); ///< Dot product with another vec2
+        scalar dot(vec4 v) const; ///< Dot product with another vec2
 
         vec3 XYZ(); ///< pseudo swizzle
 
@@ -265,6 +265,9 @@ namespace math {
     mat4 invertViewMatrix(const mat4& transform);
 
     scalar lerp(scalar a, scalar b, scalar f);
+    vec2 lerp(const vec2& a, const vec2& b, scalar f);
+    vec3 lerp(const vec3& a, const vec3& b, scalar f);
+    vec4 lerp(const vec4& a, const vec4& b, scalar f);
 
     // Pos, Yaw, Pitch, Roll, Forward, Right, Up
     std::tuple<vec3, scalar, scalar, scalar, vec3, vec3, vec3> Decompose(const mat4& transform);
@@ -275,8 +278,11 @@ namespace math {
     // Quaternion math
     typedef vec4 quat;
     quat operator* (const quat& q1, const quat& q2);       ///< Vector4 X Vector4
-    vec3 operator* (const quat& q, const vec3& v);         ///< Quat X Vector3
-    vec3 operator* (const vec3& v, const quat& q);         ///< Vector3 X Quat
+    //vec3 operator* (const quat& q, const vec3& v);         ///< Quat X Vector3
+    //vec3 operator* (const vec3& v, const quat& q);         ///< Vector3 X Quat
+
+    quat slerp(const quat& a, const quat& b, scalar f);
+    quat inv(const quat& q);
 }
 
 #endif

@@ -24,7 +24,16 @@ namespace Engine {
         math::vec2 Texcoord;
     };
 
-    static const int NumAttributes = 5;
+    struct Vertex_Anim
+    {
+        math::vec3 Position;
+        math::vec3 Normal;
+        math::vec3 Tangent;
+        math::vec3 Binormal;
+        math::vec2 Texcoord;
+        s32 BoneIndices[4];
+        math::vec4 BoneWeights;
+    };
 
     struct Triangle
     {
@@ -36,7 +45,7 @@ namespace Engine {
     class Submesh
     {
     public:
-        u32 BaseVertex;
+        //u32 BaseVertex;
         u32 BaseIndex;
         u32 MaterialIndex;
         u32 IndexCount;
@@ -49,12 +58,13 @@ namespace Engine {
     class Mesh
     {
     public:
+        // load NBT .mesh file
         Mesh(const std::string& filename);
         Mesh(const md5::Model& model);
         ~Mesh();
 
-        bool LoadFromFile();
-        bool LoadFromMD5();
+        //bool LoadFromFile();
+        //bool LoadFromMD5();
         bool Loaded() { return m_loaded; }
 
         void OnUpdate(double ts);
@@ -69,19 +79,20 @@ namespace Engine {
         Ref<MaterialInstance> GetMaterial(u32 index) { ENGINE_LOG_ASSERT(index <= m_Materials.size(), "Not that many materials!"); return m_Materials[index]; }
         //const std::vector<Engine::Ref<Engine::Texture2D>>& GetTextures() const { return m_Textures; }
 
-        const std::string& GetName() const { return m_Name; }
-        const std::string& GetFilePath() const { return m_FilePath; }
-        const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
-        const std::vector<Triangle>& GetTris() const { return m_Tris; }
+        //const std::string& GetName() const { return m_Name; }
+        //const std::string& GetFilePath() const { return m_FilePath; }
+        //const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
+        //const std::vector<Triangle>& GetTris() const { return m_Tris; }
 
         const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
+        const std::vector<md5::Joint>&  GetBindPose() const { return m_BindPose; }
     private:
 
     private:
         Ref<VertexArray> m_VertexArray;
 
-        std::vector<Vertex> m_Vertices;
-        std::vector<Triangle> m_Tris;
+        //std::vector<Vertex> m_Vertices;
+        //std::vector<Triangle> m_Tris;
         std::vector<Submesh> m_Submeshes;
 
         // Materials
@@ -89,14 +100,10 @@ namespace Engine {
         Ref<Material> m_BaseMaterial;
         std::vector<Engine::Ref<Engine::Texture2D>> m_Textures;
         std::vector<Engine::Ref<Engine::MaterialInstance>> m_Materials;
-
-
-        std::string m_FilePath;
-        std::string m_Name;
+        std::vector<md5::Joint> m_BindPose;
 
         bool m_loaded = false;
 
         friend class Renderer;
-        friend class SceneHierarchyPanel;
     };
 }

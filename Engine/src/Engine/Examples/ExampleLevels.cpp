@@ -214,6 +214,7 @@ namespace Engine {
         // load materials
         std::unordered_map<std::string, md5::Material> mats;
         md5::LoadMD5MaterialDefinitionFile("Data/animTest/bob_lamp_update_export.md5material", mats);
+        md5::LoadMD5MaterialDefinitionFile("Data/animTest/tentacle.md5material", mats);
         MaterialCatalog::RegisterMaterial(mats);
 
         // read md5mesh file
@@ -224,12 +225,263 @@ namespace Engine {
         Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", true);
         auto& cWorld = scene->GetCollisionWorld();
 
+        // read animation file
+        Ref<md5::Animation> anim = std::make_shared<md5::Animation>();
+        md5::LoadMD5AnimFile("Data/animTest/bob_lamp_update_export.md5anim", anim.get());
+
+        //md5::Animation anim;
+        // create md5 mesh
+        /*
+        {
+            using namespace math;
+            md5::Model tentacle;
+            
+            md5::Joint joint0;
+            joint0.name = "Root";
+            joint0.parent = -1;
+            joint0.position = vec3(0, 0, 0);
+            joint0.orientation = vec4(0, 0, 0, 1);
+            md5::Joint joint1;
+            joint1.name = "tip";
+            joint1.parent = 0;
+            joint1.position = vec3(0, 1, 0);
+            joint1.orientation = vec4(0, 0, 0, 1);
+            tentacle.Joints.push_back(joint0);
+            tentacle.Joints.push_back(joint1);
+            tentacle.numJoints = 2;
+
+            md5::Mesh mesh;
+            mesh.Shader = "tentacle";
+
+            md5::Vert vert;
+            vert.countWeight = 1;
+            vert.startWeight = 0;
+            vert.uv = vec2(0, 0);
+            vert.position = vec3(-1, 0, 0);
+            vert.normal = vec3(0, 0, 1);
+            mesh.Verts.push_back(vert);
+            
+            vert.startWeight = 1;
+            vert.uv = vec2(1, 0);
+            vert.position = vec3(1, 0, 0);
+            mesh.Verts.push_back(vert);
+
+            vert.startWeight = 2;
+            vert.countWeight = 2;
+            vert.uv = vec2(.1, .4);
+            vert.position = vec3(-.75f, 1, 0);
+            mesh.Verts.push_back(vert);
+
+            vert.startWeight = 4;
+            vert.countWeight = 2;
+            vert.uv = vec2(.9, .4);
+            vert.position = vec3(.75f, 1, 0);
+            mesh.Verts.push_back(vert);
+
+            vert.startWeight = 6;
+            vert.countWeight = 1;
+            vert.uv = vec2(.3, .8);
+            vert.position = vec3(-.75f, 2, 0);
+            mesh.Verts.push_back(vert);
+
+            vert.startWeight = 7;
+            vert.countWeight = 1;
+            vert.uv = vec2(.7, .8);
+            vert.position = vec3(.75f, 2, 0);
+            mesh.Verts.push_back(vert);
+
+            vert.startWeight = 8;
+            vert.countWeight = 1;
+            vert.uv = vec2(.5, 1);
+            vert.position = vec3(0.0f, 2.35f, 0);
+            mesh.Verts.push_back(vert);
+
+            md5::Tri tri;
+            tri.vertIndex[0] = 0;
+            tri.vertIndex[1] = 1;
+            tri.vertIndex[2] = 3;
+            mesh.Tris.push_back(tri);
+
+            tri.vertIndex[0] = 0;
+            tri.vertIndex[1] = 3;
+            tri.vertIndex[2] = 2;
+            mesh.Tris.push_back(tri);
+
+            tri.vertIndex[0] = 2;
+            tri.vertIndex[1] = 3;
+            tri.vertIndex[2] = 5;
+            mesh.Tris.push_back(tri);
+
+            tri.vertIndex[0] = 2;
+            tri.vertIndex[1] = 5;
+            tri.vertIndex[2] = 4;
+            mesh.Tris.push_back(tri);
+
+            tri.vertIndex[0] = 4;
+            tri.vertIndex[1] = 5;
+            tri.vertIndex[2] = 6;
+            mesh.Tris.push_back(tri);
+
+            md5::Weight weight;
+            weight.weightIndex = 0;
+            weight.joint = 0;
+            weight.bias = 1.0f;
+            mesh.Weights.push_back(weight);
+
+            weight.weightIndex = 1;
+            weight.joint = 0;
+            weight.bias = 1.0f;
+            mesh.Weights.push_back(weight);
+
+            weight.weightIndex = 2;
+            weight.joint = 0;
+            weight.bias = 0.5f;
+            mesh.Weights.push_back(weight);
+
+            weight.weightIndex = 3;
+            weight.joint = 1;
+            weight.bias = 0.5f;
+            mesh.Weights.push_back(weight);
+
+            weight.weightIndex = 4;
+            weight.joint = 0;
+            weight.bias = 0.5f;
+            mesh.Weights.push_back(weight);
+
+            weight.weightIndex = 5;
+            weight.joint = 1;
+            weight.bias = 0.5f;
+            mesh.Weights.push_back(weight);
+
+            weight.weightIndex = 6;
+            weight.joint = 1;
+            weight.bias = 1.0f;
+            mesh.Weights.push_back(weight);
+
+            weight.weightIndex = 7;
+            weight.joint = 1;
+            weight.bias = 1.0f;
+            mesh.Weights.push_back(weight);
+
+            weight.weightIndex = 8;
+            weight.joint = 1;
+            weight.bias = 1.0f;
+            mesh.Weights.push_back(weight);
+
+            tentacle.Meshes.push_back(mesh);
+            tentacle.numMeshes = 1;
+            MeshCatalog::Register("mesh_tentacle", tentacle);
+
+            // Animation
+            anim->numFrames = 4;
+            anim->numJoints = 2;
+            anim->numAnimComponents = 12;
+            anim->FrameRate = 1;
+            anim->frameDuration = 1.0f / (float)anim->FrameRate;
+            anim->animDuration = anim->frameDuration * (float)anim->numFrames;
+            anim->animTime = 0.0f;
+
+            md5::JointInfo joint;
+            joint.name = "Root";
+            joint.parentID = -1;
+            joint.flags = 1 | 2 | 4 | 8 | 16 | 32;
+            joint.startIndex = 0;
+            anim->JointInfos.push_back(joint);
+            joint.name = "tip";
+            joint.parentID = 0;
+            joint.flags = 1 | 2 | 4 | 8 | 16 | 32;
+            joint.startIndex = 6;
+            anim->JointInfos.push_back(joint);
+
+            md5::BaseFrame bf;
+            bf.position = vec3(0, 0, 0);
+            bf.orientation = vec4(0, 0, 0, 1);
+            anim->BaseFrames.push_back(bf);
+            bf.position = vec3(0, 1, 0);
+            bf.orientation = vec4(0, 0, 0, 1);
+            anim->BaseFrames.push_back(bf);
+
+            md5::FrameData frame;
+            frame.frameID = 0;
+            frame.frameData.push_back(-1); // bone 0 pos
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0); // bone 0 rot
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(.05);
+            frame.frameData.push_back(0); // bone 1 pos
+            frame.frameData.push_back(1);
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0); // bone 1 rot
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(.05);
+            anim->Frames.push_back(frame);
+
+            md5::BuildFrameSkeleton(anim->Skeletons, anim->JointInfos, anim->BaseFrames, frame);
+
+            frame.frameID = 1;
+            frame.frameData.clear();
+            frame.frameData.push_back(0); // bone 0 pos
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0); // bone 0 rot
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0); // bone 1 pos
+            frame.frameData.push_back(1);
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0); // bone 1 rot
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0);
+            anim->Frames.push_back(frame);
+
+            md5::BuildFrameSkeleton(anim->Skeletons, anim->JointInfos, anim->BaseFrames, frame);
+
+            frame.frameID = 2;
+            frame.frameData.clear();
+            frame.frameData.push_back(1); // bone 0 pos
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0); // bone 0 rot
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(-.05);
+            frame.frameData.push_back(0); // bone 1 pos
+            frame.frameData.push_back(1);
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0); // bone 1 rot
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(-.05);
+            anim->Frames.push_back(frame);
+
+            md5::BuildFrameSkeleton(anim->Skeletons, anim->JointInfos, anim->BaseFrames, frame);
+
+            frame.frameID = 3;
+            frame.frameData.clear();
+            frame.frameData.push_back(0); // bone 0 pos
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0); // bone 0 rot
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0); // bone 1 pos
+            frame.frameData.push_back(1);
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0); // bone 1 rot
+            frame.frameData.push_back(0);
+            frame.frameData.push_back(0);
+            anim->Frames.push_back(frame);
+
+            md5::BuildFrameSkeleton(anim->Skeletons, anim->JointInfos, anim->BaseFrames, frame);
+
+            anim->AnimatedSkeleton.Joints.assign(anim->numJoints, md5::SkeletonJoint());
+        }
+        */
 
         { // Player
             auto player = scene->CreateGameObject("Player");
             auto mesh = MeshCatalog::Get("mesh_bob");
             player.AddComponent<MeshRendererComponent>(mesh);
-            //player.AddComponent<NativeScriptComponent>().Bind<PlayerController>(player);
+            player.AddComponent<MeshAnimationComponent>(anim);
             BindGameScript("script_player_controller", scene, player);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
@@ -239,6 +491,7 @@ namespace Engine {
             UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
         }
+
         { // Platform
             float platformSize = 20.0f;
             float platformThickness = 3.0f;
@@ -249,7 +502,7 @@ namespace Engine {
             auto material = rectMesh->GetMaterial(0);
             material->Set<float>("u_TextureScale", platformSize);
             material->Set("u_AlbedoTexture", Texture2D::Create("Data/Images/grid/PNG/Dark/texture_07.png"));
-            platform.AddComponent<MeshRendererComponent>(rectMesh);
+            //platform.AddComponent<MeshRendererComponent>(rectMesh);
 
             auto& trans = platform.GetComponent<TransformComponent>().Transform;
             trans = math::mat4();

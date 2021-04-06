@@ -113,13 +113,21 @@ namespace Engine {
         BENCHMARK_FUNCTION();
         if (m_Playing) {
             BENCHMARK_SCOPE("Update Scripts");
-            // Update
+            // Update scripts
             auto& scriptComponents = m_Registry.view<NativeScriptComponent>();
             for (auto& script : scriptComponents) {
                 if (script.Script) {
                     ENGINE_LOG_ASSERT(script.Script, "Native script not instantiated");
 
                     script.Script->OnUpdate(dt);
+                }
+            }
+
+            // Update Animations
+            auto& animComponents = m_Registry.view<MeshAnimationComponent>();
+            for (auto& anim : animComponents) {
+                if (anim.Anim) {
+                    md5::UpdateMD5Animation(anim.Anim.get(), dt);
                 }
             }
         }
@@ -213,9 +221,13 @@ namespace Engine {
                     auto& tag = m_Registry.get<TagComponent>(n);
 
                     if (mesh.Mesh) {
-                        Renderer::SubmitMesh(mesh.Mesh, trans.Transform);
-                        //if (m_showNormals) // should probably be in a separate part...
-                        //    Renderer::SubmitMesh_drawNormals(mesh.Mesh, trans.Transform);
+                        if (m_Registry.has<MeshAnimationComponent>(n)) {
+                            const auto& anim = m_Registry.get<MeshAnimationComponent>(n);
+                            Renderer::SubmitMesh(mesh.Mesh, trans.Transform, anim.Anim);
+                        }
+                        else {
+                            Renderer::SubmitMesh(mesh.Mesh, trans.Transform);
+                        }
                     }
                 }
             }
@@ -244,6 +256,73 @@ namespace Engine {
             Renderer::RenderDebugUI();
             if (m_showEntityLocations) { // TODO: rename this/come up with less bad solution for these things
                 TextRenderer::SubmitText("Showing entity locations", 5, 40, math::vec3(.7, .1, .5));
+            }
+
+            for (auto n : m_Registry.GetRegList()) {
+                // check if entity n has both transform and mesh
+                if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshAnimationComponent>(n)) {
+                    // good to go
+                    auto& anim = m_Registry.get<MeshAnimationComponent>(n);
+                    auto& trans = m_Registry.get<TransformComponent>(n);
+                    auto& tag = m_Registry.get<TagComponent>(n);
+                    auto& mesh = m_Registry.get<MeshRendererComponent>(n);
+
+                    std::vector<md5::Joint> baseframe;
+                    for (int k = 0; k < anim.Anim->JointInfos.size(); k++) {
+                        const auto& joint = anim.Anim->BaseFrames[k];
+                        md5::Joint newJoint;
+                        newJoint.position = joint.position;
+                        newJoint.orientation = joint.orientation;
+
+                        if (anim.Anim->JointInfos[k].parentID >= 0) {
+                            const auto& parentJoint = anim.Anim->BaseFrames[anim.Anim->JointInfos[n].parentID];
+                            math::vec3 rotPos = math::vec3(math::inv(parentJoint.orientation) * math::quat(newJoint.position, 0) * (parentJoint.orientation)); // TODO: quaternion math
+
+                            newJoint.position = parentJoint.position + rotPos;
+                            newJoint.orientation = parentJoint.orientation * newJoint.orientation; // TODO: quat math
+
+                            newJoint.orientation.normalize();
+                        }
+                        baseframe.push_back(newJoint);
+                    }
+
+                    //const auto& skeleton = mesh.Mesh->GetBindPose();
+                    const auto& skeleton = anim.Anim->AnimatedSkeleton.Joints;
+                    //const auto& skeleton = anim.Anim->BaseFrames;
+                    //const auto& skeleton = baseframe;
+                    //const auto& skeleton1 = anim.Anim->Skeletons[0].Joints;
+                    std::vector<math::vec4> colors = {
+                        {1,0,0,1},
+                        {0,1,0,1},
+                        {0,1,1,1},
+                        {1,0,1,1}
+                    };
+                    int c = 0;
+                    for (const auto& joint : skeleton) {
+                        math::vec3 start = math::vec4(joint.position.x, joint.position.y, joint.position.z, 1);
+                        math::vec3 dir = math::vec3(0,1,0);
+                        dir = (math::inv(joint.orientation) * math::vec4(dir, 0) * joint.orientation);
+                        math::vec3 end = start + dir;
+                        Renderer::SubmitLine(start, end, colors[c % colors.size()]);
+
+                        Renderer::SubmitLine(start + math::vec3(-.1, 0, 0), start + math::vec3(.1, 0, 0), colors[c % colors.size()]);
+                        Renderer::SubmitLine(start + math::vec3(0, -.1, 0), start + math::vec3(0, .1, 0), colors[c % colors.size()]);
+                        Renderer::SubmitLine(start + math::vec3(0, 0, -.1), start + math::vec3(0, 0, .1), colors[c % colors.size()]);
+                        c++;
+
+                        if (c == 2) {
+                            Renderer::SubmitLine(start, start + math::vec3(0, -1, 0), math::vec4(.4,.4,.4,.7));
+                        }
+                    }
+
+                    //const auto& skeleton2 = anim.Anim->Skeletons[1].Joints;
+                    //for (const auto& joint : skeleton2) {
+                    //    math::vec3 start = math::vec4(joint.position.x, joint.position.y, joint.position.z, 1);
+                    //    math::vec3 dir = math::vec3(0, 1, 0);
+                    //    dir = (math::inv(joint.orientation) * math::vec4(dir, 0) * joint.orientation);
+                    //    Renderer::SubmitLine(start, start + dir, math::vec4(1, .5, 1, 1));
+                    //}
+                }
             }
         }
         

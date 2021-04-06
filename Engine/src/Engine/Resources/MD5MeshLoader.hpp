@@ -72,5 +72,72 @@ namespace Engine {
         };
 
         bool LoadMD5MaterialDefinitionFile(const std::string& filename, std::unordered_map<std::string, Material>& map);
+
+
+        ///////////////////////////////////////
+        // MD5Anim ////////////////////////////
+        ///////////////////////////////////////
+
+        struct JointInfo {
+            std::string name;
+            int parentID;
+            int flags;
+            int startIndex;
+        };
+
+        struct Bound {
+            math::vec3 min;
+            math::vec3 max;
+        };
+
+        struct BaseFrame {
+            math::vec3 position;
+            math::quat orientation;
+        };
+
+        struct FrameData {
+            int frameID;
+            std::vector<float> frameData;
+        };
+
+        struct SkeletonJoint {
+            SkeletonJoint() : parentID(-1) {}
+            SkeletonJoint(const BaseFrame& copy) : position(copy.position), orientation(copy.orientation) {}
+
+            int parentID;
+            math::vec3 position;
+            math::quat orientation;
+        };
+
+        struct FrameSkeleton {
+            std::vector<SkeletonJoint> Joints;
+        };
+
+        struct Animation {
+            std::vector<JointInfo>       JointInfos;
+            std::vector<Bound>           Bounds;
+            std::vector<BaseFrame>       BaseFrames;
+            std::vector<FrameData>       Frames;
+            std::vector<FrameSkeleton>   Skeletons;    // All the skeletons for all the frames
+
+            FrameSkeleton       AnimatedSkeleton;
+
+            int numFrames;
+            int numJoints;
+            int FrameRate;
+            int numAnimComponents;
+
+            float animDuration;
+            float frameDuration;
+            float animTime;
+        };
+
+        bool LoadMD5AnimFile(const std::string& filename, Animation* anim);
+        void UpdateMD5Animation(Animation* anim, float deltaTime);
+        void BuildFrameSkeleton(
+            std::vector<FrameSkeleton>& skele,
+            const std::vector<JointInfo>& jointInfo,
+            const std::vector<BaseFrame>& baseFrames,
+            const FrameData& frame);
     }
 }
