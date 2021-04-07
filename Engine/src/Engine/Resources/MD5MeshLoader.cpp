@@ -6,10 +6,7 @@ namespace Engine {
 
     namespace md5 {
 
-        bool startsWith(const std::string& str, const std::string& substr) {
-            return strncmp(str.c_str(), substr.c_str(), substr.size()) == 0;
-        }
-
+        /*
         void CalcQuatW(math::quat& quat) {
             float t = 1.0f - (quat.x * quat.x) - (quat.y * quat.y) - (quat.z * quat.z);
             if (t < 0.0f)
@@ -22,6 +19,7 @@ namespace Engine {
                 quat.w = sqrtf(t);
             }
         }
+        */
 
         void PrepareNormals(Model* model, Mesh& mesh);
         void PrepareMesh(Model* model, Mesh& mesh);
@@ -67,7 +65,7 @@ namespace Engine {
                             md5File >> joint.parent >>
                                 garb >> joint.position.x >> joint.position.y >> joint.position.z >> garb >>
                                 garb >> joint.orientation.x >> joint.orientation.y >> joint.orientation.z >> garb;
-                            CalcQuatW(joint.orientation);
+                            joint.orientation.reconstructW();
 
                             model->Joints.push_back(joint);
                             
@@ -170,7 +168,7 @@ namespace Engine {
                     Joint& joint = model->Joints[weight.joint];
 
                     // Convert the weight position from Joint local space to object space
-                    math::vec3 rotPos = math::vec3(math::inv(joint.orientation) * math::quat(weight.pos, 0) * joint.orientation);
+                    math::vec3 rotPos = math::TransformPointByQuaternion(joint.orientation, weight.pos);
 
                     vert.position += (joint.position + rotPos) * weight.bias;
                 }
@@ -369,7 +367,7 @@ namespace Engine {
                             md5File >> garb >> frame.position.x >> frame.position.y >> frame.position.z >> garb >>
                                 garb >> frame.orientation.x >> frame.orientation.y >> frame.orientation.z >> garb;
 
-                            CalcQuatW(frame.orientation);
+                            frame.orientation.reconstructW();
 
                             anim->BaseFrames.push_back(frame);
                         }
@@ -458,11 +456,11 @@ namespace Engine {
                     animatedJoint.orientation.z = frameData.frameData[jointInfo.startIndex + n];
                     n++;
                 }
-                CalcQuatW(animatedJoint.orientation);
+                animatedJoint.orientation.reconstructW();
 
                 if (animatedJoint.parentID >= 0) {
                     SkeletonJoint& parentJoint = skeleton.Joints[animatedJoint.parentID];
-                    math::vec3 rotPos = math::vec3(math::inv(parentJoint.orientation) * math::quat(animatedJoint.position,0) * (parentJoint.orientation)); // TODO: quaternion math
+                    math::vec3 rotPos = math::TransformPointByQuaternion(parentJoint.orientation, animatedJoint.position);
 
                     animatedJoint.position = parentJoint.position + rotPos;
                     animatedJoint.orientation = parentJoint.orientation * animatedJoint.orientation; // TODO: quat math
@@ -531,10 +529,10 @@ namespace Engine {
                     const Weight& weight = mesh.Weights[vert.startWeight + j];
                     const SkeletonJoint& joint = skel.Joints[weight.joint];
 
-                    math::vec3 rotPos = math::vec3(math::inv(joint.orientation) * math::quat(weight.pos, 0) * joint.orientation); // TODO: quat
+                    math::vec3 rotPos = math::TransformPointByQuaternion(joint.orientation, weight.pos);
                     pos += (joint.position + rotPos) * weight.bias;
 
-                    normal += math::vec3(math::inv(joint.orientation) * math::quat(vert.normal, 0) * joint.orientation) * weight.bias; // TODO: quat
+                    normal += math::TransformPointByQuaternion(joint.orientation, vert.normal) * weight.bias;
                 }
             }
         }

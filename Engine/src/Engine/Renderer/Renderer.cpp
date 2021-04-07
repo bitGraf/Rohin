@@ -311,17 +311,17 @@ namespace Engine {
         memcpy(s_Data.Lights.pointLights, pointLights, sizeof(Light)*numPointLights);
         memcpy(s_Data.Lights.spotLights, spotLights, sizeof(Light)*numSpotLights);
 
-        math::mat4 normalMatrix = math::mat4(math::mat3(ViewMatrix)); //TODO: check the math to see if this is needed
+        math::mat4 normalMatrix = math::mat4(ViewMatrix.asMat3(), 1); //TODO: check the math to see if this is needed
 
         // recaulculate position and direction in view-space
         for (int n = 0; n < numPointLights; n++) {
-            s_Data.Lights.pointLights[n].position = (ViewMatrix * math::vec4(s_Data.Lights.pointLights[n].position, 1)).XYZ();
+            s_Data.Lights.pointLights[n].position = (ViewMatrix * math::vec4(s_Data.Lights.pointLights[n].position, 1)).asVec3();
         }
         for (int n = 0; n < numSpotLights; n++) {
-            s_Data.Lights.spotLights[n].position = (ViewMatrix * math::vec4(s_Data.Lights.spotLights[n].position, 1)).XYZ();
-            s_Data.Lights.spotLights[n].direction = (normalMatrix * math::vec4(s_Data.Lights.spotLights[n].direction, 0)).XYZ().get_unit();
+            s_Data.Lights.spotLights[n].position = (ViewMatrix * math::vec4(s_Data.Lights.spotLights[n].position, 1)).asVec3();
+            s_Data.Lights.spotLights[n].direction = (normalMatrix * math::vec4(s_Data.Lights.spotLights[n].direction, 0)).asVec3().get_unit();
         }
-        s_Data.Lights.sun.direction = (normalMatrix * math::vec4(s_Data.Lights.sun.direction, 0)).XYZ().get_unit();
+        s_Data.Lights.sun.direction = (normalMatrix * math::vec4(s_Data.Lights.sun.direction, 0)).asVec3().get_unit();
 
         // for debugging
         s_Data.Lights.projection = projection;
@@ -387,9 +387,10 @@ namespace Engine {
         const Light& sun) {
         BENCHMARK_FUNCTION();
 
-        math::mat4 ViewMatrix = math::invertViewMatrix(transform);
+        math::mat4 ViewMatrix;
+        math::CreateViewFromTransform(ViewMatrix, transform);
         math::mat4 ProjectionMatrix = camera.GetProjection();
-        math::vec3 camPos = transform.col4().XYZ();
+        math::vec3 camPos = transform.column4.asVec3();
         UpdateLighting(ViewMatrix, numPointLights, pointLights, numSpotLights, spotLights, sun, ProjectionMatrix);
 
         // PrePass Shader
@@ -699,9 +700,9 @@ namespace Engine {
             const auto& bone1 = Pose[n];
 
             math::vec3 T = bone1.position - bone0.position;
-            math::quat Q = (math::inv(bone0.orientation) * bone1.orientation).get_unit();
+            math::quat Q = (bone0.orientation.inv() * bone1.orientation).normalize();
             shader->SetVec3("r_Bones[" + std::to_string(n) + "].Position", T);
-            shader->SetVec4("r_Bones[" + std::to_string(n) + "].Orientation", Q);
+            shader->SetVec4("r_Bones[" + std::to_string(n) + "].Orientation", Q.asVec4());
             //shader->SetVec3("r_Bones[" + std::to_string(n) + "].Position", math::vec3());
             //shader->SetVec4("r_Bones[" + std::to_string(n) + "].Orientation", math::vec4(0,0,0,1));
         }

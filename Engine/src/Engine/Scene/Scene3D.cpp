@@ -178,7 +178,7 @@ namespace Engine {
                             scenePointLights[numPointLight].color = light.Color;
                             scenePointLights[numPointLight].strength = light.Strength;
                             scenePointLights[numPointLight].type = light.Type;
-                            scenePointLights[numPointLight].position = trans.Transform.col4().XYZ();
+                            scenePointLights[numPointLight].position = trans.Transform.column4.asVec3();
                             numPointLight++;
                             break;
                         case LightType::Spot:
@@ -186,8 +186,8 @@ namespace Engine {
                             sceneSpotLights[numSpotLight].color = light.Color;
                             sceneSpotLights[numSpotLight].strength = light.Strength;
                             sceneSpotLights[numSpotLight].type = light.Type;
-                            sceneSpotLights[numSpotLight].position = trans.Transform.col4().XYZ();
-                            sceneSpotLights[numSpotLight].direction = -trans.Transform.col3().XYZ();
+                            sceneSpotLights[numSpotLight].position = trans.Transform.column4.asVec3();
+                            sceneSpotLights[numSpotLight].direction = -trans.Transform.column3.asVec3();
                             sceneSpotLights[numSpotLight].inner = light.InnerCutoff;
                             sceneSpotLights[numSpotLight].outer = light.OuterCutoff;
                             numSpotLight++;
@@ -196,8 +196,8 @@ namespace Engine {
                             sceneSun.color = light.Color;
                             sceneSun.strength = light.Strength;
                             sceneSun.type = light.Type;
-                            sceneSun.position = trans.Transform.col4().XYZ();
-                            sceneSun.direction = -trans.Transform.col3().XYZ(); // sun points in entities -z direction (or whatever the camera looks in...)
+                            sceneSun.position = trans.Transform.column4.asVec3();
+                            sceneSun.direction = -trans.Transform.column3.asVec3(); // sun points in entities -z direction (or whatever the camera looks in...)
                             break;
                     }
                 }
@@ -238,14 +238,12 @@ namespace Engine {
             if (m_showCollisionHulls) {
                 for (const auto& hull : m_cWorld.m_static) {
                     math::mat4 transform;
-                    transform.translate(hull.position);
-                    transform *= math::mat4(hull.rotation);
+                    math::CreateTransform(transform, hull.rotation, hull.position);
                     Renderer::Submit(hull.wireframe, transform, math::vec3(1, .05, .1));
                 }
                 for (const auto& hull : m_cWorld.m_dynamic) {
                     math::mat4 transform;
-                    transform.translate(hull.position);
-                    transform *= math::mat4(hull.rotation);
+                    math::CreateTransform(transform, hull.rotation, hull.position);
                     Renderer::Submit(hull.wireframe, transform, math::vec3(.1, .05, 1));
                 }
             }
@@ -276,10 +274,10 @@ namespace Engine {
 
                         if (anim.Anim->JointInfos[k].parentID >= 0) {
                             const auto& parentJoint = anim.Anim->BaseFrames[anim.Anim->JointInfos[n].parentID];
-                            math::vec3 rotPos = math::vec3(math::inv(parentJoint.orientation) * math::quat(newJoint.position, 0) * (parentJoint.orientation)); // TODO: quaternion math
+                            math::vec3 rotPos = math::TransformPointByQuaternion(parentJoint.orientation, newJoint.position);
 
                             newJoint.position = parentJoint.position + rotPos;
-                            newJoint.orientation = parentJoint.orientation * newJoint.orientation; // TODO: quat math
+                            newJoint.orientation = parentJoint.orientation * newJoint.orientation;
 
                             newJoint.orientation.normalize();
                         }
@@ -299,9 +297,9 @@ namespace Engine {
                     };
                     int c = 0;
                     for (const auto& joint : skeleton) {
-                        math::vec3 start = math::vec4(joint.position.x, joint.position.y, joint.position.z, 1);
+                        const math::vec3 start = joint.position;
                         math::vec3 dir = math::vec3(0,1,0);
-                        dir = (math::inv(joint.orientation) * math::vec4(dir, 0) * joint.orientation);
+                        dir = math::TransformPointByQuaternion(joint.orientation, dir);
                         math::vec3 end = start + dir;
                         Renderer::SubmitLine(start, end, colors[c % colors.size()]);
 

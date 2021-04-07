@@ -11,7 +11,7 @@ public:
 
         LOG_ASSERT(transformComponent, "Gem script could not find a transform component");
 
-        position = transformComponent->Transform.col4().XYZ();
+        position = transformComponent->Transform.column4.asVec3();
         time = ((float)rand() / RAND_MAX) * 5.0f;
 
         LOG_INFO("Gem script created on GameObject {0}!", GetGameObjectID());
@@ -27,11 +27,13 @@ public:
         position.y = 0.25f*(1+sin(time));
 
         auto& transform = transformComponent->Transform;
+        math::CreateTransform(transform, position, rotation, 0);
 
-        transform = mat4();
-        transform.translate(position);
-        transform *= math::createYawPitchRollMatrix(rotation, 0.0f, 0.0f);
-        transform *= mat4(scale, scale, scale, 1.0f);
+        //auto& transform = transformComponent->Transform;
+        //transform = mat4();
+        //transform.translate(position);
+        //transform *= math::createYawPitchRollMatrix(rotation, 0.0f, 0.0f);
+        //transform *= mat4(scale, scale, scale, 1.0f);
     }
 
     void SetStatic() {
@@ -48,7 +50,7 @@ private:
     float time = 0.0f;
     float rotSpeed = 60.0f;
 
-    vec3 position;
+    math::vec3 position;
     float rotation = 0.0f;
     float scale = 0.25f;
 

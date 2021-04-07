@@ -812,17 +812,18 @@ namespace Engine {
 
     void OpenGLShader::UploadUniformMat3(uint32_t location, const math::mat3& value)
     {
-        glUniformMatrix3fv(location, 1, GL_FALSE, &(value._11));
+        glUniformMatrix3fv(location, 1, GL_FALSE, value.ptr());
     }
 
     void OpenGLShader::UploadUniformMat4(uint32_t location, const math::mat4& value)
     {
-        glUniformMatrix4fv(location, 1, GL_FALSE, &(value._11));
+        glUniformMatrix4fv(location, 1, GL_FALSE, value.ptr());
     }
 
     void OpenGLShader::UploadUniformMat4Array(uint32_t location, const math::mat4& values, uint32_t count)
     {
-        glUniformMatrix4fv(location, count, GL_FALSE, &(values._11));
+        ENGINE_LOG_WARN("What the heck is this doing?");
+        glUniformMatrix4fv(location, count, GL_FALSE, values.ptr());
     }
 
     void OpenGLShader::UploadUniformStruct(OpenGLShaderUniformDeclaration* uniform, byte* buffer, uint32_t offset)
@@ -844,7 +845,7 @@ namespace Engine {
             //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
             return;
         }
-        glUniformMatrix4fv(loc, 1, GL_FALSE, &(value._11));
+        glUniformMatrix4fv(loc, 1, GL_FALSE, value.ptr());
 
     }
 

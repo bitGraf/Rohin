@@ -44,11 +44,10 @@ namespace Engine {
             //player.AddComponent<NativeScriptComponent>().Bind<PlayerController>(player);
             BindGameScript("script_player_controller", scene, player);
 
-            mesh->GetSubmeshes()[0].Transform = math::createYawPitchRollMatrix(90, 0, 0);
+            math::CreateRotationFromYawPitch(mesh->GetSubmeshes()[0].Transform, 90.0f, 0.0f);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
-            trans = math::mat4();
-            trans.translate(math::vec3(0, 1, 0));
+            math::CreateTranslation(trans, math::vec3(0, 1, 0));
 
             UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
@@ -66,9 +65,8 @@ namespace Engine {
             platform.AddComponent<MeshRendererComponent>(rectMesh);
 
             auto& trans = platform.GetComponent<TransformComponent>().Transform;
-            trans = math::mat4();
-            trans.scale(math::vec3(platformSize, 1, platformSize));
-            trans.translate(math::vec3(0, 0.0f, 0));
+            math::CreateScale(trans, platformSize, 1, platformSize);
+            math::mat4 translate;
 
             UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
         }
@@ -77,7 +75,7 @@ namespace Engine {
             auto light = scene->CreateGameObject("Sun");
             light.AddComponent<LightComponent>(LightType::Directional, math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            trans = math::createYawPitchRollMatrix(45, 0, -80);
+            math::CreateRotationFromYawPitchRoll(trans, 45, -80, 0);
         }
 
         { // Camera
@@ -93,22 +91,32 @@ namespace Engine {
             BindGameScript("script_camera_controller", scene, Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
-            trans = math::mat4();
-            trans.translate(math::vec3(0, 4, 5));
-            trans *= math::createYawPitchRollMatrix(0, 0, -45);
+            math::CreateTranslation(trans, math::vec3(0, 4, 5));
+            math::mat4 rotM;
+            math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
+            trans *= rotM;
         }
 
         // Ramps at various angles
-        cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 0, -5), 10, 1, 3))
-            ->rotation.toYawPitchRoll(0, 10, 0);
-        cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 1, -2), 10, 1, 3))
-            ->rotation.toYawPitchRoll(0, 20, 0);
-        cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 2, 1), 10, 1, 3))
-            ->rotation.toYawPitchRoll(0, 30, 0);
-        cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 3, 4), 10, 1, 3))
-            ->rotation.toYawPitchRoll(0, 40, 0);
-        cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 3.5, 7), 10, 1, 3))
-            ->rotation.toYawPitchRoll(0, 50, 0);
+        math::mat3 rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 0, -5), 10, 1, 3))
+            ->rotation;
+        math::CreateRotationFromYawPitchRoll(rot, 0, 10, 0);
+
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 1, -2), 10, 1, 3))
+            ->rotation;
+        math::CreateRotationFromYawPitchRoll(rot, 0, 20, 0);
+
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 2, 1), 10, 1, 3))
+            ->rotation;
+        math::CreateRotationFromYawPitchRoll(rot, 0, 30, 0);
+
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 3, 4), 10, 1, 3))
+            ->rotation;
+        math::CreateRotationFromYawPitchRoll(rot, 0, 40, 0);
+
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 3.5, 7), 10, 1, 3))
+            ->rotation;
+        math::CreateRotationFromYawPitchRoll(rot, 0, 50, 0);
 
         // Sound stuff
         {
@@ -135,11 +143,10 @@ namespace Engine {
             player.AddComponent<MeshRendererComponent>(mesh);
             BindGameScript("script_player_controller", scene, player);
 
-            mesh->GetSubmeshes()[0].Transform = math::createYawPitchRollMatrix(90, 0, 0);
+            math::CreateRotationFromYawPitchRoll(mesh->GetSubmeshes()[0].Transform, 90, 0, 0);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
-            trans = math::mat4();
-            trans.translate(math::vec3(-8, 1, 12));
+            math::CreateTranslation(trans, math::vec3(-8, 1, 12));
 
             UID_t hull = cWorld.CreateNewCapsule(math::vec3(-8, 1, 12) + math::vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
@@ -180,15 +187,14 @@ namespace Engine {
             auto light = scene->CreateGameObject("Light " + std::to_string(n));
             light.AddComponent<LightComponent>(LightType::Point, math::vec3(1, 1, 1), 3, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            trans = math::mat4();
-            trans.translate(light_pos);
+            math::CreateTranslation(trans, light_pos);
         }
 
         { // Lights
             auto light = scene->CreateGameObject("Sun");
             light.AddComponent<LightComponent>(LightType::Directional, math::vec3(.8f, .95f, .9f), 5, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            trans = math::createYawPitchRollMatrix(15, 0, -80);
+            math::CreateRotationFromYawPitchRoll(trans, 15, -80, 0);
         }
 
         { // Camera
@@ -205,8 +211,9 @@ namespace Engine {
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
             trans = math::mat4();
-            trans.translate(math::vec3(0, 4, 5));
-            trans *= math::createYawPitchRollMatrix(0, 0, -45);
+            math::CreateTranslation(trans, math::vec3(0, 4, 5));
+            math::mat4 rotM;
+            math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
         }
     }
 
@@ -485,8 +492,7 @@ namespace Engine {
             BindGameScript("script_player_controller", scene, player);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
-            trans = math::mat4();
-            trans.translate(math::vec3(0, 1, 0));
+            math::CreateTranslation(trans, math::vec3(0, 1, 0));
 
             UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
@@ -505,9 +511,7 @@ namespace Engine {
             //platform.AddComponent<MeshRendererComponent>(rectMesh);
 
             auto& trans = platform.GetComponent<TransformComponent>().Transform;
-            trans = math::mat4();
-            trans.scale(math::vec3(platformSize, 1, platformSize));
-            trans.translate(math::vec3(0, 0.0f, 0));
+            math::CreateScale(trans, platformSize, 1, platformSize);
 
             UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
         }
@@ -516,7 +520,7 @@ namespace Engine {
             auto light = scene->CreateGameObject("Sun");
             light.AddComponent<LightComponent>(LightType::Directional, math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            trans = math::createYawPitchRollMatrix(45, 0, -80);
+            math::CreateRotationFromYawPitchRoll(trans, 45, -80, 0);
         }
 
         { // Camera
@@ -531,9 +535,10 @@ namespace Engine {
             BindGameScript("script_camera_controller", scene, Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
-            trans = math::mat4();
-            trans.translate(math::vec3(0, 4, 5));
-            trans *= math::createYawPitchRollMatrix(0, 0, -45);
+            math::CreateTranslation(trans, math::vec3(0, 4, 5));
+            math::mat4 rotM;
+            math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
+            trans *= rotM;
         }
     }
 }

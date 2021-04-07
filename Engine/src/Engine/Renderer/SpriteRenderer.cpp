@@ -25,7 +25,7 @@ namespace Engine {
         auto line2DShader = GetShaderLibrary()->Load("Data/Shaders/Line2D.glsl");
 
         // create font-rendering globals
-        s_SpriteData.orthoMat.orthoProjection(0, 1280, 720, 0, 1, -1);
+        math::CreateOrthoProjection(s_SpriteData.orthoMat, 0, 1280, 720, 0, 1, -1);
 
         // initialize texture shader values
         textShader->Bind();
@@ -97,7 +97,7 @@ namespace Engine {
 
     void SpriteRenderer::OnWindowResize(uint32_t width, uint32_t height)
     {
-        s_SpriteData.orthoMat.orthoProjection(0, width, height, 0, -1, 1);
+        math::CreateOrthoProjection(s_SpriteData.orthoMat, 0, width, height, 0, -1, 1);
     }
 
     const std::unique_ptr<ShaderLibrary>& SpriteRenderer::GetShaderLibrary() {
