@@ -265,30 +265,6 @@ namespace Engine {
                     auto& tag = m_Registry.get<TagComponent>(n);
                     auto& mesh = m_Registry.get<MeshRendererComponent>(n);
 
-                    std::vector<md5::Joint> baseframe;
-                    for (int k = 0; k < anim.Anim->JointInfos.size(); k++) {
-                        const auto& joint = anim.Anim->BaseFrames[k];
-                        md5::Joint newJoint;
-                        newJoint.position = joint.position;
-                        newJoint.orientation = joint.orientation;
-
-                        if (anim.Anim->JointInfos[k].parentID >= 0) {
-                            const auto& parentJoint = anim.Anim->BaseFrames[anim.Anim->JointInfos[n].parentID];
-                            math::vec3 rotPos = math::TransformPointByQuaternion(parentJoint.orientation, newJoint.position);
-
-                            newJoint.position = parentJoint.position + rotPos;
-                            newJoint.orientation = parentJoint.orientation * newJoint.orientation;
-
-                            newJoint.orientation.normalize();
-                        }
-                        baseframe.push_back(newJoint);
-                    }
-
-                    //const auto& skeleton = mesh.Mesh->GetBindPose();
-                    const auto& skeleton = anim.Anim->AnimatedSkeleton.Joints;
-                    //const auto& skeleton = anim.Anim->BaseFrames;
-                    //const auto& skeleton = baseframe;
-                    //const auto& skeleton1 = anim.Anim->Skeletons[0].Joints;
                     std::vector<math::vec4> colors = {
                         {1,0,1,1},
                     };
@@ -299,28 +275,20 @@ namespace Engine {
                     math::CreateRotationFromYawPitch(rotM, 180, -90);
                     math::CreateScale(scaleM, .3f, .3f, .3f);
                     math::mat3 m = rotM * scaleM;
-                    float s = .04f;
+                    float s = .01f;
+                    float length = 0.65f;
 
-                    for (const auto& joint : skeleton) {
+                    for (const auto& joint : anim.Anim->AnimatedSkeleton.Joints) {
                         const math::vec3 start = m * joint.position;
                         math::vec3 dir = math::vec3(0,1,0);
-                        dir = m * math::TransformPointByQuaternion(joint.orientation, dir);
+                        dir = m * math::TransformPointByQuaternion(joint.orientation, dir) * length;
                         math::vec3 end = start + dir;
                         Renderer::SubmitLine(start, end, colors[c % colors.size()]);
 
-                        //Renderer::SubmitLine(start + math::vec3(-s, 0, 0), start + math::vec3(s, 0, 0), colors[c % colors.size()]);
-                        //Renderer::SubmitLine(start + math::vec3(0, -s, 0), start + math::vec3(0, s, 0), colors[c % colors.size()]);
-                        //Renderer::SubmitLine(start + math::vec3(0, 0, -s), start + math::vec3(0, 0, s), colors[c % colors.size()]);
+                        Renderer::SubmitLine(start + math::vec3(-s, 0, 0), start + math::vec3(s, 0, 0), colors[c % colors.size()]);
+                        Renderer::SubmitLine(start + math::vec3(0, -s, 0), start + math::vec3(0, s, 0), colors[c % colors.size()]);
+                        Renderer::SubmitLine(start + math::vec3(0, 0, -s), start + math::vec3(0, 0, s), colors[c % colors.size()]);
                         c++;
-                    }
-
-                    const auto& bindPose = mesh.Mesh->GetBindPose();
-                    for (const auto& joint : bindPose) {
-                        const math::vec3 start = m * joint.position;
-                        math::vec3 dir = math::vec3(0, 1, 0);
-                        dir = m * math::TransformPointByQuaternion(joint.orientation, dir);
-                        math::vec3 end = start + dir;
-                        Renderer::SubmitLine(start, end, math::vec4(.4,.4,.4,.8));
                     }
                 }
             }

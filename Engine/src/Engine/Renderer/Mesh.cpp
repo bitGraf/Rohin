@@ -223,10 +223,20 @@ namespace Engine {
 
                 s32 boneIdx[4] = { 0,0,0,0 };
                 f32 boneWeight[4] = { 0,0,0,0 };
-                for (int w = 0; w < vert.countWeight; w++) {
+                for (int w = 0; w < std::min(vert.countWeight, 4); w++) {
                     boneIdx[w] = mesh.Weights[vert.startWeight + w].joint;
                     boneWeight[w] = mesh.Weights[vert.startWeight + w].bias;
                 }
+
+                if (vert.countWeight > 4) {
+                    ENGINE_LOG_WARN("Mesh {0}, vertex {1} has {2} weights. renormalizing to 4", "mesh_name_hehe", v, vert.countWeight);
+                    float mag = boneWeight[0] + boneWeight[1] + boneWeight[2] + boneWeight[3];
+                    boneWeight[0] /= mag;
+                    boneWeight[1] /= mag;
+                    boneWeight[2] /= mag;
+                    boneWeight[3] /= mag;
+                }
+
                 memcpy(&m_Vertices[totalIndex].BoneIndices[0], boneIdx,    4 * sizeof(s32));
                 memcpy(&m_Vertices[totalIndex].BoneWeights.x,  boneWeight, 4 * sizeof(f32));
             }

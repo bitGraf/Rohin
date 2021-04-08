@@ -36,7 +36,6 @@ namespace Engine {
         };
 
         struct Weight {
-            int weightIndex;
             int joint;
             float bias; // [0.0 1.0]
             math::vec3 pos;

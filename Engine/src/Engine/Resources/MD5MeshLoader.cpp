@@ -40,6 +40,7 @@ namespace Engine {
                     if (param == "MD5Version") {
                         int md5Version;
                         md5File >> md5Version;
+                        std::getline(md5File, garb);
                         assert(md5Version == 10);
                     }
                     else if (param == "commandline") {
@@ -491,10 +492,7 @@ namespace Engine {
                 finalJoint.position = math::lerp(joint0.position, joint1.position, interpolate);
                 finalJoint.orientation = math::fast_slerp(joint0.orientation, joint1.orientation, interpolate);
 
-                //finalJoint.transform
-                //math::mat4 trans;
                 math::CreateTransform(finalJoint.transform, finalJoint.orientation, finalJoint.position, math::vec3(1));
-                //math::CreateViewFromTransform(finalJoint.transform, trans);
             }
         }
 
