@@ -10,11 +10,7 @@ layout (location = 5) in ivec4 a_BoneIndices;
 layout (location = 6) in vec4 a_BoneWeights;
 
 const int MAX_BONES = 64;
-struct Bone {
-    vec3 Position;
-    vec4 Orientation; //quat
-};
-uniform Bone r_Bones[MAX_BONES];
+uniform mat4 r_Bones[MAX_BONES];
 
 // can combine these two into ModelView matrix
 uniform mat4 r_Transform;
@@ -29,37 +25,14 @@ out VertexOutput { // all in view-space
     mat3 ViewNormalMatrix;
 } vs_Output;
 
-vec4 qinv(vec4 q) {
-    return vec4(-q.x, -q.y, -q.z, q.w);
-}
-
-vec4 qmul (vec4 q1, vec4 q2) {
-    return vec4(q1.xyz*q2.w + q2.xyz*q1.w + cross(q2.xyz,q1.xyz), q1.w*q2.w - dot(q1.xyz, q2.xyz));
-
-    //return vec4(
-    //    q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y,
-    //    q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x,
-    //    q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w,
-    //    q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z);
-}
-
-vec3 transform(Bone bone) {
-    vec4 Q = normalize(bone.Orientation);
-    vec4 Qp = qinv(bone.Orientation);
-    vec4 V = vec4(a_Position, 0);
-
-    // Qp * V * Q
-    vec3 rotPos = qmul(Qp, qmul(V, Q)).xyz;
-    return bone.Position + rotPos;
-}
-
 vec3 calcSkinnedVert() {
-    vec3 pos = vec3(0.0);
-    pos += (transform(r_Bones[a_BoneIndices.x]) * a_BoneWeights.x);
-    pos += (transform(r_Bones[a_BoneIndices.y]) * a_BoneWeights.y);
-    pos += (transform(r_Bones[a_BoneIndices.z]) * a_BoneWeights.z);
-    pos += (transform(r_Bones[a_BoneIndices.w]) * a_BoneWeights.w);
-    return pos;
+    float finalWeight = 1 - a_BoneWeights.x - a_BoneWeights.y - a_BoneWeights.z; // ensure total weight is 1
+    mat4 poseMat;
+    poseMat  = r_Bones[a_BoneIndices.x] * a_BoneWeights.x;
+    poseMat += r_Bones[a_BoneIndices.y] * a_BoneWeights.y;
+    poseMat += r_Bones[a_BoneIndices.z] * a_BoneWeights.z;
+    poseMat += r_Bones[a_BoneIndices.w] * finalWeight;
+    return vec3(poseMat * vec4(a_Position,1));
 }
 
 void main() {
@@ -73,8 +46,6 @@ void main() {
     vs_Output.ViewNormalMatrix = mat3(normalMatrix) * mat3(a_Tangent, a_Binormal, a_Normal);
 
     gl_Position = r_Projection * model2view * vec4(skinnedPos, 1.0);
-    //(1,2,3,4) x (5,2,-1,4)
-    //gl_Position = qmul(vec4(2,3,4,1), vec4(2,-1,4,5));
 }
 
 #type fragment

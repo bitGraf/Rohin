@@ -16,6 +16,8 @@ namespace Engine {
             s32 parent;
             math::vec3 position;
             math::quat orientation;
+
+            math::mat4 invTransform;
         };
 
         struct Vert {
@@ -107,6 +109,8 @@ namespace Engine {
             int parentID;
             math::vec3 position;
             math::quat orientation;
+
+            math::mat4 transform;
         };
 
         struct FrameSkeleton {
