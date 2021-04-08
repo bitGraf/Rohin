@@ -30,7 +30,7 @@ namespace math {
         S3 = sin(roll * d2r);
         
         matrix.identity();
-        matrix[0][0] = C1 * C3 - S1 * S2*S3;
+        matrix[0][0] = C1*C3 - S1*S2*S3;
         matrix[0][1] = -C2 * S3;
         matrix[0][2] = -S1*C3 - C1*S2*S3;
 
@@ -39,7 +39,7 @@ namespace math {
         matrix[1][2] = -S1*S3 + C1*S2*C3;
 
         matrix[2][0] = S1*C2;
-        matrix[2][1] = -S1;
+        matrix[2][1] = -S2;
         matrix[2][2] = C1*C2;
     }
     void CreateRotationFromYawPitchRoll(mat4& matrix, scalar yaw, scalar pitch, scalar roll) {
@@ -63,7 +63,7 @@ namespace math {
         matrix[1][3] = 0;
 
         matrix[2][0] = S1*C2;
-        matrix[2][1] = -S1;
+        matrix[2][1] = -S2;
         matrix[2][2] = C1*C2;
         matrix[2][3] = 0;
 
@@ -113,7 +113,10 @@ namespace math {
         //matrix[1][3] = 0;
         //matrix[2][3] = 0;
         //matrix[3][3] = 1;
+    }
 
+    void CreateRotationFromAxisAngle(quat& rotation, const vec3& axis, scalar angle) {
+        rotation = quat(axis.get_unit() * sin(angle * d2r * 0.5f),cos(angle * d2r * 0.5f));
     }
 
     void CreateTranslation(mat4& matrix, const vec3& translation) {
@@ -123,6 +126,12 @@ namespace math {
         matrix[3][2] = translation.z;
     }
 
+    void CreateScale(mat3& matrix, float scaleX, float scaleY, float scaleZ) {
+        matrix.identity();
+        matrix[0][0] = scaleX;
+        matrix[1][1] = scaleY;
+        matrix[2][2] = scaleZ;
+    }
     void CreateScale(mat4& matrix, float scaleX, float scaleY, float scaleZ) {
         matrix.identity();
         matrix[0][0] = scaleX;
@@ -137,73 +146,59 @@ namespace math {
     }
 
     void CreateTransform(mat4& matrix, const vec3& translation, scalar yaw, scalar pitch) {
+        // Apply Translation
         CreateTranslation(matrix, translation);
+
+        // Apply Rotation
         mat4 rotM;
         CreateRotationFromYawPitch(rotM, yaw, pitch);
         matrix *= rotM;
     }
     void CreateTransform(mat4& matrix, const mat3& rotation, const vec3& translation) {
-        matrix.identity();
+        // Apply Translation
+        CreateTranslation(matrix, translation);
 
         // Apply rotation
         mat4 rotM(rotation, 1);
         matrix *= rotM;
-
-        // Apply translation
-        matrix[3][0] = translation.x;
-        matrix[3][1] = translation.y;
-        matrix[3][2] = translation.z;
-        matrix[3][3] = 1;
     }
     void CreateTransform(mat4& matrix, const mat3& rotation, const vec3& translation, const vec3& scale) {
-        // Apply scale (from identity)
-        CreateScale(matrix, scale);
+        // Apply Translation
+        CreateTranslation(matrix, translation);
 
         // Apply rotation
         mat4 rotM(rotation, 1);
         matrix *= rotM;
 
-        // Apply translation
-        matrix[3][0] = translation.x;
-        matrix[3][1] = translation.y;
-        matrix[3][2] = translation.z;
-        matrix[3][3] = 1;
+        // Apply scale
+        mat4 scaleM;
+        CreateScale(scaleM, scale);
+        matrix *= scaleM;
     }
     void CreateTransform(mat4& matrix, const quat& rotation, const vec3& translation, const vec3& scale) {
-        // Apply scale (from identity)
-        CreateScale(matrix, scale);
-        
+        // Apply Translation
+        CreateTranslation(matrix, translation);
+
         // Apply rotation
         mat4 rotM;
         CreateRotationFromQuaternion(rotM, rotation);
         matrix *= rotM;
 
-        // Apply translation
-        matrix[3][0] = translation.x;
-        matrix[3][1] = translation.y;
-        matrix[3][2] = translation.z;
-        matrix[3][3] = 1;
+        // Apply scale
+        mat4 scaleM;
+        CreateScale(scaleM, scale);
+        matrix *= scaleM;
     }
 
     void CreateViewFromTransform(mat4& matrix, const mat4& transform) {
-        CreateTranslation(matrix, -(transform.column4.asVec3()));
-
-        mat4 rotM = transform;
-        rotM.transpose();
-
-        matrix *= rotM;
-        /*
-        // get inverse rotation
-        matrix = transform;
+        // Apply inverse rotation
+        matrix = mat4(transform.asMat3(), 1);
         matrix.transpose();
 
-        // get inverse translation
-        mat4 T;
-        CreateTranslation(T, -(transform.column4.asVec3()));
-
-        // combine in opposite order? TODO: idk if this is right anymore -_-
-        matrix *= T;
-        */
+        // Apply inverse Translation
+        mat4 TransM;
+        CreateTranslation(TransM, -(transform.column4.asVec3()));
+        matrix *= TransM;
     }
 
     void Decompose(const mat4& transform, vec3& translation) {

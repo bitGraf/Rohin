@@ -65,7 +65,7 @@ namespace Engine {
                             md5File >> joint.parent >>
                                 garb >> joint.position.x >> joint.position.y >> joint.position.z >> garb >>
                                 garb >> joint.orientation.x >> joint.orientation.y >> joint.orientation.z >> garb;
-                            joint.orientation.reconstructW();
+                            joint.orientation.reconstructW_Left();
 
                             model->Joints.push_back(joint);
                             
@@ -367,7 +367,7 @@ namespace Engine {
                             md5File >> garb >> frame.position.x >> frame.position.y >> frame.position.z >> garb >>
                                 garb >> frame.orientation.x >> frame.orientation.y >> frame.orientation.z >> garb;
 
-                            frame.orientation.reconstructW();
+                            frame.orientation.reconstructW_Left();
 
                             anim->BaseFrames.push_back(frame);
                         }
@@ -456,15 +456,17 @@ namespace Engine {
                     animatedJoint.orientation.z = frameData.frameData[jointInfo.startIndex + n];
                     n++;
                 }
-                animatedJoint.orientation.reconstructW();
+                animatedJoint.orientation.reconstructW_Left();
 
                 if (animatedJoint.parentID >= 0) {
                     SkeletonJoint& parentJoint = skeleton.Joints[animatedJoint.parentID];
                     math::vec3 rotPos = math::TransformPointByQuaternion(parentJoint.orientation, animatedJoint.position);
-
+                
                     animatedJoint.position = parentJoint.position + rotPos;
-                    animatedJoint.orientation = parentJoint.orientation * animatedJoint.orientation; // TODO: quat math
-
+                
+                    // backwards since original quaternions are left-handed I think...
+                    animatedJoint.orientation = animatedJoint.orientation * parentJoint.orientation;
+                
                     animatedJoint.orientation.normalize();
                 }
 
@@ -483,7 +485,7 @@ namespace Engine {
                 finalJoint.parentID = joint0.parentID;
 
                 finalJoint.position = math::lerp(joint0.position, joint1.position, interpolate);
-                finalJoint.orientation = math::slerp(joint0.orientation, joint1.orientation, interpolate);
+                finalJoint.orientation = math::fast_slerp(joint0.orientation, joint1.orientation, interpolate);
             }
         }
 

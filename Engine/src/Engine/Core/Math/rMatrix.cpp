@@ -307,11 +307,11 @@ namespace math {
 
         tmp = column2[3];
         column2[3] = column4[1];
-        column3[1] = tmp;
+        column4[1] = tmp;
 
         tmp = column3[3];
         column3[3] = column4[2];
-        column3[2] = tmp;
+        column4[2] = tmp;
     }
 
     mat4 mat4::getTranspose() const {

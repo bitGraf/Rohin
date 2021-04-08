@@ -44,21 +44,21 @@ vec4 qmul (vec4 q1, vec4 q2) {
 }
 
 vec3 transform(Bone bone) {
-    vec4 Q = bone.Orientation;
+    vec4 Q = normalize(bone.Orientation);
     vec4 Qp = qinv(bone.Orientation);
     vec4 V = vec4(a_Position, 0);
 
     // Qp * V * Q
-    vec4 Vp = qmul(Qp, qmul(V, Q));
-    return vec3(Vp) + bone.Position;
+    vec3 rotPos = qmul(Qp, qmul(V, Q)).xyz;
+    return bone.Position + rotPos;
 }
 
 vec3 calcSkinnedVert() {
     vec3 pos = vec3(0.0);
-    pos += transform(r_Bones[a_BoneIndices.x]) * a_BoneWeights.x;
-    pos += transform(r_Bones[a_BoneIndices.y]) * a_BoneWeights.y;
-    pos += transform(r_Bones[a_BoneIndices.z]) * a_BoneWeights.z;
-    pos += transform(r_Bones[a_BoneIndices.w]) * a_BoneWeights.w;
+    pos += (transform(r_Bones[a_BoneIndices.x]) * a_BoneWeights.x);
+    pos += (transform(r_Bones[a_BoneIndices.y]) * a_BoneWeights.y);
+    pos += (transform(r_Bones[a_BoneIndices.z]) * a_BoneWeights.z);
+    pos += (transform(r_Bones[a_BoneIndices.w]) * a_BoneWeights.w);
     return pos;
 }
 

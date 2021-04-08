@@ -193,6 +193,9 @@ namespace math {
         quat(const vec3& xyz, scalar _w);
 
         void reconstructW();
+        void reconstructW_Left(); // if the quat was expressed in a left-handed coordinate system
+
+        scalar length_2() const;
 
         quat normalize();
         quat inv() const;
@@ -312,17 +315,22 @@ namespace math {
     /* Transformation helpers */
     void CreateOrthoProjection(mat4& matrix, scalar left, scalar right, scalar bottom, scalar top, scalar znear, scalar zfar);
 
+    void CreateRotationFromYawPitchRoll(quat& rotation, scalar yaw, scalar pitch, scalar roll);
     void CreateRotationFromYawPitchRoll(mat3& matrix, scalar yaw, scalar pitch, scalar roll);
     void CreateRotationFromYawPitchRoll(mat4& matrix, scalar yaw, scalar pitch, scalar roll);
 
+    void CreateRotationFromYawPitch(quat& rotation, scalar yaw, scalar pitch);
     void CreateRotationFromYawPitch(mat3& matrix, scalar yaw, scalar pitch);
     void CreateRotationFromYawPitch(mat4& matrix, scalar yaw, scalar pitch);
 
     void CreateRotationFromQuaternion(mat3& matrix, const quat& q);
     void CreateRotationFromQuaternion(mat4& matrix, const quat& q);
 
+    void CreateRotationFromAxisAngle(quat& rotation, const vec3& axis, scalar angle);
+
     void CreateTranslation(mat4& matrix, const vec3& translation);
 
+    void CreateScale(mat3& matrix, float scaleX, float scaleY, float scaleZ);
     void CreateScale(mat4& matrix, float scaleX, float scaleY, float scaleZ);
     void CreateScale(mat4& matrix, const vec3& scale);
 

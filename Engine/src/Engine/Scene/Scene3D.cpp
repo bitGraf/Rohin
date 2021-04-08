@@ -290,36 +290,38 @@ namespace Engine {
                     //const auto& skeleton = baseframe;
                     //const auto& skeleton1 = anim.Anim->Skeletons[0].Joints;
                     std::vector<math::vec4> colors = {
-                        {1,0,0,1},
-                        {0,1,0,1},
-                        {0,1,1,1},
-                        {1,0,1,1}
+                        {1,0,1,1},
                     };
                     int c = 0;
+
+                    math::mat3 rotM;
+                    math::mat3 scaleM;
+                    math::CreateRotationFromYawPitch(rotM, 180, -90);
+                    math::CreateScale(scaleM, .3f, .3f, .3f);
+                    math::mat3 m = rotM * scaleM;
+                    float s = .04f;
+
                     for (const auto& joint : skeleton) {
-                        const math::vec3 start = joint.position;
+                        const math::vec3 start = m * joint.position;
                         math::vec3 dir = math::vec3(0,1,0);
-                        dir = math::TransformPointByQuaternion(joint.orientation, dir);
+                        dir = m * math::TransformPointByQuaternion(joint.orientation, dir);
                         math::vec3 end = start + dir;
                         Renderer::SubmitLine(start, end, colors[c % colors.size()]);
 
-                        Renderer::SubmitLine(start + math::vec3(-.1, 0, 0), start + math::vec3(.1, 0, 0), colors[c % colors.size()]);
-                        Renderer::SubmitLine(start + math::vec3(0, -.1, 0), start + math::vec3(0, .1, 0), colors[c % colors.size()]);
-                        Renderer::SubmitLine(start + math::vec3(0, 0, -.1), start + math::vec3(0, 0, .1), colors[c % colors.size()]);
+                        //Renderer::SubmitLine(start + math::vec3(-s, 0, 0), start + math::vec3(s, 0, 0), colors[c % colors.size()]);
+                        //Renderer::SubmitLine(start + math::vec3(0, -s, 0), start + math::vec3(0, s, 0), colors[c % colors.size()]);
+                        //Renderer::SubmitLine(start + math::vec3(0, 0, -s), start + math::vec3(0, 0, s), colors[c % colors.size()]);
                         c++;
-
-                        if (c == 2) {
-                            Renderer::SubmitLine(start, start + math::vec3(0, -1, 0), math::vec4(.4,.4,.4,.7));
-                        }
                     }
 
-                    //const auto& skeleton2 = anim.Anim->Skeletons[1].Joints;
-                    //for (const auto& joint : skeleton2) {
-                    //    math::vec3 start = math::vec4(joint.position.x, joint.position.y, joint.position.z, 1);
-                    //    math::vec3 dir = math::vec3(0, 1, 0);
-                    //    dir = (math::inv(joint.orientation) * math::vec4(dir, 0) * joint.orientation);
-                    //    Renderer::SubmitLine(start, start + dir, math::vec4(1, .5, 1, 1));
-                    //}
+                    const auto& bindPose = mesh.Mesh->GetBindPose();
+                    for (const auto& joint : bindPose) {
+                        const math::vec3 start = m * joint.position;
+                        math::vec3 dir = math::vec3(0, 1, 0);
+                        dir = m * math::TransformPointByQuaternion(joint.orientation, dir);
+                        math::vec3 end = start + dir;
+                        Renderer::SubmitLine(start, end, math::vec4(.4,.4,.4,.8));
+                    }
                 }
             }
         }

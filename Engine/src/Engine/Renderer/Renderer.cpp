@@ -700,7 +700,7 @@ namespace Engine {
             const auto& bone1 = Pose[n];
 
             math::vec3 T = bone1.position - bone0.position;
-            math::quat Q = (bone0.orientation.inv() * bone1.orientation).normalize();
+            math::quat Q = (bone0.orientation.inv() * bone1.orientation);
             shader->SetVec3("r_Bones[" + std::to_string(n) + "].Position", T);
             shader->SetVec4("r_Bones[" + std::to_string(n) + "].Orientation", Q.asVec4());
             //shader->SetVec3("r_Bones[" + std::to_string(n) + "].Position", math::vec3());

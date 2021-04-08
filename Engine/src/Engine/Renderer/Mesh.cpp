@@ -250,6 +250,9 @@ namespace Engine {
             sm.MaterialIndex = materialIndexMap[mesh.Shader];
             sm.IndexCount = mesh.Tris.size() * 3;
             
+            math::mat3 rotM;
+            math::CreateRotationFromYawPitch(rotM, 180, -90);
+            math::CreateTransform(sm.Transform, rotM, math::vec3(0,0,0), math::vec3(.3f));
             //sm.Transform = math::createYawPitchRollMatrix(180, 0, -90);
             //sm.Transform.scale({ .3f,.3f,.3f });
 
