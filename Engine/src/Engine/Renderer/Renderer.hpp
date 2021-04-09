@@ -7,6 +7,7 @@
 #include "Light.hpp"
 
 //#include "TextRenderer.hpp"
+#include "Engine/GameObject/Components.hpp"
 
 namespace Engine {
     class Renderer
@@ -79,6 +80,14 @@ namespace Engine {
         static void SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform);
         static void SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform, const Ref<md5::Animation>& anim); // For animation
         static void SubmitMesh_drawNormals(const Ref<Mesh>& mesh, const math::mat4& transform);
+
+        static void Draw3DText(const std::string& text, const math::vec3& pos, const math::vec3 color);
+        static void DrawSkeletonDebug(
+            const TagComponent& tag, 
+            const TransformComponent& transform, 
+            const MeshRendererComponent& mesh, 
+            const MeshAnimationComponent& anim,
+            const math::vec3 color);
 
         static void SubmitLine(math::vec3 v0, math::vec3 v1, math::vec4 color);
 

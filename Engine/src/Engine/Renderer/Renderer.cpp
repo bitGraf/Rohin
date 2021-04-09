@@ -746,4 +746,73 @@ namespace Engine {
     void Renderer::RecompileShaders() {
         s_Data.ShaderLibrary->ReloadAll();
     }
+
+    void Renderer::Draw3DText(const std::string& text, const math::vec3& pos, const math::vec3 color) {
+        math::vec4 screenSpace = (s_Data.Lights.projection * s_Data.Lights.view * math::vec4(pos, 1));
+        screenSpace /= screenSpace.w;
+        screenSpace += math::vec4(1, 1, 1, 1);
+        screenSpace *= 0.5f;
+        screenSpace.x *= 1280;
+        screenSpace.y *= 720;
+        TextRenderer::SubmitText(text, screenSpace.x, 720-screenSpace.y, color);
+    }
+
+    void Renderer::DrawSkeletonDebug(
+        const TagComponent& tag,
+        const TransformComponent& transform,
+        const MeshRendererComponent& mesh,
+        const MeshAnimationComponent& anim,
+        const math::vec3 color) {
+
+        math::mat3 BlenderCorrection(math::vec3(0, 0, 1), math::vec3(1, 0, 0), math::vec3(0, 1, 0));
+        math::mat4 T = transform.Transform * math::mat4(BlenderCorrection, 1);
+        float s = .1f;
+        float length = 0.65f;
+        float length2 = 0.07f;
+
+        //for (const auto& joint : anim.Anim->AnimatedSkeleton.Joints) {
+        for (int j = 0; j < anim.Anim->numJoints; j++) {
+            const auto& joint = anim.Anim->AnimatedSkeleton.Joints[j];
+            math::vec3 start = joint.position;
+
+            math::vec3 boneR = math::TransformPointByQuaternion(joint.orientation, math::vec3(1, 0, 0));
+            math::vec3 boneF = math::TransformPointByQuaternion(joint.orientation, math::vec3(0, 1, 0));
+            math::vec3 boneU = math::TransformPointByQuaternion(joint.orientation, math::vec3(0, 0, 1));
+
+            math::vec3 end = start + boneF * length;
+            math::vec3 mid = start + boneF * length2;
+
+            math::vec3 A = math::TransformPointByMatrix4x4(T, mid + boneR * s);
+            math::vec3 B = math::TransformPointByMatrix4x4(T, mid + boneU * s);
+            math::vec3 C = math::TransformPointByMatrix4x4(T, mid - boneR * s);
+            math::vec3 D = math::TransformPointByMatrix4x4(T, mid - boneU * s);
+
+            start = math::TransformPointByMatrix4x4(T, start);
+            end = math::TransformPointByMatrix4x4(T, end);
+
+            Renderer::SubmitLine(start, A, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(start, B, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(start, C, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(start, D, math::vec4(1, 1, .5f, 1));
+
+            Renderer::SubmitLine(A, end, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(B, end, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(C, end, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(D, end, math::vec4(1, 1, .5f, 1));
+
+            Renderer::SubmitLine(A, B, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(B, C, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(C, D, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(D, A, math::vec4(1, 1, .5f, 1));
+
+            // draw bone name
+            math::vec4 screenSpace = (s_Data.Lights.projection * s_Data.Lights.view * math::vec4(start, 1));
+            screenSpace /= screenSpace.w;
+            screenSpace += math::vec4(1, 1, 1, 1);
+            screenSpace *= 0.5f;
+            screenSpace.x *= 1280;
+            screenSpace.y *= 720;
+            TextRenderer::SubmitText(anim.Anim->JointInfos[j].name, (float)screenSpace.x, 720 - screenSpace.y, color);
+        }
+    }
 }

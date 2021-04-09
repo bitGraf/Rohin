@@ -9,7 +9,7 @@ layout (location = 4) in vec2 a_TexCoord;
 layout (location = 5) in ivec4 a_BoneIndices;
 layout (location = 6) in vec4 a_BoneWeights;
 
-const int MAX_BONES = 64;
+const int MAX_BONES = 128;
 uniform mat4 r_Bones[MAX_BONES];
 
 // can combine these two into ModelView matrix

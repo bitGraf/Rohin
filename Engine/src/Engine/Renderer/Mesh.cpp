@@ -262,9 +262,12 @@ namespace Engine {
             
             math::mat3 rotM;
             math::CreateRotationFromYawPitch(rotM, 180, -90);
-            math::CreateTransform(sm.Transform, rotM, math::vec3(0,0,0), math::vec3(.3f));
+            //math::CreateTransform(sm.Transform, rotM, math::vec3(0,0,0), math::vec3(.3f));
             //sm.Transform = math::createYawPitchRollMatrix(180, 0, -90);
             //sm.Transform.scale({ .3f,.3f,.3f });
+            //math::mat3 correction(math::vec3(0, 1, 0), math::vec3(0, 0, 1), math::vec3(1, 0, 0));
+            math::mat3 correction(math::vec3(0, 0, 1), math::vec3(1, 0, 0), math::vec3(0, 1, 0));
+            sm.Transform = math::mat4(correction, 1);
 
             sm.SubmeshName = mesh.Shader; // TODO: hehe
 

@@ -6,7 +6,7 @@ numMaterials 1
 material {
 	shader "tentacle"
 
-	diffusemap  "Data/Images/frog.png"
+	diffusemap  "Data/Images/grid/PNG/Orange/texture_03.png"
     normalmap   "Data/Images/frog.png"
     specularmap "Data/Images/frog.png"
 }

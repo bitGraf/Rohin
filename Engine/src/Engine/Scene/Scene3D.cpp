@@ -256,40 +256,28 @@ namespace Engine {
                 TextRenderer::SubmitText("Showing entity locations", 5, 40, math::vec3(.7, .1, .5));
             }
 
+            // draw coordinate frame
+            Renderer::SubmitLine(math::vec3(), math::vec3(1, 0, 0), math::vec4(1, 0, 0, 1));
+            Renderer::SubmitLine(math::vec3(), math::vec3(0, 1, 0), math::vec4(0, 1, 0, 1));
+            Renderer::SubmitLine(math::vec3(), math::vec3(0, 0, 1), math::vec4(0, 0, 1, 1));
+
             for (auto n : m_Registry.GetRegList()) {
                 // check if entity n has both transform and mesh
                 if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshAnimationComponent>(n)) {
                     // good to go
                     auto& anim = m_Registry.get<MeshAnimationComponent>(n);
-                    auto& trans = m_Registry.get<TransformComponent>(n);
+                    auto& transform = m_Registry.get<TransformComponent>(n);
                     auto& tag = m_Registry.get<TagComponent>(n);
                     auto& mesh = m_Registry.get<MeshRendererComponent>(n);
 
-                    std::vector<math::vec4> colors = {
-                        {1,0,1,1},
-                    };
-                    int c = 0;
+                    Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
+                }
 
-                    math::mat3 rotM;
-                    math::mat3 scaleM;
-                    math::CreateRotationFromYawPitch(rotM, 180, -90);
-                    math::CreateScale(scaleM, .3f, .3f, .3f);
-                    math::mat3 m = rotM * scaleM;
-                    float s = .01f;
-                    float length = 0.65f;
-
-                    for (const auto& joint : anim.Anim->AnimatedSkeleton.Joints) {
-                        const math::vec3 start = m * joint.position;
-                        math::vec3 dir = math::vec3(0,1,0);
-                        dir = m * math::TransformPointByQuaternion(joint.orientation, dir) * length;
-                        math::vec3 end = start + dir;
-                        Renderer::SubmitLine(start, end, colors[c % colors.size()]);
-
-                        Renderer::SubmitLine(start + math::vec3(-s, 0, 0), start + math::vec3(s, 0, 0), colors[c % colors.size()]);
-                        Renderer::SubmitLine(start + math::vec3(0, -s, 0), start + math::vec3(0, s, 0), colors[c % colors.size()]);
-                        Renderer::SubmitLine(start + math::vec3(0, 0, -s), start + math::vec3(0, 0, s), colors[c % colors.size()]);
-                        c++;
-                    }
+                if (m_Registry.has<TransformComponent>(n)) {
+                    const auto& tag = m_Registry.get<TagComponent>(n);
+                    const auto& transform = m_Registry.get<TransformComponent>(n);
+                    math::vec3 pos = transform.Transform.column4.asVec3();
+                    Renderer::Draw3DText(tag.Name, pos, math::vec3(.7f, .7f, 1.0f));
                 }
             }
         }

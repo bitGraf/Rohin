@@ -351,6 +351,7 @@ namespace math {
     void Decompose(const mat4& transform, vec3& Translation, quat& Rotation, vec3& Scale);
 
     vec3 TransformPointByQuaternion(const quat& rotation, const vec3& point);
+    vec3 TransformPointByMatrix4x4(const mat4& rotation, const vec3& point);
 }
 
 #endif

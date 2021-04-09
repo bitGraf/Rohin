@@ -9,6 +9,10 @@ namespace math {
         return (rotation.inv() * quat(point, 0) * rotation).getVectorPart();
     }
 
+    vec3 TransformPointByMatrix4x4(const mat4& transform, const vec3& point) {
+        return (transform * vec4(point, 1.0f)).asVec3();
+    }
+
     void CreateOrthoProjection(mat4& matrix, scalar left, scalar right, scalar bottom, scalar top, scalar znear, scalar zfar) {
         matrix.identity();
         matrix[0][0] =  2.0 / (right - left);

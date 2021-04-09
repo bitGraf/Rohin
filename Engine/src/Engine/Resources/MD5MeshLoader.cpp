@@ -67,6 +67,7 @@ namespace Engine {
                                 garb >> joint.position.x >> joint.position.y >> joint.position.z >> garb >>
                                 garb >> joint.orientation.x >> joint.orientation.y >> joint.orientation.z >> garb;
                             joint.orientation.reconstructW_Left();
+                            //joint.orientation.reconstructW();
 
                             math::mat4 trans;
                             math::CreateTransform(trans, joint.orientation, joint.position, math::vec3(1));

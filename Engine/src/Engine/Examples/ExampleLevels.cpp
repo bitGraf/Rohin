@@ -220,28 +220,30 @@ namespace Engine {
     void load_level_3(Scene3D* scene) {
         // load materials
         std::unordered_map<std::string, md5::Material> mats;
-        md5::LoadMD5MaterialDefinitionFile("Data/animTest/bob_lamp_update_export.md5material", mats);
-        md5::LoadMD5MaterialDefinitionFile("Data/animTest/tentacle.md5material", mats);
+        md5::LoadMD5MaterialDefinitionFile("Data/Models/tentacle/tentacle.md5material", mats);
         MaterialCatalog::RegisterMaterial(mats);
 
         // read md5mesh file
         md5::Model model;
-        Engine::md5::LoadMD5MeshFile("Data/animTest/guard.md5mesh", &model);
-        MeshCatalog::Register("mesh_bob", model);
-        Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", true);
+        Engine::md5::LoadMD5MeshFile("Data/Models/tentacle/tentacle.md5mesh", &model);
+        MeshCatalog::Register("mesh_tentacle", model);
         Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", true);
+        md5::Model guardModel;
+        Engine::md5::LoadMD5MeshFile("Data/Models/guard/guard.md5mesh", &guardModel);
+        Engine::MeshCatalog::Register("mesh_guard", guardModel);
         auto& cWorld = scene->GetCollisionWorld();
 
         // read animation file
         Ref<md5::Animation> anim = std::make_shared<md5::Animation>();
-        //md5::LoadMD5AnimFile("Data/animTest/bob_lamp_update_export.md5anim", anim.get());
-        md5::LoadMD5AnimFile("Data/animTest/Walking.md5anim", anim.get());
+        md5::LoadMD5AnimFile("Data/Models/tentacle/tentacle_swing.md5anim", anim.get());
 
         { // Player
+            Ref<md5::Animation> guard_walk = std::make_shared<md5::Animation>();
+            md5::LoadMD5AnimFile("Data/Models/guard/Walking.md5anim", guard_walk.get());
             auto player = scene->CreateGameObject("Player");
-            auto mesh = MeshCatalog::Get("mesh_bob");
+            auto mesh = MeshCatalog::Get("mesh_guard");
             player.AddComponent<MeshRendererComponent>(mesh);
-            player.AddComponent<MeshAnimationComponent>(anim);
+            player.AddComponent<MeshAnimationComponent>(guard_walk);
             BindGameScript("script_player_controller", scene, player);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
@@ -249,6 +251,25 @@ namespace Engine {
 
             UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
+        }
+
+        // Tentacles
+        std::vector<math::vec3> tentacle_positions = {
+            {3,0,3},
+            {-3,0,3},
+            {-3,0,-3},
+            {3,0,-3}
+        };
+        for (int n = 0; n < tentacle_positions.size(); n++) {
+            auto tentacle = scene->CreateGameObject("Tentacle " + std::to_string(n));
+            auto mesh = MeshCatalog::Get("mesh_tentacle");
+            tentacle.AddComponent<MeshRendererComponent>(mesh);
+            tentacle.AddComponent<MeshAnimationComponent>(anim);
+
+            auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
+            math::CreateTranslation(trans, tentacle_positions[n]);
+
+            UID_t hull = cWorld.CreateNewCubeHull(tentacle_positions[n] + math::vec3(0, 1.501f, 0), 1, 3, 1);
         }
 
         { // Platform
@@ -261,7 +282,7 @@ namespace Engine {
             auto material = rectMesh->GetMaterial(0);
             material->Set<float>("u_TextureScale", platformSize);
             material->Set("u_AlbedoTexture", Texture2D::Create("Data/Images/grid/PNG/Dark/texture_07.png"));
-            //platform.AddComponent<MeshRendererComponent>(rectMesh);
+            platform.AddComponent<MeshRendererComponent>(rectMesh);
 
             auto& trans = platform.GetComponent<TransformComponent>().Transform;
             math::CreateScale(trans, platformSize, 1, platformSize);

@@ -160,6 +160,14 @@ bool Level::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
         return true;
     }
 
+    if (e.GetKeyCode() == KEY_CODE_P) {
+        if (m_3DScene->IsPlaying()) {
+            m_3DScene->OnRuntimePause();
+        } else {
+            m_3DScene->OnRuntimeResume();
+        }
+    }
+
     return false;
 }
 
