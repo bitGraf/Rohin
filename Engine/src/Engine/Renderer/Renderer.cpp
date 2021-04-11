@@ -664,7 +664,7 @@ namespace Engine {
         //RenderCommand::SetWireframe(false);
     }
 
-    void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform) {
+    void Renderer::SubmitMesh(const Mesh* mesh, const math::mat4& transform) {
         BENCHMARK_FUNCTION();
 
         mesh->GetVertexArray()->Bind();
@@ -672,7 +672,7 @@ namespace Engine {
         shader->Bind();
 
         auto& materials = mesh->GetMaterials();
-        for (Submesh& submesh : mesh->GetSubmeshes()) {
+        for (const Submesh& submesh : mesh->GetSubmeshes()) {
             auto material = materials[submesh.MaterialIndex];
             material->Bind();
 
@@ -684,7 +684,7 @@ namespace Engine {
     }
 
     // Animation variant
-    void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform, const Ref<md5::Animation>& anim) {
+    void Renderer::SubmitMesh(const Mesh* mesh, const math::mat4& transform, const Ref<md5::Animation>& anim) {
         BENCHMARK_FUNCTION();
 
         mesh->GetVertexArray()->Bind();
@@ -703,7 +703,7 @@ namespace Engine {
         }
 
         auto& materials = mesh->GetMaterials();
-        for (Submesh& submesh : mesh->GetSubmeshes()) {
+        for (const Submesh& submesh : mesh->GetSubmeshes()) {
             auto material = materials[submesh.MaterialIndex];
             material->Bind();
 

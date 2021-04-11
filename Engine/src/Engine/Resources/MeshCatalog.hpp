@@ -7,10 +7,18 @@
 
 namespace Engine {
 
+    enum class FileFormat : unsigned char {
+        None = 0,
+        NBT_Basic,
+        MD5_Text
+    };
+
     namespace MeshCatalog {
-        void Register(const std::string& mesh_name, const md5::Model& model);
-        void Register(const std::string& mesh_name, const std::string& mesh_path);
-        Ref<Mesh> Get(const std::string& mesh_name);
-        void Clear();
+        // Register a mesh from file
+        void Register(const std::string& mesh_name, const std::string& filepath, FileFormat file_type);
+        Mesh* Get(const std::string& mesh_name);
+        
+        void Create();
+        void Destroy();
     };
 }

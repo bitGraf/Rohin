@@ -220,13 +220,13 @@ namespace Engine {
                     auto& trans = m_Registry.get<TransformComponent>(n);
                     auto& tag = m_Registry.get<TagComponent>(n);
 
-                    if (mesh.Mesh) {
+                    if (mesh.MeshPtr) {
                         if (m_Registry.has<MeshAnimationComponent>(n)) {
                             const auto& anim = m_Registry.get<MeshAnimationComponent>(n);
-                            Renderer::SubmitMesh(mesh.Mesh, trans.Transform, anim.Anim);
+                            Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform, anim.Anim);
                         }
                         else {
-                            Renderer::SubmitMesh(mesh.Mesh, trans.Transform);
+                            Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform);
                         }
                     }
                 }

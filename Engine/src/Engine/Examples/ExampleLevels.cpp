@@ -31,10 +31,9 @@ namespace Engine {
         return false;
     }
 
-
     void load_level_1(Scene3D* scene) {
-        Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt");
-        Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt");
+        Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", FileFormat::NBT_Basic);
+        Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
         auto& cWorld = scene->GetCollisionWorld();
 
         { // Player
@@ -128,13 +127,13 @@ namespace Engine {
     }
 
     void load_level_2(Scene3D* scene) {
-        Engine::MeshCatalog::Register("mesh_guard",      "Data/Models/guard.nbt");
-        Engine::MeshCatalog::Register("mesh_breakroom",  "../../Assets/Blender/Level 1/breakroom.nbt");
-        Engine::MeshCatalog::Register("mesh_floor",      "../../Assets/Blender/Level 1/floor.nbt");
-        Engine::MeshCatalog::Register("mesh_backrooms",  "../../Assets/Blender/Level 1/backrooms.nbt");
-        Engine::MeshCatalog::Register("mesh_outerwalls", "../../Assets/Blender/Level 1/outerwalls.nbt");
-        Engine::MeshCatalog::Register("mesh_safe",       "../../Assets/Blender/Level 1/safe.nbt");
-        Engine::MeshCatalog::Register("mesh_saferoom",   "../../Assets/Blender/Level 1/saferoom.nbt");
+        Engine::MeshCatalog::Register("mesh_guard",      "Data/Models/guard.nbt", FileFormat::NBT_Basic);
+        Engine::MeshCatalog::Register("mesh_breakroom",  "../../Assets/Blender/Level 1/breakroom.nbt", FileFormat::NBT_Basic);
+        Engine::MeshCatalog::Register("mesh_floor",      "../../Assets/Blender/Level 1/floor.nbt", FileFormat::NBT_Basic);
+        Engine::MeshCatalog::Register("mesh_backrooms",  "../../Assets/Blender/Level 1/backrooms.nbt", FileFormat::NBT_Basic);
+        Engine::MeshCatalog::Register("mesh_outerwalls", "../../Assets/Blender/Level 1/outerwalls.nbt", FileFormat::NBT_Basic);
+        Engine::MeshCatalog::Register("mesh_safe",       "../../Assets/Blender/Level 1/safe.nbt", FileFormat::NBT_Basic);
+        Engine::MeshCatalog::Register("mesh_saferoom",   "../../Assets/Blender/Level 1/saferoom.nbt", FileFormat::NBT_Basic);
         auto& cWorld = scene->GetCollisionWorld();
 
         { // Player
@@ -218,20 +217,18 @@ namespace Engine {
     }
 
     void load_level_3(Scene3D* scene) {
+        auto& cWorld = scene->GetCollisionWorld();
+
         // load materials
         std::unordered_map<std::string, md5::Material> mats;
         md5::LoadMD5MaterialDefinitionFile("Data/Models/tentacle/tentacle.md5material", mats);
         MaterialCatalog::RegisterMaterial(mats);
 
         // read md5mesh file
-        md5::Model model;
-        Engine::md5::LoadMD5MeshFile("Data/Models/tentacle/tentacle.md5mesh", &model);
-        MeshCatalog::Register("mesh_tentacle", model);
-        Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt");
-        md5::Model guardModel;
-        Engine::md5::LoadMD5MeshFile("Data/Models/guard/guard.md5mesh", &guardModel);
-        Engine::MeshCatalog::Register("mesh_guard", guardModel);
-        auto& cWorld = scene->GetCollisionWorld();
+        MeshCatalog::Register("mesh_plane",    "Data/Models/plane.nbt", FileFormat::NBT_Basic);
+        MeshCatalog::Register("mesh_plane",    "Data/Models/plane.nbt", FileFormat::NBT_Basic);
+        MeshCatalog::Register("mesh_tentacle", "Data/Models/tentacle/tentacle.md5mesh", FileFormat::MD5_Text);
+        MeshCatalog::Register("mesh_guard",    "Data/Models/guard/guard.md5mesh", FileFormat::MD5_Text);
 
         // read animation file
         Ref<md5::Animation> anim = std::make_shared<md5::Animation>();

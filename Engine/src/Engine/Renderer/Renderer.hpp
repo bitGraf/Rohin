@@ -77,8 +77,8 @@ namespace Engine {
 
         static void Submit(const math::mat4& transform = math::mat4());
         static void Submit(const Ref<VertexArray>& vao, const math::mat4& transform, const math::vec3& color);
-        static void SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform);
-        static void SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform, const Ref<md5::Animation>& anim); // For animation
+        static void SubmitMesh(const Mesh* mesh, const math::mat4& transform);
+        static void SubmitMesh(const Mesh* mesh, const math::mat4& transform, const Ref<md5::Animation>& anim); // For animation
         static void SubmitMesh_drawNormals(const Ref<Mesh>& mesh, const math::mat4& transform);
 
         static void Draw3DText(const std::string& text, const math::vec3& pos, const math::vec3 color);

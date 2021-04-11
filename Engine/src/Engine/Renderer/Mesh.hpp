@@ -40,9 +40,9 @@ namespace Engine {
         std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
         const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
 
-        Ref<Shader> GetMeshShader() { return m_MeshShader; }
-        Ref<Material> GetBaseMaterial() { return m_BaseMaterial; }
-        std::vector<Ref<MaterialInstance>> GetMaterials() { return m_Materials; }
+        Ref<Shader> GetMeshShader() const { return m_MeshShader; }
+        Ref<Material> GetBaseMaterial() const { return m_BaseMaterial; }
+        const std::vector<Ref<MaterialInstance>>& GetMaterials() const { return m_Materials; }
         Ref<MaterialInstance> GetMaterial(u32 index) { ENGINE_LOG_ASSERT(index <= m_Materials.size(), "Not that many materials!"); return m_Materials[index]; }
 
         const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }

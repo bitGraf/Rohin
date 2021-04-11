@@ -22,11 +22,11 @@ namespace Engine {
     };
 
     struct MeshRendererComponent {
-        Ref<Engine::Mesh> Mesh;
+        Mesh* MeshPtr = nullptr;
 
         MeshRendererComponent() = default;
         MeshRendererComponent(const MeshRendererComponent&) = default;
-        MeshRendererComponent(const Ref<Engine::Mesh>& mesh) : Mesh(mesh) {}
+        MeshRendererComponent(Mesh* mesh) : MeshPtr(mesh) {}
 
         DEBUG_OSTR_IMPL(MeshRendererComponent)
     };
