@@ -11,6 +11,8 @@
 
 #include "Engine/Resources/MD5MeshLoader.hpp"
 
+#include "Engine/Resources/MaterialCatalog.hpp"
+
 namespace Engine {
 
     struct Lightingdata { // holds view-space lighting data
@@ -26,7 +28,7 @@ namespace Engine {
 
     struct RendererData {
         std::unique_ptr<Engine::ShaderLibrary> ShaderLibrary;
-        Ref<TextureCube> Skybox;
+        TextureCube* Skybox;
 
         Ref<VertexArray> FullscreenQuad;
         Ref<VertexArray> debug_coordinate_axis; //lineRender
@@ -98,7 +100,7 @@ namespace Engine {
         Renderer::GetShaderLibrary()->Load("Data/Shaders/Mix.glsl");
 
         //s_Data.Skybox = TextureCube::Create("Data/Images/DebugCubeMap.tga");
-        s_Data.Skybox = TextureCube::Create("Data/Images/snowbox.png");
+        s_Data.Skybox = MaterialCatalog::GetTextureCube("Data/Images/snowbox.png");
 
         // Create fullscreen quad
         {

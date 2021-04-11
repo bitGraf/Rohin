@@ -6,8 +6,10 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/TextRenderer.hpp"
 #include "Engine/Renderer/SpriteRenderer.hpp"
-#include "Engine/Resources/MaterialCatalog.hpp"
 #include "Engine/Sound/SoundEngine.hpp"
+
+#include "Engine/Resources/MaterialCatalog.hpp"
+#include "Engine/Resources/MeshCatalog.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -28,8 +30,10 @@ namespace Engine {
         Renderer::Init();
         TextRenderer::Init();
         SpriteRenderer::Init();
-        MaterialCatalog::Init();
         SoundEngine::Init();
+
+        MaterialCatalog::Create();
+        MeshCatalog::Create();
 
         // create ImGUI renderer
         m_GuiLayer = new GuiLayer();
@@ -44,11 +48,14 @@ namespace Engine {
             delete m_CurrentScene;
             m_CurrentScene = nullptr;
         }
-        Renderer::Shutdown();
-        TextRenderer::Shutdown();
-        SpriteRenderer::Shutdown();
-        MaterialCatalog::Shutdown();
+        MeshCatalog::Destroy();
+        MaterialCatalog::Destroy();
+
         SoundEngine::Shutdown();
+        SpriteRenderer::Shutdown();
+        TextRenderer::Shutdown();
+        Renderer::Shutdown();
+
         m_GuiLayer->OnDetach();
         BENCHMARK_END_SESSION();
     }

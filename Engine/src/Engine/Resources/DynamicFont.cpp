@@ -3,6 +3,8 @@
 
 #include <stb_truetype.h>
 
+#include "Engine/Resources/MaterialCatalog.hpp"
+
 namespace Engine {
 
     //unsigned char DynamicFont::ttf_buffer[DynamicFont::buffer_size];
@@ -27,7 +29,7 @@ namespace Engine {
                 return;
             }
 
-            m_ftex = Texture2D::Create(temp_bitmap, res);
+            m_ftex = MaterialCatalog::GetTexture(temp_bitmap, res);
 
             //Free bitmap data
             free(temp_bitmap);

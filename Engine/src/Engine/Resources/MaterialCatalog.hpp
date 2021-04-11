@@ -9,12 +9,12 @@ namespace Engine {
 
     struct MaterialSpec {
         std::string Name;
-        Ref<Texture2D> Albedo;
-        Ref<Texture2D> Normal;
-        Ref<Texture2D> Ambient;
-        Ref<Texture2D> Metalness;
-        Ref<Texture2D> Roughness;
-        Ref<Texture2D> Emissive;
+        Texture2D* Albedo = nullptr;
+        Texture2D* Normal = nullptr;
+        Texture2D* Ambient = nullptr;
+        Texture2D* Metalness = nullptr;
+        Texture2D* Roughness = nullptr;
+        Texture2D* Emissive = nullptr;
         math::vec3 AlbedoBase;
         float RoughnessBase = 1;
         float MetalnessBase = 0;
@@ -22,11 +22,14 @@ namespace Engine {
     };
 
     namespace MaterialCatalog {
-        void Init();
-        void Shutdown();
+        void Create();
+        void Destroy();
 
         MaterialSpec GetMaterial(const std::string& material_name);
-        Ref<Texture2D> GetTexture(const std::string& texture_path);
+
+        Texture2D* GetTexture(const std::string& texture_path);
+        Texture2D* GetTexture(const unsigned char* bitmap, u32 res);
+        TextureCube* GetTextureCube(const std::string& texture_path);
 
         void RegisterMaterial(const std::string& mat_name, const nbt::tag_compound& data);
         void RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap);
