@@ -770,14 +770,18 @@ namespace Engine {
         float length = 0.65f;
         float length2 = 0.07f;
 
+        math::vec4 localR(1, 0, 0, 0);
+        math::vec4 localF(0, 1, 0, 0);
+        math::vec4 localU(0, 0, 1, 0);
+
         //for (const auto& joint : anim.Anim->AnimatedSkeleton.Joints) {
         for (int j = 0; j < anim.Anim->numJoints; j++) {
             const auto& joint = anim.Anim->AnimatedSkeleton.Joints[j];
-            math::vec3 start = joint.position;
+            math::vec3 start = joint.transform.column4.asVec3();
 
-            math::vec3 boneR = math::TransformPointByQuaternion(joint.orientation, math::vec3(1, 0, 0));
-            math::vec3 boneF = math::TransformPointByQuaternion(joint.orientation, math::vec3(0, 1, 0));
-            math::vec3 boneU = math::TransformPointByQuaternion(joint.orientation, math::vec3(0, 0, 1));
+            math::vec3 boneR = (joint.transform * localR).asVec3();
+            math::vec3 boneU = (joint.transform * localU).asVec3();
+            math::vec3 boneF = (joint.transform * localF).asVec3();
 
             math::vec3 end = start + boneF * length;
             math::vec3 mid = start + boneF * length2;

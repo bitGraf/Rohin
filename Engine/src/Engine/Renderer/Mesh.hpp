@@ -15,33 +15,6 @@
 
 namespace Engine {
 
-    struct Vertex
-    {
-        math::vec3 Position;
-        math::vec3 Normal;
-        math::vec3 Tangent;
-        math::vec3 Binormal;
-        math::vec2 Texcoord;
-    };
-
-    struct Vertex_Anim
-    {
-        math::vec3 Position;
-        math::vec3 Normal;
-        math::vec3 Tangent;
-        math::vec3 Binormal;
-        math::vec2 Texcoord;
-        s32 BoneIndices[4];
-        math::vec4 BoneWeights;
-    };
-
-    struct Triangle
-    {
-        uint32_t V1, V2, V3;
-    };
-
-    static_assert(sizeof(Triangle) == 3 * sizeof(uint32_t));
-
     class Submesh
     {
     public:
@@ -51,8 +24,6 @@ namespace Engine {
         u32 IndexCount;
 
         math::mat4 Transform;
-
-        std::string SubmeshName;
     };
 
     class Mesh
@@ -60,15 +31,11 @@ namespace Engine {
     public:
         // load NBT .mesh file
         Mesh(const std::string& filename);
+        // load from .MD5Mesh file
         Mesh(const md5::Model& model);
         ~Mesh();
 
-        //bool LoadFromFile();
-        //bool LoadFromMD5();
         bool Loaded() { return m_loaded; }
-
-        void OnUpdate(double ts);
-        void DumpVertexBuffer();
 
         std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
         const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
@@ -77,22 +44,16 @@ namespace Engine {
         Ref<Material> GetBaseMaterial() { return m_BaseMaterial; }
         std::vector<Ref<MaterialInstance>> GetMaterials() { return m_Materials; }
         Ref<MaterialInstance> GetMaterial(u32 index) { ENGINE_LOG_ASSERT(index <= m_Materials.size(), "Not that many materials!"); return m_Materials[index]; }
-        //const std::vector<Engine::Ref<Engine::Texture2D>>& GetTextures() const { return m_Textures; }
-
-        //const std::string& GetName() const { return m_Name; }
-        //const std::string& GetFilePath() const { return m_FilePath; }
-        //const std::vector<Vertex>& GetVertices() const { return m_Vertices; }
-        //const std::vector<Triangle>& GetTris() const { return m_Tris; }
 
         const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
         const std::vector<md5::Joint>&  GetBindPose() const { return m_BindPose; }
     private:
 
     private:
+        // Hardware buffer of verts
         Ref<VertexArray> m_VertexArray;
 
-        //std::vector<Vertex> m_Vertices;
-        //std::vector<Triangle> m_Tris;
+        // submesh info
         std::vector<Submesh> m_Submeshes;
 
         // Materials
@@ -100,7 +61,7 @@ namespace Engine {
         Ref<Material> m_BaseMaterial;
         std::vector<Engine::Ref<Engine::Texture2D>> m_Textures;
         std::vector<Engine::Ref<Engine::MaterialInstance>> m_Materials;
-        std::vector<md5::Joint> m_BindPose;
+        std::vector<md5::Joint> m_BindPose; // TODO: only relevant with animation
 
         bool m_loaded = false;
 

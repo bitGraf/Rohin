@@ -3,11 +3,10 @@
 
 layout (location = 0) in vec3 a_Position;
 layout (location = 1) in vec3 a_Normal;
-layout (location = 2) in vec3 a_Tangent;
-layout (location = 3) in vec3 a_Binormal;
-layout (location = 4) in vec2 a_TexCoord;
-layout (location = 5) in ivec4 a_BoneIndices;
-layout (location = 6) in vec4 a_BoneWeights;
+layout (location = 2) in vec4 a_Tangent;
+layout (location = 3) in vec2 a_TexCoord;
+layout (location = 4) in ivec4 a_BoneIndices;
+layout (location = 5) in vec4 a_BoneWeights;
 
 const int MAX_BONES = 128;
 uniform mat4 r_Bones[MAX_BONES];
@@ -43,7 +42,8 @@ void main() {
     vs_Output.Position = vec3(model2view * vec4(skinnedPos, 1.0));
     vs_Output.Normal = vec3(normalMatrix * vec4(a_Normal, 0));
     vs_Output.TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
-    vs_Output.ViewNormalMatrix = mat3(normalMatrix) * mat3(a_Tangent, a_Binormal, a_Normal);
+    vec3 binormal = a_Tangent.w * cross(a_Normal, a_Tangent.xyz);
+    vs_Output.ViewNormalMatrix = mat3(normalMatrix) * mat3(a_Tangent.xyz, binormal, a_Normal);
 
     gl_Position = r_Projection * model2view * vec4(skinnedPos, 1.0);
 }

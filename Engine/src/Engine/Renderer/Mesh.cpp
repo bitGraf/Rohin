@@ -11,6 +11,32 @@
 
 namespace Engine {
 
+    struct Vertex
+    {
+        math::vec3 Position;
+        math::vec3 Normal;
+        math::vec3 Tangent;
+        math::vec3 Binormal;
+        math::vec2 Texcoord;
+    };
+
+    struct Vertex_Anim
+    {
+        math::vec3 Position;
+        math::vec3 Normal;
+        math::vec4 Tangent;
+        math::vec2 Texcoord;
+        s32 BoneIndices[4];
+        math::vec4 BoneWeights;
+    };
+
+    struct Triangle
+    {
+        uint32_t V1, V2, V3;
+    };
+
+    static_assert(sizeof(Triangle) == 3 * sizeof(uint32_t));
+
     Mesh::Mesh(const std::string & filename) {
         ENGINE_LOG_INFO("Loading a mesh from a .nbt file");
 
@@ -51,7 +77,6 @@ namespace Engine {
 
         /* manually fill out submesh data */
         Submesh sm;
-        sm.SubmeshName = "submesh";
         sm.MaterialIndex = 0;
         sm.Transform = math::mat4();
         sm.BaseIndex = 0;
@@ -168,13 +193,6 @@ namespace Engine {
 
     }
 
-    void Mesh::OnUpdate(double ts) {
-
-    }
-
-    void Mesh::DumpVertexBuffer() {
-
-    }
 
 
     // MD5 conversion
@@ -217,28 +235,10 @@ namespace Engine {
                 int totalIndex = v + mesh_vert_offsets[m];
                 m_Vertices[totalIndex].Position = vert.position;
                 m_Vertices[totalIndex].Normal = vert.normal;
-                //m_Vertices[totalIndex].Tangent = vert.position;
-                //m_Vertices[totalIndex].Binormal = vert.position;
+                m_Vertices[totalIndex].Tangent = vert.tangent;
                 m_Vertices[totalIndex].Texcoord = vert.uv;
-
-                s32 boneIdx[4] = { 0,0,0,0 };
-                f32 boneWeight[4] = { 0,0,0,0 };
-                for (int w = 0; w < std::min(vert.countWeight, 4); w++) {
-                    boneIdx[w] = mesh.Weights[vert.startWeight + w].joint;
-                    boneWeight[w] = mesh.Weights[vert.startWeight + w].bias;
-                }
-
-                if (vert.countWeight > 4) {
-                    ENGINE_LOG_WARN("Mesh {0}, vertex {1} has {2} weights. renormalizing to 4", "mesh_name_hehe", v, vert.countWeight);
-                    float mag = boneWeight[0] + boneWeight[1] + boneWeight[2] + boneWeight[3];
-                    boneWeight[0] /= mag;
-                    boneWeight[1] /= mag;
-                    boneWeight[2] /= mag;
-                    boneWeight[3] /= mag;
-                }
-
-                memcpy(&m_Vertices[totalIndex].BoneIndices[0], boneIdx,    4 * sizeof(s32));
-                memcpy(&m_Vertices[totalIndex].BoneWeights.x,  boneWeight, 4 * sizeof(f32));
+                m_Vertices[totalIndex].BoneWeights = vert.boneWeights;
+                memcpy(m_Vertices[totalIndex].BoneIndices, vert.boneIndices, 4*sizeof(vert.boneIndices[0]));
             }
 
             // add indices to total array
@@ -260,16 +260,8 @@ namespace Engine {
             sm.MaterialIndex = materialIndexMap[mesh.Shader];
             sm.IndexCount = mesh.Tris.size() * 3;
             
-            math::mat3 rotM;
-            math::CreateRotationFromYawPitch(rotM, 180, -90);
-            //math::CreateTransform(sm.Transform, rotM, math::vec3(0,0,0), math::vec3(.3f));
-            //sm.Transform = math::createYawPitchRollMatrix(180, 0, -90);
-            //sm.Transform.scale({ .3f,.3f,.3f });
-            //math::mat3 correction(math::vec3(0, 1, 0), math::vec3(0, 0, 1), math::vec3(1, 0, 0));
-            math::mat3 correction(math::vec3(0, 0, 1), math::vec3(1, 0, 0), math::vec3(0, 1, 0));
-            sm.Transform = math::mat4(correction, 1);
-
-            sm.SubmeshName = mesh.Shader; // TODO: hehe
+            math::mat3 BlenderCorrection(math::vec3(0, 0, 1), math::vec3(1, 0, 0), math::vec3(0, 1, 0));
+            sm.Transform = math::mat4(BlenderCorrection, 1);
 
             m_Submeshes.push_back(sm);
         }
@@ -336,8 +328,7 @@ namespace Engine {
             vb->SetLayout({
                 { ShaderDataType::Float3, "a_Position" },
                 { ShaderDataType::Float3, "a_Normal" },
-                { ShaderDataType::Float3, "a_Tangent" },
-                { ShaderDataType::Float3, "a_Binormal" },
+                { ShaderDataType::Float4, "a_Tangent" },
                 { ShaderDataType::Float2, "a_TexCoord" },
                 { ShaderDataType::Int4,   "a_BoneIndices"},
                 { ShaderDataType::Float4, "a_BoneWeights" },

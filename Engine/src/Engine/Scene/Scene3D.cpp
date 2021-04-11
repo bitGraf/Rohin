@@ -262,16 +262,16 @@ namespace Engine {
             Renderer::SubmitLine(math::vec3(), math::vec3(0, 0, 1), math::vec4(0, 0, 1, 1));
 
             for (auto n : m_Registry.GetRegList()) {
-                // check if entity n has both transform and mesh
-                if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshAnimationComponent>(n)) {
-                    // good to go
-                    auto& anim = m_Registry.get<MeshAnimationComponent>(n);
-                    auto& transform = m_Registry.get<TransformComponent>(n);
-                    auto& tag = m_Registry.get<TagComponent>(n);
-                    auto& mesh = m_Registry.get<MeshRendererComponent>(n);
-
-                    Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
-                }
+                // check if entity n has both transform and animation
+                //if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshAnimationComponent>(n)) {
+                //    // good to go
+                //    auto& anim = m_Registry.get<MeshAnimationComponent>(n);
+                //    auto& transform = m_Registry.get<TransformComponent>(n);
+                //    auto& tag = m_Registry.get<TagComponent>(n);
+                //    auto& mesh = m_Registry.get<MeshRendererComponent>(n);
+                //
+                //    Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
+                //}
 
                 if (m_Registry.has<TransformComponent>(n)) {
                     const auto& tag = m_Registry.get<TagComponent>(n);

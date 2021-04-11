@@ -227,8 +227,8 @@ namespace Engine {
 
                 glDeleteShader(shader);
 
+                ENGINE_LOG_ERROR("Shader {0} failed to compile", m_Name);
                 ENGINE_LOG_ERROR("{0}", infoLog.data());
-                ENGINE_LOG_ASSERT(false, "Shader failed to compile");
 
                 return;
             }

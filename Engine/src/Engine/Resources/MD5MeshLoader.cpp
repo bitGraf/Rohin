@@ -6,24 +6,19 @@ namespace Engine {
 
     namespace md5 {
 
-        /*
-        void CalcQuatW(math::quat& quat) {
-            float t = 1.0f - (quat.x * quat.x) - (quat.y * quat.y) - (quat.z * quat.z);
-            if (t < 0.0f)
-            {
-                quat.w = 0.0f;
-            }
-            else
-            {
-                //quat.w = -sqrtf(t); // TODO: why is this negative????
-                quat.w = sqrtf(t);
-            }
-        }
-        */
+        struct Vert_File {
+            math::vec2 uv;
+            int startWeight;
+            int countWeight;
+        };
+        struct Weight {
+            int joint;
+            float bias; // [0.0 1.0]
+            math::vec3 pos;
+        };
 
+        void PrepareMesh(Model* model, Mesh& mesh, const std::vector<Vert_File>& fileVerts, const std::vector<Weight>& fileWeights);
         void PrepareNormals(Model* model, Mesh& mesh);
-        void PrepareMesh(Model* model, Mesh& mesh);
-        void PrepareMesh(Model* model, Mesh& mesh, const FrameSkeleton& skel);
 
         bool LoadMD5MeshFile(const std::string& filename, Model* model) {
             if (model == nullptr) return false;
@@ -84,6 +79,9 @@ namespace Engine {
                         Mesh mesh;
                         int numVerts, numTris, numWeights;
 
+                        std::vector<Vert_File> vertsFromFile;
+                        std::vector<Weight> weightsFromFile;
+
                         md5File >> garb;
                         md5File >> param;
                         while (param != "}") {
@@ -94,18 +92,18 @@ namespace Engine {
                             }
                             else if (param == "numverts") {
                                 md5File >> numVerts;
-                                mesh.Verts.reserve(numVerts);
+                                vertsFromFile.reserve(numVerts);
                                 std::getline(md5File, garb);
 
                                 for (int n = 0; n < numVerts; n++) {
-                                    Vert vert;
+                                    Vert_File vert;
                                     int index;
                                     md5File >> garb >> index;
                                     assert(n == index);
                                     md5File >> garb >> vert.uv.x >> vert.uv.y >> garb;
                                     md5File >> vert.startWeight >> vert.countWeight;
 
-                                    mesh.Verts.push_back(vert);
+                                    vertsFromFile.push_back(vert);
                                 }
                             }
                             else if (param == "numtris") {
@@ -125,7 +123,7 @@ namespace Engine {
                             }
                             else if (param == "numweights") {
                                 md5File >> numWeights;
-                                mesh.Weights.reserve(numWeights);
+                                weightsFromFile.reserve(numWeights);
                                 std::getline(md5File, garb);
 
                                 for (int n = 0; n < numWeights; n++) {
@@ -138,7 +136,7 @@ namespace Engine {
 
                                     std::getline(md5File, garb);
 
-                                    mesh.Weights.push_back(weight);
+                                    weightsFromFile.push_back(weight);
                                 }
                             }
                             else {
@@ -147,7 +145,7 @@ namespace Engine {
 
                             md5File >> param;
                         }
-                        PrepareMesh(model, mesh);
+                        PrepareMesh(model, mesh, vertsFromFile, weightsFromFile);
                         PrepareNormals(model, mesh);
 
                         model->Meshes.push_back(mesh);
@@ -165,56 +163,101 @@ namespace Engine {
         }
 
 
-        void PrepareMesh(Model* model, Mesh& mesh) {
+        void PrepareMesh(Model* model, Mesh& mesh, const std::vector<Vert_File>& fileVerts, const std::vector<Weight>& fileWeights) {
+            mesh.Verts.resize(fileVerts.size());
+
             for (int n = 0; n < mesh.Verts.size(); n++) {
+                const Vert_File& vert_info = fileVerts[n];
                 Vert& vert = mesh.Verts[n];
 
-                for (int j = 0; j < vert.countWeight; j++) {
-                    Weight& weight = mesh.Weights[vert.startWeight + j];
+                vert.uv = vert_info.uv;
+
+                // calc transformed position
+                int numWeights = std::min(4, vert_info.countWeight);
+                for (int j = 0; j < numWeights; j++) {
+                    const Weight& weight = fileWeights[vert_info.startWeight + j];
                     Joint& joint = model->Joints[weight.joint];
 
                     // Convert the weight position from Joint local space to object space
                     math::vec3 rotPos = math::TransformPointByQuaternion(joint.orientation, weight.pos);
 
                     vert.position += (joint.position + rotPos) * weight.bias;
+
+                    vert.boneIndices[j] = weight.joint;
+                    vert.boneWeights[j] = weight.bias;
+                }
+
+                if (vert_info.countWeight > 4) {
+                    ENGINE_LOG_WARN("Mesh {0}, vertex {1} has {2} weights. renormalizing to 4", "mesh_name_hehe", n, vert_info.countWeight);
+                    float inv_sum = 1.0f / (vert.boneWeights[0] + vert.boneWeights[1] + vert.boneWeights[2] + vert.boneWeights[3]);
+                    vert.boneWeights *= inv_sum;
                 }
             }
         }
 
         void PrepareNormals(Model* model, Mesh& mesh) {
-            // calcualte normal for each triangle face
+            math::vec3 *tan1 = new math::vec3[mesh.Verts.size() * 2]; // tangents
+            math::vec3 *tan2 = tan1 + mesh.Verts.size();              // bitangents
+
+            // calcualte normal/tangent/bitangent for each triangle face
             for (int n = 0; n < mesh.Tris.size(); n++) {
-                math::vec3 v0 = mesh.Verts[mesh.Tris[n].vertIndex[0]].position;
-                math::vec3 v1 = mesh.Verts[mesh.Tris[n].vertIndex[1]].position;
-                math::vec3 v2 = mesh.Verts[mesh.Tris[n].vertIndex[2]].position;
+                const int i0 = mesh.Tris[n].vertIndex[0];
+                const int i1 = mesh.Tris[n].vertIndex[1];
+                const int i2 = mesh.Tris[n].vertIndex[2];
 
-                math::vec3 normal = (v2 - v0).cross(v1 - v0);
+                const math::vec3& v0 = mesh.Verts[i0].position;
+                const math::vec3& v1 = mesh.Verts[i1].position;
+                const math::vec3& v2 = mesh.Verts[i2].position;
 
-                mesh.Verts[mesh.Tris[n].vertIndex[0]].normal += normal;
-                mesh.Verts[mesh.Tris[n].vertIndex[1]].normal += normal;
-                mesh.Verts[mesh.Tris[n].vertIndex[2]].normal += normal;
+                const math::vec2& w0 = mesh.Verts[i0].uv;
+                const math::vec2& w1 = mesh.Verts[i1].uv;
+                const math::vec2& w2 = mesh.Verts[i2].uv;
+
+                float x1 = v1.x - v0.x;
+                float y1 = v1.y - v0.y;
+                float z1 = v1.z - v0.z;
+                float x2 = v2.x - v0.x;
+                float y2 = v2.y - v0.y;
+                float z2 = v2.z - v0.z;
+
+                float s1 = w1.x - w0.x;
+                float t1 = w1.y - w0.y;
+                float s2 = w2.x - w0.x;
+                float t2 = w2.y - w0.y;
+
+                float r = 1.0f / (s1 * t2 - s2 * t1);
+
+                math::vec3 sDir((t2*x1 - t1*x2)*r, (t2*y1 - t1*y2)*r, (t2*z1 - t1*z2)*r);
+                math::vec3 tDir((s1*x2 - s2*x1)*r, (s1*y2 - s2*y1)*r, (s1*z2 - s2*z1)*r);
+
+                tan1[i0] += sDir;
+                tan1[i1] += sDir;
+                tan1[i2] += sDir;
+
+                tan2[i0] += tDir;
+                tan2[i1] += tDir;
+                tan2[i2] += tDir;
+
+                math::vec3 normal = (v2 - v0).cross(v1 - v0); // TODO: hehe
+
+                mesh.Verts[i0].normal += normal;
+                mesh.Verts[i1].normal += normal;
+                mesh.Verts[i2].normal += normal;
             }
 
-            // normal normals(getting a per-vertex smoothed normal)
-
-            /*
             for (int n = 0; n < mesh.Verts.size(); n++) {
+                const math::vec3& t = tan1[n];
+                const math::vec3& b = tan2[n];
                 Vert& vert = mesh.Verts[n];
 
-                math::vec3 normal = vert.normal.normalize();
+                vert.normal.normalize();
 
-                // reset normal to find bind-pose normal in joint space?
-                //vert.normal = math::vec3(0);
-                //
-                //// put the bind-pose normal into joint-local space
-                //// so the animated normal can be computed faster later
-                //for (int j = 0; j < vert.countWeight; j++) {
-                //    const Weight& weight = mesh.Weights[vert.startWeight + j];
-                //    const Joint& joint = model->Joints[weight.joint];
-                //    vert.normal += math::vec3(joint.orientation * math::quat(normal,0) * math::inv(joint.orientation)) * weight.bias;
-                //}
+                // calc handedness
+                float w = vert.normal.cross(t).dot(b) < 0.0f ? -1.0f : 1.0f;
+
+                // Gram-Schmidt orthagonalize
+                vert.tangent = math::vec4((t - vert.normal*vert.normal.dot(t)).get_unit(), w);
             }
-            */
         }
 
 
@@ -311,6 +354,9 @@ namespace Engine {
                 std::string param, garb;
                 md5File >> param;
 
+                std::vector<BaseFrame>       BaseFrames;
+                std::vector<FrameData>       Frames;
+
                 while (!md5File.eof()) {
                     if (param == "MD5Version") {
                         int md5Version;
@@ -323,11 +369,13 @@ namespace Engine {
                     else if (param == "numFrames") {
                         md5File >> anim->numFrames;
                         assert(anim->numFrames > 0);
+                        Frames.reserve(anim->numFrames);
                     }
                     else if (param == "numJoints") {
                         md5File >> anim->numJoints;
                         assert(anim->numJoints > 0);
                         anim->JointInfos.reserve(anim->numJoints);
+                        BaseFrames.reserve(anim->numJoints);
                     }
                     else if (param == "frameRate") {
                         md5File >> anim->FrameRate;
@@ -375,14 +423,15 @@ namespace Engine {
 
                             frame.orientation.reconstructW_Left();
 
-                            anim->BaseFrames.push_back(frame);
+                            BaseFrames.push_back(frame);
                         }
                         md5File >> garb;
                         std::getline(md5File, garb);
                     }
                     else if (param == "frame") {
                         FrameData frame;
-                        md5File >> frame.frameID >> garb;
+                        int frameID;
+                        md5File >> frameID >> garb;
                         std::getline(md5File, garb);
 
                         for (int n = 0; n < anim->numAnimComponents; n++) {
@@ -391,9 +440,9 @@ namespace Engine {
                             frame.frameData.push_back(data);
                         }
 
-                        anim->Frames.push_back(frame);
+                        Frames.push_back(frame);
 
-                        BuildFrameSkeleton(anim->Skeletons, anim->JointInfos, anim->BaseFrames, frame);
+                        BuildFrameSkeleton(anim->Skeletons, anim->JointInfos, BaseFrames, frame);
 
                         md5File >> garb;
                         std::getline(md5File, garb);
@@ -410,8 +459,8 @@ namespace Engine {
 
                 assert(anim->numJoints == anim->JointInfos.size());
                 assert(anim->numFrames == anim->Bounds.size());
-                assert(anim->numJoints == anim->BaseFrames.size());
-                assert(anim->numFrames == anim->Frames.size());
+                assert(anim->numJoints == BaseFrames.size());
+                assert(anim->numFrames == Frames.size());
                 assert(anim->numFrames == anim->Skeletons.size());
 
                 md5File.close();
@@ -435,8 +484,6 @@ namespace Engine {
 
                 const JointInfo& jointInfo = jointInfos[j];
                 SkeletonJoint animatedJoint = baseFrames[j];
-
-                animatedJoint.parentID = jointInfo.parentID;
 
                 if (jointInfo.flags & 1) { // Pos.x
                     animatedJoint.position.x = frameData.frameData[jointInfo.startIndex + n];
@@ -464,8 +511,8 @@ namespace Engine {
                 }
                 animatedJoint.orientation.reconstructW_Left();
 
-                if (animatedJoint.parentID >= 0) {
-                    SkeletonJoint& parentJoint = skeleton.Joints[animatedJoint.parentID];
+                if (jointInfo.parentID >= 0) {
+                    SkeletonJoint& parentJoint = skeleton.Joints[jointInfo.parentID];
                     math::vec3 rotPos = math::TransformPointByQuaternion(parentJoint.orientation, animatedJoint.position);
                 
                     animatedJoint.position = parentJoint.position + rotPos;
@@ -487,8 +534,6 @@ namespace Engine {
                 SkeletonJoint& finalJoint = finalSkeleton.Joints[j];
                 const SkeletonJoint& joint0 = skeleton0.Joints[j];
                 const SkeletonJoint& joint1 = skeleton1.Joints[j];
-
-                finalJoint.parentID = joint0.parentID;
 
                 finalJoint.position = math::lerp(joint0.position, joint1.position, interpolate);
                 finalJoint.orientation = math::fast_slerp(joint0.orientation, joint1.orientation, interpolate);
@@ -521,30 +566,6 @@ namespace Engine {
             //interp = 0.0f;
 
             InterpolateSkeletons(anim->AnimatedSkeleton, anim->Skeletons[frame0], anim->Skeletons[frame1], interp);
-        }
-
-        // TODO: this should happen on the gpu every frame?
-        void PrepareMesh(Model* model, Mesh& mesh, const FrameSkeleton& skel){
-            for (unsigned int i = 0; i < mesh.Verts.size(); ++i){
-                const Vert& vert = mesh.Verts[i];
-
-                math::vec3 pos; //TODO: what are these used for??
-                math::vec3 normal;
-
-                pos = math::vec3(0);
-                normal = math::vec3(0);
-
-                for (int j = 0; j < vert.countWeight; ++j)
-                {
-                    const Weight& weight = mesh.Weights[vert.startWeight + j];
-                    const SkeletonJoint& joint = skel.Joints[weight.joint];
-
-                    math::vec3 rotPos = math::TransformPointByQuaternion(joint.orientation, weight.pos);
-                    pos += (joint.position + rotPos) * weight.bias;
-
-                    normal += math::TransformPointByQuaternion(joint.orientation, vert.normal) * weight.bias;
-                }
-            }
         }
     }
 }

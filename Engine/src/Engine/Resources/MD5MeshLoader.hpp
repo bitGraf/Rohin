@@ -12,41 +12,33 @@ namespace Engine {
         ///////////////////////////////////////
 
         struct Joint {
-            std::string name;
+            math::mat4 invTransform; // in object-space
             s32 parent;
+            std::string name;
+
+            // Bind-pose transform
             math::vec3 position;
             math::quat orientation;
-
-            math::mat4 invTransform;
         };
 
         struct Vert {
-            // from file
-            math::vec2 uv;
-            int startWeight;
-            int countWeight;
-
-            // calculated
             math::vec3 position;
             math::vec3 normal;
+            math::vec4 tangent;
+            math::vec2 uv;
+            int boneIndices[4];
+            math::vec4 boneWeights;
         };
 
         struct Tri {
             int vertIndex[3];
         };
 
-        struct Weight {
-            int joint;
-            float bias; // [0.0 1.0]
-            math::vec3 pos;
-        };
-
         struct Mesh {
-            std::string Shader;
+            std::string Shader; // actually a material name
 
             std::vector<Vert> Verts;
             std::vector<Tri> Tris;
-            std::vector<Weight> Weights;
         };
 
         struct Model {
@@ -97,15 +89,13 @@ namespace Engine {
         };
 
         struct FrameData {
-            int frameID;
             std::vector<float> frameData;
         };
 
         struct SkeletonJoint {
-            SkeletonJoint() : parentID(-1) {}
+            SkeletonJoint() {}
             SkeletonJoint(const BaseFrame& copy) : position(copy.position), orientation(copy.orientation) {}
 
-            int parentID;
             math::vec3 position;
             math::quat orientation;
 
@@ -119,8 +109,6 @@ namespace Engine {
         struct Animation {
             std::vector<JointInfo>       JointInfos;
             std::vector<Bound>           Bounds;
-            std::vector<BaseFrame>       BaseFrames;
-            std::vector<FrameData>       Frames;
             std::vector<FrameSkeleton>   Skeletons;    // All the skeletons for all the frames
 
             FrameSkeleton       AnimatedSkeleton;
