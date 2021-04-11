@@ -21,18 +21,14 @@ namespace Engine {
         float TextureScale = 1;
     };
 
-    class MaterialCatalog {
-    public:
-        static void Init();
-        static void Shutdown();
+    namespace MaterialCatalog {
+        void Init();
+        void Shutdown();
 
-        static MaterialSpec GetMaterial(const std::string& material_name);
-        static Ref<Texture2D> GetTexture(const std::string& texture_path);
+        MaterialSpec GetMaterial(const std::string& material_name);
+        Ref<Texture2D> GetTexture(const std::string& texture_path);
 
-        static void RegisterMaterial(const std::string& mat_name, const nbt::tag_compound& data);
-        static void RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap);
-
-    private:
-        MaterialCatalog() {}
+        void RegisterMaterial(const std::string& mat_name, const nbt::tag_compound& data);
+        void RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap);
     };
 }

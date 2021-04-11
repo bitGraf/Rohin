@@ -5,26 +5,21 @@
 
 namespace Engine {
 
-    struct MaterialCatalogData {
-        std::unordered_map<std::string, MaterialSpec> Map;
-
-        std::unordered_map<std::string, Ref<Texture2D>> LoadedTextures;
-    };
-
-    static MaterialCatalogData s_Data;
+    std::unordered_map<std::string, MaterialSpec> MaterialMap;
+    std::unordered_map<std::string, Ref<Texture2D>> LoadedTextures;
 
     Ref<Texture2D> MaterialCatalog::GetTexture(const std::string& path) {
-        if (s_Data.LoadedTextures.find(path) == s_Data.LoadedTextures.end()) {
+        if (LoadedTextures.find(path) == LoadedTextures.end()) {
             // not currently loaded
-            s_Data.LoadedTextures.emplace(path, Texture2D::Create(path));
+            LoadedTextures.emplace(path, Texture2D::Create(path));
             ///ENGINE_LOG_TRACE("texture {1}[{0}] loaded!", path, s_Data.LoadedTextures[path]->GetID());
         }
         
-        return s_Data.LoadedTextures.at(path);
+        return LoadedTextures.at(path);
     }
 
     void MaterialCatalog::RegisterMaterial(const std::string& mat_name, const nbt::tag_compound& data) {
-        if (s_Data.Map.find(mat_name) != s_Data.Map.end()) return; // already loaded thia material, don't bother
+        if (MaterialMap.find(mat_name) != MaterialMap.end()) return; // already loaded thia material, don't bother
 
         MaterialSpec spec;
         spec.Name = data.at("name").as<nbt::tag_string>().get();
@@ -53,7 +48,7 @@ namespace Engine {
             spec.Emissive = GetTexture(emissive_path);
         }
 
-        s_Data.Map.emplace(mat_name, spec);
+        MaterialMap.emplace(mat_name, spec);
     }
 
     void MaterialCatalog::Init() {
@@ -86,20 +81,20 @@ namespace Engine {
     }
 
     MaterialSpec MaterialCatalog::GetMaterial(const std::string& material_name) {
-        if (s_Data.Map.find(material_name) == s_Data.Map.end()) {
+        if (MaterialMap.find(material_name) == MaterialMap.end()) {
             MaterialSpec spec;
             __debugbreak();
             return spec;
         }
 
-        return s_Data.Map.at(material_name);
+        return MaterialMap.at(material_name);
     }
 
 
     // MD5 related
     void MaterialCatalog::RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap) {
         for (const auto& matEntry : materialMap) {
-            if (s_Data.Map.find(matEntry.first) != s_Data.Map.end()) continue;
+            if (MaterialMap.find(matEntry.first) != MaterialMap.end()) continue;
             
             // new material to load
             const auto& mat_name = matEntry.first;
@@ -109,7 +104,7 @@ namespace Engine {
             spec.Albedo = GetTexture(md5mat.diffusemap);
             spec.Normal = GetTexture(md5mat.normalmap);
 
-            s_Data.Map.emplace(mat_name, spec);
+            MaterialMap.emplace(mat_name, spec);
         }
     }
 }

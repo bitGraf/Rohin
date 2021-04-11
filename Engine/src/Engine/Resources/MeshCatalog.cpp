@@ -4,7 +4,6 @@
 namespace Engine {
 
     namespace MeshCatalog {
-
         std::unordered_map<std::string, Mesh*> m_MeshList;
 
         void Register(const std::string& mesh_name, const std::string& filepath, FileFormat file_type) {
