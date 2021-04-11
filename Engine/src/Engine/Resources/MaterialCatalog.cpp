@@ -104,6 +104,11 @@ namespace Engine {
             }
             LoadedTextures.clear();
 
+            for (const auto& it : LoadedCubeTextures) {
+                delete it.second;
+            }
+            LoadedCubeTextures.clear();
+
             for (auto it : OtherTextures) {
                 delete it;
             }
