@@ -44,19 +44,17 @@ void Level::OnAttach() {
     Engine::Input::BindAction("ActionJump", { KEY_CODE_SPACE, GAMEPAD_BUTTON_A });
 
     // load 3D scene data
-    m_3DScene = std::make_shared<Engine::Scene3D>();
-
-    if (!m_3DScene->loadFromLevel(Name)) {
+    if (!m_3DScene.loadFromLevel(Name)) {
         ENGINE_LOG_ERROR("Could not find level named [{0}].", Name);
     }
 
     // Start the 3D scene
-    m_3DScene->OnRuntimeStart();
+    m_3DScene.OnRuntimeStart();
     m_levelTime = 0.0f;
 }
 
 void Level::OnDetach() {
-    m_3DScene->Destroy();
+    m_3DScene.Destroy();
 
     ENGINE_LOG_INFO("Level {0} Detach", Name);
 }
@@ -69,7 +67,7 @@ void Level::OnUpdate(Engine::Timestep ts) {
     Engine::RenderCommand::Clear();
 
     // draw 3D scene
-    m_3DScene->OnUpdate(ts);
+    m_3DScene.OnUpdate(ts);
 
     // draw level name
     if (m_levelTime < 5.0f) {
@@ -112,7 +110,7 @@ bool Level::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     }
 
     if (e.GetKeyCode() == KEY_CODE_C) {
-        auto camera = m_3DScene->FindByName("Camera");
+        auto camera = m_3DScene.FindByName("Camera");
         if (camera) {
             if (camera.HasComponent<Engine::NativeScriptComponent>()) {
                 auto scriptComp = camera.GetComponent<Engine::NativeScriptComponent>();
@@ -121,7 +119,7 @@ bool Level::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
             }
         }
 
-        auto player = m_3DScene->FindByName("Player");
+        auto player = m_3DScene.FindByName("Player");
         if (player) {
             auto script = player.GetComponent<Engine::NativeScriptComponent>().GetScript<PlayerController>();
             script->ToggleControl();
@@ -143,7 +141,7 @@ bool Level::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
         return true;
     }
     if (e.GetKeyCode() == KEY_CODE_3) {
-        m_3DScene->ToggleCollisionHulls();
+        m_3DScene.ToggleCollisionHulls();
         return true;
     }
 
@@ -161,10 +159,10 @@ bool Level::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     }
 
     if (e.GetKeyCode() == KEY_CODE_P) {
-        if (m_3DScene->IsPlaying()) {
-            m_3DScene->OnRuntimePause();
+        if (m_3DScene.IsPlaying()) {
+            m_3DScene.OnRuntimePause();
         } else {
-            m_3DScene->OnRuntimeResume();
+            m_3DScene.OnRuntimeResume();
         }
     }
 
@@ -186,6 +184,6 @@ void Level::CheckViewportSize() {
         ENGINE_LOG_INFO("Render resolution: {0} x {1}", specWidth, specHeight);
         Engine::TextRenderer::OnWindowResize(specWidth, specHeight);
         Engine::Renderer::OnWindowResize(specWidth, specHeight);
-        m_3DScene->OnViewportResize(specWidth, specHeight);
+        m_3DScene.OnViewportResize(specWidth, specHeight);
     }
 }
