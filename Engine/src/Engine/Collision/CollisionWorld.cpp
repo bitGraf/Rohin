@@ -405,7 +405,7 @@ namespace Engine {
 
         if (n.length_2() == 0) {
             *out_normal = -v.get_unit();
-            ENGINE_LOG_WARN("Why is this happening?");
+            ENGINE_LOG_WARN("Why is this happening???");
         }
         else {
             *out_normal = n;

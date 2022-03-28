@@ -4,6 +4,14 @@
 
 namespace math {
 
+    void test____quat_transform() {
+        quat q;
+        vec3 v;
+        
+        vec3 t = 2 * q.getVectorPart().cross(v);
+        vec3 vp = v + q.w*t + q.getVectorPart().cross(t);
+    }
+
     /* Transformation helpers */
     vec3 TransformPointByQuaternion(const quat& rotation, const vec3& point) {
         return (rotation.inv() * quat(point, 0) * rotation).getVectorPart();

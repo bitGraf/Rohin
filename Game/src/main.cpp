@@ -35,6 +35,11 @@ public:
                 Level* level = new Level("Level_3");
                 PushNewScene(level);
             } break;
+            case 4: {
+                // create level scene
+                Level* level = new Level("Level_4");
+                PushNewScene(level);
+            } break;
         }
     }
 

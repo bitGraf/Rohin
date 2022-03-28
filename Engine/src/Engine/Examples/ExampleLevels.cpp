@@ -8,12 +8,16 @@
 #include "Engine/Resources/MaterialCatalog.hpp"
 #include "Engine/Core/Application.hpp"
 #include "Engine/Sound/SoundEngine.hpp"
+#include "Engine/Core/Utils.hpp"
+
+#include "Engine/Resources/ResourceManager.hpp"
 
 namespace Engine {
 
     void load_level_1(Scene3D* scene);
     void load_level_2(Scene3D* scene);
     void load_level_3(Scene3D* scene);
+    void load_level_4(Scene3D* scene);
 
     bool LoadExampleLevel(const std::string& levelName, Scene3D* scene) {
         if (levelName.compare("Level_1") == 0) {
@@ -24,6 +28,9 @@ namespace Engine {
             return true;
         } else if (levelName.compare("Level_3") == 0) {
             load_level_3(scene);
+            return true;
+        } else if (levelName.compare("Level_4") == 0) {
+            load_level_4(scene);
             return true;
         }
 
@@ -234,7 +241,8 @@ namespace Engine {
         Ref<md5::Animation> anim = std::make_shared<md5::Animation>();
         md5::LoadMD5AnimFile("Data/Models/tentacle/tentacle_swing.md5anim", anim.get());
 
-        { // Player
+        // Player
+        {
             Ref<md5::Animation> guard_walk = std::make_shared<md5::Animation>();
             md5::LoadMD5AnimFile("Data/Models/guard/Walking.md5anim", guard_walk.get());
             auto player = scene->CreateGameObject("Player");
@@ -251,25 +259,28 @@ namespace Engine {
         }
 
         // Tentacles
-        std::vector<math::vec3> tentacle_positions = {
-            {3,0,3},
-            {-3,0,3},
-            {-3,0,-3},
-            {3,0,-3}
-        };
-        for (int n = 0; n < tentacle_positions.size(); n++) {
-            auto tentacle = scene->CreateGameObject("Tentacle " + std::to_string(n));
-            auto mesh = MeshCatalog::Get("mesh_tentacle");
-            tentacle.AddComponent<MeshRendererComponent>(mesh);
-            tentacle.AddComponent<MeshAnimationComponent>(anim);
+        {
+            std::vector<math::vec3> tentacle_positions = {
+                {3,0,3},
+                {-3,0,3},
+                {-3,0,-3},
+                {3,0,-3}
+            };
+            for (int n = 0; n < tentacle_positions.size(); n++) {
+                auto tentacle = scene->CreateGameObject("Tentacle " + std::to_string(n));
+                auto mesh = MeshCatalog::Get("mesh_tentacle");
+                tentacle.AddComponent<MeshRendererComponent>(mesh);
+                tentacle.AddComponent<MeshAnimationComponent>(anim);
 
-            auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
-            math::CreateTranslation(trans, tentacle_positions[n]);
+                auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
+                math::CreateTranslation(trans, tentacle_positions[n]);
 
-            UID_t hull = cWorld.CreateNewCubeHull(tentacle_positions[n] + math::vec3(0, 1.501f, 0), 1, 3, 1);
+                UID_t hull = cWorld.CreateNewCubeHull(tentacle_positions[n] + math::vec3(0, 1.501f, 0), 1, 3, 1);
+            }
         }
 
-        { // Platform
+        // Platform
+        {
             float platformSize = 20.0f;
             float platformThickness = 3.0f;
 
@@ -287,14 +298,16 @@ namespace Engine {
             UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
         }
 
-        { // Lights
+        // Lights
+        {
             auto light = scene->CreateGameObject("Sun");
             light.AddComponent<LightComponent>(LightType::Directional, math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
             math::CreateRotationFromYawPitchRoll(trans, 45, -80, 0);
         }
 
-        { // Camera
+        // Camera
+        {
             math::vec2 viewportSize = {
                 (float)Application::Get().GetWindow().GetWidth(),
                 (float)Application::Get().GetWindow().GetHeight() };
@@ -311,5 +324,10 @@ namespace Engine {
             math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
             trans *= rotM;
         }
+    }
+
+    void load_level_4(Scene3D* scene) {
+        ResourceManager::RegisterTexture("texture/frog.png");
+        auto frog_tex = ResourceManager::GetTexture("texture/frog.png");
     }
 }

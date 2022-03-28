@@ -10,6 +10,7 @@
 
 #include "Engine/Resources/MaterialCatalog.hpp"
 #include "Engine/Resources/MeshCatalog.hpp"
+#include "Engine/Resources/ResourceManager.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -26,6 +27,8 @@ namespace Engine {
 
         m_Window = std::unique_ptr<Window>(Window::Create());
         m_Window->SetEventCallback(BIND_EVENT_FN(Application::HandleEvent));
+
+        ResourceManager::CreateBuffers();
 
         Renderer::Init();
         TextRenderer::Init();
@@ -50,11 +53,12 @@ namespace Engine {
         }
         MeshCatalog::Destroy();
         MaterialCatalog::Destroy();
-
         SoundEngine::Shutdown();
         SpriteRenderer::Shutdown();
         TextRenderer::Shutdown();
         Renderer::Shutdown();
+
+        ResourceManager::DestroyBuffers();
 
         m_GuiLayer->OnDetach();
         BENCHMARK_END_SESSION();

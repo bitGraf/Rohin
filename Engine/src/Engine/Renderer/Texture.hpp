@@ -15,12 +15,17 @@ namespace Engine {
 
     class Texture2D : public Texture {
     public:
+        static Texture2D* CreateAtLocation(void* ptr, const std::string& path);
+        static Texture2D* CreateAtLocation(void* ptr, const unsigned char* bitmap, u32 res);
+
         static Texture2D* Create(const std::string& path);
         static Texture2D* Create(const unsigned char* bitmap, u32 res); // for text rendering
     };
 
     class TextureCube : public Texture {
     public:
+        static TextureCube* CreateAtLocation(void* ptr, const std::string& path);
+
         static TextureCube* Create(const std::string& path);
     };
 }
