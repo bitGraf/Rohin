@@ -11,18 +11,42 @@
 
 namespace Engine {
 
-    Mesh::Mesh(const std::string & filename) : m_FilePath(filename) {}
-    
-    bool Mesh::LoadFromFile() {
+    struct Vertex
+    {
+        math::vec3 Position;
+        math::vec3 Normal;
+        math::vec3 Tangent;
+        math::vec3 Binormal;
+        math::vec2 Texcoord;
+    };
+
+    struct Vertex_Anim
+    {
+        math::vec3 Position;
+        math::vec3 Normal;
+        math::vec4 Tangent;
+        math::vec2 Texcoord;
+        s32 BoneIndices[4];
+        math::vec4 BoneWeights;
+    };
+
+    struct Triangle
+    {
+        uint32_t V1, V2, V3;
+    };
+
+    static_assert(sizeof(Triangle) == 3 * sizeof(uint32_t));
+
+    Mesh::Mesh(const std::string & filename) {
         ENGINE_LOG_INFO("Loading a mesh from a .nbt file");
 
         nbt::file_data data;
         nbt::nbt_byte version_major, version_minor;
         endian::endian endianness;
-        if (!nbt::read_from_file(m_FilePath, data, version_major, version_minor, endianness)) {
-            ENGINE_LOG_ERROR("Failed to read nbt dat for mesh [{0}]", m_FilePath);
+        if (!nbt::read_from_file(filename, data, version_major, version_minor, endianness)) {
+            ENGINE_LOG_ERROR("Failed to read nbt dat for mesh [{0}]", filename);
             m_loaded = false;
-            return false;
+            return;
         }
 
         ENGINE_LOG_INFO("Mesh loaded correctly. Version {0}.{1}, {2}-endian", version_major, version_minor,
@@ -41,28 +65,23 @@ namespace Engine {
         ENGINE_LOG_ASSERT(vert_byte_array.size() == sizeof(Vertex)*num_verts, ".nbt mesh data mismatch");
         ENGINE_LOG_ASSERT(ind_int_array.size()*sizeof(nbt::nbt_int)  == sizeof(u32)*num_inds, ".nbt mesh data mismatch");
 
+        std::vector<Vertex> m_Vertices;
         m_Vertices.reserve(num_verts);
         Vertex* _vertex = reinterpret_cast<Vertex*>(vert_byte_array.data());
         m_Vertices.assign(_vertex, _vertex + num_verts);
 
-        m_Indices.reserve(num_tris);
-        Index* _index = reinterpret_cast<Index*>(ind_int_array.data());
-        m_Indices.assign(_index, _index + num_tris);
-
-        for (auto tri : m_Indices) {
-            auto v1 = m_Vertices[tri.V1];
-            auto v2 = m_Vertices[tri.V2];
-            auto v3 = m_Vertices[tri.V3];
-        }
+        std::vector<Triangle> m_Tris;
+        m_Tris.reserve(num_tris);
+        Triangle* _tris = reinterpret_cast<Triangle*>(ind_int_array.data());
+        m_Tris.assign(_tris, _tris+ num_tris);
 
         /* manually fill out submesh data */
         Submesh sm;
-        sm.SubmeshName = "submesh";
         sm.MaterialIndex = 0;
         sm.Transform = math::mat4();
         sm.BaseIndex = 0;
         sm.IndexCount = num_inds;
-        sm.BaseVertex = 0; // currently not using this
+        //sm.BaseVertex = 0; // currently not using this
         m_Submeshes.push_back(sm);
 
         // Set shader info
@@ -161,25 +180,167 @@ namespace Engine {
                 });
             m_VertexArray->AddVertexBuffer(vb);
 
-            auto ib = IndexBuffer::Create(m_Indices.data(), m_Indices.size() * 3); // TODO: make sure this is # if indices
+            auto ib = IndexBuffer::Create(m_Tris.data(), m_Tris.size() * 3); // TODO: make sure this is # if indices
             m_VertexArray->SetIndexBuffer(ib);
 
             m_VertexArray->Unbind();
         }
 
         m_loaded = true;
-        return true;
     }
     
     Mesh::~Mesh() {
 
     }
 
-    void Mesh::OnUpdate(double ts) {
 
-    }
 
-    void Mesh::DumpVertexBuffer() {
+    // MD5 conversion
+    Mesh::Mesh(const md5::Model& model) {
+        // combine all md5 meshes verts into one vertex buffer
+        int totalVerts = 0;
+        int totalTris = 0;
+        std::vector<int> mesh_vert_offsets;
+        std::vector<int> mesh_tri_offsets;
+        std::unordered_map<std::string, int> materialIndexMap;
+        int numMats = 0;
+        for (int n = 0; n < model.Meshes.size(); n++) {
+            mesh_vert_offsets.push_back(totalVerts);
+            totalVerts += model.Meshes[n].Verts.size();
 
+            mesh_tri_offsets.push_back(totalTris);
+            totalTris += model.Meshes[n].Tris.size();
+
+            const auto& mesh = model.Meshes[n];
+            if (materialIndexMap.find(mesh.Shader) == materialIndexMap.end()) {
+                materialIndexMap.emplace(mesh.Shader, numMats);
+                numMats++;
+            }
+        }
+
+        std::vector<Vertex_Anim> m_Vertices;
+        m_Vertices.resize(totalVerts);
+
+        std::vector<Triangle> m_Tris;
+        m_Tris.resize(totalTris);
+
+        // for every md5::mesh
+        for (int m = 0; m < model.Meshes.size(); m++) {
+            const md5::Mesh& mesh = model.Meshes[m];
+
+            // add verts to total array
+            for (int v = 0; v < mesh.Verts.size(); v++) {
+                const md5::Vert& vert = mesh.Verts[v];
+
+                int totalIndex = v + mesh_vert_offsets[m];
+                m_Vertices[totalIndex].Position = vert.position;
+                m_Vertices[totalIndex].Normal = vert.normal;
+                m_Vertices[totalIndex].Tangent = vert.tangent;
+                m_Vertices[totalIndex].Texcoord = vert.uv;
+                m_Vertices[totalIndex].BoneWeights = vert.boneWeights;
+                memcpy(m_Vertices[totalIndex].BoneIndices, vert.boneIndices, 4*sizeof(vert.boneIndices[0]));
+            }
+
+            // add indices to total array
+            for (int t = 0; t < mesh.Tris.size(); t++) {
+                const md5::Tri& tri = mesh.Tris[t];
+
+                int totalIndex = t + mesh_tri_offsets[m];
+                // MD5Mesh has the opposite triangle ordering as us, so we sample out of order here
+                m_Tris[totalIndex].V1 = tri.vertIndex[0] + mesh_vert_offsets[m];
+                m_Tris[totalIndex].V2 = tri.vertIndex[2] + mesh_vert_offsets[m];
+                m_Tris[totalIndex].V3 = tri.vertIndex[1] + mesh_vert_offsets[m];
+            }
+
+            // fill out submesh data
+            Submesh sm;
+            
+            //sm.BaseVertex = mesh_vert_offsets[m];
+            sm.BaseIndex = mesh_tri_offsets[m] * 3;
+            sm.MaterialIndex = materialIndexMap[mesh.Shader];
+            sm.IndexCount = mesh.Tris.size() * 3;
+            
+            math::mat3 BlenderCorrection(math::vec3(0, 0, 1), math::vec3(1, 0, 0), math::vec3(0, 1, 0));
+            sm.Transform = math::mat4(BlenderCorrection, 1);
+
+            m_Submeshes.push_back(sm);
+        }
+
+        // Save bind pose info
+        m_BindPose = model.Joints;
+
+        // Set shader info
+        m_MeshShader = Renderer::GetShaderLibrary()->Get("PrePass_Anim"); // TODO: allow meshes to choose their shader?
+        m_BaseMaterial = std::make_shared<Material>(m_MeshShader);
+
+        // Create materials
+        // Manually set material struct
+        MaterialSpec mat_spec;
+
+        // If after the material and texture definitions, some channels are still
+        // not set, set them to the default texture values
+        mat_spec.Albedo = MaterialCatalog::GetTexture("Data/Images/frog.png");
+        mat_spec.Normal = MaterialCatalog::GetTexture("Data/Images/normal.png");
+        mat_spec.Ambient = MaterialCatalog::GetTexture("Data/Images/white.png");
+        mat_spec.Metalness = MaterialCatalog::GetTexture("Data/Images/black.png");
+        mat_spec.Roughness = MaterialCatalog::GetTexture("Data/Images/white.png");
+        mat_spec.Emissive = MaterialCatalog::GetTexture("Data/Images/black.png");
+
+        // mat_spec should now have all the valid data needed!
+        // upload everyhing from mat_spec to the material
+        m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
+        m_BaseMaterial->Set<float>("u_Metalness", mat_spec.MetalnessBase);
+        m_BaseMaterial->Set<float>("u_Roughness", mat_spec.RoughnessBase);
+        m_BaseMaterial->Set<float>("u_TextureScale", mat_spec.TextureScale);
+
+        m_BaseMaterial->Set("u_AlbedoTexture", mat_spec.Albedo);
+        m_BaseMaterial->Set("u_NormalTexture", mat_spec.Normal);
+        m_BaseMaterial->Set("u_MetalnessTexture", mat_spec.Metalness);
+        m_BaseMaterial->Set("u_RoughnessTexture", mat_spec.Roughness);
+        m_BaseMaterial->Set("u_AmbientTexture", mat_spec.Ambient);
+        m_BaseMaterial->Set("u_EmissiveTexture", mat_spec.Emissive);
+
+        m_Materials.resize(numMats);
+        for (const auto ent : materialIndexMap) {
+            auto spec = MaterialCatalog::GetMaterial(ent.first);
+
+            auto& mat = m_Materials[ent.second];
+            mat = std::make_shared<MaterialInstance>(m_BaseMaterial, ent.first);
+
+            //mat->Set<math::vec3>("u_AlbedoColor", spec.AlbedoBase);
+            //mat->Set<float>("u_Metalness", spec.MetalnessBase);
+            //mat->Set<float>("u_Roughness", spec.RoughnessBase);
+            //mat->Set<float>("u_TextureScale", spec.TextureScale);
+
+            mat->Set("u_AlbedoTexture", spec.Albedo);
+            mat->Set("u_NormalTexture", spec.Normal);
+            //mat->Set("u_MetalnessTexture", spec.Metalness);
+            //mat->Set("u_RoughnessTexture", spec.Roughness);
+            //mat->Set("u_AmbientTexture", spec.Ambient);
+            //mat->Set("u_EmissiveTexture", spec.Emissive);
+        }
+
+        // Create vertex array
+        {
+            m_VertexArray = VertexArray::Create();
+
+            auto vb = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex_Anim));
+            vb->SetLayout({
+                { ShaderDataType::Float3, "a_Position" },
+                { ShaderDataType::Float3, "a_Normal" },
+                { ShaderDataType::Float4, "a_Tangent" },
+                { ShaderDataType::Float2, "a_TexCoord" },
+                { ShaderDataType::Int4,   "a_BoneIndices"},
+                { ShaderDataType::Float4, "a_BoneWeights" },
+                });
+            m_VertexArray->AddVertexBuffer(vb);
+
+            auto ib = IndexBuffer::Create(m_Tris.data(), m_Tris.size() * 3); // TODO: make sure this is # if indices
+            m_VertexArray->SetIndexBuffer(ib);
+
+            m_VertexArray->Unbind();
+        }
+
+        m_loaded = true;
     }
 }

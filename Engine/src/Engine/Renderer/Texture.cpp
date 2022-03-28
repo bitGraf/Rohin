@@ -6,14 +6,14 @@
 
 namespace Engine {
 
-    Ref<Texture2D> Texture2D::Create(const std::string& path) {
+    Texture2D* Texture2D::CreateAtLocation(void* ptr, const std::string& path) {
         switch (Renderer::GetAPI()) {
         case RendererAPI::API::None:
             ENGINE_LOG_ASSERT(false, "No API selected when creating Texture2D");
             return nullptr;
             break;
         case RendererAPI::API::OpenGL:
-            return std::make_shared<OpenGLTexture2D>(path);
+            return new(ptr) OpenGLTexture2D(path);
             break;
         }
 
@@ -21,14 +21,14 @@ namespace Engine {
         return nullptr;
     }
 
-    Ref<Texture2D> Texture2D::Create(const unsigned char* bitmap, u32 res) {
+    Texture2D* Texture2D::CreateAtLocation(void* ptr, const unsigned char* bitmap, u32 res) {
         switch (Renderer::GetAPI()) {
         case RendererAPI::API::None:
             ENGINE_LOG_ASSERT(false, "No API selected when creating Texture2D");
             return nullptr;
             break;
         case RendererAPI::API::OpenGL:
-            return std::make_shared<OpenGLTexture2D>(bitmap, res);
+            return new(ptr) OpenGLTexture2D(bitmap, res);
             break;
         }
 
@@ -36,17 +36,63 @@ namespace Engine {
         return nullptr;
     }
 
-    Ref<TextureCube> TextureCube::Create(const std::string& path) {
+    TextureCube* TextureCube::CreateAtLocation(void* ptr, const std::string& path) {
+        switch (Renderer::GetAPI()) {
+        case RendererAPI::API::None:
+            ENGINE_LOG_ASSERT(false, "No API selected when creating Texture2D");
+            return nullptr;
+            break;
+        case RendererAPI::API::OpenGL:
+            return new(ptr) OpenGLTextureCube(path);
+            break;
+        }
+
+        ENGINE_LOG_ASSERT(false, "Unknown rendererAPI selected");
+        return nullptr;
+    }
+
+
+    Texture2D* Texture2D::Create(const std::string& path) {
+        switch (Renderer::GetAPI()) {
+        case RendererAPI::API::None:
+            ENGINE_LOG_ASSERT(false, "No API selected when creating Texture2D");
+            return nullptr;
+            break;
+        case RendererAPI::API::OpenGL:
+            return new OpenGLTexture2D(path);
+            break;
+        }
+    
+        ENGINE_LOG_ASSERT(false, "Unknown rendererAPI selected");
+        return nullptr;
+    }
+    
+    Texture2D* Texture2D::Create(const unsigned char* bitmap, u32 res) {
+        switch (Renderer::GetAPI()) {
+        case RendererAPI::API::None:
+            ENGINE_LOG_ASSERT(false, "No API selected when creating Texture2D");
+            return nullptr;
+            break;
+        case RendererAPI::API::OpenGL:
+            return new OpenGLTexture2D(bitmap, res);
+            break;
+        }
+    
+        ENGINE_LOG_ASSERT(false, "Unknown rendererAPI selected");
+        return nullptr;
+    }
+    
+    TextureCube* TextureCube::Create(const std::string& path) {
         switch (Renderer::GetAPI()) {
         case RendererAPI::API::None:
             ENGINE_LOG_ASSERT(false, "No API selected when creating TextureCube");
             return nullptr;
             break;
         case RendererAPI::API::OpenGL:
-            return std::make_shared<OpenGLTextureCube>(path);
+            return new OpenGLTextureCube(path);
             break;
         }
-
+    
         ENGINE_LOG_ASSERT(false, "Unknown rendererAPI selected");
         return nullptr;
     }

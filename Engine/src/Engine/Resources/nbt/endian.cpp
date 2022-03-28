@@ -120,10 +120,10 @@ namespace endian
         read_little(is, t12);
         read_little(is, t21);
         read_little(is, t22);
-        put_int_to_float(x._11, t11);
-        put_int_to_float(x._12, t12);
-        put_int_to_float(x._21, t21);
-        put_int_to_float(x._22, t22);
+        put_int_to_float(x[0][0], t11);
+        put_int_to_float(x[1][0], t12);
+        put_int_to_float(x[0][1], t21);
+        put_int_to_float(x[1][1], t22);
     }
 
     void read_little(std::istream& is, math::mat3& x) {
@@ -137,15 +137,15 @@ namespace endian
         read_little(is, t31);
         read_little(is, t32);
         read_little(is, t33);
-        put_int_to_float(x._11, t11);
-        put_int_to_float(x._12, t12);
-        put_int_to_float(x._13, t13);
-        put_int_to_float(x._21, t21);
-        put_int_to_float(x._22, t22);
-        put_int_to_float(x._23, t23);
-        put_int_to_float(x._31, t31);
-        put_int_to_float(x._32, t32);
-        put_int_to_float(x._33, t33);
+        put_int_to_float(x[0][0], t11);
+        put_int_to_float(x[1][0], t12);
+        put_int_to_float(x[2][0], t13);
+        put_int_to_float(x[0][1], t21);
+        put_int_to_float(x[1][1], t22);
+        put_int_to_float(x[2][1], t23);
+        put_int_to_float(x[0][2], t31);
+        put_int_to_float(x[1][2], t32);
+        put_int_to_float(x[2][2], t33);
     }
 
     void read_little(std::istream& is, math::mat4& x) {
@@ -166,22 +166,22 @@ namespace endian
         read_little(is, t42);
         read_little(is, t43);
         read_little(is, t44);
-        put_int_to_float(x._11, t11);
-        put_int_to_float(x._12, t12);
-        put_int_to_float(x._13, t13);
-        put_int_to_float(x._14, t14);
-        put_int_to_float(x._21, t21);
-        put_int_to_float(x._22, t22);
-        put_int_to_float(x._23, t23);
-        put_int_to_float(x._24, t24);
-        put_int_to_float(x._31, t31);
-        put_int_to_float(x._32, t32);
-        put_int_to_float(x._33, t33);
-        put_int_to_float(x._34, t34);
-        put_int_to_float(x._41, t41);
-        put_int_to_float(x._42, t42);
-        put_int_to_float(x._43, t43);
-        put_int_to_float(x._44, t44);
+        put_int_to_float(x[0][0], t11);
+        put_int_to_float(x[1][0], t12);
+        put_int_to_float(x[2][0], t13);
+        put_int_to_float(x[3][0], t14);
+        put_int_to_float(x[0][1], t21);
+        put_int_to_float(x[1][1], t22);
+        put_int_to_float(x[2][1], t23);
+        put_int_to_float(x[3][1], t24);
+        put_int_to_float(x[0][2], t31);
+        put_int_to_float(x[1][2], t32);
+        put_int_to_float(x[2][2], t33);
+        put_int_to_float(x[3][2], t34);
+        put_int_to_float(x[0][3], t41);
+        put_int_to_float(x[1][3], t42);
+        put_int_to_float(x[2][3], t43);
+        put_int_to_float(x[3][3], t44);
     }
 
     //------------------------------------------------------------------------------
@@ -272,10 +272,10 @@ namespace endian
         read_big(is, t12);
         read_big(is, t21);
         read_big(is, t22);
-        put_int_to_float(x._11, t11);
-        put_int_to_float(x._12, t12);
-        put_int_to_float(x._21, t21);
-        put_int_to_float(x._22, t22);
+        put_int_to_float(x[0][0], t11);
+        put_int_to_float(x[1][0], t12);
+        put_int_to_float(x[0][1], t21);
+        put_int_to_float(x[1][1], t22);
     }
 
     void read_big(std::istream& is, math::mat3& x) {
@@ -289,15 +289,15 @@ namespace endian
         read_big(is, t31);
         read_big(is, t32);
         read_big(is, t33);
-        put_int_to_float(x._11, t11);
-        put_int_to_float(x._12, t12);
-        put_int_to_float(x._13, t13);
-        put_int_to_float(x._21, t21);
-        put_int_to_float(x._22, t22);
-        put_int_to_float(x._23, t23);
-        put_int_to_float(x._31, t31);
-        put_int_to_float(x._32, t32);
-        put_int_to_float(x._33, t33);
+        put_int_to_float(x[0][0], t11);
+        put_int_to_float(x[1][0], t12);
+        put_int_to_float(x[2][0], t13);
+        put_int_to_float(x[0][1], t21);
+        put_int_to_float(x[1][1], t22);
+        put_int_to_float(x[2][1], t23);
+        put_int_to_float(x[0][2], t31);
+        put_int_to_float(x[1][2], t32);
+        put_int_to_float(x[2][2], t33);
     }
 
     void read_big(std::istream& is, math::mat4& x) {
@@ -318,22 +318,22 @@ namespace endian
         read_big(is, t42);
         read_big(is, t43);
         read_big(is, t44);
-        put_int_to_float(x._11, t11);
-        put_int_to_float(x._12, t12);
-        put_int_to_float(x._13, t13);
-        put_int_to_float(x._14, t14);
-        put_int_to_float(x._21, t21);
-        put_int_to_float(x._22, t22);
-        put_int_to_float(x._23, t23);
-        put_int_to_float(x._24, t24);
-        put_int_to_float(x._31, t31);
-        put_int_to_float(x._32, t32);
-        put_int_to_float(x._33, t33);
-        put_int_to_float(x._34, t34);
-        put_int_to_float(x._41, t41);
-        put_int_to_float(x._42, t42);
-        put_int_to_float(x._43, t43);
-        put_int_to_float(x._44, t44);
+        put_int_to_float(x[0][0], t11);
+        put_int_to_float(x[1][0], t12);
+        put_int_to_float(x[2][0], t13);
+        put_int_to_float(x[3][0], t14);
+        put_int_to_float(x[0][1], t21);
+        put_int_to_float(x[1][1], t22);
+        put_int_to_float(x[2][1], t23);
+        put_int_to_float(x[3][1], t24);
+        put_int_to_float(x[0][2], t31);
+        put_int_to_float(x[1][2], t32);
+        put_int_to_float(x[2][2], t33);
+        put_int_to_float(x[3][2], t34);
+        put_int_to_float(x[0][3], t41);
+        put_int_to_float(x[1][3], t42);
+        put_int_to_float(x[2][3], t43);
+        put_int_to_float(x[3][3], t44);
     }
 
     //------------------------------------------------------------------------------
@@ -403,47 +403,47 @@ namespace endian
     }
 
     void write_little(std::ostream& os, math::mat2 x) {
-        write_little(os, put_float_to_int(x._11));
-        write_little(os, put_float_to_int(x._12));
+        write_little(os, put_float_to_int(x[0][0]));
+        write_little(os, put_float_to_int(x[1][0]));
 
-        write_little(os, put_float_to_int(x._21));
-        write_little(os, put_float_to_int(x._22));
+        write_little(os, put_float_to_int(x[0][1]));
+        write_little(os, put_float_to_int(x[1][1]));
     }
 
     void write_little(std::ostream& os, math::mat3 x) {
-        write_little(os, put_float_to_int(x._11));
-        write_little(os, put_float_to_int(x._12));
-        write_little(os, put_float_to_int(x._13));
+        write_little(os, put_float_to_int(x[0][0]));
+        write_little(os, put_float_to_int(x[1][0]));
+        write_little(os, put_float_to_int(x[2][0]));
 
-        write_little(os, put_float_to_int(x._21));
-        write_little(os, put_float_to_int(x._22));
-        write_little(os, put_float_to_int(x._23));
+        write_little(os, put_float_to_int(x[0][1]));
+        write_little(os, put_float_to_int(x[1][1]));
+        write_little(os, put_float_to_int(x[2][1]));
 
-        write_little(os, put_float_to_int(x._31));
-        write_little(os, put_float_to_int(x._32));
-        write_little(os, put_float_to_int(x._33));
+        write_little(os, put_float_to_int(x[0][2]));
+        write_little(os, put_float_to_int(x[1][2]));
+        write_little(os, put_float_to_int(x[2][2]));
     }
 
     void write_little(std::ostream& os, math::mat4 x) {
-        write_little(os, put_float_to_int(x._11));
-        write_little(os, put_float_to_int(x._12));
-        write_little(os, put_float_to_int(x._13));
-        write_little(os, put_float_to_int(x._14));
+        write_little(os, put_float_to_int(x[0][0]));
+        write_little(os, put_float_to_int(x[1][0]));
+        write_little(os, put_float_to_int(x[2][0]));
+        write_little(os, put_float_to_int(x[3][0]));
 
-        write_little(os, put_float_to_int(x._21));
-        write_little(os, put_float_to_int(x._22));
-        write_little(os, put_float_to_int(x._23));
-        write_little(os, put_float_to_int(x._24));
+        write_little(os, put_float_to_int(x[0][1]));
+        write_little(os, put_float_to_int(x[1][1]));
+        write_little(os, put_float_to_int(x[2][1]));
+        write_little(os, put_float_to_int(x[3][1]));
 
-        write_little(os, put_float_to_int(x._31));
-        write_little(os, put_float_to_int(x._32));
-        write_little(os, put_float_to_int(x._33));
-        write_little(os, put_float_to_int(x._34));
+        write_little(os, put_float_to_int(x[0][2]));
+        write_little(os, put_float_to_int(x[1][2]));
+        write_little(os, put_float_to_int(x[2][2]));
+        write_little(os, put_float_to_int(x[3][2]));
 
-        write_little(os, put_float_to_int(x._41));
-        write_little(os, put_float_to_int(x._42));
-        write_little(os, put_float_to_int(x._43));
-        write_little(os, put_float_to_int(x._44));
+        write_little(os, put_float_to_int(x[0][3]));
+        write_little(os, put_float_to_int(x[1][3]));
+        write_little(os, put_float_to_int(x[2][3]));
+        write_little(os, put_float_to_int(x[3][3]));
     }
 
     //------------------------------------------------------------------------------
@@ -513,47 +513,47 @@ namespace endian
     }
 
     void write_big(std::ostream& os, math::mat2 x) {
-        write_big(os, put_float_to_int(x._11));
-        write_big(os, put_float_to_int(x._12));
+        write_big(os, put_float_to_int(x[0][0]));
+        write_big(os, put_float_to_int(x[1][0]));
 
-        write_big(os, put_float_to_int(x._21));
-        write_big(os, put_float_to_int(x._22));
+        write_big(os, put_float_to_int(x[0][1]));
+        write_big(os, put_float_to_int(x[1][1]));
     }
 
     void write_big(std::ostream& os, math::mat3 x) {
-        write_big(os, put_float_to_int(x._11));
-        write_big(os, put_float_to_int(x._12));
-        write_big(os, put_float_to_int(x._13));
+        write_big(os, put_float_to_int(x[0][0]));
+        write_big(os, put_float_to_int(x[1][0]));
+        write_big(os, put_float_to_int(x[2][0]));
 
-        write_big(os, put_float_to_int(x._21));
-        write_big(os, put_float_to_int(x._22));
-        write_big(os, put_float_to_int(x._23));
+        write_big(os, put_float_to_int(x[0][1]));
+        write_big(os, put_float_to_int(x[1][1]));
+        write_big(os, put_float_to_int(x[2][1]));
 
-        write_big(os, put_float_to_int(x._31));
-        write_big(os, put_float_to_int(x._32));
-        write_big(os, put_float_to_int(x._33));
+        write_big(os, put_float_to_int(x[0][2]));
+        write_big(os, put_float_to_int(x[1][2]));
+        write_big(os, put_float_to_int(x[2][2]));
     }
 
     void write_big(std::ostream& os, math::mat4 x) {
-        write_big(os, put_float_to_int(x._11));
-        write_big(os, put_float_to_int(x._12));
-        write_big(os, put_float_to_int(x._13));
-        write_big(os, put_float_to_int(x._14));
+        write_big(os, put_float_to_int(x[0][0]));
+        write_big(os, put_float_to_int(x[1][0]));
+        write_big(os, put_float_to_int(x[2][0]));
+        write_big(os, put_float_to_int(x[3][0]));
               
-        write_big(os, put_float_to_int(x._21));
-        write_big(os, put_float_to_int(x._22));
-        write_big(os, put_float_to_int(x._23));
-        write_big(os, put_float_to_int(x._24));
+        write_big(os, put_float_to_int(x[0][1]));
+        write_big(os, put_float_to_int(x[1][1]));
+        write_big(os, put_float_to_int(x[2][1]));
+        write_big(os, put_float_to_int(x[3][1]));
               
-        write_big(os, put_float_to_int(x._31));
-        write_big(os, put_float_to_int(x._32));
-        write_big(os, put_float_to_int(x._33));
-        write_big(os, put_float_to_int(x._34));
+        write_big(os, put_float_to_int(x[0][2]));
+        write_big(os, put_float_to_int(x[1][2]));
+        write_big(os, put_float_to_int(x[2][2]));
+        write_big(os, put_float_to_int(x[3][2]));
 
-        write_big(os, put_float_to_int(x._41));
-        write_big(os, put_float_to_int(x._42));
-        write_big(os, put_float_to_int(x._43));
-        write_big(os, put_float_to_int(x._44));
+        write_big(os, put_float_to_int(x[0][3]));
+        write_big(os, put_float_to_int(x[1][3]));
+        write_big(os, put_float_to_int(x[2][3]));
+        write_big(os, put_float_to_int(x[3][3]));
     }
 
 }

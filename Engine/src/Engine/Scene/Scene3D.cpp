@@ -113,13 +113,21 @@ namespace Engine {
         BENCHMARK_FUNCTION();
         if (m_Playing) {
             BENCHMARK_SCOPE("Update Scripts");
-            // Update
+            // Update scripts
             auto& scriptComponents = m_Registry.view<NativeScriptComponent>();
             for (auto& script : scriptComponents) {
                 if (script.Script) {
                     ENGINE_LOG_ASSERT(script.Script, "Native script not instantiated");
 
                     script.Script->OnUpdate(dt);
+                }
+            }
+
+            // Update Animations
+            auto& animComponents = m_Registry.view<MeshAnimationComponent>();
+            for (auto& anim : animComponents) {
+                if (anim.Anim) {
+                    md5::UpdateMD5Animation(anim.Anim.get(), dt);
                 }
             }
         }
@@ -170,7 +178,7 @@ namespace Engine {
                             scenePointLights[numPointLight].color = light.Color;
                             scenePointLights[numPointLight].strength = light.Strength;
                             scenePointLights[numPointLight].type = light.Type;
-                            scenePointLights[numPointLight].position = trans.Transform.col4().XYZ();
+                            scenePointLights[numPointLight].position = trans.Transform.column4.asVec3();
                             numPointLight++;
                             break;
                         case LightType::Spot:
@@ -178,8 +186,8 @@ namespace Engine {
                             sceneSpotLights[numSpotLight].color = light.Color;
                             sceneSpotLights[numSpotLight].strength = light.Strength;
                             sceneSpotLights[numSpotLight].type = light.Type;
-                            sceneSpotLights[numSpotLight].position = trans.Transform.col4().XYZ();
-                            sceneSpotLights[numSpotLight].direction = -trans.Transform.col3().XYZ();
+                            sceneSpotLights[numSpotLight].position = trans.Transform.column4.asVec3();
+                            sceneSpotLights[numSpotLight].direction = -trans.Transform.column3.asVec3();
                             sceneSpotLights[numSpotLight].inner = light.InnerCutoff;
                             sceneSpotLights[numSpotLight].outer = light.OuterCutoff;
                             numSpotLight++;
@@ -188,8 +196,8 @@ namespace Engine {
                             sceneSun.color = light.Color;
                             sceneSun.strength = light.Strength;
                             sceneSun.type = light.Type;
-                            sceneSun.position = trans.Transform.col4().XYZ();
-                            sceneSun.direction = -trans.Transform.col3().XYZ(); // sun points in entities -z direction (or whatever the camera looks in...)
+                            sceneSun.position = trans.Transform.column4.asVec3();
+                            sceneSun.direction = -trans.Transform.column3.asVec3(); // sun points in entities -z direction (or whatever the camera looks in...)
                             break;
                     }
                 }
@@ -212,10 +220,14 @@ namespace Engine {
                     auto& trans = m_Registry.get<TransformComponent>(n);
                     auto& tag = m_Registry.get<TagComponent>(n);
 
-                    if (mesh.Mesh) {
-                        Renderer::SubmitMesh(mesh.Mesh, trans.Transform);
-                        //if (m_showNormals) // should probably be in a separate part...
-                        //    Renderer::SubmitMesh_drawNormals(mesh.Mesh, trans.Transform);
+                    if (mesh.MeshPtr) {
+                        if (m_Registry.has<MeshAnimationComponent>(n)) {
+                            const auto& anim = m_Registry.get<MeshAnimationComponent>(n);
+                            Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform, anim.Anim);
+                        }
+                        else {
+                            Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform);
+                        }
                     }
                 }
             }
@@ -226,14 +238,12 @@ namespace Engine {
             if (m_showCollisionHulls) {
                 for (const auto& hull : m_cWorld.m_static) {
                     math::mat4 transform;
-                    transform.translate(hull.position);
-                    transform *= math::mat4(hull.rotation);
+                    math::CreateTransform(transform, hull.rotation, hull.position);
                     Renderer::Submit(hull.wireframe, transform, math::vec3(1, .05, .1));
                 }
                 for (const auto& hull : m_cWorld.m_dynamic) {
                     math::mat4 transform;
-                    transform.translate(hull.position);
-                    transform *= math::mat4(hull.rotation);
+                    math::CreateTransform(transform, hull.rotation, hull.position);
                     Renderer::Submit(hull.wireframe, transform, math::vec3(.1, .05, 1));
                 }
             }
@@ -244,6 +254,31 @@ namespace Engine {
             Renderer::RenderDebugUI();
             if (m_showEntityLocations) { // TODO: rename this/come up with less bad solution for these things
                 TextRenderer::SubmitText("Showing entity locations", 5, 40, math::vec3(.7, .1, .5));
+            }
+
+            // draw coordinate frame
+            Renderer::SubmitLine(math::vec3(), math::vec3(1, 0, 0), math::vec4(1, 0, 0, 1));
+            Renderer::SubmitLine(math::vec3(), math::vec3(0, 1, 0), math::vec4(0, 1, 0, 1));
+            Renderer::SubmitLine(math::vec3(), math::vec3(0, 0, 1), math::vec4(0, 0, 1, 1));
+
+            for (auto n : m_Registry.GetRegList()) {
+                // check if entity n has both transform and animation
+                //if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshAnimationComponent>(n)) {
+                //    // good to go
+                //    auto& anim = m_Registry.get<MeshAnimationComponent>(n);
+                //    auto& transform = m_Registry.get<TransformComponent>(n);
+                //    auto& tag = m_Registry.get<TagComponent>(n);
+                //    auto& mesh = m_Registry.get<MeshRendererComponent>(n);
+                //
+                //    Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
+                //}
+
+                if (m_Registry.has<TransformComponent>(n)) {
+                    const auto& tag = m_Registry.get<TagComponent>(n);
+                    const auto& transform = m_Registry.get<TransformComponent>(n);
+                    math::vec3 pos = transform.Transform.column4.asVec3();
+                    Renderer::Draw3DText(tag.Name, pos, math::vec3(.7f, .7f, 1.0f));
+                }
             }
         }
         

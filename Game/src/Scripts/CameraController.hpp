@@ -28,17 +28,9 @@ public:
         cameraComponent->camera.SetPerspective(75.0f, 0.01f, 100.0f);
 
         // Pos, Yaw, Pitch, Roll, Forward, Right, Up
-        auto [_pos, _yaw, _pitch, _roll, _forward, _right, _up] = math::Decompose(transformComponent->Transform);
-        position = _pos;
-        yaw = _yaw;
-        pitch = _pitch;
-        Forward = _forward;
-        Right = _right;
-        Up = _up;
-
-        ///TEMP
-        yaw = 0;
-        ///TEMP
+        math::Decompose(transformComponent->Transform, position);
+        math::Decompose(transformComponent->Transform, Forward, Right, Up);
+        math::Decompose(transformComponent->Transform, yaw, pitch);
 
         // update listener
         Engine::SoundEngine::SetListenerPosition(position);
@@ -162,13 +154,8 @@ private:
         using namespace math;
 
         auto& transform = transformComponent->Transform;
-        transform = mat4();
-        transform.translate(position);
-        transform *= math::createYawPitchRollMatrix(yaw, 0.0f, pitch);
-        auto[f, r, u] = math::GetUnitVectors(transform);
-        Forward = f;
-        Right = r;
-        Up = u;
+        math::CreateTransform(transform, position, yaw, pitch);
+        math::Decompose(transform, Forward, Right, Up);
 
         // update listener
         SoundEngine::SetListenerPosition(position);
@@ -186,13 +173,9 @@ private:
         Up = Right.cross(Forward).get_unit();
         auto& transform = transformComponent->Transform;
 
-        transform = mat4();
-        transform.translate(position);
-        transform *= mat4(mat3(Right, Up, -Forward));
-
-        // TODO: calculate these based on new unit vectors
-        pitch = 0;
-        yaw = 0;
+        math::CreateTranslation(transform, position);
+        transform *= mat4(mat3(Right, Up, -Forward), 1);
+        math::Decompose(transform, yaw, pitch);
 
         // update listener
         SoundEngine::SetListenerPosition(position);

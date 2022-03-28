@@ -38,7 +38,7 @@ const std::vector<std::string> optionsButtons = {
 const std::vector<std::string> levelSelectButtons = {
         "Level 1",
         "Level 2",
-        "nbtTest",
+        "Animation Test",
         "Return"
 };
 

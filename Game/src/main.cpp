@@ -9,7 +9,7 @@
 #include "Scenes/MainMenu.hpp"
 #include "Scenes/Level.hpp"
 
-const int quickstartScene = 0;
+const int quickstartScene = 3;
 
 class Game : public Engine::Application {
 public:
@@ -35,6 +35,11 @@ public:
                 Level* level = new Level("Level_3");
                 PushNewScene(level);
             } break;
+            case 4: {
+                // create level scene
+                Level* level = new Level("Level_4");
+                PushNewScene(level);
+            } break;
         }
     }
 
@@ -53,81 +58,57 @@ Engine::Application* Engine::CreateApplication() {
 #ifdef RUN_TEST_CODE
 #ifndef RUN_MATERIAL_CODE
 
-#include "Engine\Resources\nbt\nbt.hpp"
+#include <stdlib.h>
+#include <string>
+#include <vector>
+#include <unordered_map>
 
-#include "Engine\Core\GameMath.hpp"
-#include <assert.h>
+struct Mesh {
+    int x;
+    float y;
+
+    void load(const std::string& f) {}
+};
+
+struct mCatalog {
+    std::unordered_map<std::string, Mesh*> Data;
+
+    void Register(const std::string& key, const std::string& filename) {
+        // check if this key is already registered
+        if (Data.find(key) == Data.end()) {
+            // not registered yet.
+            Mesh* newMesh = new Mesh();
+            newMesh->load(filename);
+            Data.emplace(key, newMesh);
+        }
+    }
+
+    void Create() {
+        // memory pool??
+        Data.clear();
+    }
+
+    void Destroy() {
+        for (const auto& it : Data) {
+            delete it.second;
+        }
+        Data.clear();
+    }
+
+    Mesh* Get(const std::string& key) {
+        // check if this key exists
+        if (Data.find(key) == Data.end()) {
+            return nullptr;
+        }
+
+        return Data[key];
+    }
+};
 
 int main(int argc, char** argv) {
-    // try to generate a level file in .nbt format
-    using namespace nbt;
-    tag_compound comp{
-        {"name", "Level 1"},
-        {"meshes", tag_list::of<tag_compound>({ //TODO: add tag_string_list possibly?
-            {{"mesh_name", "mesh_guard"}, {"mesh_path",  "Data/Models/guard.nbt" }, {"nbt", true}},
-            {{"mesh_name", "mesh_plane"}, {"mesh_path", "Data/Models/plane.nbt" }, {"nbt", true}} // flag as an nbt file
-            })},
-        {"entities", tag_list::of<tag_compound>({
-            { // player
-                {"name", "Player"},
-                {"transform", tag_compound{
-                    {"position", math::vec3(0,1,0)},
-                    {"rotation", math::vec3(0,0,0)}
-                }},
-                {"components", tag_list::of<tag_compound>({
-                    {{"type", "MeshRenderer"}, {"mesh_name", "rect_mesh"}},
-                    {{"type", "NativeScript"}, {"script_tag", "script_player_controller"}},
-                    {{"type", "Collider"}}
-                    })
-                }
-            },
-            { // platform
-                {"name", "Platform"},
-                {"transform", tag_compound{
-                    {"scale", math::vec3(20, 1, 20)}
-                }},
-                {"components", tag_list::of<tag_compound>({
-                    {{"type", "MeshRenderer"},{"mesh_name", "cube_mesh"}}
-                    })
-                },
-                {"override_albedo_path", "Data/Images/grid/PNG/Dark/texture_07.png"},
-                {"override_texture_scale", 20.0f},
-                {"platformSize", 20.0f},
-                {"platformThickness", 3.0f}
-            },
-            {  // Sun
-                { "name", "Sun" },
-                { "transform", tag_compound{
-                    { "rotation", math::vec3(45, 0, -80) }
-                } },
-                { "components", tag_list::of<tag_compound>({
-                    { { "type", "Light" },
-                        { "light_type", "dir" }, 
-                        {"color", math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f)}, 
-                        {"strength", 5}, 
-                        {"inner", 0}, 
-                        {"outer", 0} }
-                    })
-                } },
-            {  // Camera
-                { "name", "Camera" },
-                { "transform", tag_compound{
-                    { "position", math::vec3(0,4,5) },
-                    { "rotation", math::vec3(0,0,-45) }
-                } },
-                { "components", tag_list::of<tag_compound>({
-                    { { "type", "Camera" } },
-                    { { "type", "NativeScript" },{ "script_tag", "script_camera_controller" } }
-                    })
-                } },
-            })
-        }
-    };
 
-    bool result = nbt::write_to_file("Data/Levels/level_1.scene", nbt::file_data({ "level_data", std::make_unique<tag_compound>(comp) }), 0, 1);
-    if (!result)
-        __debugbreak();
-
+    system("pause");
+    return 0;
 }
 
 #endif

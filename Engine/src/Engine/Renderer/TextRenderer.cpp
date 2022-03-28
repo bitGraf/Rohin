@@ -26,7 +26,7 @@ namespace Engine {
         auto textShader = GetShaderLibrary()->Load("Data/Shaders/Text.glsl");
 
         // create font-rendering globals
-        s_Data.orthoMat.orthoProjection(0, 1280, 720, 0, -1, 1);
+        math::CreateOrthoProjection(s_Data.orthoMat, 0, 1280, 720, 0, -1, 1);
 
         // initialize texture shader values
         textShader->Bind();
@@ -91,7 +91,7 @@ namespace Engine {
 
     void TextRenderer::OnWindowResize(uint32_t width, uint32_t height)
     {
-        s_Data.orthoMat.orthoProjection(0, width, height, 0, -1, 1);
+        math::CreateOrthoProjection(s_Data.orthoMat, 0, width, height, 0, -1, 1);
         //RenderCommand::SetViewport(0, 0, width, height);
     }
 

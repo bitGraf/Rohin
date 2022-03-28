@@ -3,34 +3,35 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 #include "Engine/Resources/nbt/nbt.hpp"
+#include "Engine/Resources/MD5MeshLoader.hpp"
 
 namespace Engine {
 
     struct MaterialSpec {
         std::string Name;
-        Ref<Texture2D> Albedo;
-        Ref<Texture2D> Normal;
-        Ref<Texture2D> Ambient;
-        Ref<Texture2D> Metalness;
-        Ref<Texture2D> Roughness;
-        Ref<Texture2D> Emissive;
+        Texture2D* Albedo = nullptr;
+        Texture2D* Normal = nullptr;
+        Texture2D* Ambient = nullptr;
+        Texture2D* Metalness = nullptr;
+        Texture2D* Roughness = nullptr;
+        Texture2D* Emissive = nullptr;
         math::vec3 AlbedoBase;
         float RoughnessBase = 1;
         float MetalnessBase = 0;
         float TextureScale = 1;
     };
 
-    class MaterialCatalog {
-    public:
-        static void Init();
-        static void Shutdown();
+    namespace MaterialCatalog {
+        void Create();
+        void Destroy();
 
-        static MaterialSpec GetMaterial(const std::string& material_name);
-        static Ref<Texture2D> GetTexture(const std::string& texture_path);
+        MaterialSpec GetMaterial(const std::string& material_name);
 
-        static void RegisterMaterial(const std::string& mat_name, const nbt::tag_compound& data);
+        Texture2D* GetTexture(const std::string& texture_path);
+        Texture2D* GetTexture(const unsigned char* bitmap, u32 res);
+        TextureCube* GetTextureCube(const std::string& texture_path);
 
-    private:
-        MaterialCatalog() {}
+        void RegisterMaterial(const std::string& mat_name, const nbt::tag_compound& data);
+        void RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap);
     };
 }

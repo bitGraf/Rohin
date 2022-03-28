@@ -9,6 +9,7 @@
 #include "Engine/Gui/GuiLayer.hpp"
 #include "Engine/Core/Timing.hpp"
 #include "Engine/Scene/Scene.hpp"
+#include "Engine/Core/MemoryTrack.hpp"
 
 namespace Engine {
 
