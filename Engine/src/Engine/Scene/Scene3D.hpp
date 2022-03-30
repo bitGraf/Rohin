@@ -49,5 +49,5 @@ namespace Engine {
         friend class GameObject;
     };
 
-    extern bool BindGameScript(const std::string& script_tag, Scene3D* scene, GameObject gameobject);
+    //extern bool BindGameScript(const std::string& script_tag, Scene3D* scene, GameObject gameobject);
 }

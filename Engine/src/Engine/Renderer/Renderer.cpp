@@ -686,7 +686,7 @@ namespace Engine {
     }
 
     // Animation variant
-    void Renderer::SubmitMesh(const Mesh* mesh, const math::mat4& transform, const Ref<md5::Animation>& anim) {
+    void Renderer::SubmitMesh(const Mesh* mesh, const math::mat4& transform, md5::Animation* anim) {
         BENCHMARK_FUNCTION();
 
         mesh->GetVertexArray()->Bind();

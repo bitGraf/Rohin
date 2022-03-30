@@ -5,12 +5,17 @@
 
 #include "Engine/GameObject/Components.hpp"
 #include "Engine/Resources/MeshCatalog.hpp"
+#include "Engine/Resources/AnimCatalog.hpp"
 #include "Engine/Resources/MaterialCatalog.hpp"
 #include "Engine/Core/Application.hpp"
 #include "Engine/Sound/SoundEngine.hpp"
 #include "Engine/Core/Utils.hpp"
 
 #include "Engine/Resources/ResourceManager.hpp"
+
+// TODO: these should be moved into the engine probably...
+#include "../../Game/src/Scripts/CameraController.hpp"
+#include "../../Game/src/Scripts/Player.hpp"
 
 namespace Engine {
 
@@ -23,15 +28,6 @@ namespace Engine {
         if (levelName.compare("Level_1") == 0) {
             load_level_1(scene);
             return true;
-        } else if (levelName.compare("Level_2") == 0) {
-            load_level_2(scene);
-            return true;
-        } else if (levelName.compare("Level_3") == 0) {
-            load_level_3(scene);
-            return true;
-        } else if (levelName.compare("Level_4") == 0) {
-            load_level_4(scene);
-            return true;
         }
 
         // could not find hard-coded level
@@ -39,18 +35,31 @@ namespace Engine {
     }
 
     void load_level_1(Scene3D* scene) {
-        Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", FileFormat::NBT_Basic);
-        Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
         auto& cWorld = scene->GetCollisionWorld();
 
-        { // Player
+        // load materials
+        std::unordered_map<std::string, md5::Material> mats;
+        md5::LoadMD5MaterialDefinitionFile("Data/Models/tentacle/tentacle.md5material", mats);
+        MaterialCatalog::RegisterMaterial(mats);
+
+        // read md5mesh files
+        MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
+        MeshCatalog::Register("mesh_guard", "Data/Models/guard/guard.md5mesh", FileFormat::MD5_Text);
+        MeshCatalog::Register("mesh_tentacle", "Data/Models/tentacle/tentacle.md5mesh", FileFormat::MD5_Text);
+
+        // read animation files
+        AnimCatalog::Register("tentacle_swing", "Data/Models/tentacle/tentacle_swing.md5anim", FileFormat::MD5_Text);
+        AnimCatalog::Register("guard_walk", "Data/Models/guard/Walking.md5anim", FileFormat::MD5_Text);
+
+        // Player
+        {
             auto player = scene->CreateGameObject("Player");
             auto mesh = MeshCatalog::Get("mesh_guard");
-            player.AddComponent<MeshRendererComponent>(mesh);
-            //player.AddComponent<NativeScriptComponent>().Bind<PlayerController>(player);
-            BindGameScript("script_player_controller", scene, player);
+            auto anim = AnimCatalog::Get("guard_walk");
 
-            math::CreateRotationFromYawPitch(mesh->GetSubmeshes()[0].Transform, 90.0f, 0.0f);
+            player.AddComponent<MeshRendererComponent>(mesh);
+            player.AddComponent<MeshAnimationComponent>(anim);
+            player.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(player);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
             math::CreateTranslation(trans, math::vec3(0, 1, 0));
@@ -58,7 +67,32 @@ namespace Engine {
             UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
         }
-        { // Platform
+
+        // Tentacles
+        {
+            std::vector<math::vec3> tentacle_positions = {
+                {3,0,3},
+                {-3,0,3},
+                {-3,0,-3},
+                {3,0,-3}
+            };
+            for (int n = 0; n < tentacle_positions.size(); n++) {
+                auto tentacle = scene->CreateGameObject("Tentacle " + std::to_string(n));
+                auto mesh = MeshCatalog::Get("mesh_tentacle");
+                auto anim = AnimCatalog::Get("tentacle_swing");
+
+                tentacle.AddComponent<MeshRendererComponent>(mesh);
+                tentacle.AddComponent<MeshAnimationComponent>(anim);
+
+                auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
+                math::CreateTranslation(trans, tentacle_positions[n]);
+
+                UID_t hull = cWorld.CreateNewCubeHull(tentacle_positions[n] + math::vec3(0, 1.501f, 0), 1, 3, 1);
+            }
+        }
+
+        // Platform
+        {
             float platformSize = 20.0f;
             float platformThickness = 3.0f;
 
@@ -68,68 +102,44 @@ namespace Engine {
             auto material = rectMesh->GetMaterial(0);
             material->Set<float>("u_TextureScale", platformSize);
             material->Set("u_AlbedoTexture", MaterialCatalog::GetTexture("Data/Images/grid/PNG/Dark/texture_07.png"));
+
             platform.AddComponent<MeshRendererComponent>(rectMesh);
 
             auto& trans = platform.GetComponent<TransformComponent>().Transform;
             math::CreateScale(trans, platformSize, 1, platformSize);
-            math::mat4 translate;
 
             UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
         }
 
-        { // Lights
+        // Lights
+        {
             auto light = scene->CreateGameObject("Sun");
+
             light.AddComponent<LightComponent>(LightType::Directional, math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
+
             auto& trans = light.GetComponent<TransformComponent>().Transform;
             math::CreateRotationFromYawPitchRoll(trans, 45, -80, 0);
         }
 
-        { // Camera
+        // Camera
+        {
             math::vec2 viewportSize = {
                 (float)Application::Get().GetWindow().GetWidth(),
                 (float)Application::Get().GetWindow().GetHeight() };
 
             auto Camera = scene->CreateGameObject("Camera");
+
             auto& camera = Camera.AddComponent<CameraComponent>().camera;
             camera.SetViewportSize(viewportSize.x, viewportSize.y);
             camera.SetPerspective(75, .01, 100);
-            //Camera.AddComponent<NativeScriptComponent>().Bind<CameraController>(Camera);
-            BindGameScript("script_camera_controller", scene, Camera);
+
+            Camera.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
             math::CreateTranslation(trans, math::vec3(0, 4, 5));
             math::mat4 rotM;
             math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
             trans *= rotM;
-        }
-
-        // Ramps at various angles
-        math::mat3 rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 0, -5), 10, 1, 3))
-            ->rotation;
-        math::CreateRotationFromYawPitchRoll(rot, 0, 10, 0);
-
-        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 1, -2), 10, 1, 3))
-            ->rotation;
-        math::CreateRotationFromYawPitchRoll(rot, 0, 20, 0);
-
-        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 2, 1), 10, 1, 3))
-            ->rotation;
-        math::CreateRotationFromYawPitchRoll(rot, 0, 30, 0);
-
-        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 3, 4), 10, 1, 3))
-            ->rotation;
-        math::CreateRotationFromYawPitchRoll(rot, 0, 40, 0);
-
-        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 3.5, 7), 10, 1, 3))
-            ->rotation;
-        math::CreateRotationFromYawPitchRoll(rot, 0, 50, 0);
-
-        // Sound stuff
-        {
-            SoundEngine::CreateSoundCue("guard_death", { "Data/Sounds/death.ogg", 0.02f });
-            SoundEngine::CreateSoundCue("golem", { "Data/Sounds/golem.ogg", 0.1f }); //MONO, has 3D sound
-            SoundEngine::CreateSoundCue("protector", { "Data/Sounds/sound.wav", 0.2f });
-            SoundEngine::CreateSoundCue("ahhh", { "Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
         }
     }
 
@@ -147,7 +157,7 @@ namespace Engine {
             auto player = scene->CreateGameObject("Player");
             auto mesh = MeshCatalog::Get("mesh_guard");
             player.AddComponent<MeshRendererComponent>(mesh);
-            BindGameScript("script_player_controller", scene, player);
+            player.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(player);
 
             math::CreateRotationFromYawPitchRoll(mesh->GetSubmeshes()[0].Transform, 90, 0, 0);
 
@@ -212,8 +222,7 @@ namespace Engine {
             auto& camera = Camera.AddComponent<CameraComponent>().camera;
             camera.SetViewportSize(viewportSize.x, viewportSize.y);
             camera.SetPerspective(75, .01, 100);
-            //Camera.AddComponent<NativeScriptComponent>().Bind<CameraController>(Camera);
-            BindGameScript("script_camera_controller", scene, Camera);
+            Camera.AddComponent<NativeScriptComponent>().Bind<CameraController>(Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
             trans = math::mat4();
@@ -224,32 +233,17 @@ namespace Engine {
     }
 
     void load_level_3(Scene3D* scene) {
+        Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", FileFormat::NBT_Basic);
+        Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
         auto& cWorld = scene->GetCollisionWorld();
 
-        // load materials
-        std::unordered_map<std::string, md5::Material> mats;
-        md5::LoadMD5MaterialDefinitionFile("Data/Models/tentacle/tentacle.md5material", mats);
-        MaterialCatalog::RegisterMaterial(mats);
-
-        // read md5mesh file
-        MeshCatalog::Register("mesh_plane",    "Data/Models/plane.nbt", FileFormat::NBT_Basic);
-        MeshCatalog::Register("mesh_plane",    "Data/Models/plane.nbt", FileFormat::NBT_Basic);
-        MeshCatalog::Register("mesh_tentacle", "Data/Models/tentacle/tentacle.md5mesh", FileFormat::MD5_Text);
-        MeshCatalog::Register("mesh_guard",    "Data/Models/guard/guard.md5mesh", FileFormat::MD5_Text);
-
-        // read animation file
-        Ref<md5::Animation> anim = std::make_shared<md5::Animation>();
-        md5::LoadMD5AnimFile("Data/Models/tentacle/tentacle_swing.md5anim", anim.get());
-
-        // Player
-        {
-            Ref<md5::Animation> guard_walk = std::make_shared<md5::Animation>();
-            md5::LoadMD5AnimFile("Data/Models/guard/Walking.md5anim", guard_walk.get());
+        { // Player
             auto player = scene->CreateGameObject("Player");
             auto mesh = MeshCatalog::Get("mesh_guard");
             player.AddComponent<MeshRendererComponent>(mesh);
-            player.AddComponent<MeshAnimationComponent>(guard_walk);
-            BindGameScript("script_player_controller", scene, player);
+            player.AddComponent<NativeScriptComponent>().Bind<PlayerController>(player);
+
+            math::CreateRotationFromYawPitch(mesh->GetSubmeshes()[0].Transform, 90.0f, 0.0f);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
             math::CreateTranslation(trans, math::vec3(0, 1, 0));
@@ -257,30 +251,7 @@ namespace Engine {
             UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
         }
-
-        // Tentacles
-        {
-            std::vector<math::vec3> tentacle_positions = {
-                {3,0,3},
-                {-3,0,3},
-                {-3,0,-3},
-                {3,0,-3}
-            };
-            for (int n = 0; n < tentacle_positions.size(); n++) {
-                auto tentacle = scene->CreateGameObject("Tentacle " + std::to_string(n));
-                auto mesh = MeshCatalog::Get("mesh_tentacle");
-                tentacle.AddComponent<MeshRendererComponent>(mesh);
-                tentacle.AddComponent<MeshAnimationComponent>(anim);
-
-                auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
-                math::CreateTranslation(trans, tentacle_positions[n]);
-
-                UID_t hull = cWorld.CreateNewCubeHull(tentacle_positions[n] + math::vec3(0, 1.501f, 0), 1, 3, 1);
-            }
-        }
-
-        // Platform
-        {
+        { // Platform
             float platformSize = 20.0f;
             float platformThickness = 3.0f;
 
@@ -294,20 +265,19 @@ namespace Engine {
 
             auto& trans = platform.GetComponent<TransformComponent>().Transform;
             math::CreateScale(trans, platformSize, 1, platformSize);
+            math::mat4 translate;
 
             UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
         }
 
-        // Lights
-        {
+        { // Lights
             auto light = scene->CreateGameObject("Sun");
             light.AddComponent<LightComponent>(LightType::Directional, math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
             math::CreateRotationFromYawPitchRoll(trans, 45, -80, 0);
         }
 
-        // Camera
-        {
+        { // Camera
             math::vec2 viewportSize = {
                 (float)Application::Get().GetWindow().GetWidth(),
                 (float)Application::Get().GetWindow().GetHeight() };
@@ -316,13 +286,42 @@ namespace Engine {
             auto& camera = Camera.AddComponent<CameraComponent>().camera;
             camera.SetViewportSize(viewportSize.x, viewportSize.y);
             camera.SetPerspective(75, .01, 100);
-            BindGameScript("script_camera_controller", scene, Camera);
+            Camera.AddComponent<NativeScriptComponent>().Bind<CameraController>(Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
             math::CreateTranslation(trans, math::vec3(0, 4, 5));
             math::mat4 rotM;
             math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
             trans *= rotM;
+        }
+
+        // Ramps at various angles
+        math::mat3 rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 0, -5), 10, 1, 3))
+            ->rotation;
+        math::CreateRotationFromYawPitchRoll(rot, 0, 10, 0);
+
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 1, -2), 10, 1, 3))
+            ->rotation;
+        math::CreateRotationFromYawPitchRoll(rot, 0, 20, 0);
+
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 2, 1), 10, 1, 3))
+            ->rotation;
+        math::CreateRotationFromYawPitchRoll(rot, 0, 30, 0);
+
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 3, 4), 10, 1, 3))
+            ->rotation;
+        math::CreateRotationFromYawPitchRoll(rot, 0, 40, 0);
+
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 3.5, 7), 10, 1, 3))
+            ->rotation;
+        math::CreateRotationFromYawPitchRoll(rot, 0, 50, 0);
+
+        // Sound stuff
+        {
+            SoundEngine::CreateSoundCue("guard_death", { "Data/Sounds/death.ogg", 0.02f });
+            SoundEngine::CreateSoundCue("golem", { "Data/Sounds/golem.ogg", 0.1f }); //MONO, has 3D sound
+            SoundEngine::CreateSoundCue("protector", { "Data/Sounds/sound.wav", 0.2f });
+            SoundEngine::CreateSoundCue("ahhh", { "Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
         }
     }
 

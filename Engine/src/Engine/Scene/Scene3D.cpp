@@ -127,7 +127,7 @@ namespace Engine {
             auto& animComponents = m_Registry.view<MeshAnimationComponent>();
             for (auto& anim : animComponents) {
                 if (anim.Anim) {
-                    md5::UpdateMD5Animation(anim.Anim.get(), dt);
+                    md5::UpdateMD5Animation(anim.Anim, dt);
                 }
             }
         }

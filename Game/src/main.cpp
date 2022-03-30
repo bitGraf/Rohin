@@ -9,7 +9,7 @@
 #include "Scenes/MainMenu.hpp"
 #include "Scenes/Level.hpp"
 
-const int quickstartScene = 3;
+const int quickstartScene = 1;
 
 class Game : public Engine::Application {
 public:
@@ -23,21 +23,6 @@ public:
             case 1: {
                 // create level scene
                 Level* level = new Level("Level_1");
-                PushNewScene(level);
-            } break;
-            case 2: {
-                // create level scene
-                Level* level = new Level("Level_2");
-                PushNewScene(level);
-            } break;
-            case 3: {
-                // create level scene
-                Level* level = new Level("Level_3");
-                PushNewScene(level);
-            } break;
-            case 4: {
-                // create level scene
-                Level* level = new Level("Level_4");
                 PushNewScene(level);
             } break;
         }

@@ -14,7 +14,7 @@ Level::~Level() {
 
 }
 
-bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene3D* scene, GameObject gameobject) {
+/*bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene3D* scene, GameObject gameobject) {
     if (script_tag.compare("script_camera_controller") == 0) {
         gameobject.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(gameobject);
         return true;
@@ -24,7 +24,7 @@ bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene3D* scen
         return true;
     }
     return false;
-}
+}*/
 
 void Level::OnAttach() {
     ENGINE_LOG_INFO("Level {0} Attach", Name);
