@@ -77,6 +77,7 @@ namespace Engine {
                 {3,0,-3}
             };
             for (int n = 0; n < tentacle_positions.size(); n++) {
+                break;
                 auto tentacle = scene->CreateGameObject("Tentacle " + std::to_string(n));
                 auto mesh = MeshCatalog::Get("mesh_tentacle");
                 auto anim = AnimCatalog::Get("tentacle_swing");

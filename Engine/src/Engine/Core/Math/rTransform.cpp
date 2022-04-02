@@ -14,7 +14,7 @@ namespace math {
 
     /* Transformation helpers */
     vec3 TransformPointByQuaternion(const quat& rotation, const vec3& point) {
-        return (rotation.inv() * quat(point, 0) * rotation).getVectorPart();
+        return ((rotation*quat(point, 0))*rotation.inv()).getVectorPart();
     }
 
     vec3 TransformPointByMatrix4x4(const mat4& transform, const vec3& point) {

@@ -5,7 +5,7 @@
 namespace math {
 
     quat::quat() 
-        : x(0), y(0), z(0), w(0) {}
+        : x(0), y(0), z(0), w(1) {}
     quat::quat(scalar _x, scalar _y, scalar _z, scalar _w) 
         : x(_x), y(_y), z(_z), w(_w) {}
     quat::quat(scalar _x, scalar _y, scalar _z)
@@ -18,24 +18,15 @@ namespace math {
         : x(xyz.x), y(xyz.y), z(xyz.z), w(_w) {}
 
     void quat::reconstructW() {
-        float t = 1.0f - x * x - y * y - z * z;
+        /*float t = 1.0f - x * x - y * y - z * z;
 
         if (t < 0.0f)
             w = 0.0f;
         else
-            w = sqrtf(t);
+            w = sqrtf(t);*/
+        w = sqrtf(fabs(1.0f - x * x - y * y - z * z));
     }
-    void quat::reconstructW_Left() {
-        float t = 1.0f - x * x - y * y - z * z;
 
-        if (t < 0.0f)
-            w = 0.0f;
-        else
-            w = sqrtf(t);
-        x = -x;
-        y = -y;
-        z = -z;
-    }
     scalar quat::length_2() const {
         return x*x + y*y + z*z + w*w;
     }
@@ -83,14 +74,6 @@ namespace math {
     quat operator* (const quat& q1, const quat& q2) {
         vec3 v1 = q1.getVectorPart();
         vec3 v2 = q2.getVectorPart();
-        return quat(v1*q2.w + v2*q1.w + v2.cross(v1), q1.w*q2.w - v1.dot(v2)); //TODO: check math
-        /*
-        float a3 = q1.w * q2.w - q1.x * q2.x - q1.y * q2.y - q1.z * q2.z;
-        float b3 = q1.w * q2.x + q1.x * q2.w + q1.y * q2.z - q1.z * q2.y;
-        float c3 = q1.w * q2.y - q1.x * q2.z + q1.y * q2.w + q1.z * q2.x;
-        float d3 = q1.w * q2.z + q1.x * q2.y - q1.y * q2.x + q1.z * q2.w;
-
-        return quat(b3, c3, d3, a3);
-        */
+        return quat(v1*q2.w + v2*q1.w + v1.cross(v2), q1.w*q2.w - v1.dot(v2));
     }
 }

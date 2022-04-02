@@ -61,8 +61,7 @@ namespace Engine {
                             md5File >> joint.parent >>
                                 garb >> joint.position.x >> joint.position.y >> joint.position.z >> garb >>
                                 garb >> joint.orientation.x >> joint.orientation.y >> joint.orientation.z >> garb;
-                            joint.orientation.reconstructW_Left();
-                            //joint.orientation.reconstructW();
+                            joint.orientation.reconstructW();
 
                             math::mat4 trans;
                             math::CreateTransform(trans, joint.orientation, joint.position, math::vec3(1));
@@ -186,8 +185,10 @@ namespace Engine {
                     vert.boneIndices[j] = weight.joint;
                     vert.boneWeights[j] = weight.bias;
                 }
+                //ENGINE_LOG_WARN("Mesh {0}, vertex {1} total weight: {2}", "mesh_name", n, total_weight_val);
 
                 if (vert_info.countWeight > 4) {
+                    // TODO: renormalize BEFORE we calculate the effect of each weight
                     ENGINE_LOG_WARN("Mesh {0}, vertex {1} has {2} weights. renormalizing to 4", "mesh_name_hehe", n, vert_info.countWeight);
                     float inv_sum = 1.0f / (vert.boneWeights[0] + vert.boneWeights[1] + vert.boneWeights[2] + vert.boneWeights[3]);
                     vert.boneWeights *= inv_sum;
@@ -406,7 +407,7 @@ namespace Engine {
                         for (int n = 0; n < anim->numFrames; n++) {
                             Bound bound;
                             md5File >> garb >> bound.min.x >> bound.min.y >> bound.min.z >> garb >>
-                                garb >> bound.max.z >> bound.max.y >> bound.max.z >> garb;
+                                garb >> bound.max.x >> bound.max.y >> bound.max.z >> garb;
                             anim->Bounds.push_back(bound);
                         }
                         md5File >> garb;
@@ -421,7 +422,7 @@ namespace Engine {
                             md5File >> garb >> frame.position.x >> frame.position.y >> frame.position.z >> garb >>
                                 garb >> frame.orientation.x >> frame.orientation.y >> frame.orientation.z >> garb;
 
-                            frame.orientation.reconstructW_Left();
+                            frame.orientation.reconstructW();
 
                             BaseFrames.push_back(frame);
                         }
@@ -509,7 +510,7 @@ namespace Engine {
                     animatedJoint.orientation.z = frameData.frameData[jointInfo.startIndex + n];
                     n++;
                 }
-                animatedJoint.orientation.reconstructW_Left();
+                animatedJoint.orientation.reconstructW();
 
                 if (jointInfo.parentID >= 0) {
                     SkeletonJoint& parentJoint = skeleton.Joints[jointInfo.parentID];
@@ -517,8 +518,7 @@ namespace Engine {
                 
                     animatedJoint.position = parentJoint.position + rotPos;
                 
-                    // backwards since original quaternions are left-handed I think...
-                    animatedJoint.orientation = animatedJoint.orientation * parentJoint.orientation;
+                    animatedJoint.orientation = parentJoint.orientation * animatedJoint.orientation;
                 
                     animatedJoint.orientation.normalize();
                 }

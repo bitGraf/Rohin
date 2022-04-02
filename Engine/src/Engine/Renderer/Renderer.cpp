@@ -701,7 +701,8 @@ namespace Engine {
             const auto& bone0 = bindPose[n];
             const auto& bone1 = Pose[n];
 
-            shader->SetMat4("r_Bones[" + std::to_string(n) + "]", bone1.transform * bone0.invTransform);
+            //shader->SetMat4("r_Bones[" + std::to_string(n) + "]", bone1.transform * bone0.invTransform);
+            shader->SetMat4("r_Bones[" + std::to_string(n) + "]", math::mat4());
         }
 
         auto& materials = mesh->GetMaterials();
@@ -768,9 +769,9 @@ namespace Engine {
 
         math::mat3 BlenderCorrection(math::vec3(0, 0, 1), math::vec3(1, 0, 0), math::vec3(0, 1, 0));
         math::mat4 T = transform.Transform * math::mat4(BlenderCorrection, 1);
-        float s = .1f;
-        float length = 0.65f;
-        float length2 = 0.07f;
+        float s = 0.075f;
+        float length = 0.55f;
+        float length2 = 0.05f;
 
         math::vec4 localR(1, 0, 0, 0);
         math::vec4 localF(0, 1, 0, 0);
