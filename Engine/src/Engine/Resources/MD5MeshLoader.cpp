@@ -63,9 +63,10 @@ namespace Engine {
                                 garb >> joint.orientation.x >> joint.orientation.y >> joint.orientation.z >> garb;
                             joint.orientation.reconstructW();
 
-                            math::mat4 trans;
-                            math::CreateTransform(trans, joint.orientation, joint.position, math::vec3(1));
-                            math::CreateViewFromTransform(joint.invTransform, trans);
+                            //math::mat4 trans;
+                            //math::CreateTransform(trans, joint.orientation, joint.position, math::vec3(1));
+                            math::CreateTransform(joint.Transform, joint.orientation, joint.position, math::vec3(1));
+                            math::CreateViewFromTransform(joint.invTransform, joint.Transform);
 
                             model->Joints.push_back(joint);
                             
@@ -178,7 +179,7 @@ namespace Engine {
                     Joint& joint = model->Joints[weight.joint];
 
                     // Convert the weight position from Joint local space to object space
-                    math::vec3 rotPos = math::TransformPointByQuaternion(joint.orientation, weight.pos);
+                    math::vec3 rotPos = math::TransformPointByQuaternion(joint.orientation.inv(), weight.pos);
 
                     vert.position += (joint.position + rotPos) * weight.bias;
 
@@ -521,6 +522,8 @@ namespace Engine {
                     animatedJoint.orientation = parentJoint.orientation * animatedJoint.orientation;
                 
                     animatedJoint.orientation.normalize();
+                    
+                    // animatedJoint should now be in object space fully
                 }
 
                 skeleton.Joints.push_back(animatedJoint);

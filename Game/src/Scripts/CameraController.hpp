@@ -28,9 +28,11 @@ public:
         cameraComponent->camera.SetPerspective(75.0f, 0.01f, 100.0f);
 
         // Pos, Yaw, Pitch, Roll, Forward, Right, Up
-        math::Decompose(transformComponent->Transform, position);
-        math::Decompose(transformComponent->Transform, Forward, Right, Up);
-        math::Decompose(transformComponent->Transform, yaw, pitch);
+        vec3 scale;
+        math::Decompose(transformComponent->Transform, position, Forward, Right, Up, yaw, pitch, scale);
+        //math::Decompose(transformComponent->Transform, position);
+        //math::Decompose(transformComponent->Transform, Forward, Right, Up);
+        //math::Decompose(transformComponent->Transform, yaw, pitch);
 
         // update listener
         Engine::SoundEngine::SetListenerPosition(position);

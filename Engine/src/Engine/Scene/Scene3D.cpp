@@ -263,21 +263,21 @@ namespace Engine {
 
             for (auto n : m_Registry.GetRegList()) {
                 // check if entity n has both transform and animation
-                //if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshAnimationComponent>(n)) {
-                //    // good to go
-                //    auto& anim = m_Registry.get<MeshAnimationComponent>(n);
-                //    auto& transform = m_Registry.get<TransformComponent>(n);
-                //    auto& tag = m_Registry.get<TagComponent>(n);
-                //    auto& mesh = m_Registry.get<MeshRendererComponent>(n);
-                //
-                //    Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
-                //}
+                if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshAnimationComponent>(n)) {
+                    // good to go
+                    auto& anim = m_Registry.get<MeshAnimationComponent>(n);
+                    auto& transform = m_Registry.get<TransformComponent>(n);
+                    auto& tag = m_Registry.get<TagComponent>(n);
+                    auto& mesh = m_Registry.get<MeshRendererComponent>(n);
+                
+                    Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
+                }
 
                 if (m_Registry.has<TransformComponent>(n)) {
                     const auto& tag = m_Registry.get<TagComponent>(n);
                     const auto& transform = m_Registry.get<TransformComponent>(n);
                     math::vec3 pos = transform.Transform.column4.asVec3();
-                    Renderer::Draw3DText(tag.Name, pos, math::vec3(.7f, .7f, 1.0f));
+                    //Renderer::Draw3DText(tag.Name, pos, math::vec3(.7f, .7f, 1.0f));
                 }
             }
         }

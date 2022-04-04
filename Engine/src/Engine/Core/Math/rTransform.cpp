@@ -213,6 +213,60 @@ namespace math {
         matrix *= TransM;
     }
 
+    void Decompose(const mat4& transform,
+        vec3& translation,
+        vec3& Forward, vec3& Right, vec3& Up,
+        scalar& yaw, scalar& pitch,
+        vec3& scale) {
+
+        // translation in the 4th column
+        translation = transform.column4.asVec3();
+
+        mat3 rot_scale(transform.asMat3());
+        auto x_scale = rot_scale.column1.length();
+        auto y_scale = rot_scale.column2.length();
+        auto z_scale = rot_scale.column3.length();
+        scale = vec3(x_scale, y_scale, z_scale);
+
+        mat3 rot(rot_scale.column1/x_scale, rot_scale.column2 / y_scale, rot_scale.column3 / z_scale);
+
+        Right = rot.column1;
+        Up = rot.column2;
+        Forward = -rot.column3;
+
+        yaw = acos(rot[0][0]) * r2d;
+        pitch = acos(rot[1][1]) * r2d;
+    }
+
+    void Decompose(const mat4& transform,
+        vec3& Forward, vec3& Right, vec3& Up) {
+
+        mat3 rot_scale(transform.asMat3());
+        auto x_scale = rot_scale.column1.length();
+        auto y_scale = rot_scale.column2.length();
+        auto z_scale = rot_scale.column3.length();
+
+        mat3 rot(rot_scale.column1 / x_scale, rot_scale.column2 / y_scale, rot_scale.column3 / z_scale);
+
+        Right = rot.column1;
+        Up = rot.column2;
+        Forward = -rot.column3;
+    }
+
+    void Decompose(const mat4& transform,
+        scalar& yaw, scalar& pitch) {
+
+        mat3 rot_scale(transform.asMat3());
+        auto x_scale = rot_scale.column1.length();
+        auto y_scale = rot_scale.column2.length();
+        auto z_scale = rot_scale.column3.length();
+
+        mat3 rot(rot_scale.column1 / x_scale, rot_scale.column2 / y_scale, rot_scale.column3 / z_scale);
+
+        yaw = acos(rot[0][0]) * r2d;
+        pitch = acos(rot[1][1]) * r2d;
+    }
+    /*
     void Decompose(const mat4& transform, vec3& translation) {
         translation = transform.column4.asVec3();
     }
@@ -242,6 +296,7 @@ namespace math {
     void Decompose(const mat4& transform, vec3& Translation, quat& Rotation, vec3& Scale) {
         ENGINE_LOG_WARN("Decompose transform into T/R/S not implemented yet!");
     }
+    */
 
     /* Interpolation functions */
     scalar lerp(scalar a, scalar b, scalar f) {

@@ -19,6 +19,9 @@ namespace Engine {
             // Bind-pose transform
             math::vec3 position;
             math::quat orientation;
+
+            // TODO: REMOVE THIS
+            math::mat4 Transform;
         };
 
         struct Vert {

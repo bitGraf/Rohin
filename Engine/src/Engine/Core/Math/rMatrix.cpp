@@ -338,7 +338,7 @@ namespace math {
         // TODO: float formatting
         // [1,2,3,4;4,5,6,7;9,10,10,12;13,14,15,16]
         return os << '[' << m.row1() << ';' << m.row2()
-            << ';' << m.row3() << ';' << m.row3() << ']';
+            << ';' << m.row3() << ';' << m.row4() << ']';
     }
 
     vec4 mat4::row1() const { return vec4(column1[0], column2[0], column3[0], column4[0]); }

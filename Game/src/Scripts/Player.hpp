@@ -20,9 +20,11 @@ public:
         LOG_ASSERT(colliderComponent,  "PlayerController could not find a transform component");
 
         // Pos, Yaw, Pitch, Roll, Forward, Right, Up
-        math::Decompose(transformComponent->Transform, position);
-        math::Decompose(transformComponent->Transform, Forward, Right, Up);
-        math::Decompose(transformComponent->Transform, yaw, pitch);
+        //math::Decompose(transformComponent->Transform, position);
+        //math::Decompose(transformComponent->Transform, Forward, Right, Up);
+        //math::Decompose(transformComponent->Transform, yaw, pitch);
+
+        math::Decompose(transformComponent->Transform, position, Forward, Right, Up, yaw, pitch, scale);
 
         hull_offset = math::vec3(0, .5, 0);
         m_floorAngleLimit = 35;
@@ -206,6 +208,9 @@ public:
 
             auto& transform = transformComponent->Transform;
             math::CreateTransform(transform, position, yaw, pitch);
+            mat4 sc;
+            math::CreateScale(sc, scale);
+            transform = transform * sc;
             math::Decompose(transform, Forward, Right, Up);
 
             //transform = mat4();
@@ -234,6 +239,7 @@ private:
     math::vec3 Forward, Right, Up;
     math::vec3 position;
     math::vec3 velocity;
+    math::vec3 scale;
     float yaw, pitch;
     math::vec3 ghostPosition;
     math::vec3 m_floorUp;

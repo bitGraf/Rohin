@@ -341,14 +341,24 @@ namespace math {
 
     void CreateViewFromTransform(mat4& matrix, const mat4& transform);
 
-    void Decompose(const mat4& transform, vec3& translation);
-    void Decompose(const mat4& transform, quat& rotation);
-    void Decompose(const mat4& transform, scalar& yaw, scalar& pitch);
-    void Decompose(const mat4& transform, scalar& yaw, scalar& pitch, scalar& roll);
-    void Decompose(const mat4& transform, vec3& Forward, vec3& Right, vec3& Up);
+    void Decompose(const mat4& transform, 
+                   vec3& translation,
+                   vec3& Forward, vec3& Right, vec3& Up, 
+                   scalar& yaw, scalar& pitch, 
+                   vec3& scale);
+    void Decompose(const mat4& transform, 
+                   vec3& Forward, vec3& Right, vec3& Up);
+    void Decompose(const mat4& transform, 
+                   scalar& yaw, scalar& pitch);
 
-    void Decompose(const mat4& transform, vec3& Translation, mat3& Rotation, vec3& Scale);
-    void Decompose(const mat4& transform, vec3& Translation, quat& Rotation, vec3& Scale);
+    //void Decompose(const mat4& transform, vec3& translation);
+    //void Decompose(const mat4& transform, quat& rotation);
+    //void Decompose(const mat4& transform, scalar& yaw, scalar& pitch);
+    //void Decompose(const mat4& transform, scalar& yaw, scalar& pitch, scalar& roll);
+    //void Decompose(const mat4& transform, vec3& Forward, vec3& Right, vec3& Up);
+
+    //void Decompose(const mat4& transform, vec3& Translation, mat3& Rotation, vec3& Scale);
+    //void Decompose(const mat4& transform, vec3& Translation, quat& Rotation, vec3& Scale);
 
     vec3 TransformPointByQuaternion(const quat& rotation, const vec3& point);
     vec3 TransformPointByMatrix4x4(const mat4& rotation, const vec3& point);

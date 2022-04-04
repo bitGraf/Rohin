@@ -119,8 +119,8 @@ void TestViewMatrixTransformation() {
     math::CreateTransform(transform, vec3(2, 3, 5), 30, 75);
     vec3 position;
     scalar yaw, pitch;
-    math::Decompose(transform, yaw, pitch);
-    math::Decompose(transform, position);
+    //math::Decompose(transform, yaw, pitch);
+    //math::Decompose(transform, position);
     vec3 vert(5.0f, -2.0f, 7.5f);
     vec4 v(vert, 1.0f);
 

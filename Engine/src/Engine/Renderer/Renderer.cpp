@@ -813,7 +813,7 @@ namespace Engine {
             Renderer::SubmitLine(D, A, math::vec4(1, 1, .5f, 1));
 
             // draw bone name
-            math::vec4 screenSpace = (s_Data.Lights.projection * s_Data.Lights.view * math::vec4(start, 1));
+            math::vec4 screenSpace = (s_Data.Lights.projection * s_Data.Lights.view * math::vec4(end, 1));
             screenSpace /= screenSpace.w;
             screenSpace += math::vec4(1, 1, 1, 1);
             screenSpace *= 0.5f;

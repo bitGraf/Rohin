@@ -44,52 +44,27 @@ namespace Engine {
 
         // read md5mesh files
         MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
-        MeshCatalog::Register("mesh_guard", "Data/Models/guard/guard.md5mesh", FileFormat::MD5_Text);
-        MeshCatalog::Register("mesh_tentacle", "Data/Models/tentacle/tentacle.md5mesh", FileFormat::MD5_Text);
+        MeshCatalog::Register("mesh_test", "Data/Models/guard/guard.md5mesh", FileFormat::MD5_Text);
 
         // read animation files
-        AnimCatalog::Register("tentacle_swing", "Data/Models/tentacle/tentacle_swing.md5anim", FileFormat::MD5_Text);
-        AnimCatalog::Register("guard_walk", "Data/Models/guard/Walking.md5anim", FileFormat::MD5_Text);
+        AnimCatalog::Register("anim_test", "Data/Models/guard/Walking.md5anim", FileFormat::MD5_Text);
 
         // Player
         {
             auto player = scene->CreateGameObject("Player");
-            auto mesh = MeshCatalog::Get("mesh_guard");
-            auto anim = AnimCatalog::Get("guard_walk");
+            auto mesh = MeshCatalog::Get("mesh_test");
+            auto anim = AnimCatalog::Get("anim_test");
 
             player.AddComponent<MeshRendererComponent>(mesh);
             player.AddComponent<MeshAnimationComponent>(anim);
             player.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(player);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
-            math::CreateTranslation(trans, math::vec3(0, 1, 0));
+            //math::CreateTranslation(trans, math::vec3(0, 1, 0));
+            math::CreateTransform(trans, math::mat3(), math::vec3(0, 1, 0), math::vec3(1, 1, 1));
 
             UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
-        }
-
-        // Tentacles
-        {
-            std::vector<math::vec3> tentacle_positions = {
-                {3,0,3},
-                {-3,0,3},
-                {-3,0,-3},
-                {3,0,-3}
-            };
-            for (int n = 0; n < tentacle_positions.size(); n++) {
-                break;
-                auto tentacle = scene->CreateGameObject("Tentacle " + std::to_string(n));
-                auto mesh = MeshCatalog::Get("mesh_tentacle");
-                auto anim = AnimCatalog::Get("tentacle_swing");
-
-                tentacle.AddComponent<MeshRendererComponent>(mesh);
-                tentacle.AddComponent<MeshAnimationComponent>(anim);
-
-                auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
-                math::CreateTranslation(trans, tentacle_positions[n]);
-
-                UID_t hull = cWorld.CreateNewCubeHull(tentacle_positions[n] + math::vec3(0, 1.501f, 0), 1, 3, 1);
-            }
         }
 
         // Platform

@@ -47,50 +47,19 @@ Engine::Application* Engine::CreateApplication() {
 #include <string>
 #include <vector>
 #include <unordered_map>
-
-struct Mesh {
-    int x;
-    float y;
-
-    void load(const std::string& f) {}
-};
-
-struct mCatalog {
-    std::unordered_map<std::string, Mesh*> Data;
-
-    void Register(const std::string& key, const std::string& filename) {
-        // check if this key is already registered
-        if (Data.find(key) == Data.end()) {
-            // not registered yet.
-            Mesh* newMesh = new Mesh();
-            newMesh->load(filename);
-            Data.emplace(key, newMesh);
-        }
-    }
-
-    void Create() {
-        // memory pool??
-        Data.clear();
-    }
-
-    void Destroy() {
-        for (const auto& it : Data) {
-            delete it.second;
-        }
-        Data.clear();
-    }
-
-    Mesh* Get(const std::string& key) {
-        // check if this key exists
-        if (Data.find(key) == Data.end()) {
-            return nullptr;
-        }
-
-        return Data[key];
-    }
-};
+#include "Engine/Core/GameMath.hpp"
+#include <iostream>
 
 int main(int argc, char** argv) {
+    using namespace math;
+    
+    math::mat4 trans;
+    math::CreateTransform(trans, math::mat3(), math::vec3(0, 1, 0), math::vec3(1, .1, 1));
+    std::cout << trans << std::endl;
+    vec3 v(1, 1, -1);
+    std::cout << v << std::endl;
+    v = math::TransformPointByMatrix4x4(trans, v);
+    std::cout << v << std::endl;
 
     system("pause");
     return 0;

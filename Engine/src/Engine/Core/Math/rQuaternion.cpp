@@ -18,13 +18,16 @@ namespace math {
         : x(xyz.x), y(xyz.y), z(xyz.z), w(_w) {}
 
     void quat::reconstructW() {
-        /*float t = 1.0f - x * x - y * y - z * z;
+        float t = 1.0f - x * x - y * y - z * z;
 
-        if (t < 0.0f)
+        if (t < 0.0f) {
             w = 0.0f;
-        else
-            w = sqrtf(t);*/
-        w = sqrtf(fabs(1.0f - x * x - y * y - z * z));
+            normalize();
+        } else {
+            w = sqrtf(t);
+        }
+
+        //w = sqrtf(fabs(1.0f - x * x - y * y - z * z));
     }
 
     scalar quat::length_2() const {
