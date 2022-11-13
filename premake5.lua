@@ -18,10 +18,12 @@ IncludeDir["GLAD"] = "%{wks.location}/Engine/deps/GLAD/include"
 IncludeDir["ImGui"] = "%{wks.location}/Engine/deps/imgui"
 IncludeDir["OpenAL_soft"] = "%{wks.location}/Engine/deps/OpenAL_soft/include"
 
-include "Engine/deps/GLFW"
-include "Engine/deps/GLAD"
-include "Engine/deps/imgui"
-include "Engine/deps/OpenAL_soft"
+group "Deps"
+    include "Engine/deps/GLFW"
+    include "Engine/deps/GLAD"
+    include "Engine/deps/imgui"
+    include "Engine/deps/OpenAL_soft"
+group "" -- end of "Deps"
 
 project "Engine"
     location "Engine"
@@ -88,17 +90,17 @@ project "Engine"
         }
     
     filter "configurations:Debug"
-        defines "RH_DEBUG"
+        defines { "RH_DEBUG", "_DEBUG" }
         runtime "Debug"
         symbols "on"
     
     filter "configurations:Release"
-        defines "RH_RELEASE"
+        defines { "RH_RELEASE", "NDEBUG" }
         runtime "Release"
         optimize "on"
 
     filter "configurations:Dist"
-        defines "RH_DIST"
+        defines { "RH_DIST", "NDEBUG" }
         runtime "Release"
         optimize "on"
 
@@ -111,7 +113,8 @@ project "Game"
     cppdialect "C++17"
     staticruntime "On"
 
-    targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    --targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+    targetdir ("Game/run_tree")
     objdir ("bin-intermediate/" .. outputdir .. "/%{prj.name}")
 
     files
@@ -142,28 +145,33 @@ project "Game"
         "ROHIN_GAME"
     }
 
+    debugdir "Game/run_tree/"
+
     -- Clean function --
     if _ACTION == "clean" then
         os.remove("Game/Game.vcxproj")
         os.remove("Game/Game.vcxproj.filters")
         os.remove("Game/Game.vcxproj.user")
+        os.remove("Game/run_tree/Game.exe")
+        os.remove("Game/run_tree/Game.ilk")
+        os.remove("Game/run_tree/Game.pdb")
      end
 
     filter "system:windows"
         systemversion "latest"
     
     filter "configurations:Debug"
-        defines "RH_DEBUG"
+        defines { "RH_DEBUG", "_DEBUG" }
         runtime "Debug"
         symbols "on"
     
     filter "configurations:Release"
-        defines "RH_RELEASE"
+        defines { "RH_RELEASE", "NDEBUG" }
         runtime "Release"
         optimize "on"
 
     filter "configurations:Dist"
-        defines "RH_DIST"
+        defines { "RH_DIST", "NDEBUG" }
         runtime "Release"
         optimize "on"
 

@@ -48,7 +48,7 @@ namespace Engine {
                 float orthoTop = m_OrthographicSize * 0.5f;
                 float orthoBot = -m_OrthographicSize * 0.5f;
 
-                m_Projection.orthoProjection(orthoLeft, orthoRight, orthoBot, orthoTop, m_OrthographicNear, m_OrthographicFar);
+                math::CreateOrthoProjection(m_Projection, orthoLeft, orthoRight, orthoBot, orthoTop, m_OrthographicNear, m_OrthographicFar);
                 return;
             }
 

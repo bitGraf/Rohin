@@ -5,8 +5,12 @@
 
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/TextRenderer.hpp"
-#include "Engine/Resources/MaterialCatalog.hpp"
+#include "Engine/Renderer/SpriteRenderer.hpp"
 #include "Engine/Sound/SoundEngine.hpp"
+
+#include "Engine/Resources/MaterialCatalog.hpp"
+#include "Engine/Resources/MeshCatalog.hpp"
+#include "Engine/Resources/ResourceManager.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -19,25 +23,44 @@ namespace Engine {
         ENGINE_LOG_ASSERT(!s_Instance, "App already exists");
         s_Instance = this;
 
+        PrintConfiguration();
+
         m_Window = std::unique_ptr<Window>(Window::Create());
         m_Window->SetEventCallback(BIND_EVENT_FN(Application::HandleEvent));
 
+        ResourceManager::CreateBuffers();
+
         Renderer::Init();
         TextRenderer::Init();
-        MaterialCatalog::Init();
+        SpriteRenderer::Init();
         SoundEngine::Init();
 
+        MaterialCatalog::Create();
+        MeshCatalog::Create();
+
+        // create ImGUI renderer
         m_GuiLayer = new GuiLayer();
-        PushOverlay(m_GuiLayer);
+        m_GuiLayer->OnAttach();
         BENCHMARK_END_SESSION();
     }
 
     Application::~Application() {
         BENCHMARK_START_SESSION("Application Shutdown", "benchmark/shutdown.json");
-        Renderer::Shutdown();
-        TextRenderer::Shutdown();
-        MaterialCatalog::Shutdown();
+        if (m_CurrentScene) {
+            m_CurrentScene->OnDetach();
+            delete m_CurrentScene;
+            m_CurrentScene = nullptr;
+        }
+        MeshCatalog::Destroy();
+        MaterialCatalog::Destroy();
         SoundEngine::Shutdown();
+        SpriteRenderer::Shutdown();
+        TextRenderer::Shutdown();
+        Renderer::Shutdown();
+
+        ResourceManager::DestroyBuffers();
+
+        m_GuiLayer->OnDetach();
         BENCHMARK_END_SESSION();
     }
 
@@ -50,12 +73,11 @@ namespace Engine {
         dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
         dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 
-        for (auto it = m_layerStack.rbegin(); it != m_layerStack.rend(); ++it) {
-            if ((*it)->IsActive()) {
-                (*it)->OnEvent(event);
-                if (event.Handled)
-                    break;
-            }
+        if (m_CurrentScene) {
+            m_CurrentScene->OnEvent(event);
+            //if (event.Handled) {
+            //    // do something I guess?
+            //}
         }
     }
 
@@ -68,34 +90,33 @@ namespace Engine {
             m_LastFrameTime = time;
 
             SoundEngine::Update(timestep);
+            Input::Poll(timestep);
 
             if (!m_Minimized) {
                 /* Run all engine layer updates */
-                for (EngineLayer* layer : m_layerStack) {
-                    if (layer->IsActive()) {
-                        layer->OnUpdate(timestep);
-                    }
-                }
-            }
+                if (m_CurrentScene) {
+                    m_CurrentScene->OnUpdate(timestep);
 
-            /* put on render thread */
-            m_GuiLayer->Begin();
-            for (EngineLayer* layer : m_layerStack) {
-                if (layer->IsActive()) {
-                    layer->OnGuiRender();
+                    m_GuiLayer->Begin();
+                    m_CurrentScene->OnGuiRender();
+                    m_GuiLayer->End();
                 }
             }
-            m_GuiLayer->End();
 
             m_Window->Update();
 
-            if (nextRemoveLayer) {
-                RemoveLayer(nextRemoveLayer);
-                nextRemoveLayer = nullptr;
-            }
-            if (nextLayer) { // new layer to add
-                PushLayer(nextLayer);
-                nextLayer = nullptr;
+            // transition scene
+            if (m_NextScene) {
+                if (m_CurrentScene) {
+                    // remove current scene
+                    m_CurrentScene->OnDetach();
+                    delete m_CurrentScene;
+                    m_CurrentScene = nullptr;
+                }
+
+                m_CurrentScene = m_NextScene;;
+                m_CurrentScene->OnAttach();
+                m_NextScene = nullptr;
             }
         }
         BENCHMARK_END_SESSION();
@@ -118,35 +139,7 @@ namespace Engine {
         return false;
     }
 
-    void Application::PushLayer(EngineLayer* layer) {
-        m_layerStack.PushLayer(layer);
-        layer->OnAttach();
-        layer->m_LayerActive = true;
-    }
-
-    void Application::PushOverlay(EngineLayer* overlay) {
-        m_layerStack.PushOverlay(overlay);
-        overlay->OnAttach();
-        overlay->m_LayerActive = true;
-    }
-
-    void Application::RemoveLayer(EngineLayer* layer) {
-        layer->m_LayerActive = false;
-        m_layerStack.PopLayer(layer);
-
-        // TODO: better way of handling this?
-        for (auto it = m_layerStack.rbegin(); it != m_layerStack.rend(); it++) {
-            if ((*it)->GetName().compare("Game") == 0) {
-                (*it)->m_LayerActive = true;
-            }
-        }
-    }
-
-    void Application::PushLayerNextFrame(EngineLayer* layer) {
-        nextLayer = layer;
-    }
-
-    void Application::RemoveLayerNextFrame(EngineLayer* layer) {
-        nextRemoveLayer = layer;
+    void Application::PushNewScene(Scene* newScene) {
+        m_NextScene = newScene;
     }
 }

@@ -3,15 +3,22 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 
+#include "Engine/Resources/MD5MeshLoader.hpp"
+
 namespace Engine {
 
-    class MeshCatalog {
-    public:
-        static void Register(const std::string& mesh_name, const std::string& mesh_path, bool nbt);
-        static Ref<Mesh> Get(const std::string& mesh_name);
-        static void Clear();
+    enum class FileFormat : unsigned char {
+        None = 0,
+        NBT_Basic,
+        MD5_Text
+    };
 
-    private:
-        MeshCatalog() {}
+    namespace MeshCatalog {
+        // Register a mesh from file
+        void Register(const std::string& mesh_name, const std::string& filepath, FileFormat file_type);
+        Mesh* Get(const std::string& mesh_name);
+        
+        void Create();
+        void Destroy();
     };
 }

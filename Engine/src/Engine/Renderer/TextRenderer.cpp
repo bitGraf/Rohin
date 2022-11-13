@@ -14,7 +14,7 @@ namespace Engine {
         Ref<VertexArray> TextQuad;
         math::mat4 orthoMat;
 
-        DynamicFont font;
+        std::unordered_map<std::string, DynamicFont*> fonts;
     };
 
     static TextRendererData s_Data;
@@ -23,14 +23,14 @@ namespace Engine {
         BENCHMARK_FUNCTION();
 
         s_Data.ShaderLibrary = std::make_unique<ShaderLibrary>();
-        auto textShader = GetShaderLibrary()->Load("run_tree/Data/Shaders/Text.glsl");
+        auto textShader = GetShaderLibrary()->Load("Data/Shaders/Text.glsl");
 
         // create font-rendering globals
-        s_Data.orthoMat.orthoProjection(0, 1280, 720, 0, -1, 1);
+        math::CreateOrthoProjection(s_Data.orthoMat, 0, 1280, 720, 0, -1, 1);
 
         // initialize texture shader values
         textShader->Bind();
-        textShader->SetMat4("u_Projection", s_Data.orthoMat);
+        textShader->SetMat4("r_orthoProjection", s_Data.orthoMat);
         textShader->SetFloat("r_fontTex", 0);
 
         // create Text quad
@@ -63,7 +63,13 @@ namespace Engine {
         }
 
         // load fonts
-        s_Data.font.create("run_tree/Data/Fonts/UbuntuMono-Regular.ttf", 20);
+        s_Data.fonts.emplace("font_big", new DynamicFont());
+        s_Data.fonts.emplace("font_medium", new DynamicFont());
+        s_Data.fonts.emplace("font_small", new DynamicFont());
+
+        s_Data.fonts["font_big"]->create("Data/Fonts/UbuntuMono-Regular.ttf", 48);
+        s_Data.fonts["font_medium"]->create("Data/Fonts/UbuntuMono-Regular.ttf", 32);
+        s_Data.fonts["font_small"]->create("Data/Fonts/UbuntuMono-Regular.ttf", 20);
     }
 
     void TextRenderer::Shutdown() {
@@ -85,7 +91,7 @@ namespace Engine {
 
     void TextRenderer::OnWindowResize(uint32_t width, uint32_t height)
     {
-        s_Data.orthoMat.orthoProjection(0, width, height, 0, -1, 1);
+        math::CreateOrthoProjection(s_Data.orthoMat, 0, width, height, 0, -1, 1);
         //RenderCommand::SetViewport(0, 0, width, height);
     }
 
@@ -94,40 +100,48 @@ namespace Engine {
     }
 
     void TextRenderer::SubmitText(const std::string& text, float startX, float startY, math::vec3 color, TextAlignment align) {
+        SubmitText("font_small", text, startX, startY, color, align);
+    }
+
+    void TextRenderer::SubmitText(const std::string& fontName, const std::string& text, float startX, float startY, math::vec3 color, TextAlignment align) {
         BENCHMARK_FUNCTION();
 
         auto shader = s_Data.ShaderLibrary->Get("Text");
         shader->Bind();
         s_Data.TextQuad->Bind();
-        s_Data.font.m_ftex->Bind();
+        if (s_Data.fonts.find(fontName) == s_Data.fonts.end()) {
+            ENGINE_LOG_WARN("Could not draw text using font [{0}]", fontName);
+            return;
+        }
+        auto font = s_Data.fonts.at(fontName);
+        font->m_ftex->Bind();
 
         RenderCommand::SetCullFront();
         RenderCommand::DisableDepthTest();
 
-        auto& font = s_Data.font;
         const char* _text = text.c_str();
 
-        if (font.initialized) {
+        if (font->initialized) {
             float x = startX;
             float y = startY;
 
             float hOff, vOff;
-            font.getTextOffset(&hOff, &vOff, align, font.getLength(_text), font.m_fontSize);
+            font->getTextOffset(&hOff, &vOff, align, font->getLength(_text), font->m_fontSize);
 
             shader->SetVec3("r_textColor", color);
-            shader->SetMat4("r_orthoProjection", s_Data.orthoMat);
+            shader->SetMat4("r_orthoProjection", s_Data.orthoMat); // TODO: don't need these always
 
             while (*_text) {
                 if (*_text == '\n') {
                     //Increase y by one line,
                     //reset x to start
                     x = startX;
-                    y += font.m_fontSize;
+                    y += font->m_fontSize;
                 }
                 if (*_text >= 32 && *_text < 128) {
                     stbtt_aligned_quad q;
                     char c = *_text - 32;
-                    stbtt_GetBakedQuad(reinterpret_cast<stbtt_bakedchar*>(font.cdata), font.m_bitmapRes, font.m_bitmapRes, *_text - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
+                    stbtt_GetBakedQuad(reinterpret_cast<stbtt_bakedchar*>(font->cdata), font->m_bitmapRes, font->m_bitmapRes, *_text - 32, &x, &y, &q, 1);//1=opengl & d3d10+,0=d3d9
 
                     float scaleX = q.x1 - q.x0;
                     float scaleY = q.y1 - q.y0;

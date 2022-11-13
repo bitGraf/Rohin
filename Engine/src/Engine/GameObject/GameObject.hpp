@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Engine/Core/Base.hpp"
-#include "Engine/Scene/Scene.hpp"
+#include "Engine/Scene/Scene3D.hpp"
 
 namespace Engine {
     class GameObject {
     public:
         GameObject()
             : m_GameObjectHandle(0), m_Scene(0) {}
-        GameObject(GameObject_type handle, Scene* scene)
+        GameObject(GameObject_type handle, Scene3D* scene)
             : m_GameObjectHandle(handle), m_Scene(scene) {}
         GameObject(const GameObject& other) = default;
 
@@ -50,10 +50,11 @@ namespace Engine {
         bool operator==(const GameObject& other) const { return (m_GameObjectHandle == other.m_GameObjectHandle) && (m_Scene == other.m_Scene);}
         bool operator!=(const GameObject& other) const { return ~operator==(other); }
 
-        const Scene& GetScene() const { return *m_Scene; }
+        const Scene3D& GetScene() const { return *m_Scene; }
+        Scene3D& GetScene() { return *m_Scene; }
 
     private:
         GameObject_type m_GameObjectHandle{ 0 };
-        Scene* m_Scene = nullptr;
+        Scene3D* m_Scene = nullptr;
     };
 }

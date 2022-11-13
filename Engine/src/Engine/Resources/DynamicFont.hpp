@@ -23,7 +23,7 @@ namespace Engine {
     //private:
         bool initialized = false;
         _bakedchar cdata[96]; // ASCII 32..126 is 95 glyphs
-        Ref<Texture2D> m_ftex;
+        Texture2D* m_ftex;
         f32 m_fontSize;
         u32 m_bitmapRes;
     };

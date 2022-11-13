@@ -17,6 +17,8 @@ namespace Engine {
         static std::shared_ptr<spdlog::logger> _Engine_Logger;
         static std::shared_ptr<spdlog::logger> _Game_Logger;
     };
+
+    void PrintConfiguration();
 }
 
 /* Log macros */

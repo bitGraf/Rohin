@@ -22,7 +22,7 @@ namespace Engine {
         std::string source = ReadFile(path);
         m_ShaderSources = PreProcess(source);
 
-        // run_tree/Data/Shaders/simple.glsl
+        // Data/Shaders/simple.glsl
         auto lastSlash = path.find_last_of("/\\");
         lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
         auto lastDot = path.rfind('.');
@@ -227,8 +227,8 @@ namespace Engine {
 
                 glDeleteShader(shader);
 
+                ENGINE_LOG_ERROR("Shader {0} failed to compile", m_Name);
                 ENGINE_LOG_ERROR("{0}", infoLog.data());
-                ENGINE_LOG_ASSERT(false, "Shader failed to compile");
 
                 return;
             }
@@ -812,17 +812,18 @@ namespace Engine {
 
     void OpenGLShader::UploadUniformMat3(uint32_t location, const math::mat3& value)
     {
-        glUniformMatrix3fv(location, 1, GL_FALSE, &(value._11));
+        glUniformMatrix3fv(location, 1, GL_FALSE, value.ptr());
     }
 
     void OpenGLShader::UploadUniformMat4(uint32_t location, const math::mat4& value)
     {
-        glUniformMatrix4fv(location, 1, GL_FALSE, &(value._11));
+        glUniformMatrix4fv(location, 1, GL_FALSE, value.ptr());
     }
 
     void OpenGLShader::UploadUniformMat4Array(uint32_t location, const math::mat4& values, uint32_t count)
     {
-        glUniformMatrix4fv(location, count, GL_FALSE, &(values._11));
+        ENGINE_LOG_WARN("What the heck is this doing?");
+        glUniformMatrix4fv(location, count, GL_FALSE, values.ptr());
     }
 
     void OpenGLShader::UploadUniformStruct(OpenGLShaderUniformDeclaration* uniform, byte* buffer, uint32_t offset)
@@ -844,8 +845,17 @@ namespace Engine {
             //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
             return;
         }
-        glUniformMatrix4fv(loc, 1, GL_FALSE, &(value._11));
+        glUniformMatrix4fv(loc, 1, GL_FALSE, value.ptr());
 
+    }
+
+    void OpenGLShader::SetVec2(const std::string &name, const math::vec2& value) const {
+        s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
+        if (loc == -1) {
+            //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
+            return;
+        }
+        glUniform2f(loc, value.x, value.y);
     }
 
     void OpenGLShader::SetVec3(const std::string &name, const math::vec3& value) const {

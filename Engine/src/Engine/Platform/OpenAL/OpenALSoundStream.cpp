@@ -45,17 +45,21 @@ namespace Engine {
 
     OpenALSoundStream::~OpenALSoundStream() {}
 
-    void OpenALSoundStream::PlayStream() const {
+    void OpenALSoundStream::StartStream() const {
         alSourceStop(m_source);
         alSourcePlay(m_source);
+    }
+
+    void OpenALSoundStream::StopStream() const {
+        alSourceStop(m_source);
     }
 
     void OpenALSoundStream::PauseStream() const {
         alSourcePause(m_source);
     }
 
-    void OpenALSoundStream::StopStream() const {
-        alSourceStop(m_source);
+    void OpenALSoundStream::ResumeStream() const {
+        alSourcePlay(m_source);
     }
 
     void OpenALSoundStream::SetEffectSlot(u32 slot) {
@@ -64,6 +68,12 @@ namespace Engine {
     }
 
     void OpenALSoundStream::UpdateStream(float dt) {
+        ALenum _state;
+        alGetSourcei(m_source, AL_SOURCE_STATE, &_state);
+        if (_state != AL_PLAYING) {
+            return;
+        }
+
         m_time += dt;
         ALint buffersProcessed = 0;
         alGetSourcei(m_source, AL_BUFFERS_PROCESSED, &buffersProcessed);
@@ -72,7 +82,7 @@ namespace Engine {
         }
 
         while (buffersProcessed--) {
-            printf("%d buffers done (%.2f)\n", buffersProcessed+1, m_time);
+            //printf("%d buffers done (%.2f)\n", buffersProcessed+1, m_time);
 
             ALuint buffer;
             alSourceUnqueueBuffers(m_source, 1, &buffer);

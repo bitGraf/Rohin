@@ -11,11 +11,10 @@
 #include "Engine/Core/MouseButtonCodes.hpp"
 #include "Engine/Core/Input.hpp"
 
-#include "Engine/Scene/Scene.hpp"
+#include "Engine/Scene/Scene3D.hpp"
 #include "Engine/GameObject/GameObject.hpp"
 #include "Engine/GameObject/Components.hpp"
 
-#include "Engine/EngineLayer.hpp"
 #include "Engine/Gui/GuiLayer.hpp"
 //#include "Engine/Editor/EditorLayer.hpp"
 //#include "Engine/Editor/SceneHierarchyPanel.hpp"
@@ -24,6 +23,7 @@
 #include "Engine/Renderer/RenderCommand.hpp"
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Renderer/TextRenderer.hpp"
+#include "Engine/Renderer/SpriteRenderer.hpp"
 #include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/Buffer.hpp"
 #include "Engine/Renderer/VertexArray.hpp"
@@ -32,11 +32,15 @@
 #include "Engine/Renderer/Framebuffer.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 
+/* Sound stuff */
+#include "Engine/Sound/SoundEngine.hpp"
+
 /* Resource stuff */
 #include "Engine/Resources/MeshCatalog.hpp"
 #include "Engine/Resources/MaterialCatalog.hpp"
 #include "Engine/Resources/nbt/nbt.hpp"
+#include "Engine/Resources/MD5MeshLoader.hpp"
 
 /* Dependencies */
 #include "spdlog/spdlog.h"
-#include "imgui/imgui.h"
+//#include "imgui/imgui.h"

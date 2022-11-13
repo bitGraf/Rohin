@@ -1,0 +1,12 @@
+MD5Version 10
+commandline "he"
+
+numMaterials 1
+
+material {
+	shader "tentacle"
+
+	diffusemap  "Data/Images/grid/PNG/Orange/texture_03.png"
+    normalmap   "Data/Images/frog.png"
+    specularmap "Data/Images/frog.png"
+}

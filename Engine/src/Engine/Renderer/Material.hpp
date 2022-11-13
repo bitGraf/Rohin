@@ -27,7 +27,7 @@ namespace Engine {
             buffer.Write((byte*)&value, decl->GetSize(), decl->GetOffset());
         }
 
-        void Set(const std::string& name, const Ref<Texture>& texture)
+        void Set(const std::string& name, Texture* texture)
         {
             auto decl = FindSamplerDeclaration(name);
             uint32_t slot = decl->GetID();
@@ -36,11 +36,11 @@ namespace Engine {
             m_Textures[slot] = texture;
         }
 
-        void Set(const std::string& name, const Ref<Texture2D>& texture) {
-            Set(name, (const Ref<Texture>&)texture);
+        void Set(const std::string& name, Texture2D* texture) {
+            Set(name, (Texture*)texture);
         }
-        void Set(const std::string& name, const Ref<TextureCube>& texture) {
-            Set(name, (const Ref<Texture>&)texture);
+        void Set(const std::string& name, TextureCube* texture) {
+            Set(name, (Texture*)texture);
         }
 
         template<typename T>
@@ -78,7 +78,7 @@ namespace Engine {
 
         Buffer m_VertUniformStorage;
         Buffer m_FragUniformStorage;
-        std::vector<Ref<Texture>> m_Textures;
+        std::vector<Texture*> m_Textures;
     };
 
     class MaterialInstance {
@@ -103,7 +103,7 @@ namespace Engine {
             m_OverriddenValues.insert(name);
         }
 
-        void Set(const std::string& name, const Ref<Texture>& texture) {
+        void Set(const std::string& name, Texture* texture) {
             auto decl = m_Material->FindSamplerDeclaration(name);
             if (!decl)
             {
@@ -116,11 +116,11 @@ namespace Engine {
             m_Textures[slot] = texture;
         }
 
-        void Set(const std::string& name, const Ref<Texture2D>& texture) {
-            Set(name, (const Ref<Texture>&)texture);
+        void Set(const std::string& name, Texture2D* texture) {
+            Set(name, (Texture*)texture);
         }
-        void Set(const std::string& name, const Ref<TextureCube>& texture) {
-            Set(name, (const Ref<Texture>&)texture);
+        void Set(const std::string& name, TextureCube* texture) {
+            Set(name, (Texture*)texture);
         }
 
         template<typename T>
@@ -155,7 +155,7 @@ namespace Engine {
 
         Buffer m_VertStorage;
         Buffer m_FragStorage;
-        std::vector<Ref<Texture>> m_Textures;
+        std::vector<Texture*> m_Textures;
 
         std::unordered_set<std::string> m_OverriddenValues;
     };

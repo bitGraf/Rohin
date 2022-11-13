@@ -47,8 +47,10 @@ namespace Engine {
         static void CreateBackingTrack(const std::string& track, BackingTrackSpec spec);
         static void PlayTrack(const std::string& track);
 
-        static void StartSteam();
-        static void StopSteam();
+        static void StartStream();
+        static void StopStream();
+        static void PauseStream();
+        static void ResumeStream();
 
         static void SetListenerPosition(math::vec3 position);
         static void SetListenerVelocity(math::vec3 velocity);

@@ -5,7 +5,13 @@
 #include "Engine/Renderer/Framebuffer.hpp"
 #include "Engine/Renderer/Buffer.hpp"
 #include "Engine/Renderer/TextRenderer.hpp"
+
 #include "Engine/Sound/SoundEngine.hpp"
+#include "Engine/Core/Input.hpp"
+
+#include "Engine/Resources/MD5MeshLoader.hpp"
+
+#include "Engine/Resources/MaterialCatalog.hpp"
 
 namespace Engine {
 
@@ -22,10 +28,11 @@ namespace Engine {
 
     struct RendererData {
         std::unique_ptr<Engine::ShaderLibrary> ShaderLibrary;
-        Ref<TextureCube> Skybox;
+        TextureCube* Skybox;
 
         Ref<VertexArray> FullscreenQuad;
         Ref<VertexArray> debug_coordinate_axis; //lineRender
+        Ref<VertexArray> Line;
 
         // Render buffers
         Ref<Framebuffer> gBuffer;
@@ -41,6 +48,7 @@ namespace Engine {
         bool ToneMap;
         bool Gamma;
         bool soundDebug;
+        bool controllerDebug;
     };
 
     RendererData s_Data;
@@ -76,20 +84,23 @@ namespace Engine {
         RenderCommand::Init();
 
         s_Data.ShaderLibrary = std::make_unique<ShaderLibrary>();
-        //Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PBR_static.glsl");
-        //Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Skybox.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Line.glsl");
-        //Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Normals.glsl");
+        //Renderer::GetShaderLibrary()->Load("Data/Shaders/PBR_static.glsl");
+        //Renderer::GetShaderLibrary()->Load("Data/Shaders/Skybox.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Line.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Line3D.glsl");
+        //Renderer::GetShaderLibrary()->Load("Data/Shaders/Normals.glsl");
 
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/PrePass.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Lighting.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/SSAO.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Screen.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Sobel.glsl");
-        Renderer::GetShaderLibrary()->Load("run_tree/Data/Shaders/Mix.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/PrePass.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/PrePass_Anim.glsl");
 
-        //s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/DebugCubeMap.tga");
-        s_Data.Skybox = TextureCube::Create("run_tree/Data/Images/snowbox.png");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Lighting.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/SSAO.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Screen.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Sobel.glsl");
+        Renderer::GetShaderLibrary()->Load("Data/Shaders/Mix.glsl");
+
+        //s_Data.Skybox = TextureCube::Create("Data/Images/DebugCubeMap.tga");
+        s_Data.Skybox = MaterialCatalog::GetTextureCube("Data/Images/snowbox.png");
 
         // Create fullscreen quad
         {
@@ -164,6 +175,32 @@ namespace Engine {
             s_Data.debug_coordinate_axis->SetIndexBuffer(ebo);
             s_Data.debug_coordinate_axis->Unbind();
         }
+        // create Line
+        {
+            struct _vertex
+            {
+                float Position; // can we remove this entirely?
+            };
+
+            _vertex* data = new _vertex[2];
+
+            data[0].Position = 0;
+            data[1].Position = 1;
+
+            u32 indices[2] = { 0, 1 };
+
+            auto vbo = VertexBuffer::Create(data, 2 * sizeof(_vertex));
+            vbo->SetLayout({
+                { ShaderDataType::Float, "a_Position" }
+                });
+            auto ebo = IndexBuffer::Create(indices, 2);
+
+            s_Data.Line = VertexArray::Create();
+            s_Data.Line->Bind();
+            s_Data.Line->AddVertexBuffer(vbo);
+            s_Data.Line->SetIndexBuffer(ebo);
+            s_Data.Line->Unbind();
+        }
 
         // create the pipeline buffers
         FramebufferSpecification gBufferSpec;
@@ -212,6 +249,7 @@ namespace Engine {
         s_Data.ToneMap = true;
         s_Data.Gamma = true;
         s_Data.soundDebug = false;
+        s_Data.controllerDebug = false;
 
         Precompute();
     }
@@ -275,17 +313,17 @@ namespace Engine {
         memcpy(s_Data.Lights.pointLights, pointLights, sizeof(Light)*numPointLights);
         memcpy(s_Data.Lights.spotLights, spotLights, sizeof(Light)*numSpotLights);
 
-        math::mat4 normalMatrix = math::mat4(math::mat3(ViewMatrix)); //TODO: check the math to see if this is needed
+        math::mat4 normalMatrix = math::mat4(ViewMatrix.asMat3(), 1); //TODO: check the math to see if this is needed
 
         // recaulculate position and direction in view-space
         for (int n = 0; n < numPointLights; n++) {
-            s_Data.Lights.pointLights[n].position = (ViewMatrix * math::vec4(s_Data.Lights.pointLights[n].position, 1)).XYZ();
+            s_Data.Lights.pointLights[n].position = (ViewMatrix * math::vec4(s_Data.Lights.pointLights[n].position, 1)).asVec3();
         }
         for (int n = 0; n < numSpotLights; n++) {
-            s_Data.Lights.spotLights[n].position = (ViewMatrix * math::vec4(s_Data.Lights.spotLights[n].position, 1)).XYZ();
-            s_Data.Lights.spotLights[n].direction = (normalMatrix * math::vec4(s_Data.Lights.spotLights[n].direction, 0)).XYZ().get_unit();
+            s_Data.Lights.spotLights[n].position = (ViewMatrix * math::vec4(s_Data.Lights.spotLights[n].position, 1)).asVec3();
+            s_Data.Lights.spotLights[n].direction = (normalMatrix * math::vec4(s_Data.Lights.spotLights[n].direction, 0)).asVec3().get_unit();
         }
-        s_Data.Lights.sun.direction = (normalMatrix * math::vec4(s_Data.Lights.sun.direction, 0)).XYZ().get_unit();
+        s_Data.Lights.sun.direction = (normalMatrix * math::vec4(s_Data.Lights.sun.direction, 0)).asVec3().get_unit();
 
         // for debugging
         s_Data.Lights.projection = projection;
@@ -312,6 +350,11 @@ namespace Engine {
     void Renderer::ToggleDebugSoundOutput() {
         s_Data.soundDebug = !s_Data.soundDebug;
         ENGINE_LOG_INFO("Showing Sound Debug: {0}", s_Data.soundDebug);
+    }
+
+    void Renderer::ToggleDebugControllerOutput() {
+        s_Data.controllerDebug = !s_Data.controllerDebug;
+        ENGINE_LOG_INFO("Showing Controller Debug: {0}", s_Data.controllerDebug);
     }
 
     void Renderer::UploadLights(const Ref<Shader> shader) {
@@ -346,9 +389,10 @@ namespace Engine {
         const Light& sun) {
         BENCHMARK_FUNCTION();
 
-        math::mat4 ViewMatrix = math::invertViewMatrix(transform);
+        math::mat4 ViewMatrix;
+        math::CreateViewFromTransform(ViewMatrix, transform);
         math::mat4 ProjectionMatrix = camera.GetProjection();
-        math::vec3 camPos = transform.col4().XYZ();
+        math::vec3 camPos = transform.column4.asVec3();
         UpdateLighting(ViewMatrix, numPointLights, pointLights, numSpotLights, spotLights, sun, ProjectionMatrix);
 
         // PrePass Shader
@@ -363,6 +407,19 @@ namespace Engine {
         prePassShader->SetFloat("r_AmbientTexToggle",   1.0f);
         prePassShader->SetFloat("r_EmissiveTexToggle",  1.0f);
         prePassShader->SetFloat("r_gammaCorrect", s_Data.Gamma ? 1.0 : 0.0);
+
+        // PrePass_Anim Shader
+        auto prePassAnimShader = s_Data.ShaderLibrary->Get("PrePass_Anim");
+        prePassAnimShader->Bind();
+        prePassAnimShader->SetMat4("r_Projection", ProjectionMatrix);
+        prePassAnimShader->SetMat4("r_View", ViewMatrix);
+        prePassAnimShader->SetFloat("r_AlbedoTexToggle", 1.0f);
+        prePassAnimShader->SetFloat("r_NormalTexToggle", 0.0f);
+        prePassAnimShader->SetFloat("r_MetalnessTexToggle", 1.0f);
+        prePassAnimShader->SetFloat("r_RoughnessTexToggle", 1.0f);
+        prePassAnimShader->SetFloat("r_AmbientTexToggle", 1.0f);
+        prePassAnimShader->SetFloat("r_EmissiveTexToggle", 1.0f);
+        prePassAnimShader->SetFloat("r_gammaCorrect", s_Data.Gamma ? 1.0 : 0.0);
 
         // Lighting Pass
         auto lightingShader = s_Data.ShaderLibrary->Get("Lighting");
@@ -403,6 +460,12 @@ namespace Engine {
         lineShader->SetFloat("r_LineFadeEnd", 20);
         lineShader->SetFloat("r_LineFadeMaximum", 0.5f);
         lineShader->SetFloat("r_LineFadeMinimum", 0.25f);
+
+        // 3D Line shader
+        auto line3DShader = s_Data.ShaderLibrary->Get("Line3D");
+        line3DShader->Bind();
+        line3DShader->SetMat4("r_Projection", ProjectionMatrix);
+        line3DShader->SetMat4("r_View", ViewMatrix);
 
         // Sobel pass
         auto sobelShader = s_Data.ShaderLibrary->Get("Sobel");
@@ -509,6 +572,25 @@ namespace Engine {
             TextRenderer::SubmitText(text, startx, starty += fontSize, math::vec3(.6f, .8f, .75f));
         }
 
+        // Render input debug
+        if (s_Data.controllerDebug) {
+            const auto& state = Input::GetState();
+            float startx = 10, starty = 150;
+            if (s_Data.soundDebug) startx = 250;
+            float fontSize = 20;
+            char text[64];
+            if (!state.present || !state.valid) {
+                TextRenderer::SubmitText("Gamepad Status: disconnected", startx, starty, math::vec3(.6f, .8f, .75f));
+            } else {
+                sprintf_s(text, 64, "Gamepad state: [%s]", state.name);
+                TextRenderer::SubmitText(text, startx, starty, math::vec3(.6f, .8f, .75f));
+                for (int n = 0; n < 6; n++) {
+                    sprintf_s(text, 64, "Axis %d: %.2f", n, state.axes[n]);
+                    TextRenderer::SubmitText(text, startx + 15, starty += fontSize, math::vec3(.6f, .8f, .75f));
+                }
+            }
+        }
+
         s_Data.screenBuffer->Unbind();
     }
 
@@ -584,7 +666,7 @@ namespace Engine {
         //RenderCommand::SetWireframe(false);
     }
 
-    void Renderer::SubmitMesh(const Ref<Mesh>& mesh, const math::mat4& transform) {
+    void Renderer::SubmitMesh(const Mesh* mesh, const math::mat4& transform) {
         BENCHMARK_FUNCTION();
 
         mesh->GetVertexArray()->Bind();
@@ -592,14 +674,46 @@ namespace Engine {
         shader->Bind();
 
         auto& materials = mesh->GetMaterials();
-        for (Submesh& submesh : mesh->GetSubmeshes()) {
+        for (const Submesh& submesh : mesh->GetSubmeshes()) {
             auto material = materials[submesh.MaterialIndex];
             material->Bind();
 
             shader->SetMat4("r_Transform", transform * submesh.Transform);
 
             //RenderCommand::DrawIndexed(mesh->GetVertexArray());
-            RenderCommand::DrawSubIndexed(submesh.BaseIndex, submesh.BaseVertex, submesh.IndexCount);
+            RenderCommand::DrawSubIndexed(submesh.BaseIndex, 0, submesh.IndexCount);
+        }
+    }
+
+    // Animation variant
+    void Renderer::SubmitMesh(const Mesh* mesh, const math::mat4& transform, md5::Animation* anim) {
+        BENCHMARK_FUNCTION();
+
+        mesh->GetVertexArray()->Bind();
+        auto shader = mesh->GetMeshShader();
+        shader->Bind();
+
+        // set bone transforms
+        const auto& bindPose = mesh->GetBindPose();
+        const auto& Pose = anim->AnimatedSkeleton.Joints;
+        assert(bindPose.size() == Pose.size());
+        for (int n = 0; n < bindPose.size(); n++) {
+            const auto& bone0 = bindPose[n];
+            const auto& bone1 = Pose[n];
+
+            //shader->SetMat4("r_Bones[" + std::to_string(n) + "]", bone1.transform * bone0.invTransform);
+            shader->SetMat4("r_Bones[" + std::to_string(n) + "]", math::mat4());
+        }
+
+        auto& materials = mesh->GetMaterials();
+        for (const Submesh& submesh : mesh->GetSubmeshes()) {
+            auto material = materials[submesh.MaterialIndex];
+            material->Bind();
+
+            shader->SetMat4("r_Transform", transform * submesh.Transform);
+
+            //RenderCommand::DrawIndexed(mesh->GetVertexArray());
+            RenderCommand::DrawSubIndexed(submesh.BaseIndex, 0, submesh.IndexCount);
         }
     }
 
@@ -611,8 +725,20 @@ namespace Engine {
         for (Submesh& submesh : mesh->GetSubmeshes()) {
             shader->SetMat4("r_Transform", transform * submesh.Transform);
 
-            RenderCommand::DrawSubIndexed_points(submesh.BaseIndex, submesh.BaseVertex, submesh.IndexCount);
+            RenderCommand::DrawSubIndexed_points(submesh.BaseIndex, 0, submesh.IndexCount);
         }
+    }
+
+    void Renderer::SubmitLine(math::vec3 v0, math::vec3 v1, math::vec4 color) {
+        auto shader = s_Data.ShaderLibrary->Get("Line3D");
+        shader->Bind();
+
+        shader->SetVec3("r_verts[0]", v0);
+        shader->SetVec3("r_verts[1]", v1);
+        shader->SetVec4("r_Color", color);
+
+        s_Data.Line->Bind();
+        RenderCommand::DrawLines(s_Data.Line, false);
     }
 
     void Renderer::SubmitFullscreenQuad() {
@@ -622,5 +748,78 @@ namespace Engine {
 
     void Renderer::RecompileShaders() {
         s_Data.ShaderLibrary->ReloadAll();
+    }
+
+    void Renderer::Draw3DText(const std::string& text, const math::vec3& pos, const math::vec3 color) {
+        math::vec4 screenSpace = (s_Data.Lights.projection * s_Data.Lights.view * math::vec4(pos, 1));
+        screenSpace /= screenSpace.w;
+        screenSpace += math::vec4(1, 1, 1, 1);
+        screenSpace *= 0.5f;
+        screenSpace.x *= 1280;
+        screenSpace.y *= 720;
+        TextRenderer::SubmitText(text, screenSpace.x, 720-screenSpace.y, color);
+    }
+
+    void Renderer::DrawSkeletonDebug(
+        const TagComponent& tag,
+        const TransformComponent& transform,
+        const MeshRendererComponent& mesh,
+        const MeshAnimationComponent& anim,
+        const math::vec3 color) {
+
+        math::mat3 BlenderCorrection(math::vec3(0, 0, 1), math::vec3(1, 0, 0), math::vec3(0, 1, 0));
+        math::mat4 T = transform.Transform * math::mat4(BlenderCorrection, 1);
+        float s = 0.075f;
+        float length = 0.55f;
+        float length2 = 0.05f;
+
+        math::vec4 localR(1, 0, 0, 0);
+        math::vec4 localF(0, 1, 0, 0);
+        math::vec4 localU(0, 0, 1, 0);
+
+        //for (const auto& joint : anim.Anim->AnimatedSkeleton.Joints) {
+        for (int j = 0; j < anim.Anim->numJoints; j++) {
+            const auto& joint = anim.Anim->AnimatedSkeleton.Joints[j];
+            math::vec3 start = joint.transform.column4.asVec3();
+
+            math::vec3 boneR = (joint.transform * localR).asVec3();
+            math::vec3 boneU = (joint.transform * localU).asVec3();
+            math::vec3 boneF = (joint.transform * localF).asVec3();
+
+            math::vec3 end = start + boneF * length;
+            math::vec3 mid = start + boneF * length2;
+
+            math::vec3 A = math::TransformPointByMatrix4x4(T, mid + boneR * s);
+            math::vec3 B = math::TransformPointByMatrix4x4(T, mid + boneU * s);
+            math::vec3 C = math::TransformPointByMatrix4x4(T, mid - boneR * s);
+            math::vec3 D = math::TransformPointByMatrix4x4(T, mid - boneU * s);
+
+            start = math::TransformPointByMatrix4x4(T, start);
+            end = math::TransformPointByMatrix4x4(T, end);
+
+            Renderer::SubmitLine(start, A, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(start, B, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(start, C, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(start, D, math::vec4(1, 1, .5f, 1));
+
+            Renderer::SubmitLine(A, end, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(B, end, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(C, end, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(D, end, math::vec4(1, 1, .5f, 1));
+
+            Renderer::SubmitLine(A, B, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(B, C, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(C, D, math::vec4(1, 1, .5f, 1));
+            Renderer::SubmitLine(D, A, math::vec4(1, 1, .5f, 1));
+
+            // draw bone name
+            math::vec4 screenSpace = (s_Data.Lights.projection * s_Data.Lights.view * math::vec4(end, 1));
+            screenSpace /= screenSpace.w;
+            screenSpace += math::vec4(1, 1, 1, 1);
+            screenSpace *= 0.5f;
+            screenSpace.x *= 1280;
+            screenSpace.y *= 720;
+            TextRenderer::SubmitText(anim.Anim->JointInfos[j].name, (float)screenSpace.x, 720 - screenSpace.y, color);
+        }
     }
 }

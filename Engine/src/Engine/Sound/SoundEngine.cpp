@@ -56,7 +56,7 @@ namespace Engine {
         }
         s_SoundData.status.queueSize = 0;
 
-        s_SoundData.stream = SoundStream::Create("run_tree/Data/Sounds/tape.ogg");
+        s_SoundData.stream = SoundStream::Create("Data/Sounds/tape.ogg");
 
         // create effects
         SoundEffect::Init(s_SoundData.device);
@@ -131,12 +131,20 @@ namespace Engine {
         s_SoundData.stream->UpdateStream(dt);
     }
 
-    void SoundEngine::StartSteam() {
-        s_SoundData.stream->PlayStream();
+    void SoundEngine::StartStream() {
+        s_SoundData.stream->StartStream();
     }
 
-    void SoundEngine::StopSteam() {
+    void SoundEngine::StopStream() {
         s_SoundData.stream->StopStream();
+    }
+
+    void SoundEngine::PauseStream() {
+        s_SoundData.stream->PauseStream();
+    }
+
+    void SoundEngine::ResumeStream() {
+        s_SoundData.stream->ResumeStream();
     }
 
     bool LoadSound(const std::string& filename) {

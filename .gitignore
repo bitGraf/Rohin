@@ -9,3 +9,4 @@ bin-intermediate/
 *.blend2
 Engine/deps/OpenAL_soft/obj/
 *.nbt.bak
+Game/run_tree/Game.*
