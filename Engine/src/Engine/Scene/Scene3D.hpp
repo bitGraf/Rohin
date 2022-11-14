@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Engine/GameObject/Registry.hpp"
+//#include "Engine/GameObject/Registry.hpp"
 #include "Engine/Core/GameMath.hpp"
 #include "Engine/Collision/CollisionWorld.hpp"
+
+#include <entt/entity/registry.hpp>
 
 namespace Engine {
 
@@ -33,11 +35,11 @@ namespace Engine {
         inline void ToggleShowNormals() { ENGINE_LOG_WARN("Showing normals: {0}", !m_showNormals); m_showNormals = !m_showNormals; }
         inline void ToggleCollisionHulls() { ENGINE_LOG_WARN("Showing collision hulls: {0}", !m_showCollisionHulls); m_showCollisionHulls = !m_showCollisionHulls; }
 
-        Registry& GetRegistry() { return m_Registry; }
+        entt::registry& GetRegistry() { return m_Registry; }
         CollisionWorld& GetCollisionWorld() { return m_cWorld; }
 
     private:
-        Registry m_Registry;
+        entt::registry m_Registry;
         CollisionWorld m_cWorld;
         u32 m_ViewportWidth = 0, m_ViewportHeight = 0;
 

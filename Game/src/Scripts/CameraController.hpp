@@ -18,10 +18,12 @@ public:
         LOG_ASSERT(transformComponent, "CamController could not find a transform component");
         LOG_ASSERT(cameraComponent,    "CamController could not find a camera component");
 
+        // TODO: since the order of script initialization is unknown, the PlayerController script might not be initialized yet
+        //  should add a new script-init phase with ScriptableBase called "linking" or something...
         playerScript = nullptr;
         auto player = GetScene().FindByName("Player");
         if (player)
-            playerScript = GetScene().FindByName("Player").GetComponent<NativeScriptComponent>().GetScript<PlayerController>();
+            playerScript = player.GetComponent<NativeScriptComponent>().GetScript<PlayerController>();
         LOG_ASSERT(playerScript, "CamController could not find player controller script");
 
         cameraComponent->camera.SetOrthographic(6, -3, 3);
