@@ -16,26 +16,24 @@
 namespace Engine {
 
     GameObject Scene3D::CreateGameObject(const std::string& name) {
-        GameObject go = { m_Registry.Create(), this };
+        GameObject go = { m_Registry.create(), this };
         go.AddComponent<TransformComponent>();
         go.AddComponent<TagComponent>(name.empty() ? "GameObject" : name);
         return go;
     }
 
     GameObject Scene3D::FindByName(const std::string& name) {
-        // TODO: why can't I just get all entities that have tags, and return the dameOgject id then?
-        // since all GameObjects created are given a tag by default, this might not be bad...
-        //const auto& entities = m_Registry.GetRegList();
-        for (const auto& ent : m_Registry.GetRegList()) {
-            if (m_Registry.has<TagComponent>(ent)) {
-                const auto& tag_name = m_Registry.get<TagComponent>(ent).Name;
-                if (tag_name.compare(name) == 0) {
-                    return GameObject(ent, this);
-                }
+        // might be a better way of doing this in entt
+        auto view = m_Registry.view<TagComponent>();
+        for (auto entity : view) {
+            auto &tag = view.get<TagComponent>(entity);
+            const auto& tag_name = tag.Name;
+            if (tag_name.compare(name) == 0) {
+                return GameObject(entity, this);
             }
         }
 
-        return GameObject(0, nullptr);
+        return GameObject(entt::null, nullptr);
     }
 
     bool Scene3D::loadFromLevel(const std::string& levelName) {
@@ -61,15 +59,24 @@ namespace Engine {
         BENCHMARK_FUNCTION();
         if (!m_Playing) {
             // Initialize all scripts
-            auto& scriptComponents = m_Registry.view<NativeScriptComponent>();
-            for (auto& script : scriptComponents) {
+            std::vector<ScriptableBase*> inited_scripts;
+            auto script_view = m_Registry.view<NativeScriptComponent>();
+            for (auto entity : script_view) {
+                auto &script = script_view.get< NativeScriptComponent>(entity);
+
                 if (!script.Script) {
                     script.Script = script.InstantiateScript();
                     script.Script->m_GameObject = { script.GameObjectID, this };
                     script.Script->OnCreate();
 
+                    inited_scripts.push_back(script.Script);
+
                     ENGINE_LOG_ASSERT(script.Script, "Native script not instantiated");
                 }
+            }
+            // Now that all scripts are initialized, link them together (if they need)
+            for (auto script : inited_scripts) {
+                script->OnLink();
             }
 
             SoundEngine::StartStream();
@@ -96,8 +103,10 @@ namespace Engine {
         BENCHMARK_FUNCTION();
         if (m_Playing) {
             // Destroy all scripts
-            auto& scriptComponents = m_Registry.view<NativeScriptComponent>();
-            for (auto& script : scriptComponents) {
+            auto script_view = m_Registry.view<NativeScriptComponent>();
+            for (auto entity : script_view) {
+                auto &script = script_view.get< NativeScriptComponent>(entity);
+
                 if (script.Script) {
                     script.DestroyScript(&script);
 
@@ -114,8 +123,10 @@ namespace Engine {
         if (m_Playing) {
             BENCHMARK_SCOPE("Update Scripts");
             // Update scripts
-            auto& scriptComponents = m_Registry.view<NativeScriptComponent>();
-            for (auto& script : scriptComponents) {
+            auto script_view = m_Registry.view<NativeScriptComponent>();
+            for (auto entity : script_view) {
+                auto &script = script_view.get< NativeScriptComponent>(entity);
+
                 if (script.Script) {
                     ENGINE_LOG_ASSERT(script.Script, "Native script not instantiated");
 
@@ -124,8 +135,10 @@ namespace Engine {
             }
 
             // Update Animations
-            auto& animComponents = m_Registry.view<MeshAnimationComponent>();
-            for (auto& anim : animComponents) {
+            auto anim_view = m_Registry.view<MeshAnimationComponent>();
+            for (auto entity : anim_view) {
+                auto &anim = anim_view.get<MeshAnimationComponent>(entity);
+
                 if (anim.Anim) {
                     md5::UpdateMD5Animation(anim.Anim, dt);
                 }
@@ -137,20 +150,14 @@ namespace Engine {
         math::mat4* mainTransform = nullptr;
         {
             BENCHMARK_SCOPE("Find main camera");
-            // messy group
-            // TODO: figure out how to get the group function to work
-            for (auto n : m_Registry.GetRegList()) {
-                // check if entity n has both transform and camera
-                if (m_Registry.has<TransformComponent>(n) && m_Registry.has<CameraComponent>(n)) {
-                    // good to go
-                    auto& cam = m_Registry.get<CameraComponent>(n);
-                    auto& tran = m_Registry.get<TransformComponent>(n);
+            auto group = m_Registry.group<CameraComponent>(entt::get<TransformComponent>);
+            for (auto entity : group) {
+                auto[trans, cam] = group.get<TransformComponent, CameraComponent>(entity);
 
-                    if (cam.Primary) {
-                        mainCamera = &cam.camera;
-                        mainTransform = &tran.Transform;
-                        break;
-                    }
+                if (cam.Primary) {
+                    mainCamera = &cam.camera;
+                    mainTransform = &trans.Transform;
+                    break;
                 }
             }
         }
@@ -162,44 +169,38 @@ namespace Engine {
         int numPointLight = 0, numSpotLight = 0;
         {
             BENCHMARK_SCOPE("Determine lights");
-            // messy group
-            // TODO: figure out how to get the group function to work
-            for (auto n : m_Registry.GetRegList()) {
-                // check if entity n has both transform and mesh
-                if (m_Registry.has<TransformComponent>(n) && m_Registry.has<LightComponent>(n)) {
-                    // good to go
-                    auto& light = m_Registry.get<LightComponent>(n);
-                    auto& trans = m_Registry.get<TransformComponent>(n);
-                    auto& tag = m_Registry.get<TagComponent>(n);
+            
+            auto group = m_Registry.group<LightComponent>(entt::get<TransformComponent>);
+            for (auto entity : group) {
+                auto[trans, light] = group.get<TransformComponent, LightComponent>(entity);
 
-                    switch (light.Type) {
-                        case LightType::Point:
-                            if (numPointLight == 32) break;
-                            scenePointLights[numPointLight].color = light.Color;
-                            scenePointLights[numPointLight].strength = light.Strength;
-                            scenePointLights[numPointLight].type = light.Type;
-                            scenePointLights[numPointLight].position = trans.Transform.column4.asVec3();
-                            numPointLight++;
-                            break;
-                        case LightType::Spot:
-                            if (numSpotLight == 32) break;
-                            sceneSpotLights[numSpotLight].color = light.Color;
-                            sceneSpotLights[numSpotLight].strength = light.Strength;
-                            sceneSpotLights[numSpotLight].type = light.Type;
-                            sceneSpotLights[numSpotLight].position = trans.Transform.column4.asVec3();
-                            sceneSpotLights[numSpotLight].direction = -trans.Transform.column3.asVec3();
-                            sceneSpotLights[numSpotLight].inner = light.InnerCutoff;
-                            sceneSpotLights[numSpotLight].outer = light.OuterCutoff;
-                            numSpotLight++;
-                            break;
-                        case LightType::Directional:
-                            sceneSun.color = light.Color;
-                            sceneSun.strength = light.Strength;
-                            sceneSun.type = light.Type;
-                            sceneSun.position = trans.Transform.column4.asVec3();
-                            sceneSun.direction = -trans.Transform.column3.asVec3(); // sun points in entities -z direction (or whatever the camera looks in...)
-                            break;
-                    }
+                switch (light.Type) {
+                case LightType::Point:
+                    if (numPointLight == 32) break;
+                    scenePointLights[numPointLight].color = light.Color;
+                    scenePointLights[numPointLight].strength = light.Strength;
+                    scenePointLights[numPointLight].type = light.Type;
+                    scenePointLights[numPointLight].position = trans.Transform.column4.asVec3();
+                    numPointLight++;
+                    break;
+                case LightType::Spot:
+                    if (numSpotLight == 32) break;
+                    sceneSpotLights[numSpotLight].color = light.Color;
+                    sceneSpotLights[numSpotLight].strength = light.Strength;
+                    sceneSpotLights[numSpotLight].type = light.Type;
+                    sceneSpotLights[numSpotLight].position = trans.Transform.column4.asVec3();
+                    sceneSpotLights[numSpotLight].direction = -trans.Transform.column3.asVec3();
+                    sceneSpotLights[numSpotLight].inner = light.InnerCutoff;
+                    sceneSpotLights[numSpotLight].outer = light.OuterCutoff;
+                    numSpotLight++;
+                    break;
+                case LightType::Directional:
+                    sceneSun.color = light.Color;
+                    sceneSun.strength = light.Strength;
+                    sceneSun.type = light.Type;
+                    sceneSun.position = trans.Transform.column4.asVec3();
+                    sceneSun.direction = -trans.Transform.column3.asVec3(); // sun points in entities -z direction (or whatever the camera looks in...)
+                    break;
                 }
             }
         }
@@ -210,27 +211,23 @@ namespace Engine {
             Renderer::Begin3DScene(*mainCamera, *mainTransform, numPointLight, scenePointLights, numSpotLight, sceneSpotLights, sceneSun);
 
             Renderer::BeginDeferredPrepass();
-            // messy group
-            // TODO: figure out how to get the group function to work
-            for (auto n : m_Registry.GetRegList()) {
-                // check if entity n has both transform and mesh
-                if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshRendererComponent>(n)) {
-                    // good to go
-                    auto& mesh = m_Registry.get<MeshRendererComponent>(n);
-                    auto& trans = m_Registry.get<TransformComponent>(n);
-                    auto& tag = m_Registry.get<TagComponent>(n);
 
-                    if (mesh.MeshPtr) {
-                        if (m_Registry.has<MeshAnimationComponent>(n)) {
-                            const auto& anim = m_Registry.get<MeshAnimationComponent>(n);
-                            Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform, anim.Anim);
-                        }
-                        else {
-                            Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform);
-                        }
+            auto group = m_Registry.group<MeshRendererComponent>(entt::get<TransformComponent>);
+            for (auto entity : group) {
+                auto[trans, mesh] = group.get<TransformComponent, MeshRendererComponent>(entity);
+                if (mesh.MeshPtr) {
+                    if (m_Registry.all_of<MeshAnimationComponent>(entity)) {
+                        // TODO: more efficient way of doing this, 
+                        // maybe just a separate group for animated meshes?
+                        const auto& anim = m_Registry.get<MeshAnimationComponent>(entity);
+                        Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform, anim.Anim);
+                    }
+                    else {
+                        Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform);
                     }
                 }
             }
+
             Renderer::EndDeferredPrepass();
 
             Renderer::BeginSobelPass();
@@ -261,24 +258,22 @@ namespace Engine {
             Renderer::SubmitLine(math::vec3(), math::vec3(0, 1, 0), math::vec4(0, 1, 0, 1));
             Renderer::SubmitLine(math::vec3(), math::vec3(0, 0, 1), math::vec4(0, 0, 1, 1));
 
-            for (auto n : m_Registry.GetRegList()) {
-                // check if entity n has both transform and animation
-                if (m_Registry.has<TransformComponent>(n) && m_Registry.has<MeshAnimationComponent>(n)) {
-                    // good to go
-                    auto& anim = m_Registry.get<MeshAnimationComponent>(n);
-                    auto& transform = m_Registry.get<TransformComponent>(n);
-                    auto& tag = m_Registry.get<TagComponent>(n);
-                    auto& mesh = m_Registry.get<MeshRendererComponent>(n);
-                
-                    Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
-                }
+            auto group_trans_anim = m_Registry.group<MeshAnimationComponent>(entt::get<TransformComponent>);
+            for (auto entity : group_trans_anim) {
+                auto& anim = m_Registry.get<MeshAnimationComponent>(entity);
+                auto& transform = m_Registry.get<TransformComponent>(entity);
+                auto& tag = m_Registry.get<TagComponent>(entity);
+                auto& mesh = m_Registry.get<MeshRendererComponent>(entity);
 
-                if (m_Registry.has<TransformComponent>(n)) {
-                    const auto& tag = m_Registry.get<TagComponent>(n);
-                    const auto& transform = m_Registry.get<TransformComponent>(n);
-                    math::vec3 pos = transform.Transform.column4.asVec3();
-                    //Renderer::Draw3DText(tag.Name, pos, math::vec3(.7f, .7f, 1.0f));
-                }
+                Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
+            }
+
+            auto view_trans = m_Registry.view<TransformComponent>();
+            for (auto entity : view_trans) {
+                //const auto& tag = view_trans.get<TagComponent>(entity);
+                const auto& transform = view_trans.get<TransformComponent>(entity);
+                math::vec3 pos = transform.Transform.column4.asVec3();
+                //Renderer::Draw3DText(tag.Name, pos, math::vec3(.7f, .7f, 1.0f));
             }
         }
         
@@ -288,8 +283,9 @@ namespace Engine {
         m_ViewportWidth = width;
         m_ViewportHeight = height;
 
-        auto& cameraComponentList = m_Registry.view<CameraComponent>();
-        for (auto& cameraComponent : cameraComponentList) {
+        auto view = m_Registry.view<CameraComponent>();
+        for (auto entity : view) {
+            auto &cameraComponent = view.get<CameraComponent>(entity);
             if (!cameraComponent.FixedAspectRatio) {
                 cameraComponent.camera.SetViewportSize(width, height);
             }
@@ -297,6 +293,8 @@ namespace Engine {
     }
 
     Scene3D::Scene3D() {
+        // reserve gameObject 0
+        m_Registry.create();
     }
 
     Scene3D::~Scene3D() {
