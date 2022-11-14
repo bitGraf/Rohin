@@ -3,8 +3,8 @@
 #include "MainMenu.hpp"
 
 /* native scripts */
-#include "../Scripts/CameraController.hpp"
-#include "../Scripts/Player.hpp"
+#include "Scripts/CameraController.hpp"
+#include "Scripts/Player.hpp"
 
 Level::Level(const std::string& levelName) {
     Name = levelName;

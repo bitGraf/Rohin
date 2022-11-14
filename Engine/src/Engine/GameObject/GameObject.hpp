@@ -7,7 +7,7 @@ namespace Engine {
     class GameObject {
     public:
         GameObject()
-            : m_GameObjectHandle(0), m_Scene(0) {}
+            : m_GameObjectHandle(entt::null), m_Scene(0) {}
         GameObject(GameObject_type handle, Scene3D* scene)
             : m_GameObjectHandle(handle), m_Scene(scene) {}
         GameObject(const GameObject& other) = default;
@@ -33,9 +33,10 @@ namespace Engine {
             return m_Scene->m_Registry.get<Component>(m_GameObjectHandle);
         }
 
+        // TODO: do we need this functionality??
         template<typename Component>
         bool HasComponent() {
-            return m_Scene->m_Registry.has<Component>(m_GameObjectHandle);
+            return m_Scene->m_Registry.all_of<Component>(m_GameObjectHandle);
         }
 
         template<typename Component>
@@ -43,7 +44,7 @@ namespace Engine {
             m_Scene->m_Registry.erase<Component>(m_GameObjectHandle);
         }
 
-        operator bool() const { return m_GameObjectHandle != 0; } // TODO: should check if scene is null?
+        operator bool() const { return m_GameObjectHandle != entt::null; } // TODO: should check if scene is null?
 
         GameObject_type GetHandle() const { return m_GameObjectHandle; }
         operator uint32_t() const { return (uint32_t)m_GameObjectHandle; }
