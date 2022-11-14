@@ -13,9 +13,9 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture }"
 
 -- Include directories relative to root folder
 IncludeDir = {}
-IncludeDir["GLFW"] = "%{wks.location}/Engine/deps/GLFW/include"
+IncludeDir["GLFW"] = "%{wks.location}/Engine/deps/GLFW/GLFW/include"
 IncludeDir["GLAD"] = "%{wks.location}/Engine/deps/GLAD/include"
-IncludeDir["ImGui"] = "%{wks.location}/Engine/deps/imgui"
+IncludeDir["ImGui"] = "%{wks.location}/Engine/deps/imgui/imgui"
 IncludeDir["OpenAL_soft"] = "%{wks.location}/Engine/deps/OpenAL_soft/include"
 
 group "Deps"
