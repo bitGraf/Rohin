@@ -16,9 +16,6 @@
 namespace Engine {
 
     GameObject Scene3D::CreateGameObject(const std::string& name) {
-        auto g1 = m_Registry.create();
-        auto g2 = m_Registry.create();
-        auto g3 = m_Registry.create();
         GameObject go = { m_Registry.create(), this };
         go.AddComponent<TransformComponent>();
         go.AddComponent<TagComponent>(name.empty() ? "GameObject" : name);
@@ -62,6 +59,7 @@ namespace Engine {
         BENCHMARK_FUNCTION();
         if (!m_Playing) {
             // Initialize all scripts
+            std::vector<ScriptableBase*> inited_scripts;
             auto script_view = m_Registry.view<NativeScriptComponent>();
             for (auto entity : script_view) {
                 auto script = script_view.get< NativeScriptComponent>(entity);
@@ -71,8 +69,14 @@ namespace Engine {
                     script.Script->m_GameObject = { script.GameObjectID, this };
                     script.Script->OnCreate();
 
+                    inited_scripts.push_back(script.Script);
+
                     ENGINE_LOG_ASSERT(script.Script, "Native script not instantiated");
                 }
+            }
+            // Now that all scripts are initialized, link them together (if they need)
+            for (auto script : inited_scripts) {
+                script->OnLink();
             }
 
             SoundEngine::StartStream();
@@ -284,6 +288,8 @@ namespace Engine {
     }
 
     Scene3D::Scene3D() {
+        // reserve gameObject 0
+        m_Registry.create();
     }
 
     Scene3D::~Scene3D() {

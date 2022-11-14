@@ -18,14 +18,6 @@ public:
         LOG_ASSERT(transformComponent, "CamController could not find a transform component");
         LOG_ASSERT(cameraComponent,    "CamController could not find a camera component");
 
-        // TODO: since the order of script initialization is unknown, the PlayerController script might not be initialized yet
-        //  should add a new script-init phase with ScriptableBase called "linking" or something...
-        playerScript = nullptr;
-        auto player = GetScene().FindByName("Player");
-        if (player)
-            playerScript = player.GetComponent<NativeScriptComponent>().GetScript<PlayerController>();
-        LOG_ASSERT(playerScript, "CamController could not find player controller script");
-
         cameraComponent->camera.SetOrthographic(6, -3, 3);
         cameraComponent->camera.SetPerspective(75.0f, 0.01f, 100.0f);
 
@@ -42,6 +34,19 @@ public:
         Engine::SoundEngine::SetListenerOrientation(Forward, Up);
 
         LOG_INFO("Camera controller created on GameObject {0}!", GetGameObjectID());
+    }
+
+    virtual void OnLink() override {
+        // TODO: this is still not working... playerScript is still NULL when it shouldn't be...
+        playerScript = nullptr;
+        
+        auto player = GetScene().FindByName("Player");
+        if (player) {
+            auto script_comp = player.GetComponent<Engine::NativeScriptComponent>();
+            playerScript = player.GetComponent<Engine::NativeScriptComponent>().GetScript<PlayerController>();
+        }
+        LOG_ASSERT(playerScript, "CamController could not find player controller script");
+        
     }
 
     void ToggleControl() {

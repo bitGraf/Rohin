@@ -19,6 +19,7 @@ namespace Engine {
     protected:
         // Interface functions
         virtual void OnCreate() {};
+        virtual void OnLink() {};
         virtual void OnDestroy() {};
         virtual void OnUpdate(double ts) {};
 
