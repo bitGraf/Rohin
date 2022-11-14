@@ -2,6 +2,7 @@
 #define DATA_TYPES_H
 
 #include <cstdint>
+#include <entt/fwd.hpp>
 
 /* Floating point types */
 typedef float   f32;
@@ -22,7 +23,7 @@ typedef std::int64_t    s64;    // [-9,223,372,036,854,775,808, 9,223,372,036,85
 /* Hashed String ID */
 typedef u32 stringID;
 
-using GameObject_type = u32;
+using GameObject_type = entt::entity;
 
 /* Index type */
 typedef u16                     index_t;

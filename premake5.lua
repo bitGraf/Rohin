@@ -17,12 +17,14 @@ IncludeDir["GLFW"] = "%{wks.location}/Engine/deps/GLFW/GLFW/include"
 IncludeDir["GLAD"] = "%{wks.location}/Engine/deps/GLAD/include"
 IncludeDir["ImGui"] = "%{wks.location}/Engine/deps/imgui/imgui"
 IncludeDir["OpenAL_soft"] = "%{wks.location}/Engine/deps/OpenAL_soft/include"
+IncludeDir["EnTT"] = "%{wks.location}/Engine/deps/EnTT/src"
 
 group "Deps"
     include "Engine/deps/GLFW"
     include "Engine/deps/GLAD"
     include "Engine/deps/imgui"
     include "Engine/deps/OpenAL_soft"
+    -- include "Engine/deps/EnTT"
 group "" -- end of "Deps"
 
 project "Engine"
@@ -56,6 +58,7 @@ project "Engine"
         "%{IncludeDir.GLAD}",
         "%{IncludeDir.ImGui}",
         "%{IncludeDir.OpenAL_soft}",
+        "%{IncludeDir.EnTT}",
         "%{prj.name}/deps/stb"
     }
 
@@ -127,7 +130,9 @@ project "Game"
     {
         "Engine/deps/spdlog/include",
         "Engine/src",
-        "Engine/deps/"
+        "Engine/deps/",
+        "Game/src",
+        "%{IncludeDir.EnTT}",
     }
 
     links
