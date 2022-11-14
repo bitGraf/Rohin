@@ -3,8 +3,8 @@
 #include "MainMenu.hpp"
 
 /* native scripts */
-#include "Scripts/CameraController.hpp"
-#include "Scripts/Player.hpp"
+#include "Engine/Scripts/CameraController.hpp"
+#include "Engine/Scripts/Player.hpp"
 
 Level::Level(const std::string& levelName) {
     Name = levelName;
@@ -13,18 +13,6 @@ Level::Level(const std::string& levelName) {
 Level::~Level() {
 
 }
-
-/*bool Engine::BindGameScript(const std::string& script_tag, Engine::Scene3D* scene, GameObject gameobject) {
-    if (script_tag.compare("script_camera_controller") == 0) {
-        gameobject.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(gameobject);
-        return true;
-    }
-    if (script_tag.compare("script_player_controller") == 0) {
-        gameobject.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(gameobject);
-        return true;
-    }
-    return false;
-}*/
 
 void Level::OnAttach() {
     ENGINE_LOG_INFO("Level {0} Attach", Name);
@@ -114,14 +102,14 @@ bool Level::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
         if (camera) {
             if (camera.HasComponent<Engine::NativeScriptComponent>()) {
                 auto scriptComp = camera.GetComponent<Engine::NativeScriptComponent>();
-                auto script = scriptComp.GetScript<CameraController>();
+                auto script = scriptComp.GetScript<Engine::CameraController>();
                 script->ToggleControl();
             }
         }
 
         auto player = m_3DScene.FindByName("Player");
         if (player) {
-            auto script = player.GetComponent<Engine::NativeScriptComponent>().GetScript<PlayerController>();
+            auto script = player.GetComponent<Engine::NativeScriptComponent>().GetScript<Engine::PlayerController>();
             script->ToggleControl();
         }
 

@@ -14,8 +14,8 @@
 #include "Engine/Resources/ResourceManager.hpp"
 
 // TODO: these should be moved into the engine probably...
-#include "../../Game/src/Scripts/CameraController.hpp"
-#include "../../Game/src/Scripts/Player.hpp"
+#include "Engine/Scripts/CameraController.hpp"
+#include "Engine/Scripts/Player.hpp"
 
 namespace Engine {
 
