@@ -1,9 +1,9 @@
 [submodule "Engine/deps/spdlog"]
 	path = Engine/deps/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule "Engine\\deps\\imgui\\imgui"]
-	path = Engine\\deps\\imgui\\imgui
+[submodule "Engine/deps/imgui/imgui"]
+	path = Engine/deps/imgui/imgui
 	url = https://github.com/ocornut/imgui.git
-[submodule "Engine\\deps\\GLFW\\GLFW"]
-	path = Engine\\deps\\GLFW\\GLFW
+[submodule "Engine/deps/GLFW/GLFW"]
+	path = Engine/deps/GLFW/GLFW
 	url = https://github.com/glfw/glfw.git
