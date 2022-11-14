@@ -26,7 +26,7 @@ namespace Engine {
         // might be a better way of doing this in entt
         auto view = m_Registry.view<TagComponent>();
         for (auto entity : view) {
-            auto tag = view.get<TagComponent>(entity);
+            auto &tag = view.get<TagComponent>(entity);
             const auto& tag_name = tag.Name;
             if (tag_name.compare(name) == 0) {
                 return GameObject(entity, this);
@@ -62,7 +62,7 @@ namespace Engine {
             std::vector<ScriptableBase*> inited_scripts;
             auto script_view = m_Registry.view<NativeScriptComponent>();
             for (auto entity : script_view) {
-                auto script = script_view.get< NativeScriptComponent>(entity);
+                auto &script = script_view.get< NativeScriptComponent>(entity);
 
                 if (!script.Script) {
                     script.Script = script.InstantiateScript();
@@ -105,7 +105,7 @@ namespace Engine {
             // Destroy all scripts
             auto script_view = m_Registry.view<NativeScriptComponent>();
             for (auto entity : script_view) {
-                auto script = script_view.get< NativeScriptComponent>(entity);
+                auto &script = script_view.get< NativeScriptComponent>(entity);
 
                 if (script.Script) {
                     script.DestroyScript(&script);
@@ -125,7 +125,7 @@ namespace Engine {
             // Update scripts
             auto script_view = m_Registry.view<NativeScriptComponent>();
             for (auto entity : script_view) {
-                auto script = script_view.get< NativeScriptComponent>(entity);
+                auto &script = script_view.get< NativeScriptComponent>(entity);
 
                 if (script.Script) {
                     ENGINE_LOG_ASSERT(script.Script, "Native script not instantiated");
@@ -137,7 +137,7 @@ namespace Engine {
             // Update Animations
             auto anim_view = m_Registry.view<MeshAnimationComponent>();
             for (auto entity : anim_view) {
-                auto anim = anim_view.get<MeshAnimationComponent>(entity);
+                auto &anim = anim_view.get<MeshAnimationComponent>(entity);
 
                 if (anim.Anim) {
                     md5::UpdateMD5Animation(anim.Anim, dt);
@@ -211,15 +211,20 @@ namespace Engine {
             Renderer::Begin3DScene(*mainCamera, *mainTransform, numPointLight, scenePointLights, numSpotLight, sceneSpotLights, sceneSun);
 
             Renderer::BeginDeferredPrepass();
-            // messy group
+
             auto group = m_Registry.group<MeshRendererComponent>(entt::get<TransformComponent>);
             for (auto entity : group) {
                 auto[trans, mesh] = group.get<TransformComponent, MeshRendererComponent>(entity);
                 if (mesh.MeshPtr) {
-                    // TODO: check if an animated mesh?
-                    //const auto& anim = m_Registry.get<MeshAnimationComponent>(n);
-                    //Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform, anim.Anim);
-                    Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform);
+                    if (m_Registry.all_of<MeshAnimationComponent>(entity)) {
+                        // TODO: more efficient way of doing this, 
+                        // maybe just a separate group for animated meshes?
+                        const auto& anim = m_Registry.get<MeshAnimationComponent>(entity);
+                        Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform, anim.Anim);
+                    }
+                    else {
+                        Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform);
+                    }
                 }
             }
 
@@ -280,7 +285,7 @@ namespace Engine {
 
         auto view = m_Registry.view<CameraComponent>();
         for (auto entity : view) {
-            auto cameraComponent = view.get<CameraComponent>(entity);
+            auto &cameraComponent = view.get<CameraComponent>(entity);
             if (!cameraComponent.FixedAspectRatio) {
                 cameraComponent.camera.SetViewportSize(width, height);
             }

@@ -42,7 +42,7 @@ public:
         
         auto player = GetScene().FindByName("Player");
         if (player) {
-            auto script_comp = player.GetComponent<Engine::NativeScriptComponent>();
+            //auto& script_comp = player.GetComponent<Engine::NativeScriptComponent>();
             playerScript = player.GetComponent<Engine::NativeScriptComponent>().GetScript<PlayerController>();
         }
         LOG_ASSERT(playerScript, "CamController could not find player controller script");
