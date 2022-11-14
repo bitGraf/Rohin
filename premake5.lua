@@ -127,7 +127,8 @@ project "Game"
     {
         "Engine/deps/spdlog/include",
         "Engine/src",
-        "Engine/deps/"
+        "Engine/deps/",
+        "Game/src"
     }
 
     links
