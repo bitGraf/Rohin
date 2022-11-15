@@ -13,22 +13,22 @@
 
 namespace Engine {
 
-    // TODO: Why Tangent and Bitangent here??
+    // Use this moving forward
     struct Vertex
     {
         math::vec3 Position;
         math::vec3 Normal;
-        math::vec3 Tangent;  // <--
-        math::vec3 Binormal; // <--
+        math::vec3 Tangent;
+        math::vec3 Binormal;
         math::vec2 Texcoord;
     };
 
-    // TODO: Why Tangent only here??
+    // TODO: normalize this to be like a static_mesh vertex
     struct Vertex_Anim
     {
         math::vec3 Position;
         math::vec3 Normal;
-        math::vec4 Tangent; // <--
+        math::vec4 Tangent;
         math::vec2 Texcoord;
         s32 BoneIndices[4];
         math::vec4 BoneWeights;
@@ -350,7 +350,7 @@ namespace Engine {
     // MESH_File load
     Mesh::Mesh(const std::string & filename, int) {
         const char KNOWN_VERSION_MAJOR = 0;
-        const char KNOWN_VERSION_MINOR = 1;
+        const char KNOWN_VERSION_MINOR = 2;
         const char KNOWN_VERSION_PATCH = 0;
 
         // anonymous helper funcs
@@ -393,22 +393,29 @@ namespace Engine {
             fread(MAGIC, 1, 4, fid);
             checkTag(MAGIC, "MESH", 4);
 
-            unsigned int FileSize;
-            fread(&FileSize, sizeof(unsigned int), 1, fid);
+            u32 FileSize;
+            fread(&FileSize, sizeof(u32), 1, fid);
             if (static_cast<long>(FileSize) != stat_filesize) printf("EROR::Expectied a fileSize of %ld, got %ld\n", stat_filesize, FileSize);
+
+            u32 Flag;
+            fread(&Flag, sizeof(u32), 1, fid);
+            bool has_animations = Flag & 0x01;
+            if (has_animations) {
+                ENGINE_LOG_CRITICAL("Animated meshes not supported fully!!!!");
+            }
 
             char INFO[4];
             fread(INFO, 1, 4, fid);
             checkTag(INFO, "INFO", 4);
 
-            unsigned int numVerts;
-            fread(&numVerts, sizeof(unsigned int), 1, fid);
+            u32 numVerts;
+            fread(&numVerts, sizeof(u32), 1, fid);
 
-            unsigned int numInds;
-            fread(&numInds, sizeof(unsigned int), 1, fid);
+            u32 numInds;
+            fread(&numInds, sizeof(u32), 1, fid);
 
-            unsigned short numSubmeshes;
-            fread(&numSubmeshes, sizeof(unsigned short), 1, fid);
+            u16 numSubmeshes;
+            fread(&numSubmeshes, sizeof(u16), 1, fid);
 
             char vStr[4];
             fread(vStr, sizeof(char), 4, fid);
@@ -422,8 +429,8 @@ namespace Engine {
             //	printf("File version too high! Highest known version is: v%i.%i.%i\n", KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR, KNOWN_VERSION_PATCH);
             //}
 
-            unsigned short len;
-            fread(&len, sizeof(unsigned short), 1, fid);
+            u16 len;
+            fread(&len, sizeof(u16), 1, fid);
             char* comment = (char*)malloc(len);
             fread(comment, 1, len, fid);
             comment[len - 1] = 0; // just in case...
@@ -434,7 +441,7 @@ namespace Engine {
             printf("# of Indices:  %i\n", numInds);
             printf("# of Meshes:   %i\n", numSubmeshes);
 
-            std::vector<Vertex_Anim> m_Vertices;
+            std::vector<Vertex> m_Vertices;
             m_Vertices.resize(numVerts);
 
             std::vector<Triangle> m_Tris;
@@ -450,10 +457,9 @@ namespace Engine {
 
                 auto& sm = m_Submeshes[n_submesh];
                 fread(&sm.BaseIndex, sizeof(u32), 1, fid);
+                fread(&sm.MaterialIndex, sizeof(u32), 1, fid);
                 fread(&sm.IndexCount, sizeof(u32), 1, fid);
-
-                sm.MaterialIndex = 0;
-                sm.Transform = math::mat4();
+                fread(&sm.Transform, sizeof(f32), 16, fid);
             }
 
             // DATA block
@@ -470,33 +476,16 @@ namespace Engine {
                 fread(&m_Vertices[n_vert].Position, sizeof(float), 3, fid);
 
                 // Normal
-                math::vec3 f_normal;
-                fread(&f_normal, sizeof(float), 3, fid);
+                fread(&m_Vertices[n_vert].Normal, sizeof(float), 3, fid);
+
+                // Tangent
+                fread(&m_Vertices[n_vert].Tangent, sizeof(float), 3, fid);
+
+                // Bitangent
+                fread(&m_Vertices[n_vert].Binormal, sizeof(float), 3, fid);
 
                 // Tex
                 fread(&m_Vertices[n_vert].Texcoord, sizeof(float), 2, fid);
-
-                // Tangent/Bitangent
-                // file stores these two separate.
-                // just use the tangent and store the winding order in the 4th entry.
-                math::vec3 f_tangent, f_bitangent;
-                fread(&f_tangent, sizeof(float), 3, fid);
-                fread(&f_bitangent, sizeof(float), 3, fid);
-
-                float w = (f_normal.cross(f_tangent)).dot(f_bitangent) < 0.0f ? -1.0f : 1.0f;
-                
-                m_Vertices[n_vert].Normal = f_normal;
-                m_Vertices[n_vert].Tangent = math::vec4(f_tangent, w);
-
-                // Weight
-                fread(&m_Vertices[n_vert].BoneWeights, sizeof(float), 4, fid);
-
-                // Bone
-                fread(&m_Vertices[n_vert].BoneIndices[0], sizeof(s32), 4, fid);
-                //fread(&m_mesh.vertices[n_vert].bone_idx.x, sizeof(int), 1, fid);
-                //fread(&m_mesh.vertices[n_vert].bone_idx.y, sizeof(int), 1, fid);
-                //fread(&m_mesh.vertices[n_vert].bone_idx.z, sizeof(int), 1, fid);
-                //fread(&m_mesh.vertices[n_vert].bone_idx.w, sizeof(int), 1, fid);
             }
 
             // read indices
