@@ -13,7 +13,6 @@
 
 #include "Engine/Resources/ResourceManager.hpp"
 
-// TODO: these should be moved into the engine probably...
 #include "Engine/Scripts/CameraController.hpp"
 #include "Engine/Scripts/Player.hpp"
 
@@ -45,6 +44,7 @@ namespace Engine {
         // read md5mesh files
         MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
         MeshCatalog::Register("mesh_test", "Data/Models/guard/guard.md5mesh", FileFormat::MD5_Text);
+        MeshCatalog::Register("test2", "Data/Models/output.mesh", FileFormat::MESH_File);
 
         // read animation files
         AnimCatalog::Register("anim_test", "Data/Models/guard/Walking.md5anim", FileFormat::MD5_Text);

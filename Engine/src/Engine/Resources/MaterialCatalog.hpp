@@ -3,7 +3,7 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 #include "Engine/Resources/nbt/nbt.hpp"
-#include "Engine/Resources/MD5MeshLoader.hpp"
+#include "Engine/Resources/Loaders/MD5MeshLoader.hpp"
 
 namespace Engine {
 

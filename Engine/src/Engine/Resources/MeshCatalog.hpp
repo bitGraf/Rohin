@@ -3,14 +3,13 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 
-#include "Engine/Resources/MD5MeshLoader.hpp"
-
 namespace Engine {
 
     enum class FileFormat : unsigned char {
         None = 0,
         NBT_Basic,
-        MD5_Text
+        MD5_Text,
+        MESH_File
     };
 
     namespace MeshCatalog {

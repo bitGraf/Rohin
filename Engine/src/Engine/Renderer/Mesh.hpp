@@ -11,7 +11,8 @@
 #include "Engine/Renderer/Shader.hpp"
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/Material.hpp"
-#include "Engine/Resources/MD5MeshLoader.hpp"
+
+#include "Engine/Resources/Loaders/MD5MeshLoader.hpp"
 
 namespace Engine {
 
@@ -29,6 +30,8 @@ namespace Engine {
     class Mesh
     {
     public:
+        // load MESH_File
+        Mesh(const std::string& filename, int);
         // load NBT .mesh file
         Mesh(const std::string& filename);
         // load from .MD5Mesh file

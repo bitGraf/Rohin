@@ -39,7 +39,8 @@
 #include "Engine/Resources/MeshCatalog.hpp"
 #include "Engine/Resources/MaterialCatalog.hpp"
 #include "Engine/Resources/nbt/nbt.hpp"
-#include "Engine/Resources/MD5MeshLoader.hpp"
+
+#include "Engine/Resources/Loaders/MD5MeshLoader.hpp"
 
 /* Dependencies */
 #include "spdlog/spdlog.h"

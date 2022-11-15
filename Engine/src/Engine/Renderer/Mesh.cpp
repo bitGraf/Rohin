@@ -3,28 +3,32 @@
 
 #include "Engine/Renderer/Renderer.hpp"
 
-#include "Engine/Core/DataFile.hpp"
+//#include "Engine/Core/DataFile.hpp"
 
 #include "Engine/Resources/nbt/nbt.hpp"
 
 #include "Engine/Resources/MaterialCatalog.hpp"
 
+#include <sys/stat.h>
+
 namespace Engine {
 
+    // TODO: Why Tangent and Bitangent here??
     struct Vertex
     {
         math::vec3 Position;
         math::vec3 Normal;
-        math::vec3 Tangent;
-        math::vec3 Binormal;
+        math::vec3 Tangent;  // <--
+        math::vec3 Binormal; // <--
         math::vec2 Texcoord;
     };
 
+    // TODO: Why Tangent only here??
     struct Vertex_Anim
     {
         math::vec3 Position;
         math::vec3 Normal;
-        math::vec4 Tangent;
+        math::vec4 Tangent; // <--
         math::vec2 Texcoord;
         s32 BoneIndices[4];
         math::vec4 BoneWeights;
@@ -32,11 +36,16 @@ namespace Engine {
 
     struct Triangle
     {
-        uint32_t V1, V2, V3;
+        u32 V1, V2, V3;
     };
 
     static_assert(sizeof(Triangle) == 3 * sizeof(uint32_t));
 
+    Mesh::~Mesh() {
+
+    }
+
+    // NBT file load
     Mesh::Mesh(const std::string & filename) {
         ENGINE_LOG_INFO("Loading a mesh from a .nbt file");
 
@@ -188,12 +197,6 @@ namespace Engine {
 
         m_loaded = true;
     }
-    
-    Mesh::~Mesh() {
-
-    }
-
-
 
     // MD5 conversion
     Mesh::Mesh(const md5::Model& model) {
@@ -342,5 +345,234 @@ namespace Engine {
         }
 
         m_loaded = true;
+    }
+
+    // MESH_File load
+    Mesh::Mesh(const std::string & filename, int) {
+        const char KNOWN_VERSION_MAJOR = 0;
+        const char KNOWN_VERSION_MINOR = 1;
+        const char KNOWN_VERSION_PATCH = 0;
+
+        // anonymous helper funcs
+        auto checkTag = [](const char* tag, const char* comp, int len) {
+            bool success = true;
+            for (int n = 0; n < len; n++) {
+                if (comp[n] != tag[n]) {
+                    success = false;
+                    break;
+                }
+            }
+            if (!success) {
+                switch (len) {
+                case 4: {
+                    printf("ERROR::Expected '%s', got '%c%c%c%c'\n", comp, tag[0], tag[1], tag[2], tag[3]);
+                    break;
+                } case 8: {
+                    printf("ERROR::Expected '%s', got '%c%c%c%c%c%c%c%c'\n", comp, tag[0], tag[1], tag[2], tag[3], tag[4], tag[5], tag[6], tag[7]);
+                    break;
+                } default: {
+                    printf("ERROR::Expected '%s','\n", comp);
+                    break;
+                }
+                }
+            }
+            return success;
+        };
+        auto FdGetFileSize = [](const std::string & filename) {
+            struct stat stat_buf;
+            int rc = stat(filename.c_str(), &stat_buf);
+            return rc == 0 ? stat_buf.st_size : -1l;
+        };
+
+        long stat_filesize = FdGetFileSize(filename);
+
+        FILE* fid = fopen(filename.c_str(), "rb");
+        if (fid) {
+            // HEADER
+            char MAGIC[4];
+            fread(MAGIC, 1, 4, fid);
+            checkTag(MAGIC, "MESH", 4);
+
+            unsigned int FileSize;
+            fread(&FileSize, sizeof(unsigned int), 1, fid);
+            if (static_cast<long>(FileSize) != stat_filesize) printf("EROR::Expectied a fileSize of %ld, got %ld\n", stat_filesize, FileSize);
+
+            char INFO[4];
+            fread(INFO, 1, 4, fid);
+            checkTag(INFO, "INFO", 4);
+
+            unsigned int numVerts;
+            fread(&numVerts, sizeof(unsigned int), 1, fid);
+
+            unsigned int numInds;
+            fread(&numInds, sizeof(unsigned int), 1, fid);
+
+            unsigned short numSubmeshes;
+            fread(&numSubmeshes, sizeof(unsigned short), 1, fid);
+
+            char vStr[4];
+            fread(vStr, sizeof(char), 4, fid);
+            char vMajor = vStr[1];
+            char vMinor = vStr[2];
+            char vPatch = vStr[3];
+            printf("File version: v%i.%i.%i\n", vMajor, vMinor, vPatch);
+            printf("Highest known version is: v%i.%i.%i\n", KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR, KNOWN_VERSION_PATCH);
+
+            //if ( vMajor > KNOWN_VERSION_MAJOR || (vMajor <= KNOWN_VERSION_MAJOR && vMinor > KNOWN_VERSION_MINOR) ) {
+            //	printf("File version too high! Highest known version is: v%i.%i.%i\n", KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR, KNOWN_VERSION_PATCH);
+            //}
+
+            unsigned short len;
+            fread(&len, sizeof(unsigned short), 1, fid);
+            char* comment = (char*)malloc(len);
+            fread(comment, 1, len, fid);
+            comment[len - 1] = 0; // just in case...
+            printf("  Embedded comment: '%s'\n", comment);
+            free(comment);
+
+            printf("# of Vertices: %i\n", numVerts);
+            printf("# of Indices:  %i\n", numInds);
+            printf("# of Meshes:   %i\n", numSubmeshes);
+
+            std::vector<Vertex_Anim> m_Vertices;
+            m_Vertices.resize(numVerts);
+
+            std::vector<Triangle> m_Tris;
+            m_Tris.resize(numInds*3);
+
+            m_Submeshes.resize(numSubmeshes);
+
+            // read each submesh
+            for (int n_submesh = 0; n_submesh < numSubmeshes; n_submesh++) {
+                char tag[8];
+                fread(tag, 1, 8, fid);
+                checkTag(tag, "SUBMESH", 8);
+
+                auto& sm = m_Submeshes[n_submesh];
+                fread(&sm.BaseIndex, sizeof(u32), 1, fid);
+                fread(&sm.IndexCount, sizeof(u32), 1, fid);
+
+                sm.MaterialIndex = 0;
+                sm.Transform = math::mat4();
+            }
+
+            // DATA block
+            char DATA[4];
+            fread(DATA, 1, 4, fid);
+            checkTag(DATA, "DATA", 4);
+
+            // read vertices
+            char VERT[4];
+            fread(VERT, 1, 4, fid);
+            checkTag(VERT, "VERT", 4);
+            for (int n_vert = 0; n_vert < numVerts; n_vert++) {
+                // Position
+                fread(&m_Vertices[n_vert].Position, sizeof(float), 3, fid);
+
+                // Normal
+                math::vec3 f_normal;
+                fread(&f_normal, sizeof(float), 3, fid);
+
+                // Tex
+                fread(&m_Vertices[n_vert].Texcoord, sizeof(float), 2, fid);
+
+                // Tangent/Bitangent
+                // file stores these two separate.
+                // just use the tangent and store the winding order in the 4th entry.
+                math::vec3 f_tangent, f_bitangent;
+                fread(&f_tangent, sizeof(float), 3, fid);
+                fread(&f_bitangent, sizeof(float), 3, fid);
+
+                float w = (f_normal.cross(f_tangent)).dot(f_bitangent) < 0.0f ? -1.0f : 1.0f;
+                
+                m_Vertices[n_vert].Normal = f_normal;
+                m_Vertices[n_vert].Tangent = math::vec4(f_tangent, w);
+
+                // Weight
+                fread(&m_Vertices[n_vert].BoneWeights, sizeof(float), 4, fid);
+
+                // Bone
+                fread(&m_Vertices[n_vert].BoneIndices[0], sizeof(s32), 4, fid);
+                //fread(&m_mesh.vertices[n_vert].bone_idx.x, sizeof(int), 1, fid);
+                //fread(&m_mesh.vertices[n_vert].bone_idx.y, sizeof(int), 1, fid);
+                //fread(&m_mesh.vertices[n_vert].bone_idx.z, sizeof(int), 1, fid);
+                //fread(&m_mesh.vertices[n_vert].bone_idx.w, sizeof(int), 1, fid);
+            }
+
+            // read indices
+            char INDS[4];
+            fread(INDS, 1, 4, fid);
+            checkTag(INDS, "IDX", 4);
+            for (int n_tri = 0; n_tri < numInds / 3; n_tri++) {
+                // Indices in groups of three
+                fread(&m_Tris[n_tri], sizeof(u32), 3, fid);
+            }
+
+            // Closing tag
+            char END[4];
+            fread(END, 1, 4, fid);
+
+            if (END[0] != 'E' || END[1] != 'N' || END[2] != 'D' || END[3] != '\0') {
+                printf("ERROR::Did not reach the END tag at the end!!\n");
+            }
+            fclose(fid);
+
+            // Set shader info
+            m_MeshShader = Renderer::GetShaderLibrary()->Get("PrePass_Anim"); // TODO: allow meshes to choose their shader?
+            m_BaseMaterial = std::make_shared<Material>(m_MeshShader);
+
+            // Create materials
+            // Manually set material struct
+            MaterialSpec mat_spec;
+
+            // If after the material and texture definitions, some channels are still
+            // not set, set them to the default texture values
+            mat_spec.Albedo = MaterialCatalog::GetTexture("Data/Images/frog.png");
+            mat_spec.Normal = MaterialCatalog::GetTexture("Data/Images/normal.png");
+            mat_spec.Ambient = MaterialCatalog::GetTexture("Data/Images/white.png");
+            mat_spec.Metalness = MaterialCatalog::GetTexture("Data/Images/black.png");
+            mat_spec.Roughness = MaterialCatalog::GetTexture("Data/Images/white.png");
+            mat_spec.Emissive = MaterialCatalog::GetTexture("Data/Images/black.png");
+
+            // mat_spec should now have all the valid data needed!
+            // upload everyhing from mat_spec to the material
+            m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
+            m_BaseMaterial->Set<float>("u_Metalness", mat_spec.MetalnessBase);
+            m_BaseMaterial->Set<float>("u_Roughness", mat_spec.RoughnessBase);
+            m_BaseMaterial->Set<float>("u_TextureScale", mat_spec.TextureScale);
+
+            m_BaseMaterial->Set("u_AlbedoTexture", mat_spec.Albedo);
+            m_BaseMaterial->Set("u_NormalTexture", mat_spec.Normal);
+            m_BaseMaterial->Set("u_MetalnessTexture", mat_spec.Metalness);
+            m_BaseMaterial->Set("u_RoughnessTexture", mat_spec.Roughness);
+            m_BaseMaterial->Set("u_AmbientTexture", mat_spec.Ambient);
+            m_BaseMaterial->Set("u_EmissiveTexture", mat_spec.Emissive);
+
+            // Create vertex array
+            {
+                m_VertexArray = VertexArray::Create();
+
+                auto vb = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex_Anim));
+                vb->SetLayout({
+                    { ShaderDataType::Float3, "a_Position" },
+                    { ShaderDataType::Float3, "a_Normal" },
+                    { ShaderDataType::Float4, "a_Tangent" },
+                    { ShaderDataType::Float2, "a_TexCoord" },
+                    { ShaderDataType::Int4,   "a_BoneIndices"},
+                    { ShaderDataType::Float4, "a_BoneWeights" },
+                    });
+                m_VertexArray->AddVertexBuffer(vb);
+
+                auto ib = IndexBuffer::Create(m_Tris.data(), m_Tris.size() * 3); // TODO: make sure this is # if indices
+                m_VertexArray->SetIndexBuffer(ib);
+
+                m_VertexArray->Unbind();
+            }
+
+            m_loaded = true;
+        }
+        else {
+            printf("Failed to open file '%s'!\n", filename.c_str());
+        }
     }
 }

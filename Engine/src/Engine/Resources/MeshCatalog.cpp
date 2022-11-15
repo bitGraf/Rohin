@@ -1,6 +1,8 @@
 #include <enpch.hpp>
 #include "MeshCatalog.hpp"
 
+#include "Loaders/MD5MeshLoader.hpp"
+
 namespace Engine {
 
     namespace MeshCatalog {
@@ -19,6 +21,13 @@ namespace Engine {
             }break;
             case FileFormat::NBT_Basic: {
                 Mesh* mesh = new Mesh(filepath);
+                if (mesh->Loaded()) {
+                    m_MeshList[mesh_name] = mesh;
+                    ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, filepath);
+                }
+            }break;
+            case FileFormat::MESH_File: {
+                Mesh* mesh = new Mesh(filepath, 1);
                 if (mesh->Loaded()) {
                     m_MeshList[mesh_name] = mesh;
                     ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, filepath);
