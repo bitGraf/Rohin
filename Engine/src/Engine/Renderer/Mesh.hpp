@@ -30,10 +30,13 @@ namespace Engine {
     class Mesh
     {
     public:
+        // NEW constructor
+        Mesh(const std::string& filename);
+
         // load MESH_File
         Mesh(const std::string& filename, int);
         // load NBT .mesh file
-        Mesh(const std::string& filename);
+        Mesh(const std::string& filename, float, float);
         // load from .MD5Mesh file
         Mesh(const md5::Model& model);
         ~Mesh();

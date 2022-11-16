@@ -11,6 +11,8 @@ namespace Engine {
         void Register(const std::string& mesh_name, const std::string& filepath, FileFormat file_type) {
             switch (file_type) {
             case FileFormat::MD5_Text: {
+                ENGINE_LOG_CRITICAL("Don't load MD5 meshes right now...");
+                return;
                 md5::Model model;
                 md5::LoadMD5MeshFile(filepath, &model);
                 Mesh* mesh = new Mesh(model);
@@ -20,17 +22,22 @@ namespace Engine {
                 }
             }break;
             case FileFormat::NBT_Basic: {
-                Mesh* mesh = new Mesh(filepath);
+                ENGINE_LOG_CRITICAL("Don't load NBT meshes right now...");
+                return;
+                Mesh* mesh = new Mesh(filepath, 0.0f, 0.0f);
                 if (mesh->Loaded()) {
                     m_MeshList[mesh_name] = mesh;
                     ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, filepath);
                 }
             }break;
             case FileFormat::MESH_File: {
-                Mesh* mesh = new Mesh(filepath, 1);
+                Mesh* mesh = new Mesh(filepath);
                 if (mesh->Loaded()) {
                     m_MeshList[mesh_name] = mesh;
                     ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, filepath);
+                }
+                else {
+                    ENGINE_LOG_ERROR("Failed to load Mesh [{0}] from [{1}]", mesh_name, filepath);
                 }
             }break;
             case FileFormat::None: {

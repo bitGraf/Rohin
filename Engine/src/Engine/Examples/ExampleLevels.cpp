@@ -41,6 +41,9 @@ namespace Engine {
         md5::LoadMD5MaterialDefinitionFile("Data/Models/tentacle/tentacle.md5material", mats);
         MaterialCatalog::RegisterMaterial(mats);
 
+        MeshCatalog::Register("new_format_test", "Data/Models/output.mesh", FileFormat::MESH_File);
+
+        /*
         // read md5mesh files
         MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
         MeshCatalog::Register("mesh_test", "Data/Models/guard/guard.md5mesh", FileFormat::MD5_Text);
@@ -117,6 +120,7 @@ namespace Engine {
             math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
             trans *= rotM;
         }
+        */
     }
 
     void load_level_2(Scene3D* scene) {

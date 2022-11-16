@@ -19,7 +19,7 @@ namespace Engine {
         math::vec3 Position;
         math::vec3 Normal;
         math::vec3 Tangent;
-        math::vec3 Binormal;
+        math::vec3 Bitangent;
         math::vec2 Texcoord;
     };
 
@@ -28,7 +28,8 @@ namespace Engine {
     {
         math::vec3 Position;
         math::vec3 Normal;
-        math::vec4 Tangent;
+        math::vec3 Tangent;
+        math::vec3 Bitangent;
         math::vec2 Texcoord;
         s32 BoneIndices[4];
         math::vec4 BoneWeights;
@@ -45,8 +46,203 @@ namespace Engine {
 
     }
 
+    Mesh::Mesh(const std::string& filename) {
+        // anonymous helper funcs
+        auto checkTag = [](const char* tag, const char* comp, int len) {
+            bool success = true;
+            for (int n = 0; n < len; n++) {
+                if (comp[n] != tag[n]) {
+                    success = false;
+                    break;
+                }
+            }
+            if (!success) {
+                switch (len) {
+                case 4: {
+                    printf("ERROR::Expected '%s', got '%c%c%c%c'\n", comp, tag[0], tag[1], tag[2], tag[3]);
+                    break;
+                } case 8: {
+                    printf("ERROR::Expected '%s', got '%c%c%c%c%c%c%c%c'\n", comp, tag[0], tag[1], tag[2], tag[3], tag[4], tag[5], tag[6], tag[7]);
+                    break;
+                } default: {
+                    printf("ERROR::Expected '%s','\n", comp);
+                    break;
+                }
+                }
+            }
+            return success;
+        };
+        auto read_u32 = [](std::ifstream& file) -> u32 {
+            u32 res;
+            file.read(reinterpret_cast<char*>(&res), sizeof(u32));
+            return res;
+        };
+        auto read_u16 = [](std::ifstream& file) -> u16 {
+            u16 res;
+            file.read(reinterpret_cast<char*>(&res), sizeof(u16));
+            return res;
+        };
+        auto read_mat4 = [](std::ifstream& file, math::mat4* m) {
+            file.read(reinterpret_cast<char*>(m), 16 * sizeof(f32));
+        };
+        auto VERSION_CHECK = [](char vStr[4])-> bool {
+            static const u8 KNOWN_VERSION_MAJOR = 0;
+            static const u8 KNOWN_VERSION_MINOR = 2;
+            static const u8 KNOWN_VERSION_PATCH = 0;
+
+            if (vStr[0] != 'v') { ENGINE_LOG_ERROR("Incorrect format string read from file: '{0}' should be 'v'",vStr[0]);  return false; }
+            u8 vMajor = vStr[1];
+            u8 vMinor = vStr[2];
+            u8 vPatch = vStr[3];
+
+            // No backwards-compatibility rn
+            if (vMajor != KNOWN_VERSION_MAJOR || vMinor != KNOWN_VERSION_MINOR || vPatch > KNOWN_VERSION_PATCH) {
+                ENGINE_LOG_ERROR("Trying to load a MESH_file of version: v{0}.{1}.{2}", 
+                    vMajor, vMinor, vPatch);
+                ENGINE_LOG_ERROR("  Only supporting loading of versions up to v{0}.{1}.{2}",
+                    KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR, KNOWN_VERSION_PATCH);
+                return false;
+            }
+
+            return true;
+        };
+
+        // Open file at the end
+        std::ifstream file{ filename, std::ios::ate | std::ios::binary };
+
+        if (!file.is_open()) {
+            ENGINE_LOG_ERROR("Could not open file '{0}'!", filename);
+            return;
+        }
+
+        // read current offset (at end of file) giving filesize, then go back to the start
+        size_t actual_fileSize = static_cast<size_t>(file.tellg());
+        file.seekg(0);
+
+        // HEADER
+        char MAGIC[4];
+        file.read(MAGIC, 4);
+        if (!checkTag(MAGIC, "MESH", 4)) return;
+
+        u32 FileSize = read_u32(file);
+        if (static_cast<size_t>(FileSize) != actual_fileSize) {
+            ENGINE_LOG_ERROR("EROR::Expectied a fileSize of {0}, got {1}\n", actual_fileSize, FileSize);
+            return;
+        }
+
+        u32 Flag = read_u32(file);
+
+        bool has_animations = Flag & 0x01;
+        if (has_animations) {
+            ENGINE_LOG_CRITICAL("Animated meshes not supported fully!!!!");
+            return;
+        }
+
+        char INFO[4];
+        file.read(INFO, 4);
+        if (!checkTag(INFO, "INFO", 4)) return;
+
+        u32 numVerts = read_u32(file);
+        u32 numInds = read_u32(file);
+        u16 numSubmeshes = read_u16(file);
+
+        char vStr[4];
+        file.read(vStr, 4);
+        if (!VERSION_CHECK(vStr)) return;
+
+        u16 len = read_u16(file);
+        char* comment = (char*)malloc(len);
+        file.read(comment, len);
+        comment[len - 1] = 0; // just in case...
+        ENGINE_LOG_INFO("  Embedded comment: '%s'", comment);
+        free(comment);
+
+        ENGINE_LOG_INFO("# of Vertices: {0}", numVerts);
+        ENGINE_LOG_INFO("# of Indices:  {0}", numInds);
+        ENGINE_LOG_INFO("# of Meshes:   {0}", numSubmeshes);
+
+        m_Submeshes.resize(numSubmeshes);
+
+        // read each submesh
+        for (int n_submesh = 0; n_submesh < numSubmeshes; n_submesh++) {
+            char tag[8];
+            file.read(tag, 8);
+            if (!checkTag(tag, "SUBMESH", 8)) return;
+
+            auto& sm = m_Submeshes[n_submesh];
+            sm.BaseIndex = read_u32(file);
+            sm.MaterialIndex = read_u32(file);
+            sm.IndexCount = read_u32(file);
+            read_mat4(file, &sm.Transform);
+        }
+
+        // DATA block
+        char DATA[4];
+        file.read(DATA, 4);
+        if (!checkTag(DATA, "DATA", 4)) return;
+
+        // read vertices
+        char VERT[4];
+        file.read(VERT, 4);
+        if (!checkTag(VERT, "VERT", 4)) return;
+
+        if (has_animations) {
+            std::vector<Vertex_Anim> m_Vertices;
+            m_Vertices.resize(numVerts);
+
+            for (int n_vert = 0; n_vert < numVerts; n_vert++) {
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Position), 3 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Normal), 3 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Tangent), 3 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Bitangent), 3 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Texcoord), 2 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].BoneIndices), 4 * sizeof(s32));
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].BoneWeights), 4 * sizeof(f32));
+            }
+        } else {
+            std::vector<Vertex> m_Vertices;
+            m_Vertices.resize(numVerts);
+
+            for (int n_vert = 0; n_vert < numVerts; n_vert++) {
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Position), 3 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Normal), 3 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Tangent), 3 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Bitangent), 3 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Texcoord), 2 * sizeof(f32));
+            }
+        }
+
+        std::vector<Triangle> m_Tris;
+        m_Tris.resize(numInds * 3);
+
+        // read indices
+        char INDS[4];
+        file.read(INDS, 4);
+        if (!checkTag(INDS, "IDX", 4)) return;
+        for (int n_tri = 0; n_tri < numInds / 3; n_tri++) {
+            // Indices in groups of three
+            m_Tris[n_tri].V1 = read_u32(file);
+            m_Tris[n_tri].V2 = read_u32(file);
+            m_Tris[n_tri].V3 = read_u32(file);
+        }
+
+        // Closing tag
+        char END[4];
+        file.read(END, 4);
+
+        if (END[0] != 'E' || END[1] != 'N' || END[2] != 'D' || END[3] != '\0') {
+            ENGINE_LOG_ERROR("ERROR::Did not reach the END tag at the end!!\n");
+            return;
+        }
+
+        // TODO: if any errrors happen, the file will not be closed properly
+        file.close();
+
+        m_loaded = true;
+    }
+
     // NBT file load
-    Mesh::Mesh(const std::string & filename) {
+    Mesh::Mesh(const std::string & filename, float, float) {
         ENGINE_LOG_INFO("Loading a mesh from a .nbt file");
 
         nbt::file_data data;
@@ -184,7 +380,7 @@ namespace Engine {
                 { ShaderDataType::Float3, "a_Position" },
                 { ShaderDataType::Float3, "a_Normal" },
                 { ShaderDataType::Float3, "a_Tangent" },
-                { ShaderDataType::Float3, "a_Binormal" },
+                { ShaderDataType::Float3, "a_Bitangent" },
                 { ShaderDataType::Float2, "a_TexCoord" },
                 });
             m_VertexArray->AddVertexBuffer(vb);
@@ -238,7 +434,7 @@ namespace Engine {
                 int totalIndex = v + mesh_vert_offsets[m];
                 m_Vertices[totalIndex].Position = vert.position;
                 m_Vertices[totalIndex].Normal = vert.normal;
-                m_Vertices[totalIndex].Tangent = vert.tangent;
+                // m_Vertices[totalIndex].Tangent = vert.tangent; //TODO: tangent 4vec -> tangent+bitangent
                 m_Vertices[totalIndex].Texcoord = vert.uv;
                 m_Vertices[totalIndex].BoneWeights = vert.boneWeights;
                 memcpy(m_Vertices[totalIndex].BoneIndices, vert.boneIndices, 4*sizeof(vert.boneIndices[0]));
@@ -331,7 +527,8 @@ namespace Engine {
             vb->SetLayout({
                 { ShaderDataType::Float3, "a_Position" },
                 { ShaderDataType::Float3, "a_Normal" },
-                { ShaderDataType::Float4, "a_Tangent" },
+                { ShaderDataType::Float3, "a_Tangent" },
+                { ShaderDataType::Float3, "a_Bitangent" },
                 { ShaderDataType::Float2, "a_TexCoord" },
                 { ShaderDataType::Int4,   "a_BoneIndices"},
                 { ShaderDataType::Float4, "a_BoneWeights" },
@@ -482,7 +679,7 @@ namespace Engine {
                 fread(&m_Vertices[n_vert].Tangent, sizeof(float), 3, fid);
 
                 // Bitangent
-                fread(&m_Vertices[n_vert].Binormal, sizeof(float), 3, fid);
+                fread(&m_Vertices[n_vert].Bitangent, sizeof(float), 3, fid);
 
                 // Tex
                 fread(&m_Vertices[n_vert].Texcoord, sizeof(float), 2, fid);
@@ -545,14 +742,15 @@ namespace Engine {
                 vb->SetLayout({
                     { ShaderDataType::Float3, "a_Position" },
                     { ShaderDataType::Float3, "a_Normal" },
-                    { ShaderDataType::Float4, "a_Tangent" },
+                    { ShaderDataType::Float3, "a_Tangent" },
+                    { ShaderDataType::Float3, "a_Bitangent" },
                     { ShaderDataType::Float2, "a_TexCoord" },
                     { ShaderDataType::Int4,   "a_BoneIndices"},
                     { ShaderDataType::Float4, "a_BoneWeights" },
                     });
                 m_VertexArray->AddVertexBuffer(vb);
 
-                auto ib = IndexBuffer::Create(m_Tris.data(), m_Tris.size() * 3); // TODO: make sure this is # if indices
+                auto ib = IndexBuffer::Create(m_Tris.data(), m_Tris.size() * 3); // TODO: make sure this is # of indices
                 m_VertexArray->SetIndexBuffer(ib);
 
                 m_VertexArray->Unbind();
