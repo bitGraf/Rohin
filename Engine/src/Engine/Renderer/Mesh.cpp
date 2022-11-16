@@ -203,8 +203,9 @@ namespace Engine {
         size_t vertex_data_size = 0;
 
         if (has_animations) {
-            std::vector<Vertex_Anim> m_Vertices;
-            m_Vertices.resize(numVerts);
+            vertex_data_size = numVerts * sizeof(Vertex_Anim);
+            Vertex_Anim* m_Vertices = (Vertex_Anim*)malloc(vertex_data_size);
+            vertex_data_ptr = (void*)m_Vertices;
 
             for (int n_vert = 0; n_vert < numVerts; n_vert++) {
                 file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Position), 3 * sizeof(f32));
@@ -215,14 +216,10 @@ namespace Engine {
                 file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].BoneIndices), 4 * sizeof(s32));
                 file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].BoneWeights), 4 * sizeof(f32));
             }
-
-            // TODO: allocating and deallocating this memory twice
-            vertex_data_size = m_Vertices.size() * sizeof(Vertex_Anim);
-            vertex_data_ptr = malloc(vertex_data_size);
-            memcpy(vertex_data_ptr, m_Vertices.data(), vertex_data_size);
         } else {
-            std::vector<Vertex> m_Vertices;
-            m_Vertices.resize(numVerts);
+            vertex_data_size = numVerts * sizeof(Vertex);
+            Vertex* m_Vertices = (Vertex*)malloc(vertex_data_size);
+            vertex_data_ptr = (void*)m_Vertices;
 
             for (int n_vert = 0; n_vert < numVerts; n_vert++) {
                 file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Position), 3 * sizeof(f32));
@@ -231,11 +228,6 @@ namespace Engine {
                 file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Bitangent), 3 * sizeof(f32));
                 file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Texcoord), 2 * sizeof(f32));
             }
-
-            // TODO: allocating and deallocating this memory twice
-            vertex_data_size = m_Vertices.size() * sizeof(Vertex);
-            vertex_data_ptr = malloc(vertex_data_size);
-            memcpy(vertex_data_ptr, m_Vertices.data(), vertex_data_size);
         }
 
         // Closing tag
@@ -300,6 +292,7 @@ namespace Engine {
 
             auto vb = VertexBuffer::Create(vertex_data_ptr, vertex_data_size);
             free(vertex_data_ptr); vertex_data_ptr = nullptr;
+
             if (has_animations) {
                 vb->SetLayout({
                 { ShaderDataType::Float3, "a_Position" },
