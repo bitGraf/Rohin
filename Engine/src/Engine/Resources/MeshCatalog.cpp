@@ -22,8 +22,8 @@ namespace Engine {
                 }
             }break;
             case FileFormat::NBT_Basic: {
-                ENGINE_LOG_CRITICAL("Don't load NBT meshes right now...");
-                return;
+                //ENGINE_LOG_CRITICAL("Don't load NBT meshes right now...");
+                //return;
                 Mesh* mesh = new Mesh(filepath, 0.0f, 0.0f);
                 if (mesh->Loaded()) {
                     m_MeshList[mesh_name] = mesh;

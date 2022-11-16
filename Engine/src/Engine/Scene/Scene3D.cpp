@@ -220,9 +220,11 @@ namespace Engine {
                         // TODO: more efficient way of doing this, 
                         // maybe just a separate group for animated meshes?
                         const auto& anim = m_Registry.get<MeshAnimationComponent>(entity);
+                        auto& name_str = m_Registry.get<TagComponent>(entity).Name;
                         Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform, anim.Anim);
                     }
                     else {
+                        auto& name_str = m_Registry.get<TagComponent>(entity).Name;
                         Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform);
                     }
                 }
@@ -268,12 +270,12 @@ namespace Engine {
                 Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
             }
 
-            auto view_trans = m_Registry.view<TransformComponent>();
-            for (auto entity : view_trans) {
-                //const auto& tag = view_trans.get<TagComponent>(entity);
-                const auto& transform = view_trans.get<TransformComponent>(entity);
+            auto group_trans = m_Registry.group<TransformComponent>(entt::get<TagComponent>);
+            for (auto entity : group_trans) {
+                const auto& tag = group_trans.get<TagComponent>(entity);
+                const auto& transform = group_trans.get<TransformComponent>(entity);
                 math::vec3 pos = transform.Transform.column4.asVec3();
-                //Renderer::Draw3DText(tag.Name, pos, math::vec3(.7f, .7f, 1.0f));
+                Renderer::Draw3DText(tag.Name, pos, math::vec3(.7f, .7f, 1.0f));
             }
         }
         

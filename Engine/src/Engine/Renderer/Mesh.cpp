@@ -87,7 +87,7 @@ namespace Engine {
         };
         auto VERSION_CHECK = [](char vStr[4])-> bool {
             static const u8 KNOWN_VERSION_MAJOR = 0;
-            static const u8 KNOWN_VERSION_MINOR = 2;
+            static const u8 KNOWN_VERSION_MINOR = 3;
             static const u8 KNOWN_VERSION_PATCH = 0;
 
             if (vStr[0] != 'v') { ENGINE_LOG_ERROR("Incorrect format string read from file: '{0}' should be 'v'",vStr[0]);  return false; }
@@ -181,10 +181,26 @@ namespace Engine {
         file.read(DATA, 4);
         if (!checkTag(DATA, "DATA", 4)) return;
 
+        // read indices
+        std::vector<Triangle> m_Tris;
+        m_Tris.resize(numInds * 3);
+        char INDS[4];
+        file.read(INDS, 4);
+        if (!checkTag(INDS, "IDX", 4)) return;
+        for (int n_tri = 0; n_tri < numInds / 3; n_tri++) {
+            // Indices in groups of three
+            m_Tris[n_tri].V1 = read_u32(file);
+            m_Tris[n_tri].V2 = read_u32(file);
+            m_Tris[n_tri].V3 = read_u32(file);
+        }
+
         // read vertices
         char VERT[4];
         file.read(VERT, 4);
         if (!checkTag(VERT, "VERT", 4)) return;
+
+        void* vertex_data_ptr = nullptr;
+        size_t vertex_data_size = 0;
 
         if (has_animations) {
             std::vector<Vertex_Anim> m_Vertices;
@@ -199,6 +215,11 @@ namespace Engine {
                 file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].BoneIndices), 4 * sizeof(s32));
                 file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].BoneWeights), 4 * sizeof(f32));
             }
+
+            // TODO: allocating and deallocating this memory twice
+            vertex_data_size = m_Vertices.size() * sizeof(Vertex_Anim);
+            vertex_data_ptr = malloc(vertex_data_size);
+            memcpy(vertex_data_ptr, m_Vertices.data(), vertex_data_size);
         } else {
             std::vector<Vertex> m_Vertices;
             m_Vertices.resize(numVerts);
@@ -210,20 +231,11 @@ namespace Engine {
                 file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Bitangent), 3 * sizeof(f32));
                 file.read(reinterpret_cast<char*>(&m_Vertices[n_vert].Texcoord), 2 * sizeof(f32));
             }
-        }
 
-        std::vector<Triangle> m_Tris;
-        m_Tris.resize(numInds * 3);
-
-        // read indices
-        char INDS[4];
-        file.read(INDS, 4);
-        if (!checkTag(INDS, "IDX", 4)) return;
-        for (int n_tri = 0; n_tri < numInds / 3; n_tri++) {
-            // Indices in groups of three
-            m_Tris[n_tri].V1 = read_u32(file);
-            m_Tris[n_tri].V2 = read_u32(file);
-            m_Tris[n_tri].V3 = read_u32(file);
+            // TODO: allocating and deallocating this memory twice
+            vertex_data_size = m_Vertices.size() * sizeof(Vertex);
+            vertex_data_ptr = malloc(vertex_data_size);
+            memcpy(vertex_data_ptr, m_Vertices.data(), vertex_data_size);
         }
 
         // Closing tag
@@ -237,6 +249,83 @@ namespace Engine {
 
         // TODO: if any errrors happen, the file will not be closed properly
         file.close();
+
+        // Set shader info
+        if (has_animations) {
+            m_MeshShader = Renderer::GetShaderLibrary()->Get("PrePass_Anim"); // TODO: allow meshes to choose their shader?
+        } else {
+            m_MeshShader = Renderer::GetShaderLibrary()->Get("PrePass"); // TODO: allow meshes to choose their shader?
+        }
+        m_BaseMaterial = std::make_shared<Material>(m_MeshShader);
+
+        // Create materials
+        // Manually set material struct
+        MaterialSpec mat_spec;
+
+        // If after the material and texture definitions, some channels are still
+        // not set, set them to the default texture values
+        mat_spec.Albedo = MaterialCatalog::GetTexture("Data/Images/frog.png");
+        mat_spec.Normal = MaterialCatalog::GetTexture("Data/Images/normal.png");
+        mat_spec.Ambient = MaterialCatalog::GetTexture("Data/Images/white.png");
+        mat_spec.Metalness = MaterialCatalog::GetTexture("Data/Images/black.png");
+        mat_spec.Roughness = MaterialCatalog::GetTexture("Data/Images/white.png");
+        mat_spec.Emissive = MaterialCatalog::GetTexture("Data/Images/black.png");
+
+        // mat_spec should now have all the valid data needed!
+        // upload everyhing from mat_spec to the material
+        m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
+        m_BaseMaterial->Set<float>("u_Metalness", mat_spec.MetalnessBase);
+        m_BaseMaterial->Set<float>("u_Roughness", mat_spec.RoughnessBase);
+        m_BaseMaterial->Set<float>("u_TextureScale", mat_spec.TextureScale);
+
+        m_BaseMaterial->Set("u_AlbedoTexture", mat_spec.Albedo);
+        m_BaseMaterial->Set("u_NormalTexture", mat_spec.Normal);
+        m_BaseMaterial->Set("u_MetalnessTexture", mat_spec.Metalness);
+        m_BaseMaterial->Set("u_RoughnessTexture", mat_spec.Roughness);
+        m_BaseMaterial->Set("u_AmbientTexture", mat_spec.Ambient);
+        m_BaseMaterial->Set("u_EmissiveTexture", mat_spec.Emissive);
+
+        // Create 1 material
+        Ref<MaterialInstance> mat = std::make_shared<MaterialInstance>(m_BaseMaterial, "mat1");
+
+        //mat->Set<math::vec3>("u_AlbedoColor", math::vec3(1, .5, .5));
+        //mat->Set<float>("u_Metalness", 1.0f);
+        //mat->Set<float>("u_Roughness", 0.75f);
+        //mat->Set<float>("u_TextureScale", 2.0f);
+        m_Materials.push_back(mat);
+
+        // Data is read from file, create gpu buffers now.
+        {
+            m_VertexArray = VertexArray::Create();
+
+            auto vb = VertexBuffer::Create(vertex_data_ptr, vertex_data_size);
+            free(vertex_data_ptr); vertex_data_ptr = nullptr;
+            if (has_animations) {
+                vb->SetLayout({
+                { ShaderDataType::Float3, "a_Position" },
+                { ShaderDataType::Float3, "a_Normal" },
+                { ShaderDataType::Float3, "a_Tangent" },
+                { ShaderDataType::Float3, "a_Bitangent" },
+                { ShaderDataType::Float2, "a_TexCoord" },
+                { ShaderDataType::Int4,   "a_BoneIndices"},
+                { ShaderDataType::Float4, "a_BoneWeights" },
+                    });
+            } else {
+                vb->SetLayout({
+                { ShaderDataType::Float3, "a_Position" },
+                { ShaderDataType::Float3, "a_Normal" },
+                { ShaderDataType::Float3, "a_Tangent" },
+                { ShaderDataType::Float3, "a_Bitangent" },
+                { ShaderDataType::Float2, "a_TexCoord" },
+                    });
+            }
+            m_VertexArray->AddVertexBuffer(vb);
+
+            auto ib = IndexBuffer::Create(m_Tris.data(), m_Tris.size() * 3); // TODO: make sure this is # if indices
+            m_VertexArray->SetIndexBuffer(ib);
+
+            m_VertexArray->Unbind();
+        }
 
         m_loaded = true;
     }

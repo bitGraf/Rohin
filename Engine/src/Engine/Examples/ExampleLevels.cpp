@@ -41,7 +41,75 @@ namespace Engine {
         md5::LoadMD5MaterialDefinitionFile("Data/Models/tentacle/tentacle.md5material", mats);
         MaterialCatalog::RegisterMaterial(mats);
 
+        MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
         MeshCatalog::Register("new_format_test", "Data/Models/output.mesh", FileFormat::MESH_File);
+
+        // Cube
+        {
+            auto cubeObj = scene->CreateGameObject("Player");
+            auto mesh = MeshCatalog::Get("new_format_test");
+
+            cubeObj.AddComponent<MeshRendererComponent>(mesh);
+            cubeObj.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(cubeObj);
+
+            auto& trans = cubeObj.GetComponent<TransformComponent>().Transform;
+            //math::CreateTranslation(trans, math::vec3(0, 1, 0));
+            math::CreateTransform(trans, math::mat3(), math::vec3(0, 1, 0), math::vec3(1, 1, 1));
+
+            UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
+            cubeObj.AddComponent<ColliderComponent>(hull);
+        }
+
+        // Platform
+        {
+            float platformSize = 20.0f;
+            float platformThickness = 3.0f;
+
+            auto platform = scene->CreateGameObject("Platform");
+
+            auto rectMesh = MeshCatalog::Get("mesh_plane");
+            auto material = rectMesh->GetMaterial(0);
+            material->Set<float>("u_TextureScale", platformSize);
+            material->Set("u_AlbedoTexture", MaterialCatalog::GetTexture("Data/Images/grid/PNG/Dark/texture_07.png"));
+
+            platform.AddComponent<MeshRendererComponent>(rectMesh);
+
+            auto& trans = platform.GetComponent<TransformComponent>().Transform;
+            math::CreateScale(trans, platformSize, 1, platformSize);
+
+            UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
+        }
+
+        // Lights
+        {
+            auto light = scene->CreateGameObject("Sun");
+
+            light.AddComponent<LightComponent>(LightType::Directional, math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
+
+            auto& trans = light.GetComponent<TransformComponent>().Transform;
+            math::CreateRotationFromYawPitchRoll(trans, 45, -80, 0);
+        }
+
+        // Camera
+        {
+            math::vec2 viewportSize = {
+                (float)Application::Get().GetWindow().GetWidth(),
+                (float)Application::Get().GetWindow().GetHeight() };
+
+            auto Camera = scene->CreateGameObject("Camera");
+
+            auto& camera = Camera.AddComponent<CameraComponent>().camera;
+            camera.SetViewportSize(viewportSize.x, viewportSize.y);
+            camera.SetPerspective(75, .01, 100);
+
+            Camera.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(Camera);
+
+            auto& trans = Camera.GetComponent<TransformComponent>().Transform;
+            math::CreateTranslation(trans, math::vec3(0, 4, 5));
+            math::mat4 rotM;
+            math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
+            trans *= rotM;
+        }
 
         /*
         // read md5mesh files
