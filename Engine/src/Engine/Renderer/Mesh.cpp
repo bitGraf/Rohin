@@ -77,6 +77,11 @@ namespace Engine {
             file.read(reinterpret_cast<char*>(&res), sizeof(u32));
             return res;
         };
+        auto read_s32 = [](std::ifstream& file) -> s32 {
+            s32 res;
+            file.read(reinterpret_cast<char*>(&res), sizeof(s32));
+            return res;
+        };
         auto read_u16 = [](std::ifstream& file) -> u16 {
             u16 res;
             file.read(reinterpret_cast<char*>(&res), sizeof(u16));
@@ -87,8 +92,8 @@ namespace Engine {
         };
         auto VERSION_CHECK = [](char vStr[4])-> bool {
             static const u8 KNOWN_VERSION_MAJOR = 0;
-            static const u8 KNOWN_VERSION_MINOR = 3;
-            static const u8 KNOWN_VERSION_PATCH = 0;
+            static const u8 KNOWN_VERSION_MINOR = 4;
+            static const u8 KNOWN_VERSION_PATCH = 2;
 
             if (vStr[0] != 'v') { ENGINE_LOG_ERROR("Incorrect format string read from file: '{0}' should be 'v'",vStr[0]);  return false; }
             u8 vMajor = vStr[1];
@@ -133,10 +138,6 @@ namespace Engine {
         u32 Flag = read_u32(file);
 
         bool has_animations = Flag & 0x01;
-        if (has_animations) {
-            ENGINE_LOG_CRITICAL("Animated meshes not supported fully!!!!");
-            return;
-        }
 
         char INFO[4];
         file.read(INFO, 4);
@@ -154,7 +155,7 @@ namespace Engine {
         char* comment = (char*)malloc(len);
         file.read(comment, len);
         comment[len - 1] = 0; // just in case...
-        ENGINE_LOG_INFO("  Embedded comment: '%s'", comment);
+        ENGINE_LOG_INFO("  Embedded comment: '{0}'", comment);
         free(comment);
 
         ENGINE_LOG_INFO("# of Vertices: {0}", numVerts);
@@ -174,6 +175,34 @@ namespace Engine {
             sm.MaterialIndex = read_u32(file);
             sm.IndexCount = read_u32(file);
             read_mat4(file, &sm.Transform);
+        }
+
+        // Joint heirarchy
+        if (has_animations) {
+            char BONE[4];
+            file.read(BONE, 4);
+            if (!checkTag(BONE, "BONE", 4)) return;
+
+            u16 num_bones = read_u16(file);
+
+            for (int n_bone = 0; n_bone < num_bones; n_bone++) {
+                u16 name_len = read_u16(file);
+
+                char* name = (char*)malloc(name_len);
+                file.read(name, name_len);
+                name[name_len - 1] = 0; // just in case...
+                ENGINE_LOG_DEBUG("  Bone Name: '{0}'", name);
+                free(name);
+
+                s32 parent_idx = read_s32(file);
+
+                math::vec3 local_pos;
+                math::vec4 local_rot;
+                math::vec3 local_scale;
+                file.read(reinterpret_cast<char*>(&local_pos), 3 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&local_rot), 4 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&local_scale), 3 * sizeof(f32));
+            }
         }
 
         // DATA block
