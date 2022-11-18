@@ -101,12 +101,15 @@ namespace Engine {
             u8 vPatch = vStr[3];
 
             // No backwards-compatibility rn
-            if (vMajor != KNOWN_VERSION_MAJOR || vMinor != KNOWN_VERSION_MINOR || vPatch > KNOWN_VERSION_PATCH) {
-                ENGINE_LOG_ERROR("Trying to load a MESH_file of version: v{0}.{1}.{2}", 
-                    vMajor, vMinor, vPatch);
-                ENGINE_LOG_ERROR("  Only supporting loading of versions up to v{0}.{1}.{2}",
-                    KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR, KNOWN_VERSION_PATCH);
+            if (vMajor != KNOWN_VERSION_MAJOR || vMinor != KNOWN_VERSION_MINOR) {
+                ENGINE_LOG_ERROR("Trying to load a MESH_file of version: v{0}.{1}.   Supported version: v{2}.{3}",
+                    vMajor, vMinor, KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR);
                 return false;
+            }
+            if (vPatch > KNOWN_VERSION_PATCH) {
+                ENGINE_LOG_WARN("File is v{0}.{1}.{2}. Known version is v{3}.{4}.{5}. Should still be compatible.", 
+                    vMajor, vMinor, vPatch,
+                    KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR, KNOWN_VERSION_PATCH);
             }
 
             return true;
