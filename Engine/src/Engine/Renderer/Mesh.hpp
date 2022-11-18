@@ -12,8 +12,6 @@
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/Material.hpp"
 
-#include "Engine/Resources/Loaders/MD5MeshLoader.hpp"
-
 namespace Engine {
 
     class Submesh
@@ -27,6 +25,19 @@ namespace Engine {
         math::mat4 Transform;
     };
 
+    struct Joint {
+        math::mat4 invTransform; // in object-space
+        s32 parent;
+        std::string name;
+
+        // Bind-pose transform
+        math::vec3 position;
+        math::quat orientation;
+
+        // TODO: REMOVE THIS
+        math::mat4 Transform;
+    };
+
     class Mesh
     {
     public:
@@ -37,11 +48,11 @@ namespace Engine {
         Mesh(const std::string& filename, int);
         // load NBT .mesh file
         Mesh(const std::string& filename, float, float);
-        // load from .MD5Mesh file
-        Mesh(const md5::Model& model);
         ~Mesh();
 
         bool Loaded() { return m_loaded; }
+
+        void OnUpdate(double dt);
 
         std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
         const std::vector<Submesh>& GetSubmeshes() const { return m_Submeshes; }
@@ -52,7 +63,7 @@ namespace Engine {
         Ref<MaterialInstance> GetMaterial(u32 index) { ENGINE_LOG_ASSERT(index <= m_Materials.size(), "Not that many materials!"); return m_Materials[index]; }
 
         const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
-        const std::vector<md5::Joint>&  GetBindPose() const { return m_BindPose; }
+        // ANIM_HOOK const std::vector<md5::Joint>&  GetBindPose() const { return m_BindPose; }
     private:
 
     private:
@@ -67,9 +78,12 @@ namespace Engine {
         Ref<Material> m_BaseMaterial;
         std::vector<Engine::Ref<Engine::Texture2D>> m_Textures;
         std::vector<Engine::Ref<Engine::MaterialInstance>> m_Materials;
-        std::vector<md5::Joint> m_BindPose; // TODO: only relevant with animation
+        // ANIM_HOOK std::vector<md5::Joint> m_BindPose; // TODO: only relevant with animation
 
         bool m_loaded = false;
+
+        // Animation stuff
+        bool m_isAnimated = false;
 
         friend class Renderer;
     };

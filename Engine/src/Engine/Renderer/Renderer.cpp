@@ -9,8 +9,6 @@
 #include "Engine/Sound/SoundEngine.hpp"
 #include "Engine/Core/Input.hpp"
 
-#include "Engine/Resources/Loaders/MD5MeshLoader.hpp"
-
 #include "Engine/Resources/MaterialCatalog.hpp"
 
 namespace Engine {
@@ -686,36 +684,37 @@ namespace Engine {
     }
 
     // Animation variant
-    void Renderer::SubmitMesh(const Mesh* mesh, const math::mat4& transform, md5::Animation* anim) {
-        BENCHMARK_FUNCTION();
-
-        mesh->GetVertexArray()->Bind();
-        auto shader = mesh->GetMeshShader();
-        shader->Bind();
-
-        // set bone transforms
-        const auto& bindPose = mesh->GetBindPose();
-        const auto& Pose = anim->AnimatedSkeleton.Joints;
-        assert(bindPose.size() == Pose.size());
-        for (int n = 0; n < bindPose.size(); n++) {
-            const auto& bone0 = bindPose[n];
-            const auto& bone1 = Pose[n];
-
-            //shader->SetMat4("r_Bones[" + std::to_string(n) + "]", bone1.transform * bone0.invTransform);
-            shader->SetMat4("r_Bones[" + std::to_string(n) + "]", math::mat4());
-        }
-
-        auto& materials = mesh->GetMaterials();
-        for (const Submesh& submesh : mesh->GetSubmeshes()) {
-            auto material = materials[submesh.MaterialIndex];
-            material->Bind();
-
-            shader->SetMat4("r_Transform", transform * submesh.Transform);
-
-            //RenderCommand::DrawIndexed(mesh->GetVertexArray());
-            RenderCommand::DrawSubIndexed(submesh.BaseIndex, 0, submesh.IndexCount);
-        }
-    }
+    // ANIM_HOOK
+    //void Renderer::SubmitMesh(const Mesh* mesh, const math::mat4& transform, md5::Animation* anim) {
+    //    BENCHMARK_FUNCTION();
+    //
+    //    mesh->GetVertexArray()->Bind();
+    //    auto shader = mesh->GetMeshShader();
+    //    shader->Bind();
+    //
+    //    // set bone transforms
+    //    const auto& bindPose = mesh->GetBindPose();
+    //    const auto& Pose = anim->AnimatedSkeleton.Joints;
+    //    assert(bindPose.size() == Pose.size());
+    //    for (int n = 0; n < bindPose.size(); n++) {
+    //        const auto& bone0 = bindPose[n];
+    //        const auto& bone1 = Pose[n];
+    //
+    //        //shader->SetMat4("r_Bones[" + std::to_string(n) + "]", bone1.transform * bone0.invTransform);
+    //        shader->SetMat4("r_Bones[" + std::to_string(n) + "]", math::mat4());
+    //    }
+    //
+    //    auto& materials = mesh->GetMaterials();
+    //    for (const Submesh& submesh : mesh->GetSubmeshes()) {
+    //        auto material = materials[submesh.MaterialIndex];
+    //        material->Bind();
+    //
+    //        shader->SetMat4("r_Transform", transform * submesh.Transform);
+    //
+    //        //RenderCommand::DrawIndexed(mesh->GetVertexArray());
+    //        RenderCommand::DrawSubIndexed(submesh.BaseIndex, 0, submesh.IndexCount);
+    //    }
+    //}
 
     void Renderer::SubmitMesh_drawNormals(const Ref<Mesh>& mesh, const math::mat4& transform) {
         mesh->GetVertexArray()->Bind();
@@ -760,66 +759,68 @@ namespace Engine {
         TextRenderer::SubmitText(text, screenSpace.x, 720-screenSpace.y, color);
     }
 
-    void Renderer::DrawSkeletonDebug(
-        const TagComponent& tag,
-        const TransformComponent& transform,
-        const MeshRendererComponent& mesh,
-        const MeshAnimationComponent& anim,
-        const math::vec3 color) {
-
-        math::mat3 BlenderCorrection(math::vec3(0, 0, 1), math::vec3(1, 0, 0), math::vec3(0, 1, 0));
-        math::mat4 T = transform.Transform * math::mat4(BlenderCorrection, 1);
-        float s = 0.075f;
-        float length = 0.55f;
-        float length2 = 0.05f;
-
-        math::vec4 localR(1, 0, 0, 0);
-        math::vec4 localF(0, 1, 0, 0);
-        math::vec4 localU(0, 0, 1, 0);
-
-        //for (const auto& joint : anim.Anim->AnimatedSkeleton.Joints) {
-        for (int j = 0; j < anim.Anim->numJoints; j++) {
-            const auto& joint = anim.Anim->AnimatedSkeleton.Joints[j];
-            math::vec3 start = joint.transform.column4.asVec3();
-
-            math::vec3 boneR = (joint.transform * localR).asVec3();
-            math::vec3 boneU = (joint.transform * localU).asVec3();
-            math::vec3 boneF = (joint.transform * localF).asVec3();
-
-            math::vec3 end = start + boneF * length;
-            math::vec3 mid = start + boneF * length2;
-
-            math::vec3 A = math::TransformPointByMatrix4x4(T, mid + boneR * s);
-            math::vec3 B = math::TransformPointByMatrix4x4(T, mid + boneU * s);
-            math::vec3 C = math::TransformPointByMatrix4x4(T, mid - boneR * s);
-            math::vec3 D = math::TransformPointByMatrix4x4(T, mid - boneU * s);
-
-            start = math::TransformPointByMatrix4x4(T, start);
-            end = math::TransformPointByMatrix4x4(T, end);
-
-            Renderer::SubmitLine(start, A, math::vec4(1, 1, .5f, 1));
-            Renderer::SubmitLine(start, B, math::vec4(1, 1, .5f, 1));
-            Renderer::SubmitLine(start, C, math::vec4(1, 1, .5f, 1));
-            Renderer::SubmitLine(start, D, math::vec4(1, 1, .5f, 1));
-
-            Renderer::SubmitLine(A, end, math::vec4(1, 1, .5f, 1));
-            Renderer::SubmitLine(B, end, math::vec4(1, 1, .5f, 1));
-            Renderer::SubmitLine(C, end, math::vec4(1, 1, .5f, 1));
-            Renderer::SubmitLine(D, end, math::vec4(1, 1, .5f, 1));
-
-            Renderer::SubmitLine(A, B, math::vec4(1, 1, .5f, 1));
-            Renderer::SubmitLine(B, C, math::vec4(1, 1, .5f, 1));
-            Renderer::SubmitLine(C, D, math::vec4(1, 1, .5f, 1));
-            Renderer::SubmitLine(D, A, math::vec4(1, 1, .5f, 1));
-
-            // draw bone name
-            math::vec4 screenSpace = (s_Data.Lights.projection * s_Data.Lights.view * math::vec4(end, 1));
-            screenSpace /= screenSpace.w;
-            screenSpace += math::vec4(1, 1, 1, 1);
-            screenSpace *= 0.5f;
-            screenSpace.x *= 1280;
-            screenSpace.y *= 720;
-            TextRenderer::SubmitText(anim.Anim->JointInfos[j].name, (float)screenSpace.x, 720 - screenSpace.y, color);
-        }
-    }
+    // Draw skeleton
+    // ANIM_HOOK
+    //void Renderer::DrawSkeletonDebug(
+    //    const TagComponent& tag,
+    //    const TransformComponent& transform,
+    //    const MeshRendererComponent& mesh,
+    //    const MeshAnimationComponent& anim,
+    //    const math::vec3 color) {
+    //
+    //    math::mat3 BlenderCorrection(math::vec3(0, 0, 1), math::vec3(1, 0, 0), math::vec3(0, 1, 0));
+    //    math::mat4 T = transform.Transform * math::mat4(BlenderCorrection, 1);
+    //    float s = 0.075f;
+    //    float length = 0.55f;
+    //    float length2 = 0.05f;
+    //
+    //    math::vec4 localR(1, 0, 0, 0);
+    //    math::vec4 localF(0, 1, 0, 0);
+    //    math::vec4 localU(0, 0, 1, 0);
+    //
+    //    //for (const auto& joint : anim.Anim->AnimatedSkeleton.Joints) {
+    //    for (int j = 0; j < anim.Anim->numJoints; j++) {
+    //        const auto& joint = anim.Anim->AnimatedSkeleton.Joints[j];
+    //        math::vec3 start = joint.transform.column4.asVec3();
+    //
+    //        math::vec3 boneR = (joint.transform * localR).asVec3();
+    //        math::vec3 boneU = (joint.transform * localU).asVec3();
+    //        math::vec3 boneF = (joint.transform * localF).asVec3();
+    //
+    //        math::vec3 end = start + boneF * length;
+    //        math::vec3 mid = start + boneF * length2;
+    //
+    //        math::vec3 A = math::TransformPointByMatrix4x4(T, mid + boneR * s);
+    //        math::vec3 B = math::TransformPointByMatrix4x4(T, mid + boneU * s);
+    //        math::vec3 C = math::TransformPointByMatrix4x4(T, mid - boneR * s);
+    //        math::vec3 D = math::TransformPointByMatrix4x4(T, mid - boneU * s);
+    //
+    //        start = math::TransformPointByMatrix4x4(T, start);
+    //        end = math::TransformPointByMatrix4x4(T, end);
+    //
+    //        Renderer::SubmitLine(start, A, math::vec4(1, 1, .5f, 1));
+    //        Renderer::SubmitLine(start, B, math::vec4(1, 1, .5f, 1));
+    //        Renderer::SubmitLine(start, C, math::vec4(1, 1, .5f, 1));
+    //        Renderer::SubmitLine(start, D, math::vec4(1, 1, .5f, 1));
+    //
+    //        Renderer::SubmitLine(A, end, math::vec4(1, 1, .5f, 1));
+    //        Renderer::SubmitLine(B, end, math::vec4(1, 1, .5f, 1));
+    //        Renderer::SubmitLine(C, end, math::vec4(1, 1, .5f, 1));
+    //        Renderer::SubmitLine(D, end, math::vec4(1, 1, .5f, 1));
+    //
+    //        Renderer::SubmitLine(A, B, math::vec4(1, 1, .5f, 1));
+    //        Renderer::SubmitLine(B, C, math::vec4(1, 1, .5f, 1));
+    //        Renderer::SubmitLine(C, D, math::vec4(1, 1, .5f, 1));
+    //        Renderer::SubmitLine(D, A, math::vec4(1, 1, .5f, 1));
+    //
+    //        // draw bone name
+    //        math::vec4 screenSpace = (s_Data.Lights.projection * s_Data.Lights.view * math::vec4(end, 1));
+    //        screenSpace /= screenSpace.w;
+    //        screenSpace += math::vec4(1, 1, 1, 1);
+    //        screenSpace *= 0.5f;
+    //        screenSpace.x *= 1280;
+    //        screenSpace.y *= 720;
+    //        TextRenderer::SubmitText(anim.Anim->JointInfos[j].name, (float)screenSpace.x, 720 - screenSpace.y, color);
+    //    }
+    //}
 }

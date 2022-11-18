@@ -4,54 +4,54 @@
 namespace Engine {
 
     namespace AnimCatalog {
-        std::unordered_map<std::string, md5::Animation*> m_AnimList;
+        // ANIM_HOOK std::unordered_map<std::string, md5::Animation*> m_AnimList;
 
-        void Register(const std::string& anim_name, const std::string& filepath, FileFormat file_type) {
-            switch (file_type) {
-            case FileFormat::MD5_Text: {
-                md5::Animation* anim = new md5::Animation();
-                md5::LoadMD5AnimFile(filepath, anim);
-
-                if (true /*anim->Loaded()*/) { // TODO: check if animation was loaded correctly
-                    m_AnimList[anim_name] = anim;
-                    ENGINE_LOG_INFO("Registering Animation: [{0}] from [{1}]", anim_name, filepath);
-                }
-            }break;
-            case FileFormat::NBT_Basic: {
-                ENGINE_LOG_ERROR("Proper Animation FileFormat not specified!");
-                /*
-                Mesh* mesh = new Mesh(filepath);
-                if (mesh->Loaded()) {
-                    m_MeshList[anim_name] = mesh;
-                    ENGINE_LOG_INFO("Registering Animation: [{0}] from [{1}]", anim_name, filepath);
-                }
-                */
-            }break;
-            case FileFormat::None: {
-                ENGINE_LOG_ERROR("Proper Animation FileFormat not specified!");
-            }break;
-            }
-        }
-
-        md5::Animation* Get(const std::string& anim_name) {
-            if (m_AnimList.find(anim_name) == m_AnimList.end()) {
-                return nullptr;
-            }
-
-            return m_AnimList[anim_name];
-        }
-
-        void Create() {
-
-        }
-
-        void Destroy() {
-            // deallocate memory
-            for (const auto& it : m_AnimList) {
-                delete it.second;
-            }
-            // Clear the mesh catalog of all entries
-            m_AnimList.clear();
-        }
+        // ANIM_HOOK void Register(const std::string& anim_name, const std::string& filepath, FileFormat file_type) {
+        // ANIM_HOOK     switch (file_type) {
+        // ANIM_HOOK     case FileFormat::MD5_Text: {
+        // ANIM_HOOK         md5::Animation* anim = new md5::Animation();
+        // ANIM_HOOK         md5::LoadMD5AnimFile(filepath, anim);
+        // ANIM_HOOK 
+        // ANIM_HOOK         if (true /*anim->Loaded()*/) { // TODO: check if animation was loaded correctly
+        // ANIM_HOOK             m_AnimList[anim_name] = anim;
+        // ANIM_HOOK             ENGINE_LOG_INFO("Registering Animation: [{0}] from [{1}]", anim_name, filepath);
+        // ANIM_HOOK         }
+        // ANIM_HOOK     }break;
+        // ANIM_HOOK     case FileFormat::NBT_Basic: {
+        // ANIM_HOOK         ENGINE_LOG_ERROR("Proper Animation FileFormat not specified!");
+        // ANIM_HOOK         /*
+        // ANIM_HOOK         Mesh* mesh = new Mesh(filepath);
+        // ANIM_HOOK         if (mesh->Loaded()) {
+        // ANIM_HOOK             m_MeshList[anim_name] = mesh;
+        // ANIM_HOOK             ENGINE_LOG_INFO("Registering Animation: [{0}] from [{1}]", anim_name, filepath);
+        // ANIM_HOOK         }
+        // ANIM_HOOK         */
+        // ANIM_HOOK     }break;
+        // ANIM_HOOK     case FileFormat::None: {
+        // ANIM_HOOK         ENGINE_LOG_ERROR("Proper Animation FileFormat not specified!");
+        // ANIM_HOOK     }break;
+        // ANIM_HOOK     }
+        // ANIM_HOOK }
+        // ANIM_HOOK 
+        // ANIM_HOOK md5::Animation* Get(const std::string& anim_name) {
+        // ANIM_HOOK     if (m_AnimList.find(anim_name) == m_AnimList.end()) {
+        // ANIM_HOOK         return nullptr;
+        // ANIM_HOOK     }
+        // ANIM_HOOK 
+        // ANIM_HOOK     return m_AnimList[anim_name];
+        // ANIM_HOOK }
+        // ANIM_HOOK 
+        // ANIM_HOOK void Create() {
+        // ANIM_HOOK 
+        // ANIM_HOOK }
+        // ANIM_HOOK 
+        // ANIM_HOOK void Destroy() {
+        // ANIM_HOOK     // deallocate memory
+        // ANIM_HOOK     for (const auto& it : m_AnimList) {
+        // ANIM_HOOK         delete it.second;
+        // ANIM_HOOK     }
+        // ANIM_HOOK     // Clear the mesh catalog of all entries
+        // ANIM_HOOK     m_AnimList.clear();
+        // ANIM_HOOK }
     }
 }

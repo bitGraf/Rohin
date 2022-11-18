@@ -135,14 +135,8 @@ namespace Engine {
             }
 
             // Update Animations
-            auto anim_view = m_Registry.view<MeshAnimationComponent>();
-            for (auto entity : anim_view) {
-                auto &anim = anim_view.get<MeshAnimationComponent>(entity);
-
-                if (anim.Anim) {
-                    md5::UpdateMD5Animation(anim.Anim, dt);
-                }
-            }
+            // ANIM_HOOK
+            // Loop through all animated meshes and update their animations
         }
 
         // Find Main Camera
@@ -216,17 +210,12 @@ namespace Engine {
             for (auto entity : group) {
                 auto[trans, mesh] = group.get<TransformComponent, MeshRendererComponent>(entity);
                 if (mesh.MeshPtr) {
-                    if (m_Registry.all_of<MeshAnimationComponent>(entity)) {
-                        // TODO: more efficient way of doing this, 
-                        // maybe just a separate group for animated meshes?
-                        const auto& anim = m_Registry.get<MeshAnimationComponent>(entity);
-                        auto& name_str = m_Registry.get<TagComponent>(entity).Name;
-                        Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform, anim.Anim);
-                    }
-                    else {
-                        auto& name_str = m_Registry.get<TagComponent>(entity).Name;
-                        Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform);
-                    }
+                    // if has animation component, use different submit
+                    // ANIM_HOOK
+                    // probably dont want to do it this way in the future anyways
+                    
+                    auto& name_str = m_Registry.get<TagComponent>(entity).Name;
+                    Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform);
                 }
             }
 
@@ -260,15 +249,17 @@ namespace Engine {
             Renderer::SubmitLine(math::vec3(), math::vec3(0, 1, 0), math::vec4(0, 1, 0, 1));
             Renderer::SubmitLine(math::vec3(), math::vec3(0, 0, 1), math::vec4(0, 0, 1, 1));
 
-            auto group_trans_anim = m_Registry.group<MeshAnimationComponent>(entt::get<TransformComponent>);
-            for (auto entity : group_trans_anim) {
-                auto& anim = m_Registry.get<MeshAnimationComponent>(entity);
-                auto& transform = m_Registry.get<TransformComponent>(entity);
-                auto& tag = m_Registry.get<TagComponent>(entity);
-                auto& mesh = m_Registry.get<MeshRendererComponent>(entity);
-
-                Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
-            }
+            // Draw skeletons
+            // ANIM_HOOK
+            //auto group_trans_anim = m_Registry.group<MeshAnimationComponent>(entt::get<TransformComponent>);
+            //for (auto entity : group_trans_anim) {
+            //    auto& anim = m_Registry.get<MeshAnimationComponent>(entity);
+            //    auto& transform = m_Registry.get<TransformComponent>(entity);
+            //    auto& tag = m_Registry.get<TagComponent>(entity);
+            //    auto& mesh = m_Registry.get<MeshRendererComponent>(entity);
+            //
+            //    Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
+            //}
 
             auto group_trans = m_Registry.group<TransformComponent>(entt::get<TagComponent>);
             for (auto entity : group_trans) {

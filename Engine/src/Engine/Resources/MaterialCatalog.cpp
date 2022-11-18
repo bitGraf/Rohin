@@ -129,21 +129,21 @@ namespace Engine {
         }
 
 
-        // MD5 related
-        void RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap) {
-            for (const auto& matEntry : materialMap) {
-                if (MaterialMap.find(matEntry.first) != MaterialMap.end()) continue;
-            
-                // new material to load
-                const auto& mat_name = matEntry.first;
-                const auto& md5mat = matEntry.second;
-                MaterialSpec spec;
-                spec.Name = md5mat.name;
-                spec.Albedo = GetTexture(md5mat.diffusemap);
-                spec.Normal = GetTexture(md5mat.normalmap);
-
-                MaterialMap.emplace(mat_name, spec);
-            }
-        }
+        // ANIM_HOOK // MD5 related
+        // ANIM_HOOK void RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap) {
+        // ANIM_HOOK     for (const auto& matEntry : materialMap) {
+        // ANIM_HOOK         if (MaterialMap.find(matEntry.first) != MaterialMap.end()) continue;
+        // ANIM_HOOK     
+        // ANIM_HOOK         // new material to load
+        // ANIM_HOOK         const auto& mat_name = matEntry.first;
+        // ANIM_HOOK         const auto& md5mat = matEntry.second;
+        // ANIM_HOOK         MaterialSpec spec;
+        // ANIM_HOOK         spec.Name = md5mat.name;
+        // ANIM_HOOK         spec.Albedo = GetTexture(md5mat.diffusemap);
+        // ANIM_HOOK         spec.Normal = GetTexture(md5mat.normalmap);
+        // ANIM_HOOK 
+        // ANIM_HOOK         MaterialMap.emplace(mat_name, spec);
+        // ANIM_HOOK     }
+        // ANIM_HOOK }
     }
 }

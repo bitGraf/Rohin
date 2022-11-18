@@ -37,9 +37,9 @@ namespace Engine {
         auto& cWorld = scene->GetCollisionWorld();
 
         // load materials
-        std::unordered_map<std::string, md5::Material> mats;
-        md5::LoadMD5MaterialDefinitionFile("Data/Models/tentacle/tentacle.md5material", mats);
-        MaterialCatalog::RegisterMaterial(mats);
+        // ANIM_HOOK std::unordered_map<std::string, md5::Material> mats;
+        // ANIM_HOOK md5::LoadMD5MaterialDefinitionFile("Data/Models/tentacle/tentacle.md5material", mats);
+        // ANIM_HOOK MaterialCatalog::RegisterMaterial(mats);
 
         MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
         MeshCatalog::Register("new_format_test", "Data/Models/output.mesh", FileFormat::MESH_File);

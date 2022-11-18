@@ -3,7 +3,6 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 #include "Engine/Resources/nbt/nbt.hpp"
-#include "Engine/Resources/Loaders/MD5MeshLoader.hpp"
 
 namespace Engine {
 
@@ -32,6 +31,6 @@ namespace Engine {
         TextureCube* GetTextureCube(const std::string& texture_path);
 
         void RegisterMaterial(const std::string& mat_name, const nbt::tag_compound& data);
-        void RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap);
+        // ANIM_HOOK void RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap);
     };
 }

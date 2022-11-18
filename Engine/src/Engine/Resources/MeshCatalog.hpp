@@ -8,7 +8,6 @@ namespace Engine {
     enum class FileFormat : unsigned char {
         None = 0,
         NBT_Basic,
-        MD5_Text,
         MESH_File
     };
 
