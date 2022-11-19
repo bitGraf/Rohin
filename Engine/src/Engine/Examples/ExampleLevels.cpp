@@ -5,7 +5,6 @@
 
 #include "Engine/GameObject/Components.hpp"
 #include "Engine/Resources/MeshCatalog.hpp"
-#include "Engine/Resources/AnimCatalog.hpp"
 #include "Engine/Resources/MaterialCatalog.hpp"
 #include "Engine/Core/Application.hpp"
 #include "Engine/Sound/SoundEngine.hpp"
@@ -26,6 +25,21 @@ namespace Engine {
     bool LoadExampleLevel(const std::string& levelName, Scene3D* scene) {
         if (levelName.compare("Level_1") == 0) {
             load_level_1(scene);
+            return true;
+        }
+
+        if (levelName.compare("Level_2") == 0) {
+            load_level_2(scene);
+            return true;
+        }
+
+        if (levelName.compare("nbtTest") == 0) {
+            load_level_3(scene);
+            return true;
+        }
+
+        if (levelName.compare("Level_4") == 0) {
+            load_level_4(scene);
             return true;
         }
 
@@ -109,6 +123,14 @@ namespace Engine {
             math::mat4 rotM;
             math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
             trans *= rotM;
+        }
+
+        // Sound stuff
+        {
+            SoundEngine::CreateSoundCue("guard_death", { "Data/Sounds/death.ogg", 0.02f });
+            SoundEngine::CreateSoundCue("golem", { "Data/Sounds/golem.ogg", 0.1f }); //MONO, has 3D sound
+            SoundEngine::CreateSoundCue("protector", { "Data/Sounds/sound.wav", 0.2f });
+            SoundEngine::CreateSoundCue("ahhh", { "Data/Sounds/ahhh.ogg", 0.1f, 15.0f });
         }
 
         /*

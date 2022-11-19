@@ -14,6 +14,58 @@
 
 namespace Engine {
 
+    // Use this moving forward
+    struct Vertex
+    {
+        math::vec3 Position;
+        math::vec3 Normal;
+        math::vec3 Tangent;
+        math::vec3 Bitangent;
+        math::vec2 Texcoord;
+    };
+
+    // TODO: normalize this to be like a static_mesh vertex
+    struct Vertex_Anim
+    {
+        math::vec3 Position;
+        math::vec3 Normal;
+        math::vec3 Tangent;
+        math::vec3 Bitangent;
+        math::vec2 Texcoord;
+
+        s32 BoneIndices[4];
+        math::vec4 BoneWeights;
+    };
+
+    struct Triangle
+    {
+        u32 V1, V2, V3;
+    };
+
+    struct SkeleJoint {
+        math::mat4 inverseBindPose;
+        math::mat4 finalTransform;
+    };
+
+    struct BoneFrame {
+        math::vec3 position;
+        math::quat rotation;
+        math::vec3 scale;
+    };
+
+    struct AnimFrame {
+        std::vector<BoneFrame> bones;
+    };
+
+    struct Animation {
+        std::string name;
+        u16 num_frames;
+        u16 num_channels;
+        f64 frames_per_second;
+
+        std::vector<AnimFrame> frames;
+    };
+
     class Submesh
     {
     public:
@@ -25,27 +77,11 @@ namespace Engine {
         math::mat4 Transform;
     };
 
-    struct Joint {
-        math::mat4 invTransform; // in object-space
-        s32 parent;
-        std::string name;
-
-        // Bind-pose transform
-        math::vec3 position;
-        math::quat orientation;
-
-        // TODO: REMOVE THIS
-        math::mat4 Transform;
-    };
-
     class Mesh
     {
     public:
-        // NEW constructor
+        // MESH_File
         Mesh(const std::string& filename);
-
-        // load MESH_File
-        Mesh(const std::string& filename, int);
         // load NBT .mesh file
         Mesh(const std::string& filename, float, float);
         ~Mesh();
@@ -64,7 +100,11 @@ namespace Engine {
 
         const Ref<VertexArray>& GetVertexArray() const { return m_VertexArray; }
         // ANIM_HOOK const std::vector<md5::Joint>&  GetBindPose() const { return m_BindPose; }
+
+        void SetCurrentAnimation(const std::string& anim_name);
     private:
+        void populateAnimationData(const std::string& filename);
+        void UpdateSkeleton(int frame1, int frame2, double interp);
 
     private:
         // Hardware buffer of verts
@@ -83,7 +123,11 @@ namespace Engine {
         bool m_loaded = false;
 
         // Animation stuff
-        bool m_isAnimated = false;
+        std::vector<SkeleJoint> m_Skeleton;
+        std::unordered_map<std::string, Animation> m_Animations;
+        Animation* m_currentAnim = nullptr;
+        bool m_hasAnimations = false;
+        f64 m_animTime = 0.0;
 
         friend class Renderer;
     };

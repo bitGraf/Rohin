@@ -164,7 +164,7 @@ namespace Engine {
                                             m_floorUp = plane->contact_normal;
                                             m_floorID = plane->colliderID;
                                             // play sound?
-                                            //SoundEngine::CueSound("golem", position);
+                                            SoundEngine::CueSound("golem", position);
                                         }
                                     }
                                 }

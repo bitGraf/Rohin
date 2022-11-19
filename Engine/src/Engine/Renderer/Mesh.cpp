@@ -9,34 +9,80 @@
 
 namespace Engine {
 
-    // Use this moving forward
-    struct Vertex
-    {
-        math::vec3 Position;
-        math::vec3 Normal;
-        math::vec3 Tangent;
-        math::vec3 Bitangent;
-        math::vec2 Texcoord;
-    };
-
-    // TODO: normalize this to be like a static_mesh vertex
-    struct Vertex_Anim
-    {
-        math::vec3 Position;
-        math::vec3 Normal;
-        math::vec3 Tangent;
-        math::vec3 Bitangent;
-        math::vec2 Texcoord;
-        s32 BoneIndices[4];
-        math::vec4 BoneWeights;
-    };
-
-    struct Triangle
-    {
-        u32 V1, V2, V3;
-    };
-
     static_assert(sizeof(Triangle) == 3 * sizeof(uint32_t));
+
+    static const u8 KNOWN_VERSION_MAJOR = 0;
+    static const u8 KNOWN_VERSION_MINOR = 6;
+    static const u8 KNOWN_VERSION_PATCH = 0;
+
+    // anonymous helper funcs
+    auto checkTag = [](const char* tag, const char* comp, int len) {
+        bool success = true;
+        for (int n = 0; n < len; n++) {
+            if (comp[n] != tag[n]) {
+                success = false;
+                break;
+            }
+        }
+        if (!success) {
+            switch (len) {
+            case 4: {
+                printf("ERROR::Expected '%s', got '%c%c%c%c'\n", comp, tag[0], tag[1], tag[2], tag[3]);
+                break;
+            } case 8: {
+                printf("ERROR::Expected '%s', got '%c%c%c%c%c%c%c%c'\n", comp, tag[0], tag[1], tag[2], tag[3], tag[4], tag[5], tag[6], tag[7]);
+                break;
+            } default: {
+                printf("ERROR::Expected '%s','\n", comp);
+                break;
+            }
+            }
+        }
+        return success;
+    };
+    auto read_u32 = [](std::ifstream& file) -> u32 {
+        u32 res;
+        file.read(reinterpret_cast<char*>(&res), sizeof(u32));
+        return res;
+    };
+    auto read_s32 = [](std::ifstream& file) -> s32 {
+        s32 res;
+        file.read(reinterpret_cast<char*>(&res), sizeof(s32));
+        return res;
+    };
+    auto read_u16 = [](std::ifstream& file) -> u16 {
+        u16 res;
+        file.read(reinterpret_cast<char*>(&res), sizeof(u16));
+        return res;
+    };
+    auto read_f64 = [](std::ifstream& file) -> f64 {
+        f64 res;
+        file.read(reinterpret_cast<char*>(&res), sizeof(f64));
+        return res;
+    };
+    auto read_mat4 = [](std::ifstream& file, math::mat4* m) {
+        file.read(reinterpret_cast<char*>(m), 16 * sizeof(f32));
+    };
+    auto VERSION_CHECK = [](char vStr[4])-> bool {
+        if (vStr[0] != 'v') { ENGINE_LOG_ERROR("Incorrect format string read from file: '{0}' should be 'v'", vStr[0]);  return false; }
+        u8 vMajor = vStr[1];
+        u8 vMinor = vStr[2];
+        u8 vPatch = vStr[3];
+
+        // No backwards-compatibility rn
+        if (vMajor != KNOWN_VERSION_MAJOR || vMinor != KNOWN_VERSION_MINOR) {
+            ENGINE_LOG_ERROR("Trying to load a MESH_file of version: v{0}.{1}.   Supported version: v{2}.{3}",
+                vMajor, vMinor, KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR);
+            return false;
+        }
+        if (vPatch > KNOWN_VERSION_PATCH) {
+            ENGINE_LOG_WARN("File is v{0}.{1}.{2}. Known version is v{3}.{4}.{5}. Should still be compatible.",
+                vMajor, vMinor, vPatch,
+                KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR, KNOWN_VERSION_PATCH);
+        }
+
+        return true;
+    };
 
     Mesh::~Mesh() {
 
@@ -83,32 +129,13 @@ namespace Engine {
             file.read(reinterpret_cast<char*>(&res), sizeof(u16));
             return res;
         };
+        auto read_f64 = [](std::ifstream& file) -> f64 {
+            f64 res;
+            file.read(reinterpret_cast<char*>(&res), sizeof(f64));
+            return res;
+        };
         auto read_mat4 = [](std::ifstream& file, math::mat4* m) {
             file.read(reinterpret_cast<char*>(m), 16 * sizeof(f32));
-        };
-        auto VERSION_CHECK = [](char vStr[4])-> bool {
-            static const u8 KNOWN_VERSION_MAJOR = 0;
-            static const u8 KNOWN_VERSION_MINOR = 4;
-            static const u8 KNOWN_VERSION_PATCH = 2;
-
-            if (vStr[0] != 'v') { ENGINE_LOG_ERROR("Incorrect format string read from file: '{0}' should be 'v'",vStr[0]);  return false; }
-            u8 vMajor = vStr[1];
-            u8 vMinor = vStr[2];
-            u8 vPatch = vStr[3];
-
-            // No backwards-compatibility rn
-            if (vMajor != KNOWN_VERSION_MAJOR || vMinor != KNOWN_VERSION_MINOR) {
-                ENGINE_LOG_ERROR("Trying to load a MESH_file of version: v{0}.{1}.   Supported version: v{2}.{3}",
-                    vMajor, vMinor, KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR);
-                return false;
-            }
-            if (vPatch > KNOWN_VERSION_PATCH) {
-                ENGINE_LOG_WARN("File is v{0}.{1}.{2}. Known version is v{3}.{4}.{5}. Should still be compatible.", 
-                    vMajor, vMinor, vPatch,
-                    KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR, KNOWN_VERSION_PATCH);
-            }
-
-            return true;
         };
 
         // Open file at the end
@@ -136,7 +163,7 @@ namespace Engine {
 
         u32 Flag = read_u32(file);
 
-        bool has_animations = Flag & 0x01;
+        m_hasAnimations = Flag & 0x01;
 
         char INFO[4];
         file.read(INFO, 4);
@@ -177,7 +204,7 @@ namespace Engine {
         }
 
         // Joint heirarchy
-        if (has_animations) {
+        if (m_hasAnimations) {
             char BONE[4];
             file.read(BONE, 4);
             if (!checkTag(BONE, "BONE", 4)) return;
@@ -185,6 +212,7 @@ namespace Engine {
             u16 num_bones = read_u16(file);
 
             for (int n_bone = 0; n_bone < num_bones; n_bone++) {
+                SkeleJoint joint;
                 u16 name_len = read_u16(file);
 
                 char* name = (char*)malloc(name_len);
@@ -195,12 +223,9 @@ namespace Engine {
 
                 s32 parent_idx = read_s32(file);
 
-                math::vec3 local_pos;
-                math::vec4 local_rot;
-                math::vec3 local_scale;
-                file.read(reinterpret_cast<char*>(&local_pos), 3 * sizeof(f32));
-                file.read(reinterpret_cast<char*>(&local_rot), 4 * sizeof(f32));
-                file.read(reinterpret_cast<char*>(&local_scale), 3 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&joint.inverseBindPose), 16 * sizeof(f32));
+
+                m_Skeleton.push_back(joint);
             }
         }
 
@@ -230,7 +255,7 @@ namespace Engine {
         void* vertex_data_ptr = nullptr;
         size_t vertex_data_size = 0;
 
-        if (has_animations) {
+        if (m_hasAnimations) {
             vertex_data_size = numVerts * sizeof(Vertex_Anim);
             Vertex_Anim* m_Vertices = (Vertex_Anim*)malloc(vertex_data_size);
             vertex_data_ptr = (void*)m_Vertices;
@@ -258,6 +283,26 @@ namespace Engine {
             }
         }
 
+        // Animations catalog
+        if (m_hasAnimations) {
+            char ANIMS[4];
+            file.read(ANIMS, 4);
+            if (!checkTag(ANIMS, "ANIM", 4)) return;
+
+            u16 num_anims = read_u16(file);
+            for (int n_anim = 0; n_anim < num_anims; n_anim++) {
+                u16 name_len = read_u16(file);
+
+                std::string anim_name;
+                anim_name.resize(name_len-1);
+                file.read(anim_name.data(), name_len-1); // ignore null terminator
+                char garb;
+                file.read(&garb, 1);
+
+                m_Animations[anim_name] = Animation();
+            }
+        }
+
         // Closing tag
         char END[4];
         file.read(END, 4);
@@ -271,7 +316,7 @@ namespace Engine {
         file.close();
 
         // Set shader info
-        if (has_animations) {
+        if (m_hasAnimations) {
             m_MeshShader = Renderer::GetShaderLibrary()->Get("PrePass_Anim"); // TODO: allow meshes to choose their shader?
         } else {
             m_MeshShader = Renderer::GetShaderLibrary()->Get("PrePass"); // TODO: allow meshes to choose their shader?
@@ -321,7 +366,7 @@ namespace Engine {
             auto vb = VertexBuffer::Create(vertex_data_ptr, vertex_data_size);
             free(vertex_data_ptr); vertex_data_ptr = nullptr;
 
-            if (has_animations) {
+            if (m_hasAnimations) {
                 vb->SetLayout({
                 { ShaderDataType::Float3, "a_Position" },
                 { ShaderDataType::Float3, "a_Normal" },
@@ -347,6 +392,11 @@ namespace Engine {
 
             m_VertexArray->Unbind();
         }
+
+        populateAnimationData(filename);
+
+        // TMP
+        SetCurrentAnimation("Armature_ArmatureAction");
 
         m_loaded = true;
     }
@@ -504,226 +554,117 @@ namespace Engine {
         m_loaded = true;
     }
 
-    // MESH_File load
-    Mesh::Mesh(const std::string & filename, int) {
-        const char KNOWN_VERSION_MAJOR = 0;
-        const char KNOWN_VERSION_MINOR = 2;
-        const char KNOWN_VERSION_PATCH = 0;
+    void Mesh::UpdateSkeleton(int f1, int f2, double interp) {
+        const auto &frame1 = m_currentAnim->frames[f1];
+        const auto &frame2 = m_currentAnim->frames[f2];
 
-        // anonymous helper funcs
-        auto checkTag = [](const char* tag, const char* comp, int len) {
-            bool success = true;
-            for (int n = 0; n < len; n++) {
-                if (comp[n] != tag[n]) {
-                    success = false;
-                    break;
-                }
-            }
-            if (!success) {
-                switch (len) {
-                case 4: {
-                    printf("ERROR::Expected '%s', got '%c%c%c%c'\n", comp, tag[0], tag[1], tag[2], tag[3]);
-                    break;
-                } case 8: {
-                    printf("ERROR::Expected '%s', got '%c%c%c%c%c%c%c%c'\n", comp, tag[0], tag[1], tag[2], tag[3], tag[4], tag[5], tag[6], tag[7]);
-                    break;
-                } default: {
-                    printf("ERROR::Expected '%s','\n", comp);
-                    break;
-                }
-                }
-            }
-            return success;
-        };
-        auto FdGetFileSize = [](const std::string & filename) {
-            struct stat stat_buf;
-            int rc = stat(filename.c_str(), &stat_buf);
-            return rc == 0 ? stat_buf.st_size : -1l;
-        };
+        for (int channel = 0; channel < m_currentAnim->num_channels; channel++) {
+            const auto& bone1 = frame1.bones[channel];
+            const auto& bone2 = frame2.bones[channel];
 
-        long stat_filesize = FdGetFileSize(filename);
+            // interpolate between these two states
+            math::vec3 position = math::lerp(bone1.position, bone2.position, interp);
+            math::quat rotation = math::slerp(bone1.rotation, bone2.rotation, interp);
+            math::vec3 scale = math::lerp(bone1.scale, bone2.scale, interp);
 
-        FILE* fid = fopen(filename.c_str(), "rb");
-        if (fid) {
-            // HEADER
-            char MAGIC[4];
-            fread(MAGIC, 1, 4, fid);
-            checkTag(MAGIC, "MESH", 4);
-
-            u32 FileSize;
-            fread(&FileSize, sizeof(u32), 1, fid);
-            if (static_cast<long>(FileSize) != stat_filesize) printf("EROR::Expectied a fileSize of %ld, got %ld\n", stat_filesize, FileSize);
-
-            u32 Flag;
-            fread(&Flag, sizeof(u32), 1, fid);
-            bool has_animations = Flag & 0x01;
-            if (has_animations) {
-                ENGINE_LOG_CRITICAL("Animated meshes not supported fully!!!!");
-            }
-
-            char INFO[4];
-            fread(INFO, 1, 4, fid);
-            checkTag(INFO, "INFO", 4);
-
-            u32 numVerts;
-            fread(&numVerts, sizeof(u32), 1, fid);
-
-            u32 numInds;
-            fread(&numInds, sizeof(u32), 1, fid);
-
-            u16 numSubmeshes;
-            fread(&numSubmeshes, sizeof(u16), 1, fid);
-
-            char vStr[4];
-            fread(vStr, sizeof(char), 4, fid);
-            char vMajor = vStr[1];
-            char vMinor = vStr[2];
-            char vPatch = vStr[3];
-            printf("File version: v%i.%i.%i\n", vMajor, vMinor, vPatch);
-            printf("Highest known version is: v%i.%i.%i\n", KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR, KNOWN_VERSION_PATCH);
-
-            //if ( vMajor > KNOWN_VERSION_MAJOR || (vMajor <= KNOWN_VERSION_MAJOR && vMinor > KNOWN_VERSION_MINOR) ) {
-            //	printf("File version too high! Highest known version is: v%i.%i.%i\n", KNOWN_VERSION_MAJOR, KNOWN_VERSION_MINOR, KNOWN_VERSION_PATCH);
-            //}
-
-            u16 len;
-            fread(&len, sizeof(u16), 1, fid);
-            char* comment = (char*)malloc(len);
-            fread(comment, 1, len, fid);
-            comment[len - 1] = 0; // just in case...
-            printf("  Embedded comment: '%s'\n", comment);
-            free(comment);
-
-            printf("# of Vertices: %i\n", numVerts);
-            printf("# of Indices:  %i\n", numInds);
-            printf("# of Meshes:   %i\n", numSubmeshes);
-
-            std::vector<Vertex> m_Vertices;
-            m_Vertices.resize(numVerts);
-
-            std::vector<Triangle> m_Tris;
-            m_Tris.resize(numInds*3);
-
-            m_Submeshes.resize(numSubmeshes);
-
-            // read each submesh
-            for (int n_submesh = 0; n_submesh < numSubmeshes; n_submesh++) {
-                char tag[8];
-                fread(tag, 1, 8, fid);
-                checkTag(tag, "SUBMESH", 8);
-
-                auto& sm = m_Submeshes[n_submesh];
-                fread(&sm.BaseIndex, sizeof(u32), 1, fid);
-                fread(&sm.MaterialIndex, sizeof(u32), 1, fid);
-                fread(&sm.IndexCount, sizeof(u32), 1, fid);
-                fread(&sm.Transform, sizeof(f32), 16, fid);
-            }
-
-            // DATA block
-            char DATA[4];
-            fread(DATA, 1, 4, fid);
-            checkTag(DATA, "DATA", 4);
-
-            // read vertices
-            char VERT[4];
-            fread(VERT, 1, 4, fid);
-            checkTag(VERT, "VERT", 4);
-            for (int n_vert = 0; n_vert < numVerts; n_vert++) {
-                // Position
-                fread(&m_Vertices[n_vert].Position, sizeof(float), 3, fid);
-
-                // Normal
-                fread(&m_Vertices[n_vert].Normal, sizeof(float), 3, fid);
-
-                // Tangent
-                fread(&m_Vertices[n_vert].Tangent, sizeof(float), 3, fid);
-
-                // Bitangent
-                fread(&m_Vertices[n_vert].Bitangent, sizeof(float), 3, fid);
-
-                // Tex
-                fread(&m_Vertices[n_vert].Texcoord, sizeof(float), 2, fid);
-            }
-
-            // read indices
-            char INDS[4];
-            fread(INDS, 1, 4, fid);
-            checkTag(INDS, "IDX", 4);
-            for (int n_tri = 0; n_tri < numInds / 3; n_tri++) {
-                // Indices in groups of three
-                fread(&m_Tris[n_tri], sizeof(u32), 3, fid);
-            }
-
-            // Closing tag
-            char END[4];
-            fread(END, 1, 4, fid);
-
-            if (END[0] != 'E' || END[1] != 'N' || END[2] != 'D' || END[3] != '\0') {
-                printf("ERROR::Did not reach the END tag at the end!!\n");
-            }
-            fclose(fid);
-
-            // Set shader info
-            m_MeshShader = Renderer::GetShaderLibrary()->Get("PrePass_Anim"); // TODO: allow meshes to choose their shader?
-            m_BaseMaterial = std::make_shared<Material>(m_MeshShader);
-
-            // Create materials
-            // Manually set material struct
-            MaterialSpec mat_spec;
-
-            // If after the material and texture definitions, some channels are still
-            // not set, set them to the default texture values
-            mat_spec.Albedo = MaterialCatalog::GetTexture("Data/Images/frog.png");
-            mat_spec.Normal = MaterialCatalog::GetTexture("Data/Images/normal.png");
-            mat_spec.Ambient = MaterialCatalog::GetTexture("Data/Images/white.png");
-            mat_spec.Metalness = MaterialCatalog::GetTexture("Data/Images/black.png");
-            mat_spec.Roughness = MaterialCatalog::GetTexture("Data/Images/white.png");
-            mat_spec.Emissive = MaterialCatalog::GetTexture("Data/Images/black.png");
-
-            // mat_spec should now have all the valid data needed!
-            // upload everyhing from mat_spec to the material
-            m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
-            m_BaseMaterial->Set<float>("u_Metalness", mat_spec.MetalnessBase);
-            m_BaseMaterial->Set<float>("u_Roughness", mat_spec.RoughnessBase);
-            m_BaseMaterial->Set<float>("u_TextureScale", mat_spec.TextureScale);
-
-            m_BaseMaterial->Set("u_AlbedoTexture", mat_spec.Albedo);
-            m_BaseMaterial->Set("u_NormalTexture", mat_spec.Normal);
-            m_BaseMaterial->Set("u_MetalnessTexture", mat_spec.Metalness);
-            m_BaseMaterial->Set("u_RoughnessTexture", mat_spec.Roughness);
-            m_BaseMaterial->Set("u_AmbientTexture", mat_spec.Ambient);
-            m_BaseMaterial->Set("u_EmissiveTexture", mat_spec.Emissive);
-
-            // Create vertex array
-            {
-                m_VertexArray = VertexArray::Create();
-
-                auto vb = VertexBuffer::Create(m_Vertices.data(), m_Vertices.size() * sizeof(Vertex_Anim));
-                vb->SetLayout({
-                    { ShaderDataType::Float3, "a_Position" },
-                    { ShaderDataType::Float3, "a_Normal" },
-                    { ShaderDataType::Float3, "a_Tangent" },
-                    { ShaderDataType::Float3, "a_Bitangent" },
-                    { ShaderDataType::Float2, "a_TexCoord" },
-                    { ShaderDataType::Int4,   "a_BoneIndices"},
-                    { ShaderDataType::Float4, "a_BoneWeights" },
-                    });
-                m_VertexArray->AddVertexBuffer(vb);
-
-                auto ib = IndexBuffer::Create(m_Tris.data(), m_Tris.size() * 3); // TODO: make sure this is # of indices
-                m_VertexArray->SetIndexBuffer(ib);
-
-                m_VertexArray->Unbind();
-            }
-
-            m_loaded = true;
-        }
-        else {
-            printf("Failed to open file '%s'!\n", filename.c_str());
+            // svae the final transform
+            math::CreateTransform(m_Skeleton[channel].finalTransform, rotation, position, scale);
         }
     }
 
     void Mesh::OnUpdate(double dt) {
         // if has animations, update animation state.
+        if (m_hasAnimations && m_currentAnim) {
+            m_animTime += dt;
+            double anim_dur = (double)m_currentAnim->num_frames / m_currentAnim->frames_per_second;
+
+            while (m_animTime > anim_dur) m_animTime -= anim_dur;
+            while (m_animTime < 0.0f) m_animTime += anim_dur;
+
+            int frame1 = (int)floor(m_animTime * m_currentAnim->frames_per_second);
+            int frame2 = (int)ceil(m_animTime * m_currentAnim->frames_per_second);
+
+            double interp = fmod(m_animTime, 1.0 / m_currentAnim->frames_per_second) * m_currentAnim->frames_per_second;
+
+            //UpdateSkeleton(frame1, frame2, interp);
+        }
+    }
+
+    void Mesh::populateAnimationData(const std::string& filename) {
+        // get base .mesh file name
+        std::string path = filename.substr(0, filename.find_last_of("."));
+        //size_t start = path.find_last_of("/") + 1;
+        //std::string name = path.substr(start, path.size());
+        //path = path.substr(0, start);
+
+        for (auto &anim_entry : m_Animations) {
+            auto anim_filename = path + std::string("_") + std::string(anim_entry.first) + std::string(".anim");
+            auto& anim = anim_entry.second;
+
+            // Open file at the end
+            std::ifstream file{ anim_filename, std::ios::ate | std::ios::binary };
+
+            if (!file.is_open()) {
+                ENGINE_LOG_ERROR("Could not open file '{0}'!", anim_filename);
+                return;
+            }
+
+            // read current offset (at end of file) giving filesize, then go back to the start
+            size_t actual_fileSize = static_cast<size_t>(file.tellg());
+            file.seekg(0);
+
+            // HEADER
+            char MAGIC[4];
+            file.read(MAGIC, 4);
+            if (!checkTag(MAGIC, "ANIM", 4)) return;
+
+            u32 FileSize = read_u32(file);
+            if (static_cast<size_t>(FileSize) != actual_fileSize) {
+                ENGINE_LOG_ERROR("EROR::Expectied a fileSize of {0}, got {1}\n", actual_fileSize, FileSize);
+                return;
+            }
+
+            char vStr[4];
+            file.read(vStr, 4);
+            if (!VERSION_CHECK(vStr)) return;
+
+            u32 Flag = read_u32(file);
+
+            anim.num_channels = read_u16(file);
+            anim.num_frames = read_u16(file);
+            anim.frames_per_second = read_f64(file);
+
+            char DATA[4];
+            file.read(DATA, 4);
+            if (!checkTag(DATA, "DATA", 4)) return;
+
+            anim.frames.resize(anim.num_frames);
+            for (int f = 0; f < anim.num_frames; f++) {
+                
+                anim.frames[f].bones.resize(anim.num_channels);
+                for (int c = 0; c < anim.num_channels; c++) {
+                    auto &bone = anim.frames[f].bones[c];
+
+                    file.read(reinterpret_cast<char*>(&bone.position), 3 * sizeof(f32));
+                    file.read(reinterpret_cast<char*>(&bone.rotation), 4 * sizeof(f32));
+                    file.read(reinterpret_cast<char*>(&bone.scale), 3 * sizeof(f32));
+                }
+            }
+
+            // Closing tag
+            char END[4];
+            file.read(END, 4);
+
+            if (END[0] != 'E' || END[1] != 'N' || END[2] != 'D' || END[3] != '\0') {
+                ENGINE_LOG_ERROR("ERROR::Did not reach the END tag at the end!!\n");
+                return;
+            }
+        }
+    }
+
+    void Mesh::SetCurrentAnimation(const std::string& anim_name) {
+        // TODO: VERY unsafe.
+        // If m_Animations every gets added to, this reference becomes invalid.
+        m_currentAnim = &m_Animations[anim_name];
     }
 }

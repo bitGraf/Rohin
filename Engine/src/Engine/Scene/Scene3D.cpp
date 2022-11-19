@@ -134,9 +134,15 @@ namespace Engine {
                 }
             }
 
-            // Update Animations
-            // ANIM_HOOK
             // Loop through all animated meshes and update their animations
+            auto mesh_view = m_Registry.view<MeshRendererComponent>();
+            for (auto entity : mesh_view) {
+                auto &mesh = mesh_view.get<MeshRendererComponent>(entity);
+
+                if (mesh.MeshPtr) {
+                    mesh.MeshPtr->OnUpdate(dt);
+                }
+            }
         }
 
         // Find Main Camera
@@ -209,11 +215,7 @@ namespace Engine {
             auto group = m_Registry.group<MeshRendererComponent>(entt::get<TransformComponent>);
             for (auto entity : group) {
                 auto[trans, mesh] = group.get<TransformComponent, MeshRendererComponent>(entity);
-                if (mesh.MeshPtr) {
-                    // if has animation component, use different submit
-                    // ANIM_HOOK
-                    // probably dont want to do it this way in the future anyways
-                    
+                if (mesh.MeshPtr) {                    
                     auto& name_str = m_Registry.get<TagComponent>(entity).Name;
                     Renderer::SubmitMesh(mesh.MeshPtr, trans.Transform);
                 }
