@@ -2,7 +2,7 @@
 
 #include "RendererAPI.hpp"
 
-namespace Engine {
+namespace rh {
 
     class RenderCommand {
     public:

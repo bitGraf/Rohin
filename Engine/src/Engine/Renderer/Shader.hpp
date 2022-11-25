@@ -3,7 +3,7 @@
 #include "Engine/Buffer.hpp"
 #include "Engine/Core/GameMath.hpp"
 
-namespace Engine {
+namespace rh {
 
     enum class ShaderDomain {
         None = 0,

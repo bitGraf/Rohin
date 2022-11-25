@@ -1,7 +1,7 @@
 #include <enpch.hpp>
 #include "SceneCamera.hpp"
 
-namespace Engine {
+namespace rh {
 
     SceneCamera::SceneCamera() : m_Type(Type::Orthographic) {
         RecalculateProjection();

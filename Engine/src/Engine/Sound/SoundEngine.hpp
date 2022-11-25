@@ -2,7 +2,7 @@
 
 #include "Engine/Core/GameMath.hpp"
 
-namespace Engine {
+namespace rh {
 
     // number of simultaneous sound cues that can play
     const u8 NumSoundChannels = 32;

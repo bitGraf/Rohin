@@ -3,7 +3,7 @@
 #include "OpenALBuffer.hpp"
 #include "OpenALError.hpp"
 
-namespace Engine {
+namespace rh {
 
     Ref<SoundBuffer> SoundBuffer::Create(SoundFormat format, const void* soundData, int numBytes, int sampleRate) {
         return std::make_shared<OpenALBuffer>(format, soundData, numBytes, sampleRate);

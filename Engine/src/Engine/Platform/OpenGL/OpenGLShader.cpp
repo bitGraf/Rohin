@@ -4,7 +4,7 @@
 #include <fstream>
 #include <glad/glad.h>
 
-namespace Engine {
+namespace rh {
 
     static GLenum ShaderTypeFromString(const std::string& type) {
         if (type == "vertex")

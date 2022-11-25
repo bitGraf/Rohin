@@ -12,7 +12,7 @@
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Renderer/Material.hpp"
 
-namespace Engine {
+namespace rh {
 
     // Use this moving forward
     struct Vertex
@@ -120,8 +120,8 @@ namespace Engine {
         // Materials
         Ref<Shader> m_MeshShader;
         Ref<Material> m_BaseMaterial;
-        std::vector<Engine::Ref<Engine::Texture2D>> m_Textures;
-        std::vector<Engine::Ref<Engine::MaterialInstance>> m_Materials;
+        std::vector<rh::Ref<rh::Texture2D>> m_Textures;
+        std::vector<rh::Ref<rh::MaterialInstance>> m_Materials;
         // ANIM_HOOK std::vector<md5::Joint> m_BindPose; // TODO: only relevant with animation
 
         bool m_loaded = false;

@@ -3,7 +3,7 @@
 #include "Engine/Core/GameMath.hpp"
 #include "VertexArray.hpp"
 
-namespace Engine {
+namespace rh {
     
     class RendererAPI {
     public:

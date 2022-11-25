@@ -3,7 +3,7 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Sound/SoundDevice.hpp"
 
-namespace Engine {
+namespace rh {
 
     class SoundEffect {
     public:

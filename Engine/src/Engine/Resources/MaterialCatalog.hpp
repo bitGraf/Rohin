@@ -4,7 +4,7 @@
 #include "Engine/Renderer/Mesh.hpp"
 #include "Engine/Resources/nbt/nbt.hpp"
 
-namespace Engine {
+namespace rh {
 
     struct MaterialSpec {
         std::string Name;

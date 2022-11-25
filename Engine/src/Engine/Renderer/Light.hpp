@@ -2,7 +2,7 @@
 
 #include "Engine/Core/GameMath.hpp"
 
-namespace Engine {
+namespace rh {
 
     enum LightType {
         Directional = 0,

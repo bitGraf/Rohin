@@ -6,7 +6,7 @@
 
 #include <entt/entity/registry.hpp>
 
-namespace Engine {
+namespace rh {
 
     class GameObject;
     class Scene3D {

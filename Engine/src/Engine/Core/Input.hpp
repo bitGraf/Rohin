@@ -2,7 +2,7 @@
 
 #include "Engine/Core/Base.hpp"
 
-namespace Engine {
+namespace rh {
 
     struct InputAxisSpec {
         int keycodePlus = -1;

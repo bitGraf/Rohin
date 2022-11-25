@@ -2,12 +2,12 @@
 
 #include "Engine.hpp"
 
-class Gem : public Engine::ScriptableBase {
+class Gem : public rh::ScriptableBase {
 public:
     Gem() {}
 
     virtual void OnCreate() override {
-        transformComponent = &GetComponent<Engine::TransformComponent>();
+        transformComponent = &GetComponent<rh::TransformComponent>();
 
         LOG_ASSERT(transformComponent, "Gem script could not find a transform component");
 
@@ -45,7 +45,7 @@ public:
     }
 
 private:
-    Engine::TransformComponent * transformComponent;
+    rh::TransformComponent * transformComponent;
 
     float time = 0.0f;
     float rotSpeed = 60.0f;

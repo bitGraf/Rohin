@@ -7,7 +7,7 @@
 
 #include "Engine/Resources/MaterialCatalog.hpp"
 
-namespace Engine {
+namespace rh {
 
     static_assert(sizeof(Triangle) == 3 * sizeof(uint32_t));
 

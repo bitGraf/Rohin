@@ -14,7 +14,7 @@
 
 #include <GLFW/glfw3.h>
 
-namespace Engine {
+namespace rh {
 
     Application* Application::s_Instance = nullptr;
 

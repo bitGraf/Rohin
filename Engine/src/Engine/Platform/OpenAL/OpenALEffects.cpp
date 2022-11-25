@@ -32,7 +32,7 @@ static LPALGETAUXILIARYEFFECTSLOTIV alGetAuxiliaryEffectSlotiv;
 static LPALGETAUXILIARYEFFECTSLOTF alGetAuxiliaryEffectSlotf;
 static LPALGETAUXILIARYEFFECTSLOTFV alGetAuxiliaryEffectSlotfv;
 
-namespace Engine {
+namespace rh {
 
     struct EffectData {
         std::unordered_map<std::string, ALuint> m_effects;

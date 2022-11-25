@@ -5,7 +5,7 @@
 
 #include "AL/al.h"
 
-namespace Engine {
+namespace rh {
 
     Ref<SoundSource> SoundSource::Create() {
         return std::make_shared<OpenALSource>();

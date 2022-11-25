@@ -4,7 +4,7 @@
 #include "Engine/Renderer/Renderer.hpp"
 #include "Engine/Platform/OpenGL/OpenGLFramebuffer.hpp"
 
-namespace Engine {
+namespace rh {
 
     Ref<Framebuffer> Framebuffer::Create(const FramebufferSpecification& spec) {
         switch (Renderer::GetAPI()) {

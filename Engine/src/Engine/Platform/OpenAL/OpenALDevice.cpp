@@ -2,7 +2,7 @@
 
 #include "OpenALDevice.h"
 
-namespace Engine {
+namespace rh {
     std::vector<std::string> SoundDevice::GetDevices() {
         std::vector<std::string> devicesVec;
         const ALCchar* devices;

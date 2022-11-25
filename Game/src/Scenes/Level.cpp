@@ -18,18 +18,18 @@ void Level::OnAttach() {
     ENGINE_LOG_INFO("Level {0} Attach", Name);
 
     m_ViewportSize = {
-        (float)Engine::Application::Get().GetWindow().GetWidth(),
-        (float)Engine::Application::Get().GetWindow().GetHeight() };
+        (float)rh::Application::Get().GetWindow().GetWidth(),
+        (float)rh::Application::Get().GetWindow().GetHeight() };
 
     // Setup input bindings
-    Engine::Input::CaptureMouse(false);
-    Engine::Input::BindAxis("AxisMoveForward", { KEY_CODE_W, KEY_CODE_S, GAMEPAD_AXIS_LEFT_Y, true });
-    Engine::Input::BindAxis("AxisMoveRight", { KEY_CODE_D, KEY_CODE_A, GAMEPAD_AXIS_LEFT_X });
-    Engine::Input::BindAxis("AxisRotateRight", { KEY_CODE_E, KEY_CODE_Q, GAMEPAD_AXIS_RIGHT_X });
-    Engine::Input::BindAxis("AxisRotateUp", { KEY_CODE_R, KEY_CODE_F, GAMEPAD_AXIS_RIGHT_Y, true });
-    Engine::Input::BindAxis("AxisBoost", { KEY_CODE_LEFT_SHIFT, KEY_CODE_F12, GAMEPAD_AXIS_LEFT_TRIGGER });
+    rh::Input::CaptureMouse(false);
+    rh::Input::BindAxis("AxisMoveForward", { KEY_CODE_W, KEY_CODE_S, GAMEPAD_AXIS_LEFT_Y, true });
+    rh::Input::BindAxis("AxisMoveRight", { KEY_CODE_D, KEY_CODE_A, GAMEPAD_AXIS_LEFT_X });
+    rh::Input::BindAxis("AxisRotateRight", { KEY_CODE_E, KEY_CODE_Q, GAMEPAD_AXIS_RIGHT_X });
+    rh::Input::BindAxis("AxisRotateUp", { KEY_CODE_R, KEY_CODE_F, GAMEPAD_AXIS_RIGHT_Y, true });
+    rh::Input::BindAxis("AxisBoost", { KEY_CODE_LEFT_SHIFT, KEY_CODE_F12, GAMEPAD_AXIS_LEFT_TRIGGER });
 
-    Engine::Input::BindAction("ActionJump", { KEY_CODE_SPACE, GAMEPAD_BUTTON_A });
+    rh::Input::BindAction("ActionJump", { KEY_CODE_SPACE, GAMEPAD_BUTTON_A });
 
     // load 3D scene data
     if (!m_3DScene.loadFromLevel(Name)) {
@@ -47,30 +47,30 @@ void Level::OnDetach() {
     ENGINE_LOG_INFO("Level {0} Detach", Name);
 }
 
-void Level::OnUpdate(Engine::Timestep ts) {
+void Level::OnUpdate(rh::Timestep ts) {
     CheckViewportSize();
 
     // Setup Render
-    Engine::RenderCommand::SetClearColor(math::vec4(.1, .1, .1, 1));
-    Engine::RenderCommand::Clear();
+    rh::RenderCommand::SetClearColor(math::vec4(.1, .1, .1, 1));
+    rh::RenderCommand::Clear();
 
     // draw 3D scene
     m_3DScene.OnUpdate(ts);
 
     // draw level name
     if (m_levelTime < 5.0f) {
-        Engine::TextRenderer::SubmitText("Level: " + Name, m_ViewportSize.x / 2.0f, 20.0f, math::vec3(.25f, .45f, .9f), TextAlignment::ALIGN_TOP_MID);
+        rh::TextRenderer::SubmitText("Level: " + Name, m_ViewportSize.x / 2.0f, 20.0f, math::vec3(.25f, .45f, .9f), TextAlignment::ALIGN_TOP_MID);
     }
 
     m_levelTime += ts;
 }
 
-void Level::OnEvent(Engine::Event& event) {
+void Level::OnEvent(rh::Event& event) {
     // respond to input/game events
-    Engine::EventDispatcher dispatcher(event);
-    dispatcher.Dispatch<Engine::KeyPressedEvent>(BIND_EVENT_FN(Level::OnKeyPressedEvent));
+    rh::EventDispatcher dispatcher(event);
+    dispatcher.Dispatch<rh::KeyPressedEvent>(BIND_EVENT_FN(Level::OnKeyPressedEvent));
 
-    dispatcher.Dispatch<Engine::WindowResizeEvent>([&](Engine::WindowResizeEvent& e) {
+    dispatcher.Dispatch<rh::WindowResizeEvent>([&](rh::WindowResizeEvent& e) {
         m_ViewportSize = {
             (float)e.GetWidth(),
             (float)e.GetHeight()
@@ -80,36 +80,36 @@ void Level::OnEvent(Engine::Event& event) {
     });
 }
 
-bool Level::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
+bool Level::OnKeyPressedEvent(rh::KeyPressedEvent& e) {
     // quit game
     if (e.GetKeyCode() == KEY_CODE_ESCAPE) {
         MainMenuScene* newScene = new MainMenuScene();
-        Engine::Application::Get().PushNewScene(newScene);
+        rh::Application::Get().PushNewScene(newScene);
         return true;
     }
 
     // toggle mouse controll for camera
     if (e.GetKeyCode() == KEY_CODE_TAB) {
-        if (Engine::Input::IsMouseCaptured())
-            Engine::Input::CaptureMouse(false);
+        if (rh::Input::IsMouseCaptured())
+            rh::Input::CaptureMouse(false);
         else
-            Engine::Input::CaptureMouse(true);
+            rh::Input::CaptureMouse(true);
         return true;
     }
 
     if (e.GetKeyCode() == KEY_CODE_C) {
         auto camera = m_3DScene.FindByName("Camera");
         if (camera) {
-            if (camera.HasComponent<Engine::NativeScriptComponent>()) {
-                auto scriptComp = camera.GetComponent<Engine::NativeScriptComponent>();
-                auto script = scriptComp.GetScript<Engine::CameraController>();
+            if (camera.HasComponent<rh::NativeScriptComponent>()) {
+                auto scriptComp = camera.GetComponent<rh::NativeScriptComponent>();
+                auto script = scriptComp.GetScript<rh::CameraController>();
                 script->ToggleControl();
             }
         }
 
         auto player = m_3DScene.FindByName("Player");
         if (player) {
-            auto script = player.GetComponent<Engine::NativeScriptComponent>().GetScript<Engine::PlayerController>();
+            auto script = player.GetComponent<rh::NativeScriptComponent>().GetScript<rh::PlayerController>();
             script->ToggleControl();
         }
 
@@ -117,15 +117,15 @@ bool Level::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     }
 
     if (e.GetKeyCode() == KEY_CODE_O) {
-        Engine::Renderer::NextOutputMode();
+        rh::Renderer::NextOutputMode();
         return true;
     }
     if (e.GetKeyCode() == KEY_CODE_T) {
-        Engine::Renderer::ToggleToneMapping();
+        rh::Renderer::ToggleToneMapping();
         return true;
     }
     if (e.GetKeyCode() == KEY_CODE_G) {
-        Engine::Renderer::ToggleGammaCorrection();
+        rh::Renderer::ToggleGammaCorrection();
         return true;
     }
     if (e.GetKeyCode() == KEY_CODE_3) {
@@ -134,15 +134,15 @@ bool Level::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
     }
 
     if (e.GetKeyCode() == KEY_CODE_M) {
-        Engine::Renderer::ToggleDebugSoundOutput();
+        rh::Renderer::ToggleDebugSoundOutput();
         return true;
     }
     if (e.GetKeyCode() == KEY_CODE_J) {
-        Engine::Renderer::ToggleDebugControllerOutput();
+        rh::Renderer::ToggleDebugControllerOutput();
         return true;
     }
     if (e.GetKeyCode() == KEY_CODE_BACKSLASH) {
-        Engine::Renderer::RecompileShaders();
+        rh::Renderer::RecompileShaders();
         return true;
     }
 
@@ -170,8 +170,8 @@ void Level::CheckViewportSize() {
         specWidth = (u32)m_ViewportSize.x;
         specHeight = (u32)m_ViewportSize.y;
         ENGINE_LOG_INFO("Render resolution: {0} x {1}", specWidth, specHeight);
-        Engine::TextRenderer::OnWindowResize(specWidth, specHeight);
-        Engine::Renderer::OnWindowResize(specWidth, specHeight);
+        rh::TextRenderer::OnWindowResize(specWidth, specHeight);
+        rh::Renderer::OnWindowResize(specWidth, specHeight);
         m_3DScene.OnViewportResize(specWidth, specHeight);
     }
 }

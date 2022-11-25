@@ -9,7 +9,7 @@
 #include "Engine/Collision/CollisionWorld.hpp"
 #include <ostream>
 
-namespace Engine {
+namespace rh {
 
     struct TagComponent {
         std::string Name;

@@ -11,7 +11,7 @@
 
 const int quickstartScene = 1;
 
-class Game : public Engine::Application {
+class Game : public rh::Application {
 public:
     Game() {
         switch (quickstartScene) {
@@ -34,7 +34,7 @@ public:
 private:
 };
 
-Engine::Application* Engine::CreateApplication() {
+rh::Application* rh::CreateApplication() {
     return new Game();
 }
 
@@ -250,7 +250,7 @@ bool LoadMeshData_FromMeshFile(const std::string& filename, std::vector<Vertex>&
 }
 
 int main(int argc, char** argv) {
-    Engine::Logger::Init();
+    rh::Logger::Init();
 
     const std::string filename = "Data/Models/output.mesh";
     std::vector<Vertex> m_vertices;
@@ -275,7 +275,7 @@ int main(int argc, char** argv) {
 #include "Engine/Sound/SoundBuffer.hpp"
 #include "Engine/Sound/SoundFileFormats.hpp"
 #include "Engine/Sound/SoundStream.hpp"
-using namespace Engine;
+using namespace rh;
 
 #include "Engine/Resources/nbt/nbt.hpp"
 using namespace nbt;

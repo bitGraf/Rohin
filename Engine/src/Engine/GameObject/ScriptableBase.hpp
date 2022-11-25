@@ -2,7 +2,7 @@
 
 #include "Engine/GameObject/GameObject.hpp"
 
-namespace Engine {
+namespace rh {
     class ScriptableBase {
     public:
         virtual ~ScriptableBase() {}

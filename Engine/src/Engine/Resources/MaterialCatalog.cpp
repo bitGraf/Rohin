@@ -3,7 +3,7 @@
 #include "MaterialCatalog.hpp"
 #include "nbt\nbt.hpp"
 
-namespace Engine {
+namespace rh {
 
     std::unordered_map<std::string, MaterialSpec> MaterialMap;
     std::unordered_map<std::string, Texture2D*> LoadedTextures;

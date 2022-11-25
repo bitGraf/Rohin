@@ -4,7 +4,7 @@
 #include "Engine/Resources/Catalog.hpp"
 #include "Engine/Renderer/Texture.hpp"
 
-namespace Engine {
+namespace rh {
 
     struct Texture_Tag {
         Texture2D* texture;

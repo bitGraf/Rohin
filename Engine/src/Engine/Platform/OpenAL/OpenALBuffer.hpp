@@ -5,7 +5,7 @@
 #include "AL/al.h"
 #include "AL/alc.h"
 
-namespace Engine {
+namespace rh {
 
     class OpenALBuffer : public SoundBuffer {
     public:

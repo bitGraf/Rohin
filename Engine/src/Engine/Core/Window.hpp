@@ -5,7 +5,7 @@
 #include "Engine/Event/Event.hpp"
 #include "Engine/Renderer/GraphicsContext.hpp"
 
-namespace Engine {
+namespace rh {
     /* virtual class */
     class Window {
     public:

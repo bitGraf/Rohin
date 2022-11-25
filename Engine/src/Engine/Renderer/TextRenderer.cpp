@@ -6,7 +6,7 @@
 
 #include <stb_truetype.h>
 
-namespace Engine {
+namespace rh {
 
     struct TextRendererData {
         std::unique_ptr<ShaderLibrary> ShaderLibrary;

@@ -11,7 +11,7 @@
 
 #include "Engine/Resources/MaterialCatalog.hpp"
 
-namespace Engine {
+namespace rh {
 
     struct Lightingdata { // holds view-space lighting data
         u32 NumPointLights;
@@ -25,7 +25,7 @@ namespace Engine {
     };
 
     struct RendererData {
-        std::unique_ptr<Engine::ShaderLibrary> ShaderLibrary;
+        std::unique_ptr<rh::ShaderLibrary> ShaderLibrary;
         TextureCube* Skybox;
 
         Ref<VertexArray> FullscreenQuad;

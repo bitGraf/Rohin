@@ -2,7 +2,7 @@
 
 #include "Engine/Core/Base.hpp"
 
-namespace Engine {
+namespace rh {
 
     enum class ShaderDataType : u8 {
         None = 0, 

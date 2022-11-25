@@ -2,7 +2,7 @@
 
 #include "Engine/Renderer/RendererAPI.hpp"
 
-namespace Engine {
+namespace rh {
 
     class OpenGLRendererAPI : public RendererAPI {
     public:

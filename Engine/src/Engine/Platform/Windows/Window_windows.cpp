@@ -4,7 +4,7 @@
 
 #include "Engine/Platform/OpenGL/OpenGLGraphicsContext.hpp"
 
-namespace Engine {
+namespace rh {
     /* only init glfw once */
     static bool GLFW_Initialized = false;
 

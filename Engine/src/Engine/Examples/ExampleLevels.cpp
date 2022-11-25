@@ -15,7 +15,7 @@
 #include "Engine/Scripts/CameraController.hpp"
 #include "Engine/Scripts/Player.hpp"
 
-namespace Engine {
+namespace rh {
 
     void load_level_1(Scene3D* scene);
     void load_level_2(Scene3D* scene);
@@ -72,7 +72,7 @@ namespace Engine {
             auto player = scene->CreateGameObject("Player");
 
             //player.AddComponent<MeshRendererComponent>(mesh);
-            player.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(player);
+            player.AddComponent<rh::NativeScriptComponent>().Bind<PlayerController>(player);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
             //math::CreateTranslation(trans, math::vec3(0, 1, 0));
@@ -124,7 +124,7 @@ namespace Engine {
             camera.SetViewportSize(viewportSize.x, viewportSize.y);
             camera.SetPerspective(75, .01, 100);
 
-            Camera.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(Camera);
+            Camera.AddComponent<rh::NativeScriptComponent>().Bind<CameraController>(Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
             math::CreateTranslation(trans, math::vec3(0, 4, 5));
@@ -158,7 +158,7 @@ namespace Engine {
 
             player.AddComponent<MeshRendererComponent>(mesh);
             player.AddComponent<MeshAnimationComponent>(anim);
-            player.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(player);
+            player.AddComponent<rh::NativeScriptComponent>().Bind<PlayerController>(player);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
             //math::CreateTranslation(trans, math::vec3(0, 1, 0));
@@ -210,7 +210,7 @@ namespace Engine {
             camera.SetViewportSize(viewportSize.x, viewportSize.y);
             camera.SetPerspective(75, .01, 100);
 
-            Camera.AddComponent<Engine::NativeScriptComponent>().Bind<CameraController>(Camera);
+            Camera.AddComponent<rh::NativeScriptComponent>().Bind<CameraController>(Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
             math::CreateTranslation(trans, math::vec3(0, 4, 5));
@@ -222,20 +222,20 @@ namespace Engine {
     }
 
     void load_level_2(Scene3D* scene) {
-        Engine::MeshCatalog::Register("mesh_guard",      "Data/Models/guard.nbt", FileFormat::NBT_Basic);
-        Engine::MeshCatalog::Register("mesh_breakroom",  "../../Assets/Blender/Level 1/breakroom.nbt", FileFormat::NBT_Basic);
-        Engine::MeshCatalog::Register("mesh_floor",      "../../Assets/Blender/Level 1/floor.nbt", FileFormat::NBT_Basic);
-        Engine::MeshCatalog::Register("mesh_backrooms",  "../../Assets/Blender/Level 1/backrooms.nbt", FileFormat::NBT_Basic);
-        Engine::MeshCatalog::Register("mesh_outerwalls", "../../Assets/Blender/Level 1/outerwalls.nbt", FileFormat::NBT_Basic);
-        Engine::MeshCatalog::Register("mesh_safe",       "../../Assets/Blender/Level 1/safe.nbt", FileFormat::NBT_Basic);
-        Engine::MeshCatalog::Register("mesh_saferoom",   "../../Assets/Blender/Level 1/saferoom.nbt", FileFormat::NBT_Basic);
+        rh::MeshCatalog::Register("mesh_guard",      "Data/Models/guard.nbt", FileFormat::NBT_Basic);
+        rh::MeshCatalog::Register("mesh_breakroom",  "../../Assets/Blender/Level 1/breakroom.nbt", FileFormat::NBT_Basic);
+        rh::MeshCatalog::Register("mesh_floor",      "../../Assets/Blender/Level 1/floor.nbt", FileFormat::NBT_Basic);
+        rh::MeshCatalog::Register("mesh_backrooms",  "../../Assets/Blender/Level 1/backrooms.nbt", FileFormat::NBT_Basic);
+        rh::MeshCatalog::Register("mesh_outerwalls", "../../Assets/Blender/Level 1/outerwalls.nbt", FileFormat::NBT_Basic);
+        rh::MeshCatalog::Register("mesh_safe",       "../../Assets/Blender/Level 1/safe.nbt", FileFormat::NBT_Basic);
+        rh::MeshCatalog::Register("mesh_saferoom",   "../../Assets/Blender/Level 1/saferoom.nbt", FileFormat::NBT_Basic);
         auto& cWorld = scene->GetCollisionWorld();
 
         { // Player
             auto player = scene->CreateGameObject("Player");
             auto mesh = MeshCatalog::Get("mesh_guard");
             player.AddComponent<MeshRendererComponent>(mesh);
-            player.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(player);
+            player.AddComponent<rh::NativeScriptComponent>().Bind<PlayerController>(player);
 
             math::CreateRotationFromYawPitchRoll(mesh->GetSubmeshes()[0].Transform, 90, 0, 0);
 
@@ -311,8 +311,8 @@ namespace Engine {
     }
 
     void load_level_3(Scene3D* scene) {
-        Engine::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", FileFormat::NBT_Basic);
-        Engine::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
+        rh::MeshCatalog::Register("mesh_guard", "Data/Models/guard.nbt", FileFormat::NBT_Basic);
+        rh::MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
         auto& cWorld = scene->GetCollisionWorld();
 
         { // Player

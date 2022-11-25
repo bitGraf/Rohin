@@ -4,7 +4,7 @@
 #include "Renderer.hpp"
 #include "Engine/Platform/OpenGL/OpenGLVertexArray.hpp"
 
-namespace Engine {
+namespace rh {
 
     Ref<VertexArray> VertexArray::Create() {
         switch (Renderer::GetAPI()) {

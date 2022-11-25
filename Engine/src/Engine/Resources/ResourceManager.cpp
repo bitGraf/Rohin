@@ -4,7 +4,7 @@
 
 #include "Engine/Renderer/Texture.hpp"
 
-namespace Engine {
+namespace rh {
 
     namespace ResourceManager {
         // Texture Buffer

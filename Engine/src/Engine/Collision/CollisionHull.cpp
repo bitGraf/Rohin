@@ -1,7 +1,7 @@
 #include <enpch.hpp>
 #include "Engine/Collision/CollisionHull.hpp"
 
-namespace Engine {
+namespace rh {
     using namespace math;
 
     CollisionHull::CollisionHull() :
@@ -45,13 +45,13 @@ namespace Engine {
             indices[n] = _indices[n];
         }
 
-        auto vbo = Engine::VertexBuffer::Create(data, vertices.size() * sizeof(_vertex));
+        auto vbo = rh::VertexBuffer::Create(data, vertices.size() * sizeof(_vertex));
         vbo->SetLayout({
-            { Engine::ShaderDataType::Float3, "a_Position" }
+            { rh::ShaderDataType::Float3, "a_Position" }
             });
-        auto ebo = Engine::IndexBuffer::Create(indices, faces.size() * 3);
+        auto ebo = rh::IndexBuffer::Create(indices, faces.size() * 3);
 
-        wireframe = Engine::VertexArray::Create();
+        wireframe = rh::VertexArray::Create();
         wireframe->Bind();
         wireframe->AddVertexBuffer(vbo);
         wireframe->SetIndexBuffer(ebo);

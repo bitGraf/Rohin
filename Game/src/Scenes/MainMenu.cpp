@@ -15,8 +15,8 @@ void MainMenuScene::OnAttach(){
     ENGINE_LOG_INFO("MainMenuScene Attach");
 
     m_ViewportSize = {
-        (float)Engine::Application::Get().GetWindow().GetWidth(),
-        (float)Engine::Application::Get().GetWindow().GetHeight() };
+        (float)rh::Application::Get().GetWindow().GetWidth(),
+        (float)rh::Application::Get().GetWindow().GetHeight() };
 }
 
 void MainMenuScene::OnDetach(){
@@ -52,23 +52,23 @@ const std::vector<std::string>& MainMenuScene::GetCurrentMenu() {
     __debugbreak();
 }
 
-void MainMenuScene::OnUpdate(Engine::Timestep ts) {
+void MainMenuScene::OnUpdate(rh::Timestep ts) {
     CheckViewportSize();
 
     // Setup Render
-    Engine::RenderCommand::SetClearColor(math::vec4(.1, .1, .1, 1));
-    Engine::RenderCommand::Clear();
+    rh::RenderCommand::SetClearColor(math::vec4(.1, .1, .1, 1));
+    rh::RenderCommand::Clear();
     
     // Fill background
     int numX = 8;
     float ratio = m_ViewportSize.x / m_ViewportSize.y;
-    Engine::SpriteRect src{ 0, 0, numX, numX / ratio};
-    Engine::SpriteRect dst{ 0, 0, m_ViewportSize.x, m_ViewportSize.y};
-    Engine::SpriteRenderer::SubmitSprite("Data/Images/grid/PNG/Dark/texture_07.png", &dst, &src);
+    rh::SpriteRect src{ 0, 0, numX, numX / ratio};
+    rh::SpriteRect dst{ 0, 0, m_ViewportSize.x, m_ViewportSize.y};
+    rh::SpriteRenderer::SubmitSprite("Data/Images/grid/PNG/Dark/texture_07.png", &dst, &src);
 
     // draw title
     float x = m_ViewportSize.x / 2.0f;
-    Engine::TextRenderer::SubmitText("font_big", "Bideo Gaem!", x, 35.0f, math::vec3(.5f, .25f, .7f), TextAlignment::ALIGN_TOP_MID);
+    rh::TextRenderer::SubmitText("font_big", "Bideo Gaem!", x, 35.0f, math::vec3(.5f, .25f, .7f), TextAlignment::ALIGN_TOP_MID);
 
     // draw menu buttons
     const std::vector<std::string>& currentMenuButtons = GetCurrentMenu();
@@ -76,23 +76,23 @@ void MainMenuScene::OnUpdate(Engine::Timestep ts) {
     math::vec3 color(.6f, .8f, .75f);
     math::vec3 color_select(.1f, .8f, .75f);
     for (int n = 0; n < currentMenuButtons.size(); n++) {
-        Engine::TextRenderer::SubmitText(currentMenuButtons.at(n), x, y, (n == currentSelection) ? color_select : color, TextAlignment::ALIGN_TOP_MID);
+        rh::TextRenderer::SubmitText(currentMenuButtons.at(n), x, y, (n == currentSelection) ? color_select : color, TextAlignment::ALIGN_TOP_MID);
         y += 32;
     }
 
     // Draw other sprites
-    auto[mx, my] = Engine::Input::GetMousePosition();
+    auto[mx, my] = rh::Input::GetMousePosition();
     src = { 0, 0, 1, 1 };
     dst = { mx, my, mx+16, my+16 };
-    Engine::SpriteRenderer::SubmitSprite("Data/Images/frog.png", &dst, &src, ALIGN_MID_MID);
+    rh::SpriteRenderer::SubmitSprite("Data/Images/frog.png", &dst, &src, ALIGN_MID_MID);
 }
 
-void MainMenuScene::OnEvent(Engine::Event& event) {
+void MainMenuScene::OnEvent(rh::Event& event) {
     // respond to input/game events
-    Engine::EventDispatcher dispatcher(event);
-    dispatcher.Dispatch<Engine::KeyPressedEvent>(BIND_EVENT_FN(MainMenuScene::OnKeyPressedEvent));
+    rh::EventDispatcher dispatcher(event);
+    dispatcher.Dispatch<rh::KeyPressedEvent>(BIND_EVENT_FN(MainMenuScene::OnKeyPressedEvent));
 
-    dispatcher.Dispatch<Engine::WindowResizeEvent>([&](Engine::WindowResizeEvent& e) {
+    dispatcher.Dispatch<rh::WindowResizeEvent>([&](rh::WindowResizeEvent& e) {
         m_ViewportSize = {
             (float)e.GetWidth(),
             (float)e.GetHeight()
@@ -104,13 +104,13 @@ void MainMenuScene::OnEvent(Engine::Event& event) {
 
 void MainMenuScene::GotoLevel(const std::string& levelName) {
     Level* newLevel = new Level(levelName);
-    Engine::Application::Get().PushNewScene(newLevel);
+    rh::Application::Get().PushNewScene(newLevel);
 }
 
-bool MainMenuScene::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
+bool MainMenuScene::OnKeyPressedEvent(rh::KeyPressedEvent& e) {
     // quit game
     if (e.GetKeyCode() == KEY_CODE_ESCAPE) {
-        Engine::Application::Get().Close();
+        rh::Application::Get().Close();
     }
 
     auto& currentMenuButtons = GetCurrentMenu();
@@ -132,7 +132,7 @@ bool MainMenuScene::OnKeyPressedEvent(Engine::KeyPressedEvent& e) {
                 case 0: {GotoLevel("Level_1"); } break;
                 case 1: {currentSelection = 0; currentMenuState = 2; } break;
                 case 2: {currentSelection = 0; currentMenuState = 1; } break;
-                case 3: {Engine::Application::Get().Close(); } break;
+                case 3: {rh::Application::Get().Close(); } break;
                 }
             } break;
             case 1: {
@@ -170,7 +170,7 @@ void MainMenuScene::CheckViewportSize() {
         specWidth = (u32)m_ViewportSize.x;
         specHeight = (u32)m_ViewportSize.y;
         ENGINE_LOG_INFO("Render resolution: {0} x {1}", specWidth, specHeight);
-        Engine::TextRenderer::OnWindowResize(specWidth, specHeight);
-        Engine::SpriteRenderer::OnWindowResize(specWidth, specHeight);
+        rh::TextRenderer::OnWindowResize(specWidth, specHeight);
+        rh::SpriteRenderer::OnWindowResize(specWidth, specHeight);
     }
 }

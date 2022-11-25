@@ -3,7 +3,7 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Event/Event.hpp"
 
-namespace Engine {
+namespace rh {
 
     class GuiLayer
     {

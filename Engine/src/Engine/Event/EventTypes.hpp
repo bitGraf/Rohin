@@ -3,7 +3,7 @@
 #include "Engine/Event/Event.hpp"
 #include <sstream>
 
-namespace Engine {
+namespace rh {
     using KeyCode = uint16_t;
     using MouseCode = uint16_t;
 

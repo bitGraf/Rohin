@@ -2,7 +2,7 @@
 
 #include "Engine/Renderer/Camera.hpp"
 
-namespace Engine {
+namespace rh {
 
     class SceneCamera : public Camera {
     public:

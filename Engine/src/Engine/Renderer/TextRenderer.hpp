@@ -3,7 +3,7 @@
 #include "RenderCommand.hpp"
 #include "Shader.hpp"
 
-namespace Engine {
+namespace rh {
 
     class TextRenderer
     {

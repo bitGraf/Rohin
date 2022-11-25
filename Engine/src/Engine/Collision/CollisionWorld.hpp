@@ -4,7 +4,7 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Collision/CollisionHull.hpp"
 
-namespace Engine {
+namespace rh {
 
     struct RaycastResult {
         f32 t;

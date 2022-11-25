@@ -1,7 +1,7 @@
 #include <enpch.hpp>
 #include "Engine/Collision/CollisionWorld.hpp"
 
-namespace Engine {
+namespace rh {
     using namespace math;
 
     CollisionWorld::CollisionWorld() {

@@ -3,7 +3,7 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Scene/Scene3D.hpp"
 
-namespace Engine {
+namespace rh {
     class GameObject {
     public:
         GameObject()

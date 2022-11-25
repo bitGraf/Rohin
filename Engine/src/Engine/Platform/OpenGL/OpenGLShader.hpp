@@ -5,7 +5,7 @@
 
 typedef unsigned int GLenum;
 
-namespace Engine {
+namespace rh {
 
     class OpenGLShaderUniformDeclaration : public ShaderUniformDeclaration {
     private:

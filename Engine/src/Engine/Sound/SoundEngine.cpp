@@ -10,7 +10,7 @@
 #include "Engine/Sound/SoundStream.hpp"
 #include "Engine/Sound/SoundEffect.hpp"
 
-namespace Engine {
+namespace rh {
 
     struct SoundQueueEntry {
         std::string cueName;

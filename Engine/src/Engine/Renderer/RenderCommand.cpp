@@ -3,6 +3,6 @@
 
 #include "Engine/Platform/OpenGL/OpenGLRendererAPI.hpp"
 
-namespace Engine {
+namespace rh {
     RendererAPI* RenderCommand::s_RendererAPI = new OpenGLRendererAPI();
 }

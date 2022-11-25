@@ -3,7 +3,7 @@
 #include "RenderCommand.hpp"
 #include "Shader.hpp"
 
-namespace Engine {
+namespace rh {
 
     struct SpriteRect {
         float x0, y0, x1=-1, y1=-1;

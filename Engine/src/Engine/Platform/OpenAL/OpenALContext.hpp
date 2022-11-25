@@ -6,7 +6,7 @@
 #include "AL/al.h"
 #include "AL/alc.h"
 
-namespace Engine {
+namespace rh {
 
     class OpenALContext : public SoundContext {
     public:

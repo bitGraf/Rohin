@@ -1,7 +1,7 @@
 #include <enpch.hpp>
 #include "MeshCatalog.hpp"
 
-namespace Engine {
+namespace rh {
 
     namespace MeshCatalog {
         std::unordered_map<std::string, Mesh*> m_MeshList;

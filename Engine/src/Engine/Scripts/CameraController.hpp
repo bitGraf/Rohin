@@ -3,7 +3,7 @@
 #include "Engine/Sound/SoundEngine.hpp"
 #include "Player.hpp"
 
-namespace Engine {
+namespace rh {
     class CameraController : public ScriptableBase {
     public:
         CameraController() {}
@@ -41,7 +41,7 @@ namespace Engine {
             auto player = GetScene().FindByName("Player");
             LOG_ASSERT(player, "CamController could not find player GameObject");
 
-            playerScript = player.GetComponent<Engine::NativeScriptComponent>().GetScript<PlayerController>();
+            playerScript = player.GetComponent<rh::NativeScriptComponent>().GetScript<PlayerController>();
             LOG_ASSERT(playerScript, "CamController could not find player controller script");
 
         }
@@ -55,7 +55,7 @@ namespace Engine {
         }
 
         virtual void OnUpdate(double ts) override {
-            using namespace Engine;
+            using namespace rh;
             using namespace math;
 
             static bool firstFrame = true;
@@ -157,7 +157,7 @@ namespace Engine {
 
     private:
         void CalcTransformFromYawPitch(math::vec3 velocity) {
-            using namespace Engine;
+            using namespace rh;
             using namespace math;
 
             auto& transform = transformComponent->Transform;
@@ -171,7 +171,7 @@ namespace Engine {
         }
 
         void CalcTransformFromLookDir(math::vec3 at, math::vec3 lookAt, math::vec3 velocity) {
-            using namespace Engine;
+            using namespace rh;
             using namespace math;
 
             position = at;
@@ -195,8 +195,8 @@ namespace Engine {
         // Player
         PlayerController* playerScript;
 
-        Engine::TransformComponent* transformComponent;
-        Engine::CameraComponent* cameraComponent;
+        rh::TransformComponent* transformComponent;
+        rh::CameraComponent* cameraComponent;
 
         math::vec3 Forward, Right, Up;
 

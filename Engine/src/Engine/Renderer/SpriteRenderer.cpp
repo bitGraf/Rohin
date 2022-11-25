@@ -5,7 +5,7 @@
 #include "Engine/Renderer/Texture.hpp"
 #include "Engine/Resources/MaterialCatalog.hpp"
 
-namespace Engine {
+namespace rh {
 
     struct SpriteRendererData {
         std::unique_ptr<ShaderLibrary> ShaderLibrary;

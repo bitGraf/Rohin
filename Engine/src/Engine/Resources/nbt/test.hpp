@@ -41,7 +41,7 @@ namespace nbtTest {
 	void test2() {
 		{
 			// test if the nbt format can be easily used to store mesh data
-			auto mesh = std::make_shared<Engine::Mesh>("Data/Models/cube.mesh", true);
+			auto mesh = std::make_shared<rh::Mesh>("Data/Models/cube.mesh", true);
 
 			auto verts = mesh->GetVertices();
 			auto inds = mesh->GetIndices();
@@ -71,13 +71,13 @@ namespace nbtTest {
 			mesh_data["numInds"] = nbt::tag_short(inds.size() * 3);
 
 			std::vector<nbt::nbt_byte> vert_byte_vec;
-			vert_byte_vec.reserve(verts.size() * sizeof(Engine::Vertex));
-			vert_byte_vec.assign(reinterpret_cast<nbt::nbt_byte*>(verts.data()), reinterpret_cast<nbt::nbt_byte*>(verts.data()) + (verts.size() * sizeof(Engine::Vertex)));
+			vert_byte_vec.reserve(verts.size() * sizeof(rh::Vertex));
+			vert_byte_vec.assign(reinterpret_cast<nbt::nbt_byte*>(verts.data()), reinterpret_cast<nbt::nbt_byte*>(verts.data()) + (verts.size() * sizeof(rh::Vertex)));
 			mesh_data["vertices"] = nbt::tag_byte_array(std::move(vert_byte_vec));
 
 			std::vector<nbt::nbt_byte> ind_byte_vec;
-			ind_byte_vec.reserve(inds.size() * sizeof(Engine::Index));
-			ind_byte_vec.assign(reinterpret_cast<nbt::nbt_byte*>(inds.data()), reinterpret_cast<nbt::nbt_byte*>(inds.data()) + (inds.size() * sizeof(Engine::Index)));
+			ind_byte_vec.reserve(inds.size() * sizeof(rh::Index));
+			ind_byte_vec.assign(reinterpret_cast<nbt::nbt_byte*>(inds.data()), reinterpret_cast<nbt::nbt_byte*>(inds.data()) + (inds.size() * sizeof(rh::Index)));
 			mesh_data["indices"] = nbt::tag_byte_array(std::move(ind_byte_vec));
 
 			mesh_data["meshFlag"] = nbt::nbt_byte(0); // placeholder for now

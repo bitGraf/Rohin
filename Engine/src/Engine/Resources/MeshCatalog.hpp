@@ -3,7 +3,7 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 
-namespace Engine {
+namespace rh {
 
     enum class FileFormat : unsigned char {
         None = 0,

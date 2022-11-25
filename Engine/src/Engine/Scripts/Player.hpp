@@ -2,8 +2,8 @@
 
 #include "Engine.hpp"
 
-namespace Engine {
-    class PlayerController : public Engine::ScriptableBase {
+namespace rh {
+    class PlayerController : public rh::ScriptableBase {
     public:
         PlayerController() {}
 
@@ -89,7 +89,7 @@ namespace Engine {
         }
 
         virtual void OnUpdate(double ts) override {
-            using namespace Engine;
+            using namespace rh;
             using namespace math;
 
             if (BeingControlled) {
@@ -241,7 +241,7 @@ namespace Engine {
         float yaw, pitch;
         math::vec3 ghostPosition;
         math::vec3 m_floorUp;
-        Engine::UID_t m_floorID = 0;
+        rh::UID_t m_floorID = 0;
 
         // Flags
         bool grounded = false;

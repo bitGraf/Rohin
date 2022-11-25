@@ -8,7 +8,7 @@
 
 #include <unordered_set>
 
-namespace Engine {
+namespace rh {
 
     class Material {
         friend class MaterialInstance;

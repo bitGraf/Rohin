@@ -3,7 +3,7 @@
 #include <memory>
 #include "Engine/Renderer/Buffer.hpp"
 
-namespace Engine {
+namespace rh {
 
     class VertexArray {
     public:

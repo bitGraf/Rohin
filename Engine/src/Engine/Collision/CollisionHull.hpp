@@ -5,7 +5,7 @@
 #include "Engine/Core/GameMath.hpp"
 #include "Engine/Renderer/VertexArray.hpp"
 
-namespace Engine {
+namespace rh {
     typedef u64 UID_t;
 
     struct CollisionTriangle {
@@ -23,7 +23,7 @@ namespace Engine {
 
         math::vec3 position;
         math::mat3 rotation;
-        Engine::Ref<Engine::VertexArray> wireframe; // for visualizing
+        rh::Ref<rh::VertexArray> wireframe; // for visualizing
 
         void bufferData();
 

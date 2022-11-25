@@ -3,7 +3,7 @@
 
 #include <glad/glad.h>
 
-namespace Engine {
+namespace rh {
 
     /* Vertex Buffer *************************************************************/
     OpenGLVertexBuffer::OpenGLVertexBuffer(void* vertices, u32 size) {

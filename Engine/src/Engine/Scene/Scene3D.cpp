@@ -13,7 +13,7 @@
 // hard-coded levels
 #include "Engine/Examples/ExampleLevels.hpp"
 
-namespace Engine {
+namespace rh {
 
     GameObject Scene3D::CreateGameObject(const std::string& name) {
         GameObject go = { m_Registry.create(), this };

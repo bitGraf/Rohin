@@ -5,7 +5,7 @@
 
 #include "Engine/Sound/SoundDevice.hpp"
 
-namespace Engine {
+namespace rh {
 
     class SoundContext {
     public:

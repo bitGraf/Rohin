@@ -9,7 +9,7 @@
 //#include "TextRenderer.hpp"
 #include "Engine/GameObject/Components.hpp"
 
-namespace Engine {
+namespace rh {
     class Renderer
     {
     public:

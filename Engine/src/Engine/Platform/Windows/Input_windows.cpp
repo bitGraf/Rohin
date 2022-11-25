@@ -5,7 +5,7 @@
 #include <Engine/Core/Application.hpp>
 #include <glfw/glfw3.h>
 
-namespace Engine {
+namespace rh {
     static bool s_IsMouseCaptured = false;
     static std::unordered_map<std::string, InputAxisSpec> s_InputAxisMap;
     static std::unordered_map<std::string, InputActionSpec> s_InputActionMap;

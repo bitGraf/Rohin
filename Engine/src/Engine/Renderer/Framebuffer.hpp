@@ -3,7 +3,7 @@
 #include <memory>
 #include "Engine/Core/Base.hpp"
 
-namespace Engine {
+namespace rh {
 
     enum class FramebufferTextureFormat
     {

@@ -3,7 +3,7 @@
 
 #include <glad/glad.h>
 
-namespace Engine {
+namespace rh {
 
     void OpenGLRendererAPI::SetClearColor(const math::vec4& color) {
         glClearColor(color.x, color.y, color.z, color.w);

@@ -1,6 +1,6 @@
 #include <enpch.hpp>
 #include "RendererAPI.hpp"
 
-namespace Engine {
+namespace rh {
     RendererAPI::API RendererAPI::s_API = RendererAPI::API::OpenGL;
 }

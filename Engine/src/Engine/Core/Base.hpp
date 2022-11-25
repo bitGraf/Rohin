@@ -26,7 +26,7 @@
 #define DEBUG_OSTR(obj) obj
 #endif
 
-namespace Engine {
+namespace rh {
     template<typename T>
     using Scope = std::unique_ptr<T>;
 
