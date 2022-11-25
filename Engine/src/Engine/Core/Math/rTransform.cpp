@@ -335,7 +335,12 @@ namespace math {
         return res;
     }
     quat slerp(const quat& q1, const quat& q2, scalar f) {
-        scalar omega = acos(q1.dot(q2));
+        scalar dot = q1.dot(q2);
+        scalar eps = 1e-4;
+        if (abs(dot - 1.0f) < eps) {
+            return q1;
+        }
+        scalar omega = acos(std::clamp(dot, -1.0f, 1.0f));
         scalar s_omega_inv = 1.0 / sin(omega);
         vec4 v = (sin((1 - f)*omega)*s_omega_inv * q1.asVec4()) + (sin(f*omega)*s_omega_inv * q2.asVec4());
         return quat(v.x, v.y, v.z, v.w);

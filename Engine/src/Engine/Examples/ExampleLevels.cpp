@@ -56,22 +56,30 @@ namespace Engine {
         // ANIM_HOOK MaterialCatalog::RegisterMaterial(mats);
 
         MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
-        MeshCatalog::Register("new_format_test", "Data/Models/output.mesh", FileFormat::MESH_File);
+        MeshCatalog::Register("tentacle", "Data/Models/output.mesh", FileFormat::MESH_File);
 
-        // Cube
+        // Tentacle
         {
-            auto cubeObj = scene->CreateGameObject("Player");
-            auto mesh = MeshCatalog::Get("new_format_test");
+            auto tentacle = scene->CreateGameObject("Tentacle");
+            auto mesh = MeshCatalog::Get("tentacle");
+            tentacle.AddComponent<MeshRendererComponent>(mesh);
+            auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
+            math::CreateTranslation(trans, math::vec3(0, 1, 0));
+        }
 
-            cubeObj.AddComponent<MeshRendererComponent>(mesh);
-            cubeObj.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(cubeObj);
+        // Player
+        {
+            auto player = scene->CreateGameObject("Player");
 
-            auto& trans = cubeObj.GetComponent<TransformComponent>().Transform;
+            //player.AddComponent<MeshRendererComponent>(mesh);
+            player.AddComponent<Engine::NativeScriptComponent>().Bind<PlayerController>(player);
+
+            auto& trans = player.GetComponent<TransformComponent>().Transform;
             //math::CreateTranslation(trans, math::vec3(0, 1, 0));
             math::CreateTransform(trans, math::mat3(), math::vec3(0, 1, 0), math::vec3(1, 1, 1));
 
             UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
-            cubeObj.AddComponent<ColliderComponent>(hull);
+            player.AddComponent<ColliderComponent>(hull);
         }
 
         // Platform

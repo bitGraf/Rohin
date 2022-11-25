@@ -45,6 +45,8 @@ namespace Engine {
     struct SkeleJoint {
         math::mat4 inverseBindPose;
         math::mat4 finalTransform;
+        std::string bone_name;
+        s32 parent_idx;
     };
 
     struct BoneFrame {
@@ -102,6 +104,8 @@ namespace Engine {
         // ANIM_HOOK const std::vector<md5::Joint>&  GetBindPose() const { return m_BindPose; }
 
         void SetCurrentAnimation(const std::string& anim_name);
+        inline bool HasAnimations() const { return m_hasAnimations; }
+        inline const std::vector<SkeleJoint>& GetSkeleton() const { return m_Skeleton; }
     private:
         void populateAnimationData(const std::string& filename);
         void UpdateSkeleton(int frame1, int frame2, double interp);

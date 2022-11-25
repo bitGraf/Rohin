@@ -25,27 +25,33 @@ out VertexOutput { // all in view-space
     mat3 ViewNormalMatrix;
 } vs_Output;
 
-vec3 calcSkinnedVert() {
+vec4 calcSkinnedVert() {
     float finalWeight = 1 - a_BoneWeights.x - a_BoneWeights.y - a_BoneWeights.z; // ensure total weight is 1
     mat4 poseMat;
     poseMat  = r_Bones[a_BoneIndices.x] * a_BoneWeights.x;
     poseMat += r_Bones[a_BoneIndices.y] * a_BoneWeights.y;
     poseMat += r_Bones[a_BoneIndices.z] * a_BoneWeights.z;
     poseMat += r_Bones[a_BoneIndices.w] * finalWeight;
-    return vec3(poseMat * vec4(a_Position,1));
+    return poseMat * vec4(a_Position,1);
 }
 
 void main() {
-    vec3 skinnedPos = a_Position; //calcSkinnedVert(); // NEED TO REENABLE THIS LATER
+    float finalWeight = 1 - a_BoneWeights[0] - a_BoneWeights[1] - a_BoneWeights[2]; // ensure total weight is 1
+    mat4 boneTransform = r_Bones[a_BoneIndices[0]] * a_BoneWeights[0];
+    boneTransform += r_Bones[a_BoneIndices[1]] * a_BoneWeights[1];
+    boneTransform += r_Bones[a_BoneIndices[2]] * a_BoneWeights[2];
+    boneTransform += r_Bones[a_BoneIndices[3]] * finalWeight;
+
+    vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
 
     mat4 model2view = r_View * r_Transform;
     mat4 normalMatrix = transpose(inverse(model2view));
-    vs_Output.Position = vec3(model2view * vec4(skinnedPos, 1.0));
+    vs_Output.Position = vec3(model2view * boneTransform * vec4(a_Position, 1.0));
     vs_Output.Normal = vec3(normalMatrix * vec4(a_Normal, 0));
     vs_Output.TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
     vs_Output.ViewNormalMatrix = mat3(normalMatrix) * mat3(a_Tangent, a_Bitangent, a_Normal);
 
-    gl_Position = r_Projection * model2view * vec4(skinnedPos, 1.0);
+    gl_Position = r_Projection * model2view * localPosition;
 }
 
 #type fragment

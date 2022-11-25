@@ -18,7 +18,7 @@ namespace Engine {
     GameObject Scene3D::CreateGameObject(const std::string& name) {
         GameObject go = { m_Registry.create(), this };
         go.AddComponent<TransformComponent>();
-        go.AddComponent<TagComponent>(name.empty() ? "GameObject" : name);
+        go.AddComponent<TagComponent>(name.empty() ? " " : name);
         return go;
     }
 
@@ -246,22 +246,39 @@ namespace Engine {
                 TextRenderer::SubmitText("Showing entity locations", 5, 40, math::vec3(.7, .1, .5));
             }
 
-            // draw coordinate frame
+            // draw coordinate frames
             Renderer::SubmitLine(math::vec3(), math::vec3(1, 0, 0), math::vec4(1, 0, 0, 1));
             Renderer::SubmitLine(math::vec3(), math::vec3(0, 1, 0), math::vec4(0, 1, 0, 1));
             Renderer::SubmitLine(math::vec3(), math::vec3(0, 0, 1), math::vec4(0, 0, 1, 1));
 
+            auto axes_view = m_Registry.view<TransformComponent>();
+            for (auto entity : axes_view) {
+                auto& transform = axes_view.get<TransformComponent>(entity);
+
+                math::vec3 pos = transform.Transform.column4.asVec3();
+                math::vec3 forward, right, up;
+                math::Decompose(transform.Transform, forward, right, up);
+
+                // right   +X
+                // up      +Y
+                // forward -Z
+                Renderer::SubmitLine(pos, pos+right, math::vec4(1, 0, 0, 1));
+                Renderer::SubmitLine(pos, pos+up, math::vec4(0, 1, 0, 1));
+                Renderer::SubmitLine(pos, pos+forward, math::vec4(0, 0, 1, 1));
+            }
+
             // Draw skeletons
-            // ANIM_HOOK
-            //auto group_trans_anim = m_Registry.group<MeshAnimationComponent>(entt::get<TransformComponent>);
-            //for (auto entity : group_trans_anim) {
-            //    auto& anim = m_Registry.get<MeshAnimationComponent>(entity);
-            //    auto& transform = m_Registry.get<TransformComponent>(entity);
-            //    auto& tag = m_Registry.get<TagComponent>(entity);
-            //    auto& mesh = m_Registry.get<MeshRendererComponent>(entity);
-            //
-            //    Renderer::DrawSkeletonDebug(tag, transform, mesh, anim, math::vec3(.6f, .1f, .9f));
-            //}
+            auto anim_group = m_Registry.group<MeshRendererComponent>(entt::get<TransformComponent>);
+            for (auto entity : anim_group) {
+                auto[transform, mesh] = anim_group.get<TransformComponent, MeshRendererComponent>(entity);
+                if (mesh.MeshPtr) {
+                    auto& tag = m_Registry.get<TagComponent>(entity);
+                    
+                    if (mesh.MeshPtr->HasAnimations()) {
+                        Renderer::DrawSkeletonDebug(tag, transform, mesh, math::vec3(.6f, .1f, .9f));
+                    }
+                }
+            }
 
             auto group_trans = m_Registry.group<TransformComponent>(entt::get<TagComponent>);
             for (auto entity : group_trans) {
@@ -289,7 +306,7 @@ namespace Engine {
 
     Scene3D::Scene3D() {
         // reserve gameObject 0
-        m_Registry.create();
+        //m_Registry.create();
     }
 
     Scene3D::~Scene3D() {

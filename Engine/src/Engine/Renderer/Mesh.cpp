@@ -12,7 +12,7 @@ namespace Engine {
     static_assert(sizeof(Triangle) == 3 * sizeof(uint32_t));
 
     static const u8 KNOWN_VERSION_MAJOR = 0;
-    static const u8 KNOWN_VERSION_MINOR = 6;
+    static const u8 KNOWN_VERSION_MINOR = 7;
     static const u8 KNOWN_VERSION_PATCH = 0;
 
     // anonymous helper funcs
@@ -89,54 +89,6 @@ namespace Engine {
     }
 
     Mesh::Mesh(const std::string& filename) {
-        // anonymous helper funcs
-        auto checkTag = [](const char* tag, const char* comp, int len) {
-            bool success = true;
-            for (int n = 0; n < len; n++) {
-                if (comp[n] != tag[n]) {
-                    success = false;
-                    break;
-                }
-            }
-            if (!success) {
-                switch (len) {
-                case 4: {
-                    printf("ERROR::Expected '%s', got '%c%c%c%c'\n", comp, tag[0], tag[1], tag[2], tag[3]);
-                    break;
-                } case 8: {
-                    printf("ERROR::Expected '%s', got '%c%c%c%c%c%c%c%c'\n", comp, tag[0], tag[1], tag[2], tag[3], tag[4], tag[5], tag[6], tag[7]);
-                    break;
-                } default: {
-                    printf("ERROR::Expected '%s','\n", comp);
-                    break;
-                }
-                }
-            }
-            return success;
-        };
-        auto read_u32 = [](std::ifstream& file) -> u32 {
-            u32 res;
-            file.read(reinterpret_cast<char*>(&res), sizeof(u32));
-            return res;
-        };
-        auto read_s32 = [](std::ifstream& file) -> s32 {
-            s32 res;
-            file.read(reinterpret_cast<char*>(&res), sizeof(s32));
-            return res;
-        };
-        auto read_u16 = [](std::ifstream& file) -> u16 {
-            u16 res;
-            file.read(reinterpret_cast<char*>(&res), sizeof(u16));
-            return res;
-        };
-        auto read_f64 = [](std::ifstream& file) -> f64 {
-            f64 res;
-            file.read(reinterpret_cast<char*>(&res), sizeof(f64));
-            return res;
-        };
-        auto read_mat4 = [](std::ifstream& file, math::mat4* m) {
-            file.read(reinterpret_cast<char*>(m), 16 * sizeof(f32));
-        };
 
         // Open file at the end
         std::ifstream file{ filename, std::ios::ate | std::ios::binary };
@@ -164,6 +116,7 @@ namespace Engine {
         u32 Flag = read_u32(file);
 
         m_hasAnimations = Flag & 0x01;
+        ENGINE_LOG_DEBUG(" Mesh has animations: {0}", m_hasAnimations);
 
         char INFO[4];
         file.read(INFO, 4);
@@ -201,6 +154,17 @@ namespace Engine {
             sm.MaterialIndex = read_u32(file);
             sm.IndexCount = read_u32(file);
             read_mat4(file, &sm.Transform);
+
+            // annoying cm-m conversion in fbx
+            sm.Transform.column1.x /= 100.0f;
+            sm.Transform.column1.y /= 100.0f;
+            sm.Transform.column1.z /= 100.0f;
+            sm.Transform.column2.x /= 100.0f;
+            sm.Transform.column2.y /= 100.0f;
+            sm.Transform.column2.z /= 100.0f;
+            sm.Transform.column3.x /= 100.0f;
+            sm.Transform.column3.y /= 100.0f;
+            sm.Transform.column3.z /= 100.0f;
         }
 
         // Joint heirarchy
@@ -219,9 +183,10 @@ namespace Engine {
                 file.read(name, name_len);
                 name[name_len - 1] = 0; // just in case...
                 ENGINE_LOG_DEBUG("  Bone Name: '{0}'", name);
+                joint.bone_name = std::string(name);
                 free(name);
 
-                s32 parent_idx = read_s32(file);
+                joint.parent_idx = read_s32(file);
 
                 file.read(reinterpret_cast<char*>(&joint.inverseBindPose), 16 * sizeof(f32));
 
@@ -396,7 +361,7 @@ namespace Engine {
         populateAnimationData(filename);
 
         // TMP
-        SetCurrentAnimation("Armature_ArmatureAction");
+        SetCurrentAnimation("Armature_swing");
 
         m_loaded = true;
     }
@@ -567,8 +532,21 @@ namespace Engine {
             math::quat rotation = math::slerp(bone1.rotation, bone2.rotation, interp);
             math::vec3 scale = math::lerp(bone1.scale, bone2.scale, interp);
 
-            // svae the final transform
-            math::CreateTransform(m_Skeleton[channel].finalTransform, rotation, position, scale);
+            // calc the local transform
+            math::mat4 local_transform;
+            math::CreateTransform(local_transform, rotation, position, scale);
+
+            // get the global transform by mul with parent transform
+            if (m_Skeleton[channel].parent_idx < 0) {
+                // no parent
+                m_Skeleton[channel].finalTransform = local_transform;
+            }
+            else {
+                const auto parent_idx = m_Skeleton[channel].parent_idx;
+                ENGINE_LOG_ASSERT(channel > parent_idx, "Child bone referencing parent transform that hasn't been set yet!");
+                auto parent_transform = m_Skeleton[parent_idx].finalTransform;
+                m_Skeleton[channel].finalTransform = parent_transform * local_transform;
+            }
         }
     }
 
@@ -583,10 +561,14 @@ namespace Engine {
 
             int frame1 = (int)floor(m_animTime * m_currentAnim->frames_per_second);
             int frame2 = (int)ceil(m_animTime * m_currentAnim->frames_per_second);
+            frame1 %= m_currentAnim->num_frames;
+            frame2 %= m_currentAnim->num_frames;
 
             double interp = fmod(m_animTime, 1.0 / m_currentAnim->frames_per_second) * m_currentAnim->frames_per_second;
 
-            //UpdateSkeleton(frame1, frame2, interp);
+            //ENGINE_LOG_DEBUG("Interpolating between frames {0} and {1} out of {2} [{3}]", frame1, frame2, m_currentAnim->num_frames, interp);
+
+            UpdateSkeleton(frame1, frame2, interp);
         }
     }
 
@@ -665,6 +647,12 @@ namespace Engine {
     void Mesh::SetCurrentAnimation(const std::string& anim_name) {
         // TODO: VERY unsafe.
         // If m_Animations every gets added to, this reference becomes invalid.
-        m_currentAnim = &m_Animations[anim_name];
+        if (m_Animations.find(anim_name) != m_Animations.end()) {
+            m_currentAnim = &m_Animations[anim_name];
+            ENGINE_LOG_INFO("Playing animation [{0}]", anim_name);
+        }
+        else {
+            ENGINE_LOG_ERROR("Mesh does not have an animation called [{0}]", anim_name);
+        }
     }
 }

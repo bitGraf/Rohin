@@ -51,7 +51,7 @@ namespace math {
         return vec3(x, y, z);
     }
     scalar quat::dot(const quat& q) const {
-        return x*q.x + x*q.x + x*q.x + x*q.x;
+        return x*q.x + y*q.y + z*q.z + w*q.w;
     }
     vec4 quat::asVec4() const {
         return vec4(x, y, z, w);
