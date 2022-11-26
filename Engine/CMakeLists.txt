@@ -11,6 +11,7 @@ add_subdirectory(deps/GLAD)
 add_subdirectory(deps/imgui)
 add_subdirectory(deps/OpenAL_soft)
 add_subdirectory(deps/stb)
+add_subdirectory(deps/math_lib)
 
 add_library(${ENGINE_NAME} STATIC)
 
@@ -246,7 +247,7 @@ source_group(Src\\Engine\\Scene FILES ${SCENE_SRC})
 source_group(Src\\Engine\\Scripts FILES ${SCIPTS_SRC})
 source_group(Src\\Engine\\Sound FILES ${SOUND_SRC})
 
-target_link_libraries(${ENGINE_NAME} PUBLIC spdlog imgui OpenAL_Soft stb OpenAL32 opengl32)
+target_link_libraries(${ENGINE_NAME} PUBLIC spdlog imgui OpenAL_Soft stb OpenAL32 opengl32 laml)
 target_include_directories(${ENGINE_NAME} PUBLIC src/)
 target_include_directories(${ENGINE_NAME} PUBLIC deps/EnTT/src)
 target_compile_features(${ENGINE_NAME} PUBLIC cxx_std_17)

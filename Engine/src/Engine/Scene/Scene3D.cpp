@@ -13,6 +13,8 @@
 // hard-coded levels
 #include "Engine/Examples/ExampleLevels.hpp"
 
+#include <laml/laml.hpp>
+
 namespace rh {
 
     GameObject Scene3D::CreateGameObject(const std::string& name) {
@@ -39,6 +41,9 @@ namespace rh {
     bool Scene3D::loadFromLevel(const std::string& levelName) {
         BENCHMARK_FUNCTION();
         std::string filename = "Data/Levels/" + levelName + ".scene";
+
+        laml::Matrix<float, 2, 2> m(1.0f, 2.0f, 3.0f, 4.0f);
+        ENGINE_LOG_DEBUG("mat = {0}", m);
 
         // TEMP
         // First check if it is one of the hard-coded levels
