@@ -54,11 +54,11 @@ rh::Application* rh::CreateApplication() {
 // Use this moving forward
 struct Vertex
 {
-    math::vec3 Position;
-    math::vec3 Normal;
-    math::vec3 Tangent;
-    math::vec3 Binormal;
-    math::vec2 Texcoord;
+    laml::Vec3 Position;
+    laml::Vec3 Normal;
+    laml::Vec3 Tangent;
+    laml::Vec3 Binormal;
+    laml::Vec2 Texcoord;
 };
 
 struct Triangle
@@ -74,7 +74,7 @@ public:
     u32 MaterialIndex;
     u32 IndexCount;
 
-    math::mat4 Transform;
+    laml::Mat4 Transform;
 };
 
 //std::vector<Vertex> m_Vertices;
@@ -127,7 +127,7 @@ bool LoadMeshData_FromMeshFile(const std::string& filename, std::vector<Vertex>&
         return res;
     };
 
-    auto read_mat4 = [](std::ifstream& file, math::mat4* m) {
+    auto read_mat4 = [](std::ifstream& file, laml::Mat4* m) {
         file.read(reinterpret_cast<char*>(m), 16*sizeof(f32));
     };
 

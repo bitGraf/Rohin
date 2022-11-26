@@ -21,15 +21,17 @@ namespace rh {
             cameraComponent->camera.SetPerspective(75.0f, 0.01f, 100.0f);
 
             // Pos, Yaw, Pitch, Roll, Forward, Right, Up
-            math::vec3 scale;
-            math::Decompose(transformComponent->Transform, position, Forward, Right, Up, yaw, pitch, scale);
+            laml::Vec3 scale;
+            laml::transform::decompose(transformComponent->Transform, position, Forward, Right, Up, yaw, pitch, scale);
+            //math::Decompose(transformComponent->Transform, position, Forward, Right, Up, yaw, pitch, scale);
+            
             //math::Decompose(transformComponent->Transform, position);
             //math::Decompose(transformComponent->Transform, Forward, Right, Up);
             //math::Decompose(transformComponent->Transform, yaw, pitch);
 
             // update listener
             SoundEngine::SetListenerPosition(position);
-            SoundEngine::SetListenerVelocity(math::vec3(0, 0, 0));
+            SoundEngine::SetListenerVelocity(laml::Vec3(0.0f, 0.0f, 0.0f));
             SoundEngine::SetListenerOrientation(Forward, Up);
 
             LOG_INFO("Camera controller created on GameObject {0}!", GetGameObjectID());
@@ -56,12 +58,12 @@ namespace rh {
 
         virtual void OnUpdate(double ts) override {
             using namespace rh;
-            using namespace math;
+            using namespace laml;
 
             static bool firstFrame = true;
             static float oldMousePosX = 0, oldMousePosY = 0;
             float offX = 0.0f, offY = 0.0f;
-            vec3 velocity;
+            Vec3 velocity;
 
             if (BeingControlled) {
                 BENCHMARK_FUNCTION();
@@ -103,22 +105,22 @@ namespace rh {
                 }
 
                 if (Input::IsKeyPressed(KEY_CODE_A)) {
-                    velocity -= Right * moveSpeed;
+                    velocity = velocity - Right * moveSpeed;
                     updateTransform = true;
                 } if (Input::IsKeyPressed(KEY_CODE_D)) {
-                    velocity += Right * moveSpeed;
+                    velocity = velocity + Right * moveSpeed;
                     updateTransform = true;
                 } if (Input::IsKeyPressed(KEY_CODE_W)) {
-                    velocity += Forward * moveSpeed;
+                    velocity = velocity + Forward * moveSpeed;
                     updateTransform = true;
                 } if (Input::IsKeyPressed(KEY_CODE_S)) {
-                    velocity -= Forward * moveSpeed;
+                    velocity = velocity - Forward * moveSpeed;
                     updateTransform = true;
                 } if (Input::IsKeyPressed(KEY_CODE_SPACE)) {
-                    velocity += Up * moveSpeed;
+                    velocity = velocity + Up * moveSpeed;
                     updateTransform = true;
                 } if (Input::IsKeyPressed(KEY_CODE_LEFT_CONTROL)) {
-                    velocity -= Up * moveSpeed;
+                    velocity = velocity - Up * moveSpeed;
                     updateTransform = true;
                 } if (Input::IsKeyPressed(KEY_CODE_Q)) {
                     yaw += rotSpeed * ts;
@@ -141,7 +143,7 @@ namespace rh {
                 }
 
                 if (updateTransform) {
-                    position += velocity * ts;
+                    position = position + velocity * static_cast<float>(ts);
                     CalcTransformFromYawPitch(velocity);
                 }
             }
@@ -149,20 +151,20 @@ namespace rh {
                 firstFrame = true;
                 oldMousePosX = 0;
                 oldMousePosY = 0;
-                vec3 target = playerScript->GetCameraTarget();
-                velocity = (target - position) * (1 / ts);
+                Vec3 target = playerScript->GetCameraTarget();
+                velocity = (target - position) * static_cast<float>(1.0 / ts);
                 CalcTransformFromLookDir(target, playerScript->GetPosition(), velocity);
             }
         }
 
     private:
-        void CalcTransformFromYawPitch(math::vec3 velocity) {
+        void CalcTransformFromYawPitch(laml::Vec3 velocity) {
             using namespace rh;
-            using namespace math;
+            using namespace laml;
 
             auto& transform = transformComponent->Transform;
-            math::CreateTransform(transform, position, yaw, pitch);
-            math::Decompose(transform, Forward, Right, Up);
+            laml::transform::create_transform(transform, yaw, pitch, 0.0f, position);
+            laml::transform::decompose(transform, Forward, Right, Up);
 
             // update listener
             SoundEngine::SetListenerPosition(position);
@@ -170,19 +172,20 @@ namespace rh {
             SoundEngine::SetListenerOrientation(Forward, Up);
         }
 
-        void CalcTransformFromLookDir(math::vec3 at, math::vec3 lookAt, math::vec3 velocity) {
+        void CalcTransformFromLookDir(laml::Vec3 at, laml::Vec3 lookAt, laml::Vec3 velocity) {
             using namespace rh;
-            using namespace math;
+            using namespace laml;
 
             position = at;
-            Forward = (lookAt - at).get_unit();
-            Right = Forward.cross(vec3(0, 1, 0)).get_unit();
-            Up = Right.cross(Forward).get_unit();
+            Forward = normalize(lookAt - at);
+            Right = normalize(cross(Forward, Vec3(0.0f, 1.0f, 0.0f)));
+            Up = normalize(cross(Right, Forward));
             auto& transform = transformComponent->Transform;
 
-            math::CreateTranslation(transform, position);
-            transform *= mat4(mat3(Right, Up, -Forward), 1);
-            math::Decompose(transform, yaw, pitch);
+            laml::transform::create_transform_translate(transform, position);
+            transform = laml::mul(transform, Mat4(Mat3(Right, Up, -Forward)));
+            float _roll;
+            laml::transform::decompose(transform, yaw, pitch, _roll);
 
             // update listener
             SoundEngine::SetListenerPosition(position);
@@ -198,12 +201,12 @@ namespace rh {
         rh::TransformComponent* transformComponent;
         rh::CameraComponent* cameraComponent;
 
-        math::vec3 Forward, Right, Up;
+        laml::Vec3 Forward, Right, Up;
 
         float moveSpeed = 5.0f;
         float rotSpeed = 90.0f;
 
-        math::vec3 position{ 0, 0, 2 };
+        laml::Vec3 position{ 0, 0, 2 };
         float yaw = 0, pitch = 0;
         //bool updateTransform = true;
 

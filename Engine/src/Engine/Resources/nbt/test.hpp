@@ -62,7 +62,7 @@ namespace rh::nbtTest {
 				laml::Vec3 Normal;
 				laml::Vec3 Tangent;
 				laml::Vec3 Binormal;
-				math::vec2 Texcoord;
+				laml::Vec2 Texcoord;
 			};
 			*/
 

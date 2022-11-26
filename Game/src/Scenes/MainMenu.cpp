@@ -56,7 +56,7 @@ void MainMenuScene::OnUpdate(rh::Timestep ts) {
     CheckViewportSize();
 
     // Setup Render
-    rh::RenderCommand::SetClearColor(math::vec4(.1, .1, .1, 1));
+    rh::RenderCommand::SetClearColor(rh::laml::Vec4(.1, .1, .1, 1));
     rh::RenderCommand::Clear();
     
     // Fill background
@@ -68,15 +68,15 @@ void MainMenuScene::OnUpdate(rh::Timestep ts) {
 
     // draw title
     float x = m_ViewportSize.x / 2.0f;
-    rh::TextRenderer::SubmitText("font_big", "Bideo Gaem!", x, 35.0f, math::vec3(.5f, .25f, .7f), TextAlignment::ALIGN_TOP_MID);
+    rh::TextRenderer::SubmitText("font_big", "Bideo Gaem!", x, 35.0f, rh::laml::Vec3(.5f, .25f, .7f), rh::TextAlignment::ALIGN_TOP_MID);
 
     // draw menu buttons
     const std::vector<std::string>& currentMenuButtons = GetCurrentMenu();
     float y = m_ViewportSize.y * 0.25f;
-    math::vec3 color(.6f, .8f, .75f);
-    math::vec3 color_select(.1f, .8f, .75f);
+    rh::laml::Vec3 color(.6f, .8f, .75f);
+    rh::laml::Vec3 color_select(.1f, .8f, .75f);
     for (int n = 0; n < currentMenuButtons.size(); n++) {
-        rh::TextRenderer::SubmitText(currentMenuButtons.at(n), x, y, (n == currentSelection) ? color_select : color, TextAlignment::ALIGN_TOP_MID);
+        rh::TextRenderer::SubmitText(currentMenuButtons.at(n), x, y, (n == currentSelection) ? color_select : color, rh::TextAlignment::ALIGN_TOP_MID);
         y += 32;
     }
 
@@ -84,7 +84,7 @@ void MainMenuScene::OnUpdate(rh::Timestep ts) {
     auto[mx, my] = rh::Input::GetMousePosition();
     src = { 0, 0, 1, 1 };
     dst = { mx, my, mx+16, my+16 };
-    rh::SpriteRenderer::SubmitSprite("Data/Images/frog.png", &dst, &src, ALIGN_MID_MID);
+    rh::SpriteRenderer::SubmitSprite("Data/Images/frog.png", &dst, &src, rh::ALIGN_MID_MID);
 }
 
 void MainMenuScene::OnEvent(rh::Event& event) {
@@ -162,13 +162,13 @@ void MainMenuScene::OnGuiRender() {
 }
 
 void MainMenuScene::CheckViewportSize() {
-    static u32 specWidth = -1;
-    static u32 specHeight = -1;
+    static rh::u32 specWidth = -1;
+    static rh::u32 specHeight = -1;
 
     if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
         (specWidth != m_ViewportSize.x || specHeight != m_ViewportSize.y)) {
-        specWidth = (u32)m_ViewportSize.x;
-        specHeight = (u32)m_ViewportSize.y;
+        specWidth = (rh::u32)m_ViewportSize.x;
+        specHeight = (rh::u32)m_ViewportSize.y;
         ENGINE_LOG_INFO("Render resolution: {0} x {1}", specWidth, specHeight);
         rh::TextRenderer::OnWindowResize(specWidth, specHeight);
         rh::SpriteRenderer::OnWindowResize(specWidth, specHeight);

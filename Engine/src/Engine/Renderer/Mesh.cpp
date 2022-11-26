@@ -534,7 +534,7 @@ namespace rh {
 
             // calc the local transform
             laml::Mat4 local_transform;
-            laml::transform::CreateTransform(local_transform, rotation, position, scale);
+            laml::transform::create_transform(local_transform, rotation, position, scale);
 
             // get the global transform by mul with parent transform
             if (m_Skeleton[channel].parent_idx < 0) {
@@ -545,7 +545,7 @@ namespace rh {
                 const auto parent_idx = m_Skeleton[channel].parent_idx;
                 ENGINE_LOG_ASSERT(channel > parent_idx, "Child bone referencing parent transform that hasn't been set yet!");
                 auto parent_transform = m_Skeleton[parent_idx].finalTransform;
-                m_Skeleton[channel].finalTransform = parent_transform * local_transform;
+                m_Skeleton[channel].finalTransform = laml::mul(parent_transform, local_transform);
             }
         }
     }

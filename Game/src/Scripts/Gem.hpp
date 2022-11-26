@@ -11,7 +11,7 @@ public:
 
         LOG_ASSERT(transformComponent, "Gem script could not find a transform component");
 
-        position = transformComponent->Transform.column4.asVec3();
+        position = rh::laml::Vec3(transformComponent->Transform.c_14, transformComponent->Transform.c_24, transformComponent->Transform.c_34);
         time = ((float)rand() / RAND_MAX) * 5.0f;
 
         LOG_INFO("Gem script created on GameObject {0}!", GetGameObjectID());
@@ -27,7 +27,7 @@ public:
         position.y = 0.25f*(1+sin(time));
 
         auto& transform = transformComponent->Transform;
-        math::CreateTransform(transform, position, rotation, 0);
+        rh::laml::transform::create_transform(transform, rotation, 0.0f, 0.0f, position);
 
         //auto& transform = transformComponent->Transform;
         //transform = mat4();
@@ -50,7 +50,7 @@ private:
     float time = 0.0f;
     float rotSpeed = 60.0f;
 
-    math::vec3 position;
+    rh::laml::Vec3 position;
     float rotation = 0.0f;
     float scale = 0.25f;
 

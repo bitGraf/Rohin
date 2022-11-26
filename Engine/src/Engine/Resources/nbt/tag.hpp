@@ -79,7 +79,7 @@ namespace rh::nbt {
         tag& assign(tag&& rhs) override final { return get_this() = dynamic_cast<tag_primitive<T>&&>(rhs); }
 
         //Constructor
-        constexpr tag_primitive(T val = 0) noexcept : value(val) {}
+        constexpr tag_primitive(T val = static_cast<T>(0.0)) noexcept : value(val) {}
 
         //Getters
         operator T& () { return value; }
@@ -550,19 +550,19 @@ namespace rh::nbt {
     // equality functions
     template<class T> bool operator==(const tag_primitive<T>& lhs, const tag_primitive<T>& rhs)
     {
-        return lhs.get() == rhs.get();
+        return (lhs.get() == rhs.get());
     }
     template<class T> bool operator!=(const tag_primitive<T>& lhs, const tag_primitive<T>& rhs)
     {
-        return !(lhs == rhs);
+        return !(lhs.get() == rhs.get());
     }
 
     template<class T> bool operator==(const tag_array<T>& lhs, const tag_array<T>& rhs)
     {
-        return lhs.get() == rhs.get();
+        return (lhs.get() == rhs.get());
     }
     template<class T> bool operator!=(const tag_array<T>& lhs, const tag_array<T>& rhs)
     {
-        return !(lhs == rhs);
+        return !(lhs.get() == rhs.get());
     }
 }

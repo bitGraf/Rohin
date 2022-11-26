@@ -12,7 +12,7 @@ namespace rh {
         std::unique_ptr<ShaderLibrary> ShaderLibrary;
 
         Ref<VertexArray> TextQuad;
-        math::mat4 orthoMat;
+        laml::Mat4 orthoMat;
 
         std::unordered_map<std::string, DynamicFont*> fonts;
     };
@@ -26,7 +26,7 @@ namespace rh {
         auto textShader = GetShaderLibrary()->Load("Data/Shaders/Text.glsl");
 
         // create font-rendering globals
-        math::CreateOrthoProjection(s_Data.orthoMat, 0, 1280, 720, 0, -1, 1);
+        laml::transform::create_projection_orthographic(s_Data.orthoMat, 0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 
         // initialize texture shader values
         textShader->Bind();
@@ -37,15 +37,15 @@ namespace rh {
         {
             struct _vertex
             {
-                math::vec2 Position;
+                laml::Vec2 Position;
             };
 
             _vertex* data = new _vertex[4];
 
-            data[0].Position = math::vec2(0, 1);
-            data[1].Position = math::vec2(0, 0);
-            data[2].Position = math::vec2(1, 0);
-            data[3].Position = math::vec2(1, 1);
+            data[0].Position = laml::Vec2(0, 1);
+            data[1].Position = laml::Vec2(0, 0);
+            data[2].Position = laml::Vec2(1, 0);
+            data[3].Position = laml::Vec2(1, 1);
 
             u32 indices[6] = { 0, 1, 2, 0, 2, 3 };
 
@@ -91,7 +91,7 @@ namespace rh {
 
     void TextRenderer::OnWindowResize(uint32_t width, uint32_t height)
     {
-        math::CreateOrthoProjection(s_Data.orthoMat, 0, width, height, 0, -1, 1);
+        laml::transform::create_projection_orthographic<float>(s_Data.orthoMat, 0.0f, width, height, 0.0f, -1.0f, 1.0f);
         //RenderCommand::SetViewport(0, 0, width, height);
     }
 
@@ -147,13 +147,13 @@ namespace rh {
                     float scaleY = q.y1 - q.y0;
                     float transX = q.x0;
                     float transY = q.y0;
-                    shader->SetVec4("r_transform", math::vec4(scaleX, scaleY, transX + hOff, transY + vOff));
+                    shader->SetVec4("r_transform", laml::Vec4(scaleX, scaleY, transX + hOff, transY + vOff));
 
                     scaleX = q.s1 - q.s0;
                     scaleY = q.t1 - q.t0;
                     transX = q.s0;
                     transY = q.t0;
-                    shader->SetVec4("r_transformUV", math::vec4(scaleX, scaleY, transX, transY));
+                    shader->SetVec4("r_transformUV", laml::Vec4(scaleX, scaleY, transX, transY));
 
                     RenderCommand::DrawIndexed(s_Data.TextQuad, false);
                 }
