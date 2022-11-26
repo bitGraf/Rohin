@@ -15,14 +15,6 @@ add_subdirectory(deps/math_lib)
 
 add_library(${ENGINE_NAME} STATIC)
 
-set(CORE_MATH_SRC
-    # src/Engine/Core/Math
-    src/Engine/Core/Math/rMatrix.cpp
-    src/Engine/Core/Math/rQuaternion.cpp
-    src/Engine/Core/Math/rTransform.cpp
-    src/Engine/Core/Math/rVector.cpp
-    src/Engine/Core/Math/Testing.cpp
-)
 set(CORE_SRC 
     # src/Engine/Core
     src/Engine/Core/Application.cpp
@@ -30,8 +22,6 @@ set(CORE_SRC
     src/Engine/Core/Base.hpp
     src/Engine/Core/DataFile.hpp
     src/Engine/Core/DataTypes.hpp
-    src/Engine/Core/GameMath.cpp
-    src/Engine/Core/GameMath.hpp
     src/Engine/Core/Input.hpp
     src/Engine/Core/KeyCodes.hpp
     src/Engine/Core/Logger.cpp
@@ -209,7 +199,6 @@ set(ALL_SRC
     ${ENGINE_SRC}
     ${COLLISION_SRC}
     ${CORE_SRC}
-    ${CORE_MATH_SRC}
     ${EVENT_SRC}
     ${EXAMPLES_SRC}
     ${GAMEOBJECT_SRC}
@@ -231,7 +220,6 @@ source_group(Src FILES src/Engine.hpp src/enpch.cpp src/enpch.hpp)
 source_group(Src\\Engine FILES ${ENGINE_SRC})
 source_group(Src\\Engine\\Collision FILES ${COLLISION_SRC})
 source_group(Src\\Engine\\Core FILES ${CORE_SRC})
-source_group(Src\\Engine\\Core\\Math FILES ${CORE_MATH_SRC})
 source_group(Src\\Engine\\Event FILES ${EVENT_SRC})
 source_group(Src\\Engine\\Examples FILES ${EXAMPLES_SRC})
 source_group(Src\\Engine\\GameObject FILES ${GAMEOBJECT_SRC})
