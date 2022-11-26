@@ -99,11 +99,11 @@ namespace rh {
         return s_Data.ShaderLibrary;
     }
 
-    void TextRenderer::SubmitText(const std::string& text, float startX, float startY, math::vec3 color, TextAlignment align) {
+    void TextRenderer::SubmitText(const std::string& text, float startX, float startY, laml::Vec3 color, TextAlignment align) {
         SubmitText("font_small", text, startX, startY, color, align);
     }
 
-    void TextRenderer::SubmitText(const std::string& fontName, const std::string& text, float startX, float startY, math::vec3 color, TextAlignment align) {
+    void TextRenderer::SubmitText(const std::string& fontName, const std::string& text, float startX, float startY, laml::Vec3 color, TextAlignment align) {
         BENCHMARK_FUNCTION();
 
         auto shader = s_Data.ShaderLibrary->Get("Text");

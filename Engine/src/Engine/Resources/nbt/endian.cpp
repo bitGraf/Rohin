@@ -1,12 +1,11 @@
 #include <enpch.hpp>
 #include "Engine/Resources/nbt/endian.hpp"
-#include "Engine/Core/GameMath.hpp"
 
 static_assert(CHAR_BIT == 8, "Assuming that a byte has 8 bits");
 static_assert(sizeof(float) == 4, "Assuming that a float is 4 byte long");
 static_assert(sizeof(double) == 8, "Assuming that a double is 8 byte long");
 
-namespace endian
+namespace rh::endian
 {
 
     namespace //anonymous
@@ -84,7 +83,7 @@ namespace endian
         put_int_to_double(x, tmp);
     }
 
-    void read_little(std::istream& is, math::vec2& x) {
+    void read_little(std::istream& is, laml::Vec2& x) {
         uint32_t t1, t2;
         read_little(is, t1);
         read_little(is, t2);
@@ -92,7 +91,7 @@ namespace endian
         put_int_to_float(x.y, t2);
     }
 
-    void read_little(std::istream& is, math::vec3& x) {
+    void read_little(std::istream& is, laml::Vec3& x) {
         uint32_t t1, t2, t3;
         read_little(is, t1);
         read_little(is, t2);
@@ -102,7 +101,7 @@ namespace endian
         put_int_to_float(x.z, t3);
     }
 
-    void read_little(std::istream& is, math::vec4& x) {
+    void read_little(std::istream& is, laml::Vec4& x) {
         uint32_t t1, t2, t3, t4;
         read_little(is, t1);
         read_little(is, t2);
@@ -114,7 +113,7 @@ namespace endian
         put_int_to_float(x.w, t4);
     }
 
-    void read_little(std::istream& is, math::mat2& x) {
+    void read_little(std::istream& is, laml::Mat2& x) {
         uint32_t t11, t12, t21, t22;
         read_little(is, t11);
         read_little(is, t12);
@@ -126,7 +125,7 @@ namespace endian
         put_int_to_float(x[1][1], t22);
     }
 
-    void read_little(std::istream& is, math::mat3& x) {
+    void read_little(std::istream& is, laml::Mat3& x) {
         uint32_t t11, t12, t13, t21, t22, t23, t31, t32, t33;
         read_little(is, t11);
         read_little(is, t12);
@@ -148,7 +147,7 @@ namespace endian
         put_int_to_float(x[2][2], t33);
     }
 
-    void read_little(std::istream& is, math::mat4& x) {
+    void read_little(std::istream& is, laml::Mat4& x) {
         uint32_t t11, t12, t13, t14, t21, t22, t23, t24, t31, t32, t33, t34, t41, t42, t43, t44;
         read_little(is, t11);
         read_little(is, t12);
@@ -236,7 +235,7 @@ namespace endian
         put_int_to_double(x, tmp);
     }
 
-    void read_big(std::istream& is, math::vec2& x) {
+    void read_big(std::istream& is, laml::Vec2& x) {
         uint32_t t1, t2;
         read_big(is, t1);
         read_big(is, t2);
@@ -244,7 +243,7 @@ namespace endian
         put_int_to_float(x.y, t2);
     }
 
-    void read_big(std::istream& is, math::vec3& x) {
+    void read_big(std::istream& is, laml::Vec3& x) {
         uint32_t t1, t2, t3;
         read_big(is, t1);
         read_big(is, t2);
@@ -254,7 +253,7 @@ namespace endian
         put_int_to_float(x.z, t3);
     }
 
-    void read_big(std::istream& is, math::vec4& x) {
+    void read_big(std::istream& is, laml::Vec4& x) {
         uint32_t t1, t2, t3, t4;
         read_big(is, t1);
         read_big(is, t2);
@@ -266,7 +265,7 @@ namespace endian
         put_int_to_float(x.w, t4);
     }
 
-    void read_big(std::istream& is, math::mat2& x) {
+    void read_big(std::istream& is, laml::Mat2& x) {
         uint32_t t11, t12, t21, t22;
         read_big(is, t11);
         read_big(is, t12);
@@ -278,7 +277,7 @@ namespace endian
         put_int_to_float(x[1][1], t22);
     }
 
-    void read_big(std::istream& is, math::mat3& x) {
+    void read_big(std::istream& is, laml::Mat3& x) {
         uint32_t t11, t12, t13, t21, t22, t23, t31, t32, t33;
         read_big(is, t11);
         read_big(is, t12);
@@ -300,7 +299,7 @@ namespace endian
         put_int_to_float(x[2][2], t33);
     }
 
-    void read_big(std::istream& is, math::mat4& x) {
+    void read_big(std::istream& is, laml::Mat4& x) {
         uint32_t t11, t12, t13, t14, t21, t22, t23, t24, t31, t32, t33, t34, t41, t42, t43, t44;
         read_big(is, t11);
         read_big(is, t12);
@@ -384,25 +383,25 @@ namespace endian
         write_little(os, put_double_to_int(x));
     }
 
-    void write_little(std::ostream& os, math::vec2 x) {
+    void write_little(std::ostream& os, laml::Vec2 x) {
         write_little(os, put_float_to_int(x.x));
         write_little(os, put_float_to_int(x.y));
     }
 
-    void write_little(std::ostream& os, math::vec3 x) {
+    void write_little(std::ostream& os, laml::Vec3 x) {
         write_little(os, put_float_to_int(x.x));
         write_little(os, put_float_to_int(x.y));
         write_little(os, put_float_to_int(x.z));
     }
 
-    void write_little(std::ostream& os, math::vec4 x) {
+    void write_little(std::ostream& os, laml::Vec4 x) {
         write_little(os, put_float_to_int(x.x));
         write_little(os, put_float_to_int(x.y));
         write_little(os, put_float_to_int(x.z));
         write_little(os, put_float_to_int(x.w));
     }
 
-    void write_little(std::ostream& os, math::mat2 x) {
+    void write_little(std::ostream& os, laml::Mat2 x) {
         write_little(os, put_float_to_int(x[0][0]));
         write_little(os, put_float_to_int(x[1][0]));
 
@@ -410,7 +409,7 @@ namespace endian
         write_little(os, put_float_to_int(x[1][1]));
     }
 
-    void write_little(std::ostream& os, math::mat3 x) {
+    void write_little(std::ostream& os, laml::Mat3 x) {
         write_little(os, put_float_to_int(x[0][0]));
         write_little(os, put_float_to_int(x[1][0]));
         write_little(os, put_float_to_int(x[2][0]));
@@ -424,7 +423,7 @@ namespace endian
         write_little(os, put_float_to_int(x[2][2]));
     }
 
-    void write_little(std::ostream& os, math::mat4 x) {
+    void write_little(std::ostream& os, laml::Mat4 x) {
         write_little(os, put_float_to_int(x[0][0]));
         write_little(os, put_float_to_int(x[1][0]));
         write_little(os, put_float_to_int(x[2][0]));
@@ -494,25 +493,25 @@ namespace endian
         write_big(os, put_double_to_int(x));
     }
 
-    void write_big(std::ostream& os, math::vec2 x) {
+    void write_big(std::ostream& os, laml::Vec2 x) {
         write_big(os, put_float_to_int(x.x));
         write_big(os, put_float_to_int(x.y));
     }
 
-    void write_big(std::ostream& os, math::vec3 x) {
+    void write_big(std::ostream& os, laml::Vec3 x) {
         write_big(os, put_float_to_int(x.x));
         write_big(os, put_float_to_int(x.y));
         write_big(os, put_float_to_int(x.z));
     }
 
-    void write_big(std::ostream& os, math::vec4 x) {
+    void write_big(std::ostream& os, laml::Vec4 x) {
         write_big(os, put_float_to_int(x.x));
         write_big(os, put_float_to_int(x.y));
         write_big(os, put_float_to_int(x.z));
         write_big(os, put_float_to_int(x.w));
     }
 
-    void write_big(std::ostream& os, math::mat2 x) {
+    void write_big(std::ostream& os, laml::Mat2 x) {
         write_big(os, put_float_to_int(x[0][0]));
         write_big(os, put_float_to_int(x[1][0]));
 
@@ -520,7 +519,7 @@ namespace endian
         write_big(os, put_float_to_int(x[1][1]));
     }
 
-    void write_big(std::ostream& os, math::mat3 x) {
+    void write_big(std::ostream& os, laml::Mat3 x) {
         write_big(os, put_float_to_int(x[0][0]));
         write_big(os, put_float_to_int(x[1][0]));
         write_big(os, put_float_to_int(x[2][0]));
@@ -534,7 +533,7 @@ namespace endian
         write_big(os, put_float_to_int(x[2][2]));
     }
 
-    void write_big(std::ostream& os, math::mat4 x) {
+    void write_big(std::ostream& os, laml::Mat4 x) {
         write_big(os, put_float_to_int(x[0][0]));
         write_big(os, put_float_to_int(x[1][0]));
         write_big(os, put_float_to_int(x[2][0]));

@@ -55,22 +55,22 @@ namespace rh {
         // uploads lights to shader in view-space
 
         // set directional light
-        shader->SetVec3("r_sun.Direction", math::vec3(0, 0, 0));
-        shader->SetVec3("r_sun.Color", math::vec3(0, 0, 0));
+        shader->SetVec3("r_sun.Direction", laml::Vec3(0, 0, 0));
+        shader->SetVec3("r_sun.Color", laml::Vec3(0, 0, 0));
         shader->SetFloat("r_sun.Strength", 0);
 
         // set point lights
         for (int n = 0; n < 32; n++) {
-            shader->SetVec3("r_pointLights[" + std::to_string(n) + "].Position", math::vec3(0, 0, 0));
-            shader->SetVec3("r_pointLights[" + std::to_string(n) + "].Color", math::vec3(0, 0, 0));
+            shader->SetVec3("r_pointLights[" + std::to_string(n) + "].Position", laml::Vec3(0, 0, 0));
+            shader->SetVec3("r_pointLights[" + std::to_string(n) + "].Color", laml::Vec3(0, 0, 0));
             shader->SetFloat("r_pointLights[" + std::to_string(n) + "].Strength", 0);
         }
 
         // set spot lights
         for (int n = 0; n < 32; n++) {
-            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Position", math::vec3(0,0,0));
-            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Direction", math::vec3(0, 0, 0));
-            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Color", math::vec3(0, 0, 0));
+            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Position", laml::Vec3(0,0,0));
+            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Direction", laml::Vec3(0, 0, 0));
+            shader->SetVec3("r_spotLights[" + std::to_string(n) + "].Color", laml::Vec3(0, 0, 0));
             shader->SetFloat("r_spotLights[" + std::to_string(n) + "].Strength", 0);
             shader->SetFloat("r_spotLights[" + std::to_string(n) + "].Inner", 0);
             shader->SetFloat("r_spotLights[" + std::to_string(n) + "].Outer", 0);
@@ -107,22 +107,22 @@ namespace rh {
             float width = 2, height = 2;
             struct _vertex
             {
-                math::vec3 Position;
+                laml::Vec3 Position;
                 math::vec2 TexCoord;
             };
 
             _vertex* data = new _vertex[4];
 
-            data[0].Position = math::vec3(x, y, 0.1f);
+            data[0].Position = laml::Vec3(x, y, 0.1f);
             data[0].TexCoord = math::vec2(0, 0);
 
-            data[1].Position = math::vec3(x + width, y, 0.1f);
+            data[1].Position = laml::Vec3(x + width, y, 0.1f);
             data[1].TexCoord = math::vec2(1, 0);
 
-            data[2].Position = math::vec3(x + width, y + height, 0.1f);
+            data[2].Position = laml::Vec3(x + width, y + height, 0.1f);
             data[2].TexCoord = math::vec2(1, 1);
 
-            data[3].Position = math::vec3(x, y + height, 0.1f);
+            data[3].Position = laml::Vec3(x, y + height, 0.1f);
             data[3].TexCoord = math::vec2(0, 1);
 
             u32 indices[6] = { 0, 1, 2, 2, 3, 0 };
@@ -146,17 +146,17 @@ namespace rh {
         {
             struct _vertex
             {
-                math::vec3 Position;
+                laml::Vec3 Position;
             };
 
             _vertex* data = new _vertex[6];
             float s = 0.5f;
-            data[0].Position = math::vec3(-s, 0, 0);
-            data[1].Position = math::vec3( s, 0, 0);
-            data[2].Position = math::vec3(0, -s, 0);
-            data[3].Position = math::vec3(0,  s, 0);
-            data[4].Position = math::vec3(0, 0, -s);
-            data[5].Position = math::vec3(0, 0,  s);
+            data[0].Position = laml::Vec3(-s, 0, 0);
+            data[1].Position = laml::Vec3( s, 0, 0);
+            data[2].Position = laml::Vec3(0, -s, 0);
+            data[3].Position = laml::Vec3(0,  s, 0);
+            data[4].Position = laml::Vec3(0, 0, -s);
+            data[5].Position = laml::Vec3(0, 0,  s);
 
             u32 indices[6] = { 0, 1, 2, 3, 4, 5 };
 
@@ -390,7 +390,7 @@ namespace rh {
         math::mat4 ViewMatrix;
         math::CreateViewFromTransform(ViewMatrix, transform);
         math::mat4 ProjectionMatrix = camera.GetProjection();
-        math::vec3 camPos = transform.column4.asVec3();
+        laml::Vec3 camPos = transform.column4.asVec3();
         UpdateLighting(ViewMatrix, numPointLights, pointLights, numSpotLights, spotLights, sun, ProjectionMatrix);
 
         // PrePass Shader
@@ -543,7 +543,7 @@ namespace rh {
             "SSAO + Baked ao"
         };
 
-        TextRenderer::SubmitText(outputModes[s_Data.OutputMode], 10, 10, math::vec3(.1f, .9f, .75f));
+        TextRenderer::SubmitText(outputModes[s_Data.OutputMode], 10, 10, laml::Vec3(.1f, .9f, .75f));
 
         // Render sound debug
         if (s_Data.soundDebug) {
@@ -552,7 +552,7 @@ namespace rh {
             if (NumSoundChannels > 16) starty = 30;
             float fontSize = 20;
             char text[64];
-            TextRenderer::SubmitText("Sound Engine Status:", startx, starty, math::vec3(.6f, .8f, .75f));
+            TextRenderer::SubmitText("Sound Engine Status:", startx, starty, laml::Vec3(.6f, .8f, .75f));
             for (int n = 0; n < NumSoundChannels; n++) {
                 if (status.channels[n].active) {
                     sprintf_s(text, 64, "Channel %2d: %0.2f/%0.2f %2d:[%s]", n, 
@@ -560,14 +560,14 @@ namespace rh {
                         status.channels[n].length,
                         status.channels[n].soundID,
                         status.channels[n].cue.c_str());
-                    TextRenderer::SubmitText(text, startx + 15, starty += fontSize, math::vec3(.6f, .8f, .75f));
+                    TextRenderer::SubmitText(text, startx + 15, starty += fontSize, laml::Vec3(.6f, .8f, .75f));
                 } else {
                     sprintf_s(text, 64, "Channel %2d: inactive", n);
-                    TextRenderer::SubmitText(text, startx+15, starty+= fontSize, math::vec3(.4f, .6f, .55f));
+                    TextRenderer::SubmitText(text, startx+15, starty+= fontSize, laml::Vec3(.4f, .6f, .55f));
                 }
             }
             sprintf_s(text, 64, "Sounds in queue: %d", status.queueSize);
-            TextRenderer::SubmitText(text, startx, starty += fontSize, math::vec3(.6f, .8f, .75f));
+            TextRenderer::SubmitText(text, startx, starty += fontSize, laml::Vec3(.6f, .8f, .75f));
         }
 
         // Render input debug
@@ -578,13 +578,13 @@ namespace rh {
             float fontSize = 20;
             char text[64];
             if (!state.present || !state.valid) {
-                TextRenderer::SubmitText("Gamepad Status: disconnected", startx, starty, math::vec3(.6f, .8f, .75f));
+                TextRenderer::SubmitText("Gamepad Status: disconnected", startx, starty, laml::Vec3(.6f, .8f, .75f));
             } else {
                 sprintf_s(text, 64, "Gamepad state: [%s]", state.name);
-                TextRenderer::SubmitText(text, startx, starty, math::vec3(.6f, .8f, .75f));
+                TextRenderer::SubmitText(text, startx, starty, laml::Vec3(.6f, .8f, .75f));
                 for (int n = 0; n < 6; n++) {
                     sprintf_s(text, 64, "Axis %d: %.2f", n, state.axes[n]);
-                    TextRenderer::SubmitText(text, startx + 15, starty += fontSize, math::vec3(.6f, .8f, .75f));
+                    TextRenderer::SubmitText(text, startx + 15, starty += fontSize, laml::Vec3(.6f, .8f, .75f));
                 }
             }
         }
@@ -651,7 +651,7 @@ namespace rh {
     }
 
     void Renderer::Submit(const Ref<VertexArray>& vao, const math::mat4& transform,
-        const math::vec3& color) {
+        const laml::Vec3& color) {
 
         auto shader = s_Data.ShaderLibrary->Get("Line");
         shader->Bind();
@@ -738,7 +738,7 @@ namespace rh {
         }
     }
 
-    void Renderer::SubmitLine(math::vec3 v0, math::vec3 v1, math::vec4 color) {
+    void Renderer::SubmitLine(laml::Vec3 v0, laml::Vec3 v1, math::vec4 color) {
         auto shader = s_Data.ShaderLibrary->Get("Line3D");
         shader->Bind();
 
@@ -759,7 +759,7 @@ namespace rh {
         s_Data.ShaderLibrary->ReloadAll();
     }
 
-    void Renderer::Draw3DText(const std::string& text, const math::vec3& pos, const math::vec3 color) {
+    void Renderer::Draw3DText(const std::string& text, const laml::Vec3& pos, const laml::Vec3 color) {
         math::vec4 screenSpace = (s_Data.Lights.projection * s_Data.Lights.view * math::vec4(pos, 1));
         screenSpace /= screenSpace.w;
         screenSpace += math::vec4(1, 1, 1, 1);
@@ -774,9 +774,9 @@ namespace rh {
         const TagComponent& tag,
         const TransformComponent& transform,
         const MeshRendererComponent& mesh,
-        const math::vec3 color) {
+        const laml::Vec3 color) {
     
-        //math::mat3 BlenderCorrection(math::vec3(0, 0, 1), math::vec3(1, 0, 0), math::vec3(0, 1, 0));
+        //math::mat3 BlenderCorrection(laml::Vec3(0, 0, 1), laml::Vec3(1, 0, 0), laml::Vec3(0, 1, 0));
         math::mat4 T = transform.Transform * mesh.MeshPtr->GetSubmeshes()[0].Transform; //*math::mat4(BlenderCorrection, 1);
         float s = 0.075f;
         float length = 0.55f;
@@ -790,19 +790,19 @@ namespace rh {
         auto skele = mesh.MeshPtr->GetSkeleton();
         for (int j = 0; j < skele.size(); j++) {
             const auto& joint = skele[j];
-            math::vec3 start = joint.finalTransform.column4.asVec3();
+            laml::Vec3 start = joint.finalTransform.column4.asVec3();
     
-            math::vec3 boneR = (joint.finalTransform * localR).asVec3();
-            math::vec3 boneU = (joint.finalTransform * localU).asVec3();
-            math::vec3 boneF = (joint.finalTransform * localF).asVec3();
+            laml::Vec3 boneR = (joint.finalTransform * localR).asVec3();
+            laml::Vec3 boneU = (joint.finalTransform * localU).asVec3();
+            laml::Vec3 boneF = (joint.finalTransform * localF).asVec3();
     
-            math::vec3 end = start + boneF * length;
-            math::vec3 mid = start + boneF * length2;
+            laml::Vec3 end = start + boneF * length;
+            laml::Vec3 mid = start + boneF * length2;
     
-            math::vec3 A = math::TransformPointByMatrix4x4(T, mid + boneR * s);
-            math::vec3 B = math::TransformPointByMatrix4x4(T, mid + boneU * s);
-            math::vec3 C = math::TransformPointByMatrix4x4(T, mid - boneR * s);
-            math::vec3 D = math::TransformPointByMatrix4x4(T, mid - boneU * s);
+            laml::Vec3 A = math::TransformPointByMatrix4x4(T, mid + boneR * s);
+            laml::Vec3 B = math::TransformPointByMatrix4x4(T, mid + boneU * s);
+            laml::Vec3 C = math::TransformPointByMatrix4x4(T, mid - boneR * s);
+            laml::Vec3 D = math::TransformPointByMatrix4x4(T, mid - boneU * s);
     
             start = math::TransformPointByMatrix4x4(T, start);
             end = math::TransformPointByMatrix4x4(T, end);

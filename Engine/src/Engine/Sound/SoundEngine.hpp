@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Engine/Core/GameMath.hpp"
-
 namespace rh {
 
     // number of simultaneous sound cues that can play
@@ -42,7 +40,7 @@ namespace rh {
 
         static void CreateSoundCue(const std::string& cue, SoundCueSpec spec);
         static void CueSound(const std::string& cue);
-        static void CueSound(const std::string& cue, math::vec3 position);
+        static void CueSound(const std::string& cue, laml::Vec3 position);
 
         static void CreateBackingTrack(const std::string& track, BackingTrackSpec spec);
         static void PlayTrack(const std::string& track);
@@ -52,9 +50,9 @@ namespace rh {
         static void PauseStream();
         static void ResumeStream();
 
-        static void SetListenerPosition(math::vec3 position);
-        static void SetListenerVelocity(math::vec3 velocity);
-        static void SetListenerOrientation(math::vec3 at, math::vec3 up);
+        static void SetListenerPosition(laml::Vec3 position);
+        static void SetListenerVelocity(laml::Vec3 velocity);
+        static void SetListenerOrientation(laml::Vec3 at, laml::Vec3 up);
 
         static SoundEngineStatus GetStatus();
 

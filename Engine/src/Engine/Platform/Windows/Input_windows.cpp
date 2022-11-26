@@ -1,7 +1,6 @@
 #include <enpch.hpp>
 #include "Engine/Core/Input.hpp"
 
-#include "Engine/Core/GameMath.hpp"
 #include <Engine/Core/Application.hpp>
 #include <glfw/glfw3.h>
 
@@ -47,8 +46,8 @@ namespace rh {
                 }
                 else {
                     // remap from dead_zone to outer radius
-                    math::vec2 v(x, y);
-                    v = v.get_unit() * (sqrt(mag_2) - s_GamepadState.dead_zone) / (1.0f - s_GamepadState.dead_zone);
+                    laml::Vec2 v(x, y);
+                    v = laml::normalize(v) * (sqrt(mag_2) - s_GamepadState.dead_zone) / (1.0f - s_GamepadState.dead_zone);
                     axes[GLFW_GAMEPAD_AXIS_LEFT_X] = v.x;
                     axes[GLFW_GAMEPAD_AXIS_LEFT_Y] = v.y;
                 }
@@ -64,8 +63,8 @@ namespace rh {
                 }
                 else {
                     // remap from dead_zone to outer radius
-                    math::vec2 v(x, y);
-                    v = v.get_unit() * (sqrt(mag_2) - s_GamepadState.dead_zone) / (1.0f - s_GamepadState.dead_zone);
+                    laml::Vec2 v(x, y);
+                    v = laml::normalize(v) * (sqrt(mag_2) - s_GamepadState.dead_zone) / (1.0f - s_GamepadState.dead_zone);
                     axes[GLFW_GAMEPAD_AXIS_RIGHT_X] = v.x;
                     axes[GLFW_GAMEPAD_AXIS_RIGHT_Y] = v.y;
                 }

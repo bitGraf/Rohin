@@ -6,7 +6,7 @@
     #include "Engine/Renderer/Mesh.hpp"
 #endif
 
-namespace nbtTest {
+namespace rh::nbtTest {
 
 	void test1() {
 		{
@@ -58,10 +58,10 @@ namespace nbtTest {
 			};
 
 			struct Vertex {
-				math::vec3 Position;
-				math::vec3 Normal;
-				math::vec3 Tangent;
-				math::vec3 Binormal;
+				laml::Vec3 Position;
+				laml::Vec3 Normal;
+				laml::Vec3 Tangent;
+				laml::Vec3 Binormal;
 				math::vec2 Texcoord;
 			};
 			*/
@@ -170,12 +170,12 @@ namespace nbtTest {
         using namespace nbt;
         tag_compound comp{
             { "name", "Level NBT Test" },
-            { "position", math::vec3(1,2,3)} ,
-            {"matrix", math::mat4(1,2,3.4,4)},
+            { "position", laml::Vec3(1,2,3)} ,
+            {"matrix", laml::Mat4(1,2,3.4,4)},
             {"verts", tag_list::of<tag_vec3>({
-                math::vec3(1,2,3),
-                math::vec3(2,3,4),
-                math::vec3(3,4,5)
+                laml::Vec3(1,2,3),
+                laml::Vec3(2,3,4),
+                laml::Vec3(3,4,5)
                 })}
         };
 
@@ -183,7 +183,7 @@ namespace nbtTest {
 
         auto v = comp["position"].as<tag_vec3>().get();
         std::cout << v << std::endl;
-        comp["position"].set(tag_vec3(math::vec3(2,4,5)));
+        comp["position"].set(tag_vec3(laml::Vec3(2,4,5)));
         v = comp["position"].as<tag_vec3>().get();
         std::cout << v << std::endl << std::endl;
 

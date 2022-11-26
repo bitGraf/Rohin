@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <assert.h>
 
-namespace nbt
+namespace rh::nbt
 {
 
     static_assert(std::numeric_limits<float>::is_iec559&& std::numeric_limits<double>::is_iec559,
@@ -433,7 +433,7 @@ namespace nbt
         return *this;
     }
 
-    value& value::operator=(math::vec2 val) {
+    value& value::operator=(laml::Vec2 val) {
         if (!tag_)
             set(tag_vec2(val));
         else switch (tag_->get_type()) {
@@ -447,7 +447,7 @@ namespace nbt
         return *this;
     }
 
-    value& value::operator=(math::vec3 val) {
+    value& value::operator=(laml::Vec3 val) {
         if (!tag_)
             set(tag_vec3(val));
         else switch (tag_->get_type()) {
@@ -461,7 +461,7 @@ namespace nbt
         return *this;
     }
 
-    value& value::operator=(math::vec4 val) {
+    value& value::operator=(laml::Vec4 val) {
         if (!tag_)
             set(tag_vec4(val));
         else switch (tag_->get_type()) {
@@ -475,7 +475,7 @@ namespace nbt
         return *this;
     }
 
-    value& value::operator=(math::mat2 val) {
+    value& value::operator=(laml::Mat2 val) {
         if (!tag_)
             set(tag_mat2(val));
         else switch (tag_->get_type()) {
@@ -489,7 +489,7 @@ namespace nbt
         return *this;
     }
 
-    value& value::operator=(math::mat3 val) {
+    value& value::operator=(laml::Mat3 val) {
         if (!tag_)
             set(tag_mat3(val));
         else switch (tag_->get_type()) {
@@ -503,7 +503,7 @@ namespace nbt
         return *this;
     }
 
-    value& value::operator=(math::mat4 val) {
+    value& value::operator=(laml::Mat4 val) {
         if (!tag_)
             set(tag_mat4(val));
         else switch (tag_->get_type()) {
@@ -608,7 +608,7 @@ namespace nbt
         }
     }
 
-    value::operator math::vec2() const {
+    value::operator laml::Vec2() const {
         switch (tag_->get_type()) {
         case tag_type::Vector2:
             return static_cast<tag_vec2&>(*tag_).get();
@@ -618,7 +618,7 @@ namespace nbt
         }
     }
 
-    value::operator math::vec3() const {
+    value::operator laml::Vec3() const {
         switch (tag_->get_type()) {
         case tag_type::Vector3:
             return static_cast<tag_vec3&>(*tag_).get();
@@ -628,7 +628,7 @@ namespace nbt
         }
     }
 
-    value::operator math::vec4() const {
+    value::operator laml::Vec4() const {
         switch (tag_->get_type()) {
         case tag_type::Vector4:
             return static_cast<tag_vec4&>(*tag_).get();
@@ -638,7 +638,7 @@ namespace nbt
         }
     }
 
-    value::operator math::mat2() const {
+    value::operator laml::Mat2() const {
         switch (tag_->get_type()) {
         case tag_type::Matrix2:
             return static_cast<tag_mat2&>(*tag_).get();
@@ -648,7 +648,7 @@ namespace nbt
         }
     }
 
-    value::operator math::mat3() const {
+    value::operator laml::Mat3() const {
         switch (tag_->get_type()) {
         case tag_type::Matrix3:
             return static_cast<tag_mat3&>(*tag_).get();
@@ -658,7 +658,7 @@ namespace nbt
         }
     }
 
-    value::operator math::mat4() const {
+    value::operator laml::Mat4() const {
         switch (tag_->get_type()) {
         case tag_type::Matrix4:
             return static_cast<tag_mat4&>(*tag_).get();
@@ -739,12 +739,12 @@ namespace nbt
     value_initializer::value_initializer(const std::string& str) : value(tag_string(str)) {}
     value_initializer::value_initializer(std::string&& str) : value(tag_string(std::move(str))) {}
     value_initializer::value_initializer(const char* str) : value(tag_string(str)) {}
-    value_initializer::value_initializer(math::vec2 val) : value(tag_vec2(val)) {}
-    value_initializer::value_initializer(math::vec3 val) : value(tag_vec3(val)) {}
-    value_initializer::value_initializer(math::vec4 val) : value(tag_vec4(val)) {}
-    value_initializer::value_initializer(math::mat2 val) : value(tag_mat2(val)) {}
-    value_initializer::value_initializer(math::mat3 val) : value(tag_mat3(val)) {}
-    value_initializer::value_initializer(math::mat4 val) : value(tag_mat4(val)) {}
+    value_initializer::value_initializer(laml::Vec2 val) : value(tag_vec2(val)) {}
+    value_initializer::value_initializer(laml::Vec3 val) : value(tag_vec3(val)) {}
+    value_initializer::value_initializer(laml::Vec4 val) : value(tag_vec4(val)) {}
+    value_initializer::value_initializer(laml::Mat2 val) : value(tag_mat2(val)) {}
+    value_initializer::value_initializer(laml::Mat3 val) : value(tag_mat3(val)) {}
+    value_initializer::value_initializer(laml::Mat4 val) : value(tag_mat4(val)) {}
 
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -763,12 +763,12 @@ namespace nbt
     tag_list::tag_list(std::initializer_list<tag_compound>   il) { init<tag_compound>(il); }
     tag_list::tag_list(std::initializer_list<tag_int_array>  il) { init<tag_int_array>(il); }
     tag_list::tag_list(std::initializer_list<tag_long_array> il) { init<tag_long_array>(il); }
-    tag_list::tag_list(std::initializer_list<math::vec2>     il) { init<tag_vec2>(il); }
-    tag_list::tag_list(std::initializer_list<math::vec3>     il) { init<tag_vec3>(il); }
-    tag_list::tag_list(std::initializer_list<math::vec4>     il) { init<tag_vec4>(il); }
-    tag_list::tag_list(std::initializer_list<math::mat2>     il) { init<tag_mat2>(il); }
-    tag_list::tag_list(std::initializer_list<math::mat3>     il) { init<tag_mat3>(il); }
-    tag_list::tag_list(std::initializer_list<math::mat4>     il) { init<tag_mat4>(il); }
+    tag_list::tag_list(std::initializer_list<laml::Vec2>     il) { init<tag_vec2>(il); }
+    tag_list::tag_list(std::initializer_list<laml::Vec3>     il) { init<tag_vec3>(il); }
+    tag_list::tag_list(std::initializer_list<laml::Vec4>     il) { init<tag_vec4>(il); }
+    tag_list::tag_list(std::initializer_list<laml::Mat2>     il) { init<tag_mat2>(il); }
+    tag_list::tag_list(std::initializer_list<laml::Mat3>     il) { init<tag_mat3>(il); }
+    tag_list::tag_list(std::initializer_list<laml::Mat4>     il) { init<tag_mat4>(il); }
 
     tag_list::tag_list(std::initializer_list<value> init) {
         if (init.size() == 0)

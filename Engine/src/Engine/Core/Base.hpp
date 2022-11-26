@@ -3,6 +3,8 @@
 #include "Engine/Core/Logger.hpp"
 #include "Engine/Core/Platform.hpp"
 #include "Engine/Core/DataTypes.hpp"
+#include <laml/laml.hpp>
+
 #include <memory>
 
 /* Assertion macros */

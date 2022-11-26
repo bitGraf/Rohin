@@ -15,8 +15,8 @@ namespace rh {
     struct SoundQueueEntry {
         std::string cueName;
 
-        math::vec3 position;
-        math::vec3 velocty;
+        laml::Vec3 position;
+        laml::Vec3 velocty;
     };
 
     struct SoundEngineData {
@@ -204,7 +204,7 @@ namespace rh {
 
         s_SoundData.soundCues.emplace(cue, newSpec);
     }
-    void SoundEngine::CueSound(const std::string& cue, math::vec3 position) {
+    void SoundEngine::CueSound(const std::string& cue, laml::Vec3 position) {
         BENCHMARK_FUNCTION();
 
         const auto& cues = s_SoundData.soundCues;
@@ -216,7 +216,7 @@ namespace rh {
         s_SoundData.soundsToPlay.push({ cue, position, {0,0,0} });
     }
     void SoundEngine::CueSound(const std::string& cue) {
-        CueSound(cue, math::vec3());
+        CueSound(cue, laml::Vec3());
     }
 
     void SoundEngine::CreateBackingTrack(const std::string& track, BackingTrackSpec spec) {
@@ -237,15 +237,15 @@ namespace rh {
         return s_SoundData.status;
     }
 
-    void SoundEngine::SetListenerPosition(math::vec3 position) {
+    void SoundEngine::SetListenerPosition(laml::Vec3 position) {
         s_SoundData.context->SetListenerPosition(position);
     }
 
-    void SoundEngine::SetListenerVelocity(math::vec3 velocity) {
+    void SoundEngine::SetListenerVelocity(laml::Vec3 velocity) {
         s_SoundData.context->SetListenerVelocity(velocity);
     }
 
-    void SoundEngine::SetListenerOrientation(math::vec3 at, math::vec3 up) {
+    void SoundEngine::SetListenerOrientation(laml::Vec3 at, laml::Vec3 up) {
         s_SoundData.context->SetListenerOrientation(at, up);
     }
 }

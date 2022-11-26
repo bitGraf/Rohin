@@ -234,12 +234,12 @@ namespace rh {
                 for (const auto& hull : m_cWorld.m_static) {
                     math::mat4 transform;
                     math::CreateTransform(transform, hull.rotation, hull.position);
-                    Renderer::Submit(hull.wireframe, transform, math::vec3(1, .05, .1));
+                    Renderer::Submit(hull.wireframe, transform, laml::Vec3(1, .05, .1));
                 }
                 for (const auto& hull : m_cWorld.m_dynamic) {
                     math::mat4 transform;
                     math::CreateTransform(transform, hull.rotation, hull.position);
-                    Renderer::Submit(hull.wireframe, transform, math::vec3(.1, .05, 1));
+                    Renderer::Submit(hull.wireframe, transform, laml::Vec3(.1, .05, 1));
                 }
             }
             Renderer::EndSobelPass();
@@ -248,20 +248,20 @@ namespace rh {
 
             Renderer::RenderDebugUI();
             if (m_showEntityLocations) { // TODO: rename this/come up with less bad solution for these things
-                TextRenderer::SubmitText("Showing entity locations", 5, 40, math::vec3(.7, .1, .5));
+                TextRenderer::SubmitText("Showing entity locations", 5, 40, laml::Vec3(.7, .1, .5));
             }
 
             // draw coordinate frames
-            Renderer::SubmitLine(math::vec3(), math::vec3(1, 0, 0), math::vec4(1, 0, 0, 1));
-            Renderer::SubmitLine(math::vec3(), math::vec3(0, 1, 0), math::vec4(0, 1, 0, 1));
-            Renderer::SubmitLine(math::vec3(), math::vec3(0, 0, 1), math::vec4(0, 0, 1, 1));
+            Renderer::SubmitLine(laml::Vec3(), laml::Vec3(1, 0, 0), math::vec4(1, 0, 0, 1));
+            Renderer::SubmitLine(laml::Vec3(), laml::Vec3(0, 1, 0), math::vec4(0, 1, 0, 1));
+            Renderer::SubmitLine(laml::Vec3(), laml::Vec3(0, 0, 1), math::vec4(0, 0, 1, 1));
 
             auto axes_view = m_Registry.view<TransformComponent>();
             for (auto entity : axes_view) {
                 auto& transform = axes_view.get<TransformComponent>(entity);
 
-                math::vec3 pos = transform.Transform.column4.asVec3();
-                math::vec3 forward, right, up;
+                laml::Vec3 pos = transform.Transform.column4.asVec3();
+                laml::Vec3 forward, right, up;
                 math::Decompose(transform.Transform, forward, right, up);
 
                 // right   +X
@@ -280,7 +280,7 @@ namespace rh {
                     auto& tag = m_Registry.get<TagComponent>(entity);
                     
                     if (mesh.MeshPtr->HasAnimations()) {
-                        Renderer::DrawSkeletonDebug(tag, transform, mesh, math::vec3(.6f, .1f, .9f));
+                        Renderer::DrawSkeletonDebug(tag, transform, mesh, laml::Vec3(.6f, .1f, .9f));
                     }
                 }
             }
@@ -289,8 +289,8 @@ namespace rh {
             for (auto entity : group_trans) {
                 const auto& tag = group_trans.get<TagComponent>(entity);
                 const auto& transform = group_trans.get<TransformComponent>(entity);
-                math::vec3 pos = transform.Transform.column4.asVec3();
-                Renderer::Draw3DText(tag.Name, pos, math::vec3(.7f, .7f, 1.0f));
+                laml::Vec3 pos = transform.Transform.column4.asVec3();
+                Renderer::Draw3DText(tag.Name, pos, laml::Vec3(.7f, .7f, 1.0f));
             }
         }
         

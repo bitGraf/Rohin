@@ -14,7 +14,7 @@ namespace rh {
         Texture2D* Metalness = nullptr;
         Texture2D* Roughness = nullptr;
         Texture2D* Emissive = nullptr;
-        math::vec3 AlbedoBase;
+        laml::Vec3 AlbedoBase;
         float RoughnessBase = 1;
         float MetalnessBase = 0;
         float TextureScale = 1;

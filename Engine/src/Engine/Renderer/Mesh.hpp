@@ -4,7 +4,6 @@
 
 #include "Engine/Core/Base.hpp"
 #include "Engine/Core/Timing.hpp"
-#include "Engine/Core/GameMath.hpp"
 
 #include "Engine/Renderer/VertexArray.hpp"
 #include "Engine/Renderer/Buffer.hpp"
@@ -17,24 +16,24 @@ namespace rh {
     // Use this moving forward
     struct Vertex
     {
-        math::vec3 Position;
-        math::vec3 Normal;
-        math::vec3 Tangent;
-        math::vec3 Bitangent;
-        math::vec2 Texcoord;
+        laml::Vec3 Position;
+        laml::Vec3 Normal;
+        laml::Vec3 Tangent;
+        laml::Vec3 Bitangent;
+        laml::Vec2 Texcoord;
     };
 
     // TODO: normalize this to be like a static_mesh vertex
     struct Vertex_Anim
     {
-        math::vec3 Position;
-        math::vec3 Normal;
-        math::vec3 Tangent;
-        math::vec3 Bitangent;
-        math::vec2 Texcoord;
+        laml::Vec3 Position;
+        laml::Vec3 Normal;
+        laml::Vec3 Tangent;
+        laml::Vec3 Bitangent;
+        laml::Vec2 Texcoord;
 
         s32 BoneIndices[4];
-        math::vec4 BoneWeights;
+        laml::Vec4 BoneWeights;
     };
 
     struct Triangle
@@ -43,16 +42,16 @@ namespace rh {
     };
 
     struct SkeleJoint {
-        math::mat4 inverseBindPose;
-        math::mat4 finalTransform;
+        laml::Mat4 inverseBindPose;
+        laml::Mat4 finalTransform;
         std::string bone_name;
         s32 parent_idx;
     };
 
     struct BoneFrame {
-        math::vec3 position;
-        math::quat rotation;
-        math::vec3 scale;
+        laml::Vec3 position;
+        laml::Quat rotation;
+        laml::Vec3 scale;
     };
 
     struct AnimFrame {
@@ -76,7 +75,7 @@ namespace rh {
         u32 MaterialIndex;
         u32 IndexCount;
 
-        math::mat4 Transform;
+        laml::Mat4 Transform;
     };
 
     class Mesh

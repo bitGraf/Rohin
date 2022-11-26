@@ -188,7 +188,7 @@ namespace rh {
         shader->SetVec4("r_transform", _dst);
         shader->SetVec4("r_transformUV", _src);
         shader->SetMat4("r_orthoProjection", s_SpriteData.orthoMat);
-        shader->SetVec3("r_textColor", math::vec3(1, 1, 1));
+        shader->SetVec3("r_textColor", laml::Vec3(1, 1, 1));
 
         tex->Bind(0);
         s_SpriteData.Quad->Bind();

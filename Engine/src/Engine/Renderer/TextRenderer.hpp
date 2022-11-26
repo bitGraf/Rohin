@@ -15,8 +15,8 @@ namespace rh {
         //static void EndTextRendering();
         //static void Flush();
 
-        static void SubmitText(const std::string& text, float startX, float startY, math::vec3 color, TextAlignment align = TextAlignment::ALIGN_TOP_LEFT);
-        static void SubmitText(const std::string& fontName, const std::string& text, float startX, float startY, math::vec3 color, TextAlignment align = TextAlignment::ALIGN_TOP_LEFT);
+        static void SubmitText(const std::string& text, float startX, float startY, laml::Vec3 color, TextAlignment align = TextAlignment::ALIGN_TOP_LEFT);
+        static void SubmitText(const std::string& fontName, const std::string& text, float startX, float startY, laml::Vec3 color, TextAlignment align = TextAlignment::ALIGN_TOP_LEFT);
 
         static void OnWindowResize(uint32_t width, uint32_t height);
 

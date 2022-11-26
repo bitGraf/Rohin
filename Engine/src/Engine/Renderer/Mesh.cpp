@@ -60,7 +60,7 @@ namespace rh {
         file.read(reinterpret_cast<char*>(&res), sizeof(f64));
         return res;
     };
-    auto read_mat4 = [](std::ifstream& file, math::mat4* m) {
+    auto read_mat4 = [](std::ifstream& file, laml::Mat4* m) {
         file.read(reinterpret_cast<char*>(m), 16 * sizeof(f32));
     };
     auto VERSION_CHECK = [](char vStr[4])-> bool {
@@ -156,15 +156,15 @@ namespace rh {
             read_mat4(file, &sm.Transform);
 
             // annoying cm-m conversion in fbx
-            sm.Transform.column1.x /= 100.0f;
-            sm.Transform.column1.y /= 100.0f;
-            sm.Transform.column1.z /= 100.0f;
-            sm.Transform.column2.x /= 100.0f;
-            sm.Transform.column2.y /= 100.0f;
-            sm.Transform.column2.z /= 100.0f;
-            sm.Transform.column3.x /= 100.0f;
-            sm.Transform.column3.y /= 100.0f;
-            sm.Transform.column3.z /= 100.0f;
+            // sm.Transform.column1.x /= 100.0f;
+            // sm.Transform.column1.y /= 100.0f;
+            // sm.Transform.column1.z /= 100.0f;
+            // sm.Transform.column2.x /= 100.0f;
+            // sm.Transform.column2.y /= 100.0f;
+            // sm.Transform.column2.z /= 100.0f;
+            // sm.Transform.column3.x /= 100.0f;
+            // sm.Transform.column3.y /= 100.0f;
+            // sm.Transform.column3.z /= 100.0f;
         }
 
         // Joint heirarchy
@@ -303,7 +303,7 @@ namespace rh {
 
         // mat_spec should now have all the valid data needed!
         // upload everyhing from mat_spec to the material
-        m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
+        m_BaseMaterial->Set<laml::Vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
         m_BaseMaterial->Set<float>("u_Metalness", mat_spec.MetalnessBase);
         m_BaseMaterial->Set<float>("u_Roughness", mat_spec.RoughnessBase);
         m_BaseMaterial->Set<float>("u_TextureScale", mat_spec.TextureScale);
@@ -318,7 +318,7 @@ namespace rh {
         // Create 1 material
         Ref<MaterialInstance> mat = std::make_shared<MaterialInstance>(m_BaseMaterial, "mat1");
 
-        //mat->Set<math::vec3>("u_AlbedoColor", math::vec3(1, .5, .5));
+        //mat->Set<laml::Vec3>("u_AlbedoColor", laml::Vec3(1, .5, .5));
         //mat->Set<float>("u_Metalness", 1.0f);
         //mat->Set<float>("u_Roughness", 0.75f);
         //mat->Set<float>("u_TextureScale", 2.0f);
@@ -408,7 +408,7 @@ namespace rh {
         /* manually fill out submesh data */
         Submesh sm;
         sm.MaterialIndex = 0;
-        sm.Transform = math::mat4();
+        sm.Transform = laml::Mat4();
         sm.BaseIndex = 0;
         sm.IndexCount = num_inds;
         //sm.BaseVertex = 0; // currently not using this
@@ -474,7 +474,7 @@ namespace rh {
 
             // mat_spec should now have all the valid data needed!
             // upload everyhing from mat_spec to the material
-            m_BaseMaterial->Set<math::vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
+            m_BaseMaterial->Set<laml::Vec3>("u_AlbedoColor", mat_spec.AlbedoBase);
             m_BaseMaterial->Set<float>("u_Metalness", mat_spec.MetalnessBase);
             m_BaseMaterial->Set<float>("u_Roughness", mat_spec.RoughnessBase);
             m_BaseMaterial->Set<float>("u_TextureScale", mat_spec.TextureScale);
@@ -489,7 +489,7 @@ namespace rh {
             /// mat1
             Ref<MaterialInstance> mat = std::make_shared<MaterialInstance>(m_BaseMaterial, "mat1");
 
-            //mat->Set<math::vec3>("u_AlbedoColor", math::vec3(1, .5, .5));
+            //mat->Set<laml::Vec3>("u_AlbedoColor", laml::Vec3(1, .5, .5));
             //mat->Set<float>("u_Metalness", 1.0f);
             //mat->Set<float>("u_Roughness", 0.75f);
             //mat->Set<float>("u_TextureScale", 2.0f);
@@ -528,13 +528,13 @@ namespace rh {
             const auto& bone2 = frame2.bones[channel];
 
             // interpolate between these two states
-            math::vec3 position = math::lerp(bone1.position, bone2.position, interp);
-            math::quat rotation = math::slerp(bone1.rotation, bone2.rotation, interp);
-            math::vec3 scale = math::lerp(bone1.scale, bone2.scale, interp);
+            laml::Vec3 position = laml::lerp(bone1.position, bone2.position, (float)interp);
+            laml::Quat rotation = laml::slerp(bone1.rotation, bone2.rotation, (float)interp);
+            laml::Vec3 scale = laml::lerp(bone1.scale, bone2.scale, (float)interp);
 
             // calc the local transform
-            math::mat4 local_transform;
-            math::CreateTransform(local_transform, rotation, position, scale);
+            laml::Mat4 local_transform;
+            laml::transform::CreateTransform(local_transform, rotation, position, scale);
 
             // get the global transform by mul with parent transform
             if (m_Skeleton[channel].parent_idx < 0) {
