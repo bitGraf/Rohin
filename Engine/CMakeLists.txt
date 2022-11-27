@@ -19,6 +19,7 @@ set(CORE_SRC
     # src/Engine/Core
     src/Engine/Core/Application.cpp
     src/Engine/Core/Application.hpp
+    src/Engine/Core/Assert.hpp
     src/Engine/Core/Base.hpp
     src/Engine/Core/DataFile.hpp
     src/Engine/Core/DataTypes.hpp

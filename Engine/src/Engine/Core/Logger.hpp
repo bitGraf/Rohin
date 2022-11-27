@@ -1,7 +1,6 @@
 #ifndef __LOGGER_H__
 #define __LOGGER_H__
 
-#include "Engine/Core/base.hpp"
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 

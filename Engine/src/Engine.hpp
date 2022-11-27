@@ -1,6 +1,7 @@
 #pragma once
 
 /* for external use */
+#include "Engine/Core/Base.hpp"
 #include "Engine/Core/Application.hpp"
 #include "Engine/Core/Logger.hpp"
 #include "Engine/Core/Timing.hpp"
