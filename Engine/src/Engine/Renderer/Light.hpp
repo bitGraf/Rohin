@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/Core/GameMath.hpp"
+#include "Engine/Core/Base.hpp"
 
 namespace rh {
 
@@ -12,11 +12,11 @@ namespace rh {
 
     class Light {
     public:
-        math::vec3 position;
-        math::vec3 direction;
-        math::vec3 color;
-        float strength;
-        float inner, outer;
+        laml::Vec3 position;
+        laml::Vec3 direction;
+        laml::Vec3 color;
+        laml::Scalar strength;
+        laml::Scalar inner, outer;
         LightType type;
     };
 }

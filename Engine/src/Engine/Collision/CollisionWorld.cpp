@@ -2,7 +2,6 @@
 #include "Engine/Collision/CollisionWorld.hpp"
 
 namespace rh {
-    using namespace math;
 
     CollisionWorld::CollisionWorld() {
 
@@ -12,43 +11,43 @@ namespace rh {
 
     }
 
-    RaycastResult CollisionWorld::Raycast(vec3 start, vec3 direction, scalar distance) {
-        vec3 end = (direction*distance) + start;
+    RaycastResult CollisionWorld::Raycast(laml::Vec3 start, laml::Vec3 direction, laml::Scalar distance) {
+        laml::Vec3 end = (direction*distance) + start;
         return Raycast(start, end);
     }
 
-    RaycastResult CollisionWorld::Raycast(vec3 start, vec3 end) {
+    RaycastResult CollisionWorld::Raycast(laml::Vec3 start, laml::Vec3 end) {
         RaycastResult res;
 
-        vec3 d = end - start;
-        scalar closest_t = 2;
+        laml::Vec3 d = end - start;
+        laml::Scalar closest_t = 2;
 
         res.start = start;
         res.end = end;
         res.t = closest_t;
         res.colliderID = 0;
         res.contactPoint = end;
-        res.normal = vec3(0, 0, 0);
+        res.normal = laml::Vec3(0, 0, 0);
 
         for (int n = 0; n < m_static.size(); n++) {
             // Loop through every hull in the scene
             auto hull = &m_static[n];
 
             // only select the ones that close
-            vec3 toHull = hull->position - start;
-            if (toHull.dot(d) < 0)
+            laml::Vec3 toHull = hull->position - start;
+            if (laml::dot(toHull, d) < 0)
                 continue;
 
             // loop through all the triangles in the hull
             for (int m = 0; m < hull->faces.size(); m++) {
                 auto face = hull->faces[m];
-                vec3 v0 = hull->GetVertWorldSpace(face.indices[0]);
-                vec3 v1 = hull->GetVertWorldSpace(face.indices[1]);
-                vec3 v2 = hull->GetVertWorldSpace(face.indices[2]);
+                laml::Vec3 v0 = hull->GetVertWorldSpace(face.indices[0]);
+                laml::Vec3 v1 = hull->GetVertWorldSpace(face.indices[1]);
+                laml::Vec3 v2 = hull->GetVertWorldSpace(face.indices[2]);
 
-                vec3 normal = (v1 - v0).cross(v2 - v0).get_unit();
+                laml::Vec3 normal = laml::normalize(laml::cross((v1 - v0),(v2 - v0)));
 
-                scalar t = (v0 - start).dot(normal) / (d.dot(normal));
+                laml::Scalar t = laml::dot(v0 - start,normal) / laml::dot(d,normal);
                 if (t > 1.0f || t < 0.0f) {
                     // ray doesn't intersect the plane with t of [0,1]
                     continue;
@@ -59,18 +58,18 @@ namespace rh {
                     continue;
                 }
 
-                vec3 Q = start + d * t; // point on the triangle's plane
+                laml::Vec3 Q = start + d * t; // point on the triangle's plane
 
                 // Compute signed triangle area.
-                vec3 norm = (v1 - v0).cross(v2 - v0);
-                vec3 n0 = (v1 - Q).cross(v2 - Q);
-                vec3 n1 = (v2 - Q).cross(v0 - Q);
-                vec3 n2 = (v0 - Q).cross(v1 - Q);
+                laml::Vec3 norm = laml::cross(v1 - v0,v2 - v0);
+                laml::Vec3 n0   = laml::cross(v1 - Q,v2 - Q);
+                laml::Vec3 n1   = laml::cross(v2 - Q,v0 - Q);
+                laml::Vec3 n2   = laml::cross(v0 - Q,v1 - Q);
 
                 // Compute triangle barycentric coordinates (pre-division).
-                float u = n0.dot(norm);
-                float v = n1.dot(norm);
-                float w = n2.dot(norm);
+                float u = laml::dot(n0,norm);
+                float v = laml::dot(n1,norm);
+                float w = laml::dot(n2,norm);
                 //float s = 1.0f / (u + v + w);
                 //u *= s;
                 //v *= s;
@@ -94,36 +93,36 @@ namespace rh {
         return res;
     }
 
-    RaycastResult CollisionWorld::Raycast(UID_t target, vec3 start, vec3 end) {
+    RaycastResult CollisionWorld::Raycast(UID_t target, laml::Vec3 start, laml::Vec3 end) {
         RaycastResult res;
 
-        vec3 d = end - start;
-        scalar closest_t = 2;
+        laml::Vec3 d = end - start;
+        laml::Scalar closest_t = 2;
 
         res.start = start;
         res.end = end;
         res.t = closest_t;
         res.colliderID = 0;
         res.contactPoint = end;
-        res.normal = vec3(0, 0, 0);
+        res.normal = laml::Vec3(0, 0, 0);
 
         auto hull = this->getHullFromID(target);
 
         // only select the ones that close
-        vec3 toHull = hull->position - start;
-        if (toHull.dot(d) < 0)
+        laml::Vec3 toHull = hull->position - start;
+        if (laml::dot(toHull,d) < 0)
             return res;
 
         // loop through all the triangles in the hull
         for (int m = 0; m < hull->faces.size(); m++) {
             auto face = hull->faces[m];
-            vec3 v0 = hull->GetVertWorldSpace(face.indices[0]);
-            vec3 v1 = hull->GetVertWorldSpace(face.indices[1]);
-            vec3 v2 = hull->GetVertWorldSpace(face.indices[2]);
+            laml::Vec3 v0 = hull->GetVertWorldSpace(face.indices[0]);
+            laml::Vec3 v1 = hull->GetVertWorldSpace(face.indices[1]);
+            laml::Vec3 v2 = hull->GetVertWorldSpace(face.indices[2]);
 
-            vec3 normal = (v1 - v0).cross(v2 - v0).get_unit();
+            laml::Vec3 normal = laml::normalize(laml::cross(v1 - v0, v2 - v0));
 
-            scalar t = (v0 - start).dot(normal) / (d.dot(normal));
+            laml::Scalar t = laml::dot(v0 - start,normal) / laml::dot(d,normal);
             if (t > 1.0f || t < 0.0f) {
                 // ray doesn't intersect the plane with t of [0,1]
                 continue;
@@ -134,18 +133,18 @@ namespace rh {
                 continue;
             }
 
-            vec3 Q = start + d * t; // point on the triangle's plane
+            laml::Vec3 Q = start + d * t; // point on the triangle's plane
 
             // Compute signed triangle area.
-            vec3 norm = (v1 - v0).cross(v2 - v0);
-            vec3 n0 = (v1 - Q).cross(v2 - Q);
-            vec3 n1 = (v2 - Q).cross(v0 - Q);
-            vec3 n2 = (v0 - Q).cross(v1 - Q);
+            laml::Vec3 norm = laml::cross(v1 - v0,v2 - v0);
+            laml::Vec3 n0 = laml::cross(v1 - Q,v2 - Q);
+            laml::Vec3 n1 = laml::cross(v2 - Q,v0 - Q);
+            laml::Vec3 n2 = laml::cross(v0 - Q,v1 - Q);
 
             // Compute triangle barycentric coordinates (pre-division).
-            float u = n0.dot(norm);
-            float v = n1.dot(norm);
-            float w = n2.dot(norm);
+            float u = laml::dot(n0,norm);
+            float v = laml::dot(n1,norm);
+            float w = laml::dot(n2,norm);
 
             if ((u >= 0.0f && v >= 0.0f && w >= 0.0f)) {
                 // The ray intersects the triangle
@@ -164,22 +163,22 @@ namespace rh {
         return res;
     }
 
-    UID_t CollisionWorld::CreateNewCubeHull(vec3 position, scalar size) {
+    UID_t CollisionWorld::CreateNewCubeHull(laml::Vec3 position, laml::Scalar size) {
         CollisionHull hull;
 
-        scalar halfSize = size / 2.0f;
+        laml::Scalar halfSize = size / 2.0f;
 
         // Box hull
         hull.vertices.resize(8);
-        hull.vertices[0] = vec3(-halfSize, -halfSize, -halfSize);
-        hull.vertices[1] = vec3(-halfSize, -halfSize, halfSize);
-        hull.vertices[2] = vec3(halfSize, -halfSize, halfSize);
-        hull.vertices[3] = vec3(halfSize, -halfSize, -halfSize);
+        hull.vertices[0] = laml::Vec3(-halfSize, -halfSize, -halfSize);
+        hull.vertices[1] = laml::Vec3(-halfSize, -halfSize, halfSize);
+        hull.vertices[2] = laml::Vec3(halfSize, -halfSize, halfSize);
+        hull.vertices[3] = laml::Vec3(halfSize, -halfSize, -halfSize);
 
-        hull.vertices[4] = vec3(-halfSize, halfSize, -halfSize);
-        hull.vertices[5] = vec3(-halfSize, halfSize, halfSize);
-        hull.vertices[6] = vec3(halfSize, halfSize, halfSize);
-        hull.vertices[7] = vec3(halfSize, halfSize, -halfSize);
+        hull.vertices[4] = laml::Vec3(-halfSize, halfSize, -halfSize);
+        hull.vertices[5] = laml::Vec3(-halfSize, halfSize, halfSize);
+        hull.vertices[6] = laml::Vec3(halfSize, halfSize, halfSize);
+        hull.vertices[7] = laml::Vec3(halfSize, halfSize, -halfSize);
 
         hull.faces.resize(12);
         hull.faces[0] = CollisionTriangle(0, 1, 4);
@@ -204,24 +203,24 @@ namespace rh {
     }
 
     UID_t CollisionWorld::CreateNewCubeHull(
-        vec3 position, scalar xSize, scalar ySize, scalar zSize) {
+        laml::Vec3 position, laml::Scalar xSize, laml::Scalar ySize, laml::Scalar zSize) {
         CollisionHull hull;
 
-        scalar halfx = xSize / 2.0f;
-        scalar halfy = ySize / 2.0f;
-        scalar halfz = zSize / 2.0f;
+        laml::Scalar halfx = xSize / 2.0f;
+        laml::Scalar halfy = ySize / 2.0f;
+        laml::Scalar halfz = zSize / 2.0f;
 
         // Box hull
         hull.vertices.resize(8);
-        hull.vertices[0] = vec3(-halfx, -halfy, -halfz);
-        hull.vertices[1] = vec3(-halfx, -halfy, halfz);
-        hull.vertices[2] = vec3(halfx, -halfy, halfz);
-        hull.vertices[3] = vec3(halfx, -halfy, -halfz);
+        hull.vertices[0] = laml::Vec3(-halfx, -halfy, -halfz);
+        hull.vertices[1] = laml::Vec3(-halfx, -halfy, halfz);
+        hull.vertices[2] = laml::Vec3(halfx, -halfy, halfz);
+        hull.vertices[3] = laml::Vec3(halfx, -halfy, -halfz);
 
-        hull.vertices[4] = vec3(-halfx, halfy, -halfz);
-        hull.vertices[5] = vec3(-halfx, halfy, halfz);
-        hull.vertices[6] = vec3(halfx, halfy, halfz);
-        hull.vertices[7] = vec3(halfx, halfy, -halfz);
+        hull.vertices[4] = laml::Vec3(-halfx, halfy, -halfz);
+        hull.vertices[5] = laml::Vec3(-halfx, halfy, halfz);
+        hull.vertices[6] = laml::Vec3(halfx, halfy, halfz);
+        hull.vertices[7] = laml::Vec3(halfx, halfy, -halfz);
 
         hull.faces.resize(12);
         hull.faces[0] = CollisionTriangle(0, 1, 4);
@@ -245,14 +244,14 @@ namespace rh {
         return hull.m_hullID;
     }
 
-    UID_t CollisionWorld::CreateNewCapsule(vec3 position, scalar height, scalar radius) {
+    UID_t CollisionWorld::CreateNewCapsule(laml::Vec3 position, laml::Scalar height, laml::Scalar radius) {
         CollisionHull hull;
 
         // Capsule Hull
         hull.vertices.resize(3);
-        hull.vertices[0] = vec3(0, 0, 0);
-        hull.vertices[1] = vec3(0, height / 2, 0); // to allow it to render more easily
-        hull.vertices[2] = vec3(0, height, 0);
+        hull.vertices[0] = laml::Vec3(0, 0, 0);
+        hull.vertices[1] = laml::Vec3(0, height / 2, 0); // to allow it to render more easily
+        hull.vertices[2] = laml::Vec3(0, height, 0);
 
         hull.faces.resize(1);
         hull.faces[0] = CollisionTriangle(0, 1, 2);
@@ -279,7 +278,7 @@ namespace rh {
         return nullptr;
     }
 
-    ShapecastResult_multi CollisionWorld::Shapecast_multi(UID_t id, vec3 vel) {
+    ShapecastResult_multi CollisionWorld::Shapecast_multi(UID_t id, laml::Vec3 vel) {
         ShapecastResult_multi res;
         res.lowestTOI = 1;
         res.numContacts = 0;
@@ -297,7 +296,7 @@ namespace rh {
             int iters;
             ContactPlane plane;
             plane.colliderID = hull2->m_hullID;
-            plane.TOI = TimeOfImpact(hull1, vel, hull2, vec3(),
+            plane.TOI = TimeOfImpact(hull1, vel, hull2, laml::Vec3(),
                 &plane.contact_normal, &plane.contact_point, &iters);
             bool placed = false;
             if (plane.TOI < 1) {
@@ -335,7 +334,7 @@ namespace rh {
     }
 
 
-    ShapecastResult CollisionWorld::Shapecast(UID_t id, vec3 vel) {
+    ShapecastResult CollisionWorld::Shapecast(UID_t id, laml::Vec3 vel) {
         ShapecastResult res;
         res.TOI = 1e10;
         res.colliderID = 0;
@@ -350,8 +349,8 @@ namespace rh {
                 continue; // don't check against itself
 
             int iters;
-            vec3 contact_normal, contact_point;
-            float TOI = TimeOfImpact(hull1, vel, hull2, vec3(),
+            laml::Vec3 contact_normal, contact_point;
+            float TOI = TimeOfImpact(hull1, vel, hull2, laml::Vec3(),
                 &contact_normal, &contact_point, &iters);
 
             if (TOI < res.TOI) {
@@ -368,23 +367,23 @@ namespace rh {
     }
 
 
-    scalar CollisionWorld::TimeOfImpact(CollisionHull* hull1, vec3 vel1, CollisionHull* hull2, vec3 vel2,
-        vec3* out_normal, vec3* out_contact_point, int* out_iterations) {
+    laml::Scalar CollisionWorld::TimeOfImpact(CollisionHull* hull1, laml::Vec3 vel1, CollisionHull* hull2, laml::Vec3 vel2,
+        laml::Vec3* out_normal, laml::Vec3* out_contact_point, int* out_iterations) {
         assert(hull1 && hull2);
 
         float t = 0;
-        vec3 a, b, n;
+        laml::Vec3 a, b, n;
 
         float feather_radius = 1.0e-3f;
         float d = StepGJK(t, hull1, vel1, hull2, vel2, &a, &b, feather_radius); //closest distance b/w hulls
-        vec3 v = vel2 - vel1;
+        laml::Vec3 v = vel2 - vel1;
 
         int iter = 0;
         float eps = 1.0e-4f;
         while (d > eps && t < 1) {
             ++iter;
-            vec3 d_vec = (b - a).get_unit();
-            float velocity_bound = abs(d_vec.dot(v)); //should prob just check if positive
+            laml::Vec3 d_vec = laml::normalize(b - a);
+            float velocity_bound = abs(laml::dot(d_vec,v)); //should prob just check if positive
             if (!velocity_bound) return 1; // moving perpendicular
 
             float delta = d / velocity_bound; // how far (in t units) hulls will move together.
@@ -398,13 +397,13 @@ namespace rh {
         }
 
         d = StepGJK(t, hull1, vel1, hull2, vel2, &a, &b, 0);
-        n = (a - b).get_unit();
+        n = laml::normalize(a - b);
         t = t >= 1 ? 1 : t;
 
-        vec3 p = (a + b) * 0.5f;
+        laml::Vec3 p = (a + b) * 0.5f;
 
-        if (n.length_2() == 0) {
-            *out_normal = -v.get_unit();
+        if (laml::length_sq(n) == 0) {
+            *out_normal = -laml::normalize(v);
             ENGINE_LOG_WARN("Why is this happening???");
         }
         else {
@@ -416,18 +415,18 @@ namespace rh {
         return t;
     }
 
-    scalar CollisionWorld::StepGJK(float t,
-        CollisionHull* hull1, vec3 vel1,
-        CollisionHull* hull2, vec3 vel2,
-        vec3* point1, vec3* point2,
+    laml::Scalar CollisionWorld::StepGJK(float t,
+        CollisionHull* hull1, laml::Vec3 vel1,
+        CollisionHull* hull2, laml::Vec3 vel2,
+        laml::Vec3* point1, laml::Vec3* point2,
         float feather_radius) {
 
-        vec3 hull1Pos = hull1->position; //save for later
-        vec3 hull2Pos = hull2->position;
+        laml::Vec3 hull1Pos = hull1->position; //save for later
+        laml::Vec3 hull2Pos = hull2->position;
         float radius = hull1->m_radius;
 
-        hull1->position += vel1 * t; // move the object 't' along their velocities
-        hull2->position += vel2 * t;
+        hull1->position = hull1->position + (vel1 * t); // move the object 't' along their velocities
+        hull2->position = hull2->position + (vel2 * t);
 
         hull1->m_radius += feather_radius;
 
@@ -460,7 +459,7 @@ namespace rh {
 
 
 
-    vec3 Simplex::GetSearchDirection() {
+    laml::Vec3 Simplex::GetSearchDirection() {
         // calcualte the search direction based on current simplex
         switch (m_count)
         {
@@ -468,16 +467,16 @@ namespace rh {
             return -m_vertexA.point;
         } break;
         case 2: {
-            vec3 ba = m_vertexB.point - m_vertexA.point;
-            vec3 b0 = -m_vertexB.point;
-            vec3 t = ba.cross(b0);
-            return t.cross(ba);
+            laml::Vec3 ba = m_vertexB.point - m_vertexA.point;
+            laml::Vec3 b0 = -m_vertexB.point;
+            laml::Vec3 t = laml::cross(ba,b0);
+            return laml::cross(t,ba);
         } break;
         case 3: {
-            vec3 ab = m_vertexA.point - m_vertexB.point;
-            vec3 ac = m_vertexA.point - m_vertexC.point;
-            vec3 n = ab.cross(ac);
-            if (n.dot(m_vertexA.point) <= 0.0f) {
+            laml::Vec3 ab = m_vertexA.point - m_vertexB.point;
+            laml::Vec3 ac = m_vertexA.point - m_vertexC.point;
+            laml::Vec3 n = laml::cross(ab,ac);
+            if (laml::dot(n,m_vertexA.point) <= 0.0f) {
                 return n;
             }
             else {
@@ -487,10 +486,10 @@ namespace rh {
         default: {assert(false); } break;
         }
 
-        return vec3();
+        return laml::Vec3();
     }
 
-    void Simplex::GetWitnessPoints(vec3* point1, vec3* point2, float radius1, float radius2)
+    void Simplex::GetWitnessPoints(laml::Vec3* point1, laml::Vec3* point2, float radius1, float radius2)
     {
         switch (m_count) {
         case 1:
@@ -529,23 +528,23 @@ namespace rh {
         }
         else {
             if (radius1 > 0.0f || radius2 > 0.0f) {
-                vec3 dir = (*point1 - *point2).get_unit();
+                laml::Vec3 dir = laml::normalize(*point1 - *point2);
 
-                *point1 -= (dir * radius1);
-                *point2 += (dir * radius2);
+                *point1 = *point1 - (dir * radius1);
+                *point2 = *point2 + (dir * radius2);
             }
         }
     }
 
     // Closest point on line segment to Q.
-    void Simplex::Solve2(const vec3& Q)
+    void Simplex::Solve2(const laml::Vec3& Q)
     {
-        vec3 A = m_vertexA.point;
-        vec3 B = m_vertexB.point;
+        laml::Vec3 A = m_vertexA.point;
+        laml::Vec3 B = m_vertexB.point;
 
         // Compute barycentric coordinates (pre-division).
-        float u = (Q - B).dot(A - B);
-        float v = (Q - A).dot(B - A);
+        float u = laml::dot(Q - B,A - B);
+        float v = laml::dot(Q - A,B - A);
 
         // Region A
         if (v <= 0.0f)
@@ -576,22 +575,22 @@ namespace rh {
     }
 
     // Closest point on triangle to Q.
-    void Simplex::Solve3(const vec3& Q)
+    void Simplex::Solve3(const laml::Vec3& Q)
     {
         // Get closest point on TriABC to Q
-        vec3 A = m_vertexA.point;
-        vec3 B = m_vertexB.point;
-        vec3 C = m_vertexC.point;
+        laml::Vec3 A = m_vertexA.point;
+        laml::Vec3 B = m_vertexB.point;
+        laml::Vec3 C = m_vertexC.point;
 
         // Compute edge barycentric coordinates (pre-division).
-        float uAB = (Q - B).dot(A - B);
-        float vAB = (Q - A).dot(B - A);
+        float uAB = laml::dot(Q - B,A - B);
+        float vAB = laml::dot(Q - A,B - A);
 
-        float uBC = (Q - C).dot(B - C);
-        float vBC = (Q - B).dot(C - B);
+        float uBC = laml::dot(Q - C,B - C);
+        float vBC = laml::dot(Q - B,C - B);
 
-        float uCA = (Q - A).dot(C - A);
-        float vCA = (Q - C).dot(A - C);
+        float uCA = laml::dot(Q - A,C - A);
+        float vCA = laml::dot(Q - C,A - C);
 
         // Region A
         if (vAB <= 0.0f && uCA <= 0.0f)
@@ -620,15 +619,15 @@ namespace rh {
         }
 
         // Compute signed triangle area.
-        vec3 n = (B - A).cross(C - A);
-        vec3 n1 = B.cross(C);
-        vec3 n2 = C.cross(A);
-        vec3 n3 = A.cross(B);
+        laml::Vec3 n = laml::cross(B - A,C - A);
+        laml::Vec3 n1 = laml::cross(B,C);
+        laml::Vec3 n2 = laml::cross(C,A);
+        laml::Vec3 n3 = laml::cross(A,B);
 
         // Compute triangle barycentric coordinates (pre-division).
-        float uABC = n1.dot(n);
-        float vABC = n2.dot(n);
-        float wABC = n3.dot(n);
+        float uABC = laml::dot(n1,n);
+        float vABC = laml::dot(n2,n);
+        float wABC = laml::dot(n3,n);
 
         // Region AB
         if (uAB > 0.0f && vAB > 0.0f && wABC <= 0.0f)
@@ -673,32 +672,32 @@ namespace rh {
     }
 
     // Closest point on tetrahedron to Q.
-    void Simplex::Solve4(const vec3& Q)
+    void Simplex::Solve4(const laml::Vec3& Q)
     {
         // Get closest point on TetraABCD to Q
-        vec3 A = m_vertexA.point;
-        vec3 B = m_vertexB.point;
-        vec3 C = m_vertexC.point;
-        vec3 D = m_vertexD.point;
+        laml::Vec3 A = m_vertexA.point;
+        laml::Vec3 B = m_vertexB.point;
+        laml::Vec3 C = m_vertexC.point;
+        laml::Vec3 D = m_vertexD.point;
 
         // Compute edge barycentric coordinates (pre-division).
-        float uAB = (Q - B).dot(A - B);
-        float vAB = (Q - A).dot(B - A);
+        float uAB = laml::dot(Q - B,A - B);
+        float vAB = laml::dot(Q - A,B - A);
 
-        float uBC = (Q - C).dot(B - C);
-        float vBC = (Q - B).dot(C - B);
+        float uBC = laml::dot(Q - C,B - C);
+        float vBC = laml::dot(Q - B,C - B);
 
-        float uCA = (Q - A).dot(C - A);
-        float vCA = (Q - C).dot(A - C);
+        float uCA = laml::dot(Q - A,C - A);
+        float vCA = laml::dot(Q - C,A - C);
 
-        float uBD = (Q - D).dot(B - D);
-        float vBD = (Q - B).dot(D - B);
+        float uBD = laml::dot(Q - D,B - D);
+        float vBD = laml::dot(Q - B,D - B);
 
-        float uDC = (Q - C).dot(D - C);
-        float vDC = (Q - D).dot(C - D);
+        float uDC = laml::dot(Q - C,D - C);
+        float vDC = laml::dot(Q - D,C - D);
 
-        float uAD = (Q - D).dot(A - D);
-        float vAD = (Q - A).dot(D - A);
+        float uAD = laml::dot(Q - D,A - D);
+        float vAD = laml::dot(Q - A,D - A);
 
         // Region A
         if (vAB <= 0.0f && uCA <= 0.0f && vAD <= 0.0) {
@@ -729,44 +728,44 @@ namespace rh {
         }
 
         // Compute fractional area: ADB
-        vec3 n = (D - A).cross(B - A);
-        vec3 n1 = D.cross(B);
-        vec3 n2 = B.cross(A);
-        vec3 n3 = A.cross(D);
+        laml::Vec3 n = laml::cross(D - A,B - A);
+        laml::Vec3 n1 = laml::cross(D,B);
+        laml::Vec3 n2 = laml::cross(B,A);
+        laml::Vec3 n3 = laml::cross(A,D);
 
-        float uADB = n1.dot(n);
-        float vADB = n2.dot(n);
-        float wADB = n3.dot(n);
+        float uADB = laml::dot(n1,n);
+        float vADB = laml::dot(n2,n);
+        float wADB = laml::dot(n3,n);
 
         // Compute fractional area: ACD
-        n = (C - A).cross(D - A);
-        n1 = C.cross(D);
-        n2 = D.cross(A);
-        n3 = A.cross(C);
+        n = laml::cross(C - A,D - A);
+        n1 = laml::cross(C,D);
+        n2 = laml::cross(D,A);
+        n3 = laml::cross(A,C);
 
-        float uACD = n1.dot(n);
-        float vACD = n2.dot(n);
-        float wACD = n3.dot(n);
+        float uACD = laml::dot(n1,n);
+        float vACD = laml::dot(n2,n);
+        float wACD = laml::dot(n3,n);
 
         // Compute fractional area: CBD
-        n = (B - C).cross(D - C);
-        n1 = B.cross(D);
-        n2 = D.cross(C);
-        n3 = C.cross(B);
+        n = laml::cross(B - C,D - C);
+        n1 = laml::cross(B,D);
+        n2 = laml::cross(D,C);
+        n3 = laml::cross(C,B);
 
-        float uCBD = n1.dot(n);
-        float vCBD = n2.dot(n);
-        float wCBD = n3.dot(n);
+        float uCBD = laml::dot(n1,n);
+        float vCBD = laml::dot(n2,n);
+        float wCBD = laml::dot(n3,n);
 
         // Compute fractional area: ABC
-        n = (B - A).cross(C - A);
-        n1 = B.cross(C);
-        n2 = C.cross(A);
-        n3 = A.cross(B);
+        n = laml::cross(B - A,C - A);
+        n1 = laml::cross(B,C);
+        n2 = laml::cross(C,A);
+        n3 = laml::cross(A,B);
 
-        float uABC = n1.dot(n);
-        float vABC = n2.dot(n);
-        float wABC = n3.dot(n);
+        float uABC = laml::dot(n1,n);
+        float vABC = laml::dot(n2,n);
+        float wABC = laml::dot(n3,n);
 
         // Region AB
         if (wABC <= 0.0f && vADB <= 0.0f && uAB > 0.0f && vAB > 0.0f)
@@ -838,12 +837,12 @@ namespace rh {
 
         // Calculate fractional volume: ABCD
         //A.cross(B).dot(C);
-        float denom = (C - B).cross(A - B).dot(D - B);
+        float denom = laml::dot(laml::cross(C - B,A - B),D - B);
         float volume = (denom == 0) ? 1.0f : 1.0f / denom;
-        float uABCD = C.cross(D).dot(B) * volume;
-        float vABCD = C.cross(A).dot(D) * volume;
-        float wABCD = D.cross(A).dot(B) * volume;
-        float xABCD = B.cross(A).dot(C) * volume;
+        float uABCD = laml::dot(laml::cross(C,D),B) * volume;
+        float vABCD = laml::dot(laml::cross(C,A),D) * volume;
+        float wABCD = laml::dot(laml::cross(D,A),B) * volume;
+        float xABCD = laml::dot(laml::cross(B,A),C) * volume;
 
         // Region ABC
         if (xABCD <= 0.0f && uABC > 0.0f && vABC > 0.0f && wABC > 0.0f)
@@ -902,7 +901,7 @@ namespace rh {
     }
 
     float Simplex::GetDistance() {
-        vec3 pnt;
+        laml::Vec3 pnt;
 
         switch (m_count) {
         case 1:
@@ -910,28 +909,28 @@ namespace rh {
             break;
         case 2: {
             float denom = 1.0f / (m_vertexA.u + m_vertexB.u);
-            vec3 a = m_vertexA.point * denom * m_vertexA.u;
-            vec3 b = m_vertexB.point * denom * m_vertexB.u;
+            laml::Vec3 a = m_vertexA.point * denom * m_vertexA.u;
+            laml::Vec3 b = m_vertexB.point * denom * m_vertexB.u;
             pnt = a + b;
         } break;
         case 3: {
             float denom = 1.0f / (m_vertexA.u + m_vertexB.u + m_vertexC.u);
-            vec3 a = m_vertexA.point * denom * m_vertexA.u;
-            vec3 b = m_vertexB.point * denom * m_vertexB.u;
-            vec3 c = m_vertexC.point * denom * m_vertexC.u;
+            laml::Vec3 a = m_vertexA.point * denom * m_vertexA.u;
+            laml::Vec3 b = m_vertexB.point * denom * m_vertexB.u;
+            laml::Vec3 c = m_vertexC.point * denom * m_vertexC.u;
             pnt = a + b + c;
         } break;
         case 4: {
             float denom = 1.0f / (m_vertexA.u + m_vertexB.u + m_vertexC.u + m_vertexD.u);
-            vec3 a = m_vertexA.point * denom * m_vertexA.u;
-            vec3 b = m_vertexB.point * denom * m_vertexB.u;
-            vec3 c = m_vertexC.point * denom * m_vertexC.u;
-            vec3 d = m_vertexD.point * denom * m_vertexD.u;
+            laml::Vec3 a = m_vertexA.point * denom * m_vertexA.u;
+            laml::Vec3 b = m_vertexB.point * denom * m_vertexB.u;
+            laml::Vec3 c = m_vertexC.point * denom * m_vertexC.u;
+            laml::Vec3 d = m_vertexD.point * denom * m_vertexD.u;
             pnt = a + b + c + d;
         } break;
         }
 
-        return pnt.dot(pnt);
+        return laml::dot(pnt,pnt);
     }
 
 
@@ -992,15 +991,15 @@ namespace rh {
                 break;
 
             case 2:
-                simplex.Solve2(vec3(0.0f, 0.0f, 0.0f));
+                simplex.Solve2(laml::Vec3(0.0f, 0.0f, 0.0f));
                 break;
 
             case 3:
-                simplex.Solve3(vec3(0.0f, 0.0f, 0.0f));
+                simplex.Solve3(laml::Vec3(0.0f, 0.0f, 0.0f));
                 break;
 
             case 4:
-                simplex.Solve4(vec3(0.0f, 0.0f, 0.0f));
+                simplex.Solve4(laml::Vec3(0.0f, 0.0f, 0.0f));
                 break;
 
             default:
@@ -1030,10 +1029,10 @@ namespace rh {
             }
 
             // Get search direction.
-            vec3 d = simplex.GetSearchDirection();
+            laml::Vec3 d = simplex.GetSearchDirection();
 
             // Ensure the search direction non-zero.
-            if (d.dot(d) <= 1e-15)
+            if (laml::dot(d,d) <= 1e-15)
             {
                 term = gjk_Output::TermCode::e_zeroSearch;
                 break;
@@ -1041,9 +1040,9 @@ namespace rh {
 
             // Compute a tentative new simplex vertex using support points.
             simplexVertex* vertex = vertices + simplex.m_count;
-            vertex->index1 = polygon1->GetSupport(polygon1->rotation.getTranspose() * (-d));
+            vertex->index1 = polygon1->GetSupport(laml::transform::transform_point(laml::transpose(polygon1->rotation), -d));
             vertex->point1 = polygon1->GetVertWorldSpace(vertex->index1);
-            vertex->index2 = polygon2->GetSupport(polygon2->rotation.getTranspose() * (d));
+            vertex->index2 = polygon2->GetSupport(laml::transform::transform_point(laml::transpose(polygon2->rotation), d));
             vertex->point2 = polygon2->GetVertWorldSpace(vertex->index2);
             vertex->point = vertex->point2 - vertex->point1;
 
@@ -1074,7 +1073,7 @@ namespace rh {
 
         // Prepare output.
         simplex.GetWitnessPoints(&output->point1, &output->point2, polygon1->m_radius, polygon2->m_radius);
-        output->distance = (output->point1 - output->point2).length();
+        output->distance = laml::length(output->point1 - output->point2);
         output->iterations = iter;
         output->m_term = term;
         output->m_hit = simplex.m_hit;

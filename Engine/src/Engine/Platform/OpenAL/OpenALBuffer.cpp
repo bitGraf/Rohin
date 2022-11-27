@@ -57,6 +57,7 @@ namespace rh {
         case SoundFormat::None:
             return 0;
         }
+        return 0;
     }
 
     void OpenALBuffer::BufferData(SoundFormat format, const ALvoid* soundData, ALsizei numBytes, ALsizei sampleRate) {

@@ -3,7 +3,7 @@
 
 #include <assert.h>
 
-namespace nbt {
+namespace rh::nbt {
 	std::pair<std::string, std::unique_ptr<tag_compound>> read_compound_raw(std::istream& is, endian::endian e) {
 		nbt_byte tag;
 		io::read_num(is, tag, e);
@@ -187,7 +187,7 @@ namespace nbt {
         }
     }
 
-    math::vec3 SafeGetVec3(const tag_compound& comp, const std::string& key, const math::vec3& default) {
+    laml::Vec3 SafeGetVec3(const tag_compound& comp, const std::string& key, const laml::Vec3& default) {
         if (comp.has_key(key)) {
             ENGINE_LOG_ASSERT(comp.at(key).get_type() == nbt::tag_type::Vector3, "Value at key must be a vec3");
             return comp.at(key).as<tag_vec3>().get();

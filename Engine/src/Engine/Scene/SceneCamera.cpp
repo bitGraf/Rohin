@@ -48,19 +48,21 @@ namespace rh {
                 float orthoTop = m_OrthographicSize * 0.5f;
                 float orthoBot = -m_OrthographicSize * 0.5f;
 
-                math::CreateOrthoProjection(m_Projection, orthoLeft, orthoRight, orthoBot, orthoTop, m_OrthographicNear, m_OrthographicFar);
+                laml::transform::create_projection_orthographic(m_Projection, 
+                    orthoLeft, orthoRight, orthoBot, orthoTop, m_OrthographicNear, m_OrthographicFar);
                 return;
             }
 
             case Type::Perspective: {
-                f32 tanHalf = tan(m_PerspectiveVerticalFoV * math::d2r / 2);
-
-                m_Projection = math::mat4(
-                    math::vec4(1 / (m_AspectRatio*tanHalf), 0, 0, 0),
-                    math::vec4(0, 1 / tanHalf, 0, 0),
-                    math::vec4(0, 0, -(m_PerspectiveFar + m_PerspectiveNear) / (m_PerspectiveFar - m_PerspectiveNear), -1),
-                    math::vec4(0, 0, -(2 * m_PerspectiveFar*m_PerspectiveNear) / (m_PerspectiveFar - m_PerspectiveNear), 0)
-                );
+                //f32 tanHalf = tan(m_PerspectiveVerticalFoV * laml::constants::deg2rad / 2.0);
+                //m_Projection = laml::Mat4(
+                //    laml::Vec4(1 / (m_AspectRatio*tanHalf), 0, 0, 0),
+                //    laml::Vec4(0, 1 / tanHalf, 0, 0),
+                //    laml::Vec4(0, 0, -(m_PerspectiveFar + m_PerspectiveNear) / (m_PerspectiveFar - m_PerspectiveNear), -1),
+                //    laml::Vec4(0, 0, -(2 * m_PerspectiveFar*m_PerspectiveNear) / (m_PerspectiveFar - m_PerspectiveNear), 0)
+                //);
+                laml::transform::create_projection_perspective(m_Projection, 
+                    m_PerspectiveVerticalFoV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
 
                 return;
             }

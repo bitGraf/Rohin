@@ -8,7 +8,7 @@
 #include "Engine\Resources\nbt\data.hpp"
 #include "Engine\Resources\nbt\endian.hpp"
 
-namespace nbt {
+namespace rh::nbt {
 	class tag;
 	class value;
 

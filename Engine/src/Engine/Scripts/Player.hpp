@@ -23,9 +23,9 @@ namespace rh {
             //math::Decompose(transformComponent->Transform, Forward, Right, Up);
             //math::Decompose(transformComponent->Transform, yaw, pitch);
 
-            math::Decompose(transformComponent->Transform, position, Forward, Right, Up, yaw, pitch, scale);
+            laml::transform::decompose(transformComponent->Transform, position, Forward, Right, Up, yaw, pitch, scale);
 
-            hull_offset = math::vec3(0, .5, 0);
+            hull_offset = laml::Vec3(0.0f, 0.5f, 0.0f);
             m_floorAngleLimit = 35;
 
             LOG_INFO("Player controller created on GameObject {0}!", GetGameObjectID());
@@ -44,8 +44,8 @@ namespace rh {
             yaw -= Input::GetAxis("AxisRotateRight") * rotSpeed * ts;
         }
 
-        math::vec3 GenerateDesiredMovement() {
-            using namespace math;
+        laml::Vec3 GenerateDesiredMovement() {
+            using namespace laml;
 
             if (Input::GetAxis("AxisBoost") > 0.0f) {
                 moveSpeed = 20;
@@ -54,23 +54,23 @@ namespace rh {
                 moveSpeed = 7.0f;
             }
 
-            vec3 vel(0, 0, 0);
+            Vec3 vel(0.0f, 0.0f, 0.0f);
             if (grounded) {
                 // get floor-based local frame
-                vec3 localU = m_floorUp.get_unit();
-                vec3 localR = Forward.cross(localU).get_unit();
-                vec3 localF = localU.cross(localR).get_unit();
+                Vec3 localU = normalize(m_floorUp);
+                Vec3 localR = normalize(cross(Forward, localU));
+                Vec3 localF = normalize(cross(localU, localR));
 
                 // handle translation
-                vel += localR * (moveSpeed * Input::GetAxis("AxisMoveRight"));
-                vel += localF * (moveSpeed * Input::GetAxis("AxisMoveForward"));
-                CameraHeight -= 0.65f * Input::GetAxis("AxisRotateUp");
+                vel = vel + localR * (moveSpeed * Input::GetAxis("AxisMoveRight"));
+                vel = vel + localF * (moveSpeed * Input::GetAxis("AxisMoveForward"));
+                CameraHeight -= 0.05f * Input::GetAxis("AxisRotateUp");
                 CameraHeight = std::clamp(CameraHeight, CameraHeightMin, CameraHeightMax);
 
                 if (Input::GetAction("ActionJump") && grounded) {
-                    vel += Up * jumpPower; // still jump vertically, not off ramp
+                    vel = vel + Up * jumpPower; // still jump vertically, not off ramp
                     grounded = false;
-                    m_floorUp = vec3(0, 1, 0);
+                    m_floorUp = Vec3(0.0f, 1.0f, 0.0f);
                 }
             }
             else {
@@ -79,18 +79,17 @@ namespace rh {
             return vel;
         }
 
-        math::vec3 GetCameraTarget() {
+        laml::Vec3 GetCameraTarget() {
             float horiz_dist = sqrt(CameraDistance*CameraDistance - CameraHeight * CameraHeight);
             return position - (Forward * horiz_dist) + (Up * CameraHeight);
         }
 
-        const math::vec3& GetPosition() const {
+        const laml::Vec3& GetPosition() const {
             return position;
         }
 
         virtual void OnUpdate(double ts) override {
-            using namespace rh;
-            using namespace math;
+            using namespace rh::laml;
 
             if (BeingControlled) {
                 BENCHMARK_FUNCTION();
@@ -102,12 +101,12 @@ namespace rh {
                 if (grounded) {
                     // Raycast down to see if there is anything beneath us
                     // TODO: Cache the currect collisionID of the ground and check against that.
-                    RaycastResult rc = cWorld->Raycast(position + hull_offset, vec3(0, -1, 0), .6);
+                    RaycastResult rc = cWorld->Raycast(position + hull_offset, Vec3(0.0f, -1.0f, 0.0f), .6);
 
                     if (rc.colliderID == 0) {
                         // no ground beneath me
                         grounded = false;
-                        m_floorUp = vec3(0, 1, 0);
+                        m_floorUp = Vec3(0.0f, 1.0f, 0.0f);
                         m_floorID = 0;
                     }
                     else {
@@ -125,9 +124,9 @@ namespace rh {
                     res = cWorld->Shapecast_multi(collisionHullID, velocity);
 
                     if (res.numContacts) {
-                        vec3 p_target = position + velocity * ts;
-                        vec3 p = p_target;
-                        vec3 p_start = position;
+                        Vec3 p_target = position + velocity * static_cast<float>(ts);
+                        Vec3 p = p_target;
+                        Vec3 p_start = position;
                         ghostPosition = position + (velocity*res.planes[0].TOI);
 
                         for (iterations = 0; iterations < 8; iterations++) {
@@ -136,26 +135,26 @@ namespace rh {
                                 auto plane = &res.planes[n];
 
                                 if (plane->TOI < ts) {
-                                    vec3 contactPoint = plane->contact_point;
-                                    vec3 contactNormal = plane->contact_normal;
+                                    Vec3 contactPoint = plane->contact_point;
+                                    Vec3 contactNormal = plane->contact_normal;
 
-                                    vec3 p_t;
+                                    Vec3 p_t;
                                     if (n > 0) {
                                         p_t = p_start + velocity * (plane->TOI - res.planes[n - 1].TOI);
                                     }
                                     else {
                                         p_t = p_start + velocity * plane->TOI;
                                     }
-                                    vec3 body2contact = contactPoint - p_t;
+                                    Vec3 body2contact = contactPoint - p_t;
 
-                                    vec3 sv = ((p + body2contact) - contactPoint);
-                                    float s = ((p + body2contact) - contactPoint).dot(contactNormal);
+                                    Vec3 sv = ((p + body2contact) - contactPoint);
+                                    float s = dot((p + body2contact) - contactPoint, contactNormal);
                                     if (s < 0) {
                                         errorAcc -= s;
 
-                                        p -= (s - 1.0e-3f)*contactNormal;
+                                        p = p - (s - 1.0e-3f)*contactNormal;
 
-                                        if (acos(contactNormal.dot(vec3(0, 1, 0))) < (m_floorAngleLimit * d2r)) {
+                                        if (acos(dot(contactNormal, Vec3(0.0f, 1.0f, 0.0f))) < (m_floorAngleLimit * constants::deg2rad)) {
                                             grounded = true;
                                             velocity.y = 0;
 
@@ -181,7 +180,7 @@ namespace rh {
                         position = p;
                     }
                     else {
-                        position += velocity * ts;
+                        position = position + velocity * static_cast<float>(ts);
                         ghostPosition = position;
                     }
 
@@ -193,23 +192,20 @@ namespace rh {
                 }
                 else {
                     // Just use normal movement.
-                    position += velocity * ts;
+                    position = position + velocity * static_cast<float>(ts);
                     ghostPosition = position;
                 }
 
                 if (grounded) {
-                    velocity = vec3(0, 0, 0);
+                    velocity = Vec3(0.0f, 0.0f, 0.0f);
                 }
                 else {
                     //velocity = vec3(0, velocity.y, 0);
                 }
 
                 auto& transform = transformComponent->Transform;
-                math::CreateTransform(transform, position, yaw, pitch);
-                mat4 sc;
-                math::CreateScale(sc, scale);
-                transform = transform * sc;
-                math::Decompose(transform, Forward, Right, Up);
+                laml::transform::create_transform(transform, yaw, pitch, 0.0f, position, scale);
+                laml::transform::decompose(transform, Forward, Right, Up);
 
                 //transform = mat4();
                 //transform.translate(position);
@@ -234,13 +230,13 @@ namespace rh {
         float CameraDistance = 4;
 
         // State
-        math::vec3 Forward, Right, Up;
-        math::vec3 position;
-        math::vec3 velocity;
-        math::vec3 scale;
+        laml::Vec3 Forward, Right, Up;
+        laml::Vec3 position;
+        laml::Vec3 velocity;
+        laml::Vec3 scale;
         float yaw, pitch;
-        math::vec3 ghostPosition;
-        math::vec3 m_floorUp;
+        laml::Vec3 ghostPosition;
+        laml::Vec3 m_floorUp;
         rh::UID_t m_floorID = 0;
 
         // Flags
@@ -248,7 +244,7 @@ namespace rh {
         bool BeingControlled = true;
 
         // Parameters
-        math::vec3 hull_offset;
+        laml::Vec3 hull_offset;
         float moveSpeed = 7.0f;
         float jumpPower = 5.5f;
         float rotSpeed = 360.0f;

@@ -3,7 +3,7 @@
 #include "Engine\Resources\nbt\data.hpp"
 #include "Engine\Resources\nbt\tag.hpp"
 
-namespace nbt {
+namespace rh::nbt {
 	typedef std::pair<std::string, std::unique_ptr<tag_compound>> file_data;
 
 	file_data read_compound_raw(std::istream& is, endian::endian e = endian::default_endian);
@@ -25,6 +25,6 @@ namespace nbt {
 
     // Safe/guaranteed access of compounds
     std::string SafeGetString(const tag_compound& comp, const std::string& key, const std::string& default);
-    math::vec3 SafeGetVec3(const tag_compound& comp, const std::string& key, const math::vec3& default);
+    laml::Vec3 SafeGetVec3(const tag_compound& comp, const std::string& key, const laml::Vec3& default);
     float SafeGetFloat(const tag_compound& comp, const std::string& key, float default);
 }

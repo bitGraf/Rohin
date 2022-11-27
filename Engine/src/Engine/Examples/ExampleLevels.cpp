@@ -57,28 +57,31 @@ namespace rh {
 
         MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
         MeshCatalog::Register("tentacle", "Data/Models/output.mesh", FileFormat::MESH_File);
+        MeshCatalog::Register("mesh_cube", "Data/Models/cube.nbt", FileFormat::NBT_Basic);
 
         // Tentacle
         {
-            auto tentacle = scene->CreateGameObject("Tentacle");
-            auto mesh = MeshCatalog::Get("tentacle");
+            auto tentacle = scene->CreateGameObject("Player");
+            auto mesh = MeshCatalog::Get("mesh_cube");
+            mesh->GetSubmeshes()[0].Transform.c_24 += 0.5f;
             tentacle.AddComponent<MeshRendererComponent>(mesh);
             auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
-            math::CreateTranslation(trans, math::vec3(0, 1, 0));
+            laml::transform::create_transform_translate(trans, 0.0f, 1.0f, 0.0f);
         }
 
         // Player
         {
             auto player = scene->CreateGameObject("Player");
 
-            //player.AddComponent<MeshRendererComponent>(mesh);
+            auto mesh = MeshCatalog::Get("mesh_cube");
+            player.AddComponent<MeshRendererComponent>(mesh);
             player.AddComponent<rh::NativeScriptComponent>().Bind<PlayerController>(player);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
-            //math::CreateTranslation(trans, math::vec3(0, 1, 0));
-            math::CreateTransform(trans, math::mat3(), math::vec3(0, 1, 0), math::vec3(1, 1, 1));
+            //laml::transform::create_transform(trans, laml::Mat3(1.0f), laml::Vec3(0.0f, 1.0f, 0.0f), laml::Vec3(1.0f, 1.0f, 1.0f));
+            laml::transform::create_transform_translate(trans, laml::Vec3(0.0f, 1.0f, 0.0f));
 
-            UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
+            UID_t hull = cWorld.CreateNewCapsule(laml::Vec3(0, 1, 0) + laml::Vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
         }
 
@@ -97,24 +100,25 @@ namespace rh {
             platform.AddComponent<MeshRendererComponent>(rectMesh);
 
             auto& trans = platform.GetComponent<TransformComponent>().Transform;
-            math::CreateScale(trans, platformSize, 1, platformSize);
+            //math::CreateScale(trans, platformSize, 1, platformSize);
+            laml::transform::create_transform_scale(trans, platformSize, 1.0f, platformSize);
 
-            UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
+            UID_t floor = cWorld.CreateNewCubeHull(laml::Vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
         }
 
         // Lights
         {
             auto light = scene->CreateGameObject("Sun");
 
-            light.AddComponent<LightComponent>(LightType::Directional, math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
+            light.AddComponent<LightComponent>(LightType::Directional, laml::Vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
 
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            math::CreateRotationFromYawPitchRoll(trans, 45, -80, 0);
+            laml::transform::create_transform_rotation(trans, 45.0f, -80.0f, 0.0f);
         }
 
         // Camera
         {
-            math::vec2 viewportSize = {
+            laml::Vec2 viewportSize = {
                 (float)Application::Get().GetWindow().GetWidth(),
                 (float)Application::Get().GetWindow().GetHeight() };
 
@@ -127,10 +131,10 @@ namespace rh {
             Camera.AddComponent<rh::NativeScriptComponent>().Bind<CameraController>(Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
-            math::CreateTranslation(trans, math::vec3(0, 4, 5));
-            math::mat4 rotM;
-            math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
-            trans *= rotM;
+            laml::transform::create_transform_translate(trans, 0.0f, 4.0f, 5.0f);
+            laml::Mat4 rotM;
+            laml::transform::create_transform_rotation(rotM, 0.0f, -45.0f, 0.0f);
+            trans = laml::mul(trans, rotM);
         }
 
         // Sound stuff
@@ -161,10 +165,10 @@ namespace rh {
             player.AddComponent<rh::NativeScriptComponent>().Bind<PlayerController>(player);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
-            //math::CreateTranslation(trans, math::vec3(0, 1, 0));
-            math::CreateTransform(trans, math::mat3(), math::vec3(0, 1, 0), math::vec3(1, 1, 1));
+            //math::CreateTranslation(trans, laml::Vec3(0, 1, 0));
+            math::CreateTransform(trans, laml::Mat3(), laml::Vec3(0, 1, 0), laml::Vec3(1, 1, 1));
 
-            UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
+            UID_t hull = cWorld.CreateNewCapsule(laml::Vec3(0, 1, 0) + laml::Vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
         }
 
@@ -185,14 +189,14 @@ namespace rh {
             auto& trans = platform.GetComponent<TransformComponent>().Transform;
             math::CreateScale(trans, platformSize, 1, platformSize);
 
-            UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
+            UID_t floor = cWorld.CreateNewCubeHull(laml::Vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
         }
 
         // Lights
         {
             auto light = scene->CreateGameObject("Sun");
 
-            light.AddComponent<LightComponent>(LightType::Directional, math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
+            light.AddComponent<LightComponent>(LightType::Directional, laml::Vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
 
             auto& trans = light.GetComponent<TransformComponent>().Transform;
             math::CreateRotationFromYawPitchRoll(trans, 45, -80, 0);
@@ -200,7 +204,7 @@ namespace rh {
 
         // Camera
         {
-            math::vec2 viewportSize = {
+            laml::Vec2 viewportSize = {
                 (float)Application::Get().GetWindow().GetWidth(),
                 (float)Application::Get().GetWindow().GetHeight() };
 
@@ -213,8 +217,8 @@ namespace rh {
             Camera.AddComponent<rh::NativeScriptComponent>().Bind<CameraController>(Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
-            math::CreateTranslation(trans, math::vec3(0, 4, 5));
-            math::mat4 rotM;
+            math::CreateTranslation(trans, laml::Vec3(0, 4, 5));
+            laml::Mat4 rotM;
             math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
             trans *= rotM;
         }
@@ -237,12 +241,12 @@ namespace rh {
             player.AddComponent<MeshRendererComponent>(mesh);
             player.AddComponent<rh::NativeScriptComponent>().Bind<PlayerController>(player);
 
-            math::CreateRotationFromYawPitchRoll(mesh->GetSubmeshes()[0].Transform, 90, 0, 0);
+            laml::transform::create_transform_rotation(mesh->GetSubmeshes()[0].Transform, 90.0f, 0.0f, 0.0f);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
-            math::CreateTranslation(trans, math::vec3(-8, 1, 12));
+            laml::transform::create_transform_translate(trans, -8.0f, 1.0f, 12.0f);
 
-            UID_t hull = cWorld.CreateNewCapsule(math::vec3(-8, 1, 12) + math::vec3(0, .5, 0), 1, 0.5f);
+            UID_t hull = cWorld.CreateNewCapsule(laml::Vec3(-8, 1, 12) + laml::Vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
         }
 
@@ -260,9 +264,9 @@ namespace rh {
             auto mesh = MeshCatalog::Get(m);
             go.AddComponent<MeshRendererComponent>(mesh);
         }
-        UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -1.5f, 0), 40, 3, 40);
+        UID_t floor = cWorld.CreateNewCubeHull(laml::Vec3(0, -1.5f, 0), 40, 3, 40);
 
-        std::vector<math::vec3> level_point_lights{
+        std::vector<laml::Vec3> level_point_lights{
             {-8.0f, 3, 12.0f},
             {-10.0f, 3, 10.0f},
             {-14.75f, 3, 6.25f},
@@ -279,20 +283,20 @@ namespace rh {
         int n = 0;
         for (const auto& light_pos : level_point_lights) {
             auto light = scene->CreateGameObject("Light " + std::to_string(n));
-            light.AddComponent<LightComponent>(LightType::Point, math::vec3(1, 1, 1), 3, 0, 0);
+            light.AddComponent<LightComponent>(LightType::Point, laml::Vec3(1, 1, 1), 3, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            math::CreateTranslation(trans, light_pos);
+            laml::transform::create_transform_translate(trans, light_pos);
         }
 
         { // Lights
             auto light = scene->CreateGameObject("Sun");
-            light.AddComponent<LightComponent>(LightType::Directional, math::vec3(.8f, .95f, .9f), 5, 0, 0);
+            light.AddComponent<LightComponent>(LightType::Directional, laml::Vec3(.8f, .95f, .9f), 5, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            math::CreateRotationFromYawPitchRoll(trans, 15, -80, 0);
+            laml::transform::create_transform_rotation(trans, 15.0f, -80.0f, 0.0f);
         }
 
         { // Camera
-            math::vec2 viewportSize = {
+            laml::Vec2 viewportSize = {
                 (float)Application::Get().GetWindow().GetWidth(),
                 (float)Application::Get().GetWindow().GetHeight() };
 
@@ -303,10 +307,10 @@ namespace rh {
             Camera.AddComponent<NativeScriptComponent>().Bind<CameraController>(Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
-            trans = math::mat4();
-            math::CreateTranslation(trans, math::vec3(0, 4, 5));
-            math::mat4 rotM;
-            math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
+            laml::transform::create_transform_translate(trans, 0.0f, 4.0f, 5.0f);
+            laml::Mat4 rotM;
+            laml::transform::create_transform_rotation(rotM, 0.0f, -45.0f, 0.0f);
+            trans = laml::mul(trans, rotM);
         }
     }
 
@@ -321,12 +325,12 @@ namespace rh {
             player.AddComponent<MeshRendererComponent>(mesh);
             player.AddComponent<NativeScriptComponent>().Bind<PlayerController>(player);
 
-            math::CreateRotationFromYawPitch(mesh->GetSubmeshes()[0].Transform, 90.0f, 0.0f);
+            laml::transform::create_transform_rotation(mesh->GetSubmeshes()[0].Transform, 90.0f, 0.0f, 0.0f);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
-            math::CreateTranslation(trans, math::vec3(0, 1, 0));
+            laml::transform::create_transform_translate(trans, 0.0f, 1.0f, 0.0f);
 
-            UID_t hull = cWorld.CreateNewCapsule(math::vec3(0, 1, 0) + math::vec3(0, .5, 0), 1, 0.5f);
+            UID_t hull = cWorld.CreateNewCapsule(laml::Vec3(0, 1, 0) + laml::Vec3(0, .5, 0), 1, 0.5f);
             player.AddComponent<ColliderComponent>(hull);
         }
         { // Platform
@@ -342,21 +346,20 @@ namespace rh {
             platform.AddComponent<MeshRendererComponent>(rectMesh);
 
             auto& trans = platform.GetComponent<TransformComponent>().Transform;
-            math::CreateScale(trans, platformSize, 1, platformSize);
-            math::mat4 translate;
+            laml::transform::create_transform_scale(trans, platformSize, 1.0f, platformSize);
 
-            UID_t floor = cWorld.CreateNewCubeHull(math::vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
+            UID_t floor = cWorld.CreateNewCubeHull(laml::Vec3(0, -platformThickness / 2.0f, 0), 2 * platformSize, platformThickness, 2 * platformSize);
         }
 
         { // Lights
             auto light = scene->CreateGameObject("Sun");
-            light.AddComponent<LightComponent>(LightType::Directional, math::vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
+            light.AddComponent<LightComponent>(LightType::Directional, laml::Vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            math::CreateRotationFromYawPitchRoll(trans, 45, -80, 0);
+            laml::transform::create_transform_rotation(trans, 45.0f, -80.0f, 0.0f);
         }
 
         { // Camera
-            math::vec2 viewportSize = {
+            laml::Vec2 viewportSize = {
                 (float)Application::Get().GetWindow().GetWidth(),
                 (float)Application::Get().GetWindow().GetHeight() };
 
@@ -367,32 +370,27 @@ namespace rh {
             Camera.AddComponent<NativeScriptComponent>().Bind<CameraController>(Camera);
 
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
-            math::CreateTranslation(trans, math::vec3(0, 4, 5));
-            math::mat4 rotM;
-            math::CreateRotationFromYawPitchRoll(rotM, 0, -45, 0);
-            trans *= rotM;
+            laml::transform::create_transform_translate(trans, 0.0f, 4.0f, 5.0f);
+            laml::Mat4 rotM;
+            laml::transform::create_transform_rotation(rotM, 0.0f, -45.0f, 0.0f);
+            trans = laml::mul(trans, rotM);
         }
 
         // Ramps at various angles
-        math::mat3 rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 0, -5), 10, 1, 3))
-            ->rotation;
-        math::CreateRotationFromYawPitchRoll(rot, 0, 10, 0);
+        laml::Mat3& rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(laml::Vec3(5, 0, -5), 10, 1, 3))->rotation;
+        laml::transform::create_transform_rotation(rot, 0.0f, 10.0f, 0.0f);
 
-        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 1, -2), 10, 1, 3))
-            ->rotation;
-        math::CreateRotationFromYawPitchRoll(rot, 0, 20, 0);
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(laml::Vec3(5, 1, -2), 10, 1, 3))->rotation;
+        laml::transform::create_transform_rotation(rot, 0.0f, 20.0f, 0.0f);
 
-        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 2, 1), 10, 1, 3))
-            ->rotation;
-        math::CreateRotationFromYawPitchRoll(rot, 0, 30, 0);
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(laml::Vec3(5, 2, 1), 10, 1, 3))->rotation;
+        laml::transform::create_transform_rotation(rot, 0.0f, 30.0f, 0.0f);
 
-        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 3, 4), 10, 1, 3))
-            ->rotation;
-        math::CreateRotationFromYawPitchRoll(rot, 0, 40, 0);
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(laml::Vec3(5, 3, 4), 10, 1, 3))->rotation;
+        laml::transform::create_transform_rotation(rot, 0.0f, 40.0f, 0.0f);
 
-        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(math::vec3(5, 3.5, 7), 10, 1, 3))
-            ->rotation;
-        math::CreateRotationFromYawPitchRoll(rot, 0, 50, 0);
+        rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(laml::Vec3(5, 3.5, 7), 10, 1, 3))->rotation;
+        laml::transform::create_transform_rotation(rot, 0.0f, 50.0f, 0.0f);
 
         // Sound stuff
         {

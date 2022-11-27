@@ -152,7 +152,7 @@ namespace rh {
 
         // Find Main Camera
         Camera* mainCamera = nullptr;
-        math::mat4* mainTransform = nullptr;
+        laml::Mat4* mainTransform = nullptr;
         {
             BENCHMARK_SCOPE("Find main camera");
             auto group = m_Registry.group<CameraComponent>(entt::get<TransformComponent>);
@@ -185,7 +185,7 @@ namespace rh {
                     scenePointLights[numPointLight].color = light.Color;
                     scenePointLights[numPointLight].strength = light.Strength;
                     scenePointLights[numPointLight].type = light.Type;
-                    scenePointLights[numPointLight].position = trans.Transform.column4.asVec3();
+                    scenePointLights[numPointLight].position = laml::Vec3(trans.Transform.c_14, trans.Transform.c_24, trans.Transform.c_34);
                     numPointLight++;
                     break;
                 case LightType::Spot:
@@ -193,8 +193,8 @@ namespace rh {
                     sceneSpotLights[numSpotLight].color = light.Color;
                     sceneSpotLights[numSpotLight].strength = light.Strength;
                     sceneSpotLights[numSpotLight].type = light.Type;
-                    sceneSpotLights[numSpotLight].position = trans.Transform.column4.asVec3();
-                    sceneSpotLights[numSpotLight].direction = -trans.Transform.column3.asVec3();
+                    sceneSpotLights[numSpotLight].position = laml::Vec3(trans.Transform.c_14, trans.Transform.c_24, trans.Transform.c_34);
+                    sceneSpotLights[numSpotLight].direction = laml::Vec3(-trans.Transform.c_13, -trans.Transform.c_23, -trans.Transform.c_33);
                     sceneSpotLights[numSpotLight].inner = light.InnerCutoff;
                     sceneSpotLights[numSpotLight].outer = light.OuterCutoff;
                     numSpotLight++;
@@ -203,8 +203,8 @@ namespace rh {
                     sceneSun.color = light.Color;
                     sceneSun.strength = light.Strength;
                     sceneSun.type = light.Type;
-                    sceneSun.position = trans.Transform.column4.asVec3();
-                    sceneSun.direction = -trans.Transform.column3.asVec3(); // sun points in entities -z direction (or whatever the camera looks in...)
+                    sceneSun.position = laml::Vec3(trans.Transform.c_14, trans.Transform.c_24, trans.Transform.c_34);
+                    sceneSun.direction = laml::Vec3(-trans.Transform.c_13, -trans.Transform.c_23, -trans.Transform.c_33); // sun points in entities -z direction (or whatever the camera looks in...)
                     break;
                 }
             }
@@ -232,14 +232,14 @@ namespace rh {
             // Render collision hulls
             if (m_showCollisionHulls) {
                 for (const auto& hull : m_cWorld.m_static) {
-                    math::mat4 transform;
-                    math::CreateTransform(transform, hull.rotation, hull.position);
-                    Renderer::Submit(hull.wireframe, transform, math::vec3(1, .05, .1));
+                    laml::Mat4 transform;
+                    laml::transform::create_transform(transform, hull.rotation, hull.position);
+                    Renderer::Submit(hull.wireframe, transform, laml::Vec3(1, .05, .1));
                 }
                 for (const auto& hull : m_cWorld.m_dynamic) {
-                    math::mat4 transform;
-                    math::CreateTransform(transform, hull.rotation, hull.position);
-                    Renderer::Submit(hull.wireframe, transform, math::vec3(.1, .05, 1));
+                    laml::Mat4 transform;
+                    laml::transform::create_transform(transform, hull.rotation, hull.position);
+                    Renderer::Submit(hull.wireframe, transform, laml::Vec3(.1, .05, 1));
                 }
             }
             Renderer::EndSobelPass();
@@ -248,28 +248,28 @@ namespace rh {
 
             Renderer::RenderDebugUI();
             if (m_showEntityLocations) { // TODO: rename this/come up with less bad solution for these things
-                TextRenderer::SubmitText("Showing entity locations", 5, 40, math::vec3(.7, .1, .5));
+                TextRenderer::SubmitText("Showing entity locations", 5, 40, laml::Vec3(.7, .1, .5));
             }
 
             // draw coordinate frames
-            Renderer::SubmitLine(math::vec3(), math::vec3(1, 0, 0), math::vec4(1, 0, 0, 1));
-            Renderer::SubmitLine(math::vec3(), math::vec3(0, 1, 0), math::vec4(0, 1, 0, 1));
-            Renderer::SubmitLine(math::vec3(), math::vec3(0, 0, 1), math::vec4(0, 0, 1, 1));
+            Renderer::SubmitLine(laml::Vec3(), laml::Vec3(1, 0, 0), laml::Vec4(1, 0, 0, 1));
+            Renderer::SubmitLine(laml::Vec3(), laml::Vec3(0, 1, 0), laml::Vec4(0, 1, 0, 1));
+            Renderer::SubmitLine(laml::Vec3(), laml::Vec3(0, 0, 1), laml::Vec4(0, 0, 1, 1));
 
             auto axes_view = m_Registry.view<TransformComponent>();
             for (auto entity : axes_view) {
                 auto& transform = axes_view.get<TransformComponent>(entity);
 
-                math::vec3 pos = transform.Transform.column4.asVec3();
-                math::vec3 forward, right, up;
-                math::Decompose(transform.Transform, forward, right, up);
+                laml::Vec3 pos = laml::Vec3(transform.Transform.c_14, transform.Transform.c_24, transform.Transform.c_34);
+                laml::Vec3 forward, right, up;
+                laml::transform::decompose(transform.Transform, forward, right, up);
 
                 // right   +X
                 // up      +Y
                 // forward -Z
-                Renderer::SubmitLine(pos, pos+right, math::vec4(1, 0, 0, 1));
-                Renderer::SubmitLine(pos, pos+up, math::vec4(0, 1, 0, 1));
-                Renderer::SubmitLine(pos, pos+forward, math::vec4(0, 0, 1, 1));
+                Renderer::SubmitLine(pos, pos+right, laml::Vec4(1, 0, 0, 1));
+                Renderer::SubmitLine(pos, pos+up, laml::Vec4(0, 1, 0, 1));
+                Renderer::SubmitLine(pos, pos+forward, laml::Vec4(0, 0, 1, 1));
             }
 
             // Draw skeletons
@@ -280,7 +280,7 @@ namespace rh {
                     auto& tag = m_Registry.get<TagComponent>(entity);
                     
                     if (mesh.MeshPtr->HasAnimations()) {
-                        Renderer::DrawSkeletonDebug(tag, transform, mesh, math::vec3(.6f, .1f, .9f));
+                        Renderer::DrawSkeletonDebug(tag, transform, mesh, laml::Vec3(.6f, .1f, .9f));
                     }
                 }
             }
@@ -289,8 +289,8 @@ namespace rh {
             for (auto entity : group_trans) {
                 const auto& tag = group_trans.get<TagComponent>(entity);
                 const auto& transform = group_trans.get<TransformComponent>(entity);
-                math::vec3 pos = transform.Transform.column4.asVec3();
-                Renderer::Draw3DText(tag.Name, pos, math::vec3(.7f, .7f, 1.0f));
+                laml::Vec3 pos = laml::Vec3(transform.Transform.c_14, transform.Transform.c_24, transform.Transform.c_34);
+                Renderer::Draw3DText(tag.Name, pos, laml::Vec3(.7f, .7f, 1.0f));
             }
         }
         

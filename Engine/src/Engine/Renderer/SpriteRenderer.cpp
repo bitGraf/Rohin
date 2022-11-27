@@ -12,7 +12,7 @@ namespace rh {
 
         Ref<VertexArray> Quad;
         Ref<VertexArray> Line;
-        math::mat4 orthoMat;
+        laml::Mat4 orthoMat;
     };
 
     static SpriteRendererData s_SpriteData;
@@ -25,7 +25,7 @@ namespace rh {
         auto line2DShader = GetShaderLibrary()->Load("Data/Shaders/Line2D.glsl");
 
         // create font-rendering globals
-        math::CreateOrthoProjection(s_SpriteData.orthoMat, 0, 1280, 720, 0, 1, -1);
+        laml::transform::create_projection_orthographic(s_SpriteData.orthoMat, 0.0f, 1280.0f, 720.0f, 0.0f, 1.0f, -1.0f);
 
         // initialize texture shader values
         textShader->Bind();
@@ -39,15 +39,15 @@ namespace rh {
         {
             struct _vertex
             {
-                math::vec2 Position;
+                laml::Vec2 Position;
             };
 
             _vertex* data = new _vertex[4];
 
-            data[0].Position = math::vec2(0, 1);
-            data[1].Position = math::vec2(0, 0);
-            data[2].Position = math::vec2(1, 0);
-            data[3].Position = math::vec2(1, 1);
+            data[0].Position = laml::Vec2(0, 1);
+            data[1].Position = laml::Vec2(0, 0);
+            data[2].Position = laml::Vec2(1, 0);
+            data[3].Position = laml::Vec2(1, 1);
 
             u32 indices[6] = { 0, 2, 1, 0, 3, 2 };
 
@@ -97,7 +97,7 @@ namespace rh {
 
     void SpriteRenderer::OnWindowResize(uint32_t width, uint32_t height)
     {
-        math::CreateOrthoProjection(s_SpriteData.orthoMat, 0, width, height, 0, -1, 1);
+        laml::transform::create_projection_orthographic(s_SpriteData.orthoMat, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, -1.0f, 1.0f);
     }
 
     const std::unique_ptr<ShaderLibrary>& SpriteRenderer::GetShaderLibrary() {
@@ -164,8 +164,8 @@ namespace rh {
         auto[xoff, yoff] = GetTextureOffset(texWidth, texHeight, anchor);
         
         // defaults
-        math::vec4 _dst{ texWidth, texHeight, xoff, yoff };
-        math::vec4 _src{ 1, 1, 0, 0 };
+        laml::Vec4 _dst{ texWidth, texHeight, xoff, yoff };
+        laml::Vec4 _src{ 1.0f, 1.0f, 0.0f, 0.0f };
 
         // if rects are passed in
         if (dst) {
@@ -188,7 +188,7 @@ namespace rh {
         shader->SetVec4("r_transform", _dst);
         shader->SetVec4("r_transformUV", _src);
         shader->SetMat4("r_orthoProjection", s_SpriteData.orthoMat);
-        shader->SetVec3("r_textColor", math::vec3(1, 1, 1));
+        shader->SetVec3("r_textColor", laml::Vec3(1, 1, 1));
 
         tex->Bind(0);
         s_SpriteData.Quad->Bind();
@@ -198,12 +198,12 @@ namespace rh {
         //RenderCommand::EnableDepthTest();
     }
 
-    void SpriteRenderer::SubmitLine(u32 screenX0, u32 screenY0, u32 screenX1, u32 screenY1, math::vec4 color) {
+    void SpriteRenderer::SubmitLine(u32 screenX0, u32 screenY0, u32 screenX1, u32 screenY1, laml::Vec4 color) {
         auto shader = s_SpriteData.ShaderLibrary->Get("Line2D");
         shader->Bind();
 
         // defaults
-        math::vec2 verts[2] { { (f32)screenX0, (f32)screenY0}, {(f32)screenX1, (f32)screenY1 } };
+        laml::Vec2 verts[2] { { (f32)screenX0, (f32)screenY0}, {(f32)screenX1, (f32)screenY1 } };
 
         shader->SetVec2("r_verts[0]", verts[0]);
         shader->SetVec2("r_verts[1]", verts[1]);

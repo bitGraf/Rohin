@@ -51,7 +51,7 @@ void Level::OnUpdate(rh::Timestep ts) {
     CheckViewportSize();
 
     // Setup Render
-    rh::RenderCommand::SetClearColor(math::vec4(.1, .1, .1, 1));
+    rh::RenderCommand::SetClearColor(rh::laml::Vec4(.1, .1, .1, 1));
     rh::RenderCommand::Clear();
 
     // draw 3D scene
@@ -59,7 +59,7 @@ void Level::OnUpdate(rh::Timestep ts) {
 
     // draw level name
     if (m_levelTime < 5.0f) {
-        rh::TextRenderer::SubmitText("Level: " + Name, m_ViewportSize.x / 2.0f, 20.0f, math::vec3(.25f, .45f, .9f), TextAlignment::ALIGN_TOP_MID);
+        rh::TextRenderer::SubmitText("Level: " + Name, m_ViewportSize.x / 2.0f, 20.0f, rh::laml::Vec3(.25f, .45f, .9f), rh::TextAlignment::ALIGN_TOP_MID);
     }
 
     m_levelTime += ts;
@@ -116,6 +116,20 @@ bool Level::OnKeyPressedEvent(rh::KeyPressedEvent& e) {
         return true;
     }
 
+    if (e.GetKeyCode() == KEY_CODE_SPACE) {
+        auto player = m_3DScene.FindByName("Player");
+        if (player) {
+            auto script = player.GetComponent<rh::NativeScriptComponent>().GetScript<rh::PlayerController>();
+            auto pos_script = script->GetPosition();
+            auto transform = player.GetComponent<rh::TransformComponent>().Transform;
+            auto pos_trans = rh::laml::Vec3(transform.c_14, transform.c_24, transform.c_34);
+
+            LOG_DEBUG("Player scipt position: {0}", pos_script);
+            LOG_DEBUG("Player trans position: {0}", pos_trans);
+        }
+        return true;
+    }
+
     if (e.GetKeyCode() == KEY_CODE_O) {
         rh::Renderer::NextOutputMode();
         return true;
@@ -162,13 +176,13 @@ void Level::OnGuiRender() {
 }
 
 void Level::CheckViewportSize() {
-    static u32 specWidth = -1;
-    static u32 specHeight = -1;
+    static rh::u32 specWidth = -1;
+    static rh::u32 specHeight = -1;
 
     if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
         (specWidth != m_ViewportSize.x || specHeight != m_ViewportSize.y)) {
-        specWidth = (u32)m_ViewportSize.x;
-        specHeight = (u32)m_ViewportSize.y;
+        specWidth = (rh::u32)m_ViewportSize.x;
+        specHeight = (rh::u32)m_ViewportSize.y;
         ENGINE_LOG_INFO("Render resolution: {0} x {1}", specWidth, specHeight);
         rh::TextRenderer::OnWindowResize(specWidth, specHeight);
         rh::Renderer::OnWindowResize(specWidth, specHeight);

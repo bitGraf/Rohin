@@ -15,23 +15,14 @@ add_subdirectory(deps/math_lib)
 
 add_library(${ENGINE_NAME} STATIC)
 
-set(CORE_MATH_SRC
-    # src/Engine/Core/Math
-    src/Engine/Core/Math/rMatrix.cpp
-    src/Engine/Core/Math/rQuaternion.cpp
-    src/Engine/Core/Math/rTransform.cpp
-    src/Engine/Core/Math/rVector.cpp
-    src/Engine/Core/Math/Testing.cpp
-)
 set(CORE_SRC 
     # src/Engine/Core
     src/Engine/Core/Application.cpp
     src/Engine/Core/Application.hpp
+    src/Engine/Core/Assert.hpp
     src/Engine/Core/Base.hpp
     src/Engine/Core/DataFile.hpp
     src/Engine/Core/DataTypes.hpp
-    src/Engine/Core/GameMath.cpp
-    src/Engine/Core/GameMath.hpp
     src/Engine/Core/Input.hpp
     src/Engine/Core/KeyCodes.hpp
     src/Engine/Core/Logger.cpp
@@ -200,6 +191,7 @@ set(ENGINE_SRC
     src/Engine/Benchmark.hpp
     src/Engine/Buffer.hpp
     src/Engine/EntryPoint.h
+    src/Engine/laml_impl.cpp
 )
 set(ALL_SRC
     # src/Engine
@@ -209,7 +201,6 @@ set(ALL_SRC
     ${ENGINE_SRC}
     ${COLLISION_SRC}
     ${CORE_SRC}
-    ${CORE_MATH_SRC}
     ${EVENT_SRC}
     ${EXAMPLES_SRC}
     ${GAMEOBJECT_SRC}
@@ -221,7 +212,7 @@ set(ALL_SRC
     ${RESOURCES_SRC}
     ${RESOURCES_NBT_SRC}
     ${SCENE_SRC}
-    ${SCIPTS_SRC}
+    ${SCRIPTS_SRC}
     ${SOUND_SRC}
 )
 
@@ -231,7 +222,6 @@ source_group(Src FILES src/Engine.hpp src/enpch.cpp src/enpch.hpp)
 source_group(Src\\Engine FILES ${ENGINE_SRC})
 source_group(Src\\Engine\\Collision FILES ${COLLISION_SRC})
 source_group(Src\\Engine\\Core FILES ${CORE_SRC})
-source_group(Src\\Engine\\Core\\Math FILES ${CORE_MATH_SRC})
 source_group(Src\\Engine\\Event FILES ${EVENT_SRC})
 source_group(Src\\Engine\\Examples FILES ${EXAMPLES_SRC})
 source_group(Src\\Engine\\GameObject FILES ${GAMEOBJECT_SRC})
@@ -244,7 +234,7 @@ source_group(Src\\Engine\\Renderer FILES ${RENDERER_SRC})
 source_group(Src\\Engine\\Resources FILES ${RESOURCES_SRC})
 source_group(Src\\Engine\\Resources\\nbt FILES ${RESOURCES_NBT_SRC})
 source_group(Src\\Engine\\Scene FILES ${SCENE_SRC})
-source_group(Src\\Engine\\Scripts FILES ${SCIPTS_SRC})
+source_group(Src\\Engine\\Scripts FILES ${SCRIPTS_SRC})
 source_group(Src\\Engine\\Sound FILES ${SOUND_SRC})
 
 target_link_libraries(${ENGINE_NAME} PUBLIC spdlog imgui OpenAL_Soft stb OpenAL32 opengl32 laml)

@@ -16,12 +16,12 @@ public:
 private:
     void CheckViewportSize();
     bool OnKeyPressedEvent(rh::KeyPressedEvent& e);
-    math::vec2 m_ViewportSize;
+    rh::laml::Vec2 m_ViewportSize;
 
 private:
     void GotoLevel(const std::string& levelName);
 
     const std::vector<std::string>& GetCurrentMenu();
-    u8 currentSelection = 0;
-    u8 currentMenuState = 0;
+    rh::u8 currentSelection = 0;
+    rh::u8 currentMenuState = 0;
 };

@@ -1,19 +1,9 @@
 #pragma once
 
 #include <fstream>
+#include "Engine/Core/Base.hpp"
 
-// forward declare math primitives
-namespace math { 
-    class vec2; 
-    class vec3;
-    class vec4;
-
-    class mat2;
-    class mat3;
-    class mat4;
-}
-
-namespace endian {
+namespace rh::endian {
 	enum endian { little, big };
 	constexpr endian default_endian = endian::big;
 
@@ -28,12 +18,12 @@ namespace endian {
 	void write_little(std::ostream& os, int64_t x);
 	void write_little(std::ostream& os, float x);
 	void write_little(std::ostream& os, double x);
-    void write_little(std::ostream& os, math::vec2 x);
-    void write_little(std::ostream& os, math::vec3 x);
-    void write_little(std::ostream& os, math::vec4 x);
-    void write_little(std::ostream& os, math::mat2 x);
-    void write_little(std::ostream& os, math::mat3 x);
-    void write_little(std::ostream& os, math::mat4 x);
+    void write_little(std::ostream& os, laml::Vec2 x);
+    void write_little(std::ostream& os, laml::Vec3 x);
+    void write_little(std::ostream& os, laml::Vec4 x);
+    void write_little(std::ostream& os, laml::Mat2 x);
+    void write_little(std::ostream& os, laml::Mat3 x);
+    void write_little(std::ostream& os, laml::Mat4 x);
 
 	///Writes number to stream in big endian
 	void write_big(std::ostream& os, uint8_t x);
@@ -46,12 +36,12 @@ namespace endian {
 	void write_big(std::ostream& os, int64_t x);
 	void write_big(std::ostream& os, float x);
 	void write_big(std::ostream& os, double x);
-    void write_big(std::ostream& os, math::vec2 x);
-    void write_big(std::ostream& os, math::vec3 x);
-    void write_big(std::ostream& os, math::vec4 x);
-    void write_big(std::ostream& os, math::mat2 x);
-    void write_big(std::ostream& os, math::mat3 x);
-    void write_big(std::ostream& os, math::mat4 x);
+    void write_big(std::ostream& os, laml::Vec2 x);
+    void write_big(std::ostream& os, laml::Vec3 x);
+    void write_big(std::ostream& os, laml::Vec4 x);
+    void write_big(std::ostream& os, laml::Mat2 x);
+    void write_big(std::ostream& os, laml::Mat3 x);
+    void write_big(std::ostream& os, laml::Mat4 x);
 
 	///Writes number to stream in specified endian
 	template<class T>
@@ -74,12 +64,12 @@ namespace endian {
 	void read_little(std::istream& is, int64_t& x);
 	void read_little(std::istream& is, float& x);
 	void read_little(std::istream& is, double& x);
-    void read_little(std::istream& is, math::vec2& x);
-    void read_little(std::istream& is, math::vec3& x);
-    void read_little(std::istream& is, math::vec4& x);
-    void read_little(std::istream& is, math::mat2& x);
-    void read_little(std::istream& is, math::mat3& x);
-    void read_little(std::istream& is, math::mat4& x);
+    void read_little(std::istream& is, laml::Vec2& x);
+    void read_little(std::istream& is, laml::Vec3& x);
+    void read_little(std::istream& is, laml::Vec4& x);
+    void read_little(std::istream& is, laml::Mat2& x);
+    void read_little(std::istream& is, laml::Mat3& x);
+    void read_little(std::istream& is, laml::Mat4& x);
 
 	///Reads number from stream in big endian
 	void read_big(std::istream& is, uint8_t& x);
@@ -92,12 +82,12 @@ namespace endian {
 	void read_big(std::istream& is, int64_t& x);
 	void read_big(std::istream& is, float& x);
 	void read_big(std::istream& is, double& x);
-    void read_big(std::istream& is, math::vec2& x);
-    void read_big(std::istream& is, math::vec3& x);
-    void read_big(std::istream& is, math::vec4& x);
-    void read_big(std::istream& is, math::mat2& x);
-    void read_big(std::istream& is, math::mat3& x);
-    void read_big(std::istream& is, math::mat4& x);
+    void read_big(std::istream& is, laml::Vec2& x);
+    void read_big(std::istream& is, laml::Vec3& x);
+    void read_big(std::istream& is, laml::Vec4& x);
+    void read_big(std::istream& is, laml::Mat2& x);
+    void read_big(std::istream& is, laml::Mat3& x);
+    void read_big(std::istream& is, laml::Mat4& x);
 
 	///Reads number from stream in specified endian
 	template<class T>
