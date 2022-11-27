@@ -57,11 +57,13 @@ namespace rh {
 
         MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
         MeshCatalog::Register("tentacle", "Data/Models/output.mesh", FileFormat::MESH_File);
+        MeshCatalog::Register("mesh_cube", "Data/Models/cube.nbt", FileFormat::NBT_Basic);
 
         // Tentacle
         {
-            auto tentacle = scene->CreateGameObject("Tentacle");
-            auto mesh = MeshCatalog::Get("tentacle");
+            auto tentacle = scene->CreateGameObject("Player");
+            auto mesh = MeshCatalog::Get("mesh_cube");
+            mesh->GetSubmeshes()[0].Transform.c_24 += 0.5f;
             tentacle.AddComponent<MeshRendererComponent>(mesh);
             auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
             laml::transform::create_transform_translate(trans, 0.0f, 1.0f, 0.0f);
@@ -71,7 +73,8 @@ namespace rh {
         {
             auto player = scene->CreateGameObject("Player");
 
-            //player.AddComponent<MeshRendererComponent>(mesh);
+            auto mesh = MeshCatalog::Get("mesh_cube");
+            player.AddComponent<MeshRendererComponent>(mesh);
             player.AddComponent<rh::NativeScriptComponent>().Bind<PlayerController>(player);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
@@ -110,7 +113,7 @@ namespace rh {
             light.AddComponent<LightComponent>(LightType::Directional, laml::Vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
 
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            laml::transform::create_transform_rotation_yaw_pitch_roll(trans, 45.0f, -80.0f, 0.0f);
+            laml::transform::create_transform_rotation(trans, 45.0f, -80.0f, 0.0f);
         }
 
         // Camera
@@ -130,7 +133,7 @@ namespace rh {
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
             laml::transform::create_transform_translate(trans, 0.0f, 4.0f, 5.0f);
             laml::Mat4 rotM;
-            laml::transform::create_transform_rotation_yaw_pitch_roll(rotM, 0.0f, -45.0f, 0.0f);
+            laml::transform::create_transform_rotation(rotM, 0.0f, -45.0f, 0.0f);
             trans = laml::mul(trans, rotM);
         }
 
@@ -238,7 +241,7 @@ namespace rh {
             player.AddComponent<MeshRendererComponent>(mesh);
             player.AddComponent<rh::NativeScriptComponent>().Bind<PlayerController>(player);
 
-            laml::transform::create_transform_rotation_yaw_pitch_roll(mesh->GetSubmeshes()[0].Transform, 90.0f, 0.0f, 0.0f);
+            laml::transform::create_transform_rotation(mesh->GetSubmeshes()[0].Transform, 90.0f, 0.0f, 0.0f);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
             laml::transform::create_transform_translate(trans, -8.0f, 1.0f, 12.0f);
@@ -289,7 +292,7 @@ namespace rh {
             auto light = scene->CreateGameObject("Sun");
             light.AddComponent<LightComponent>(LightType::Directional, laml::Vec3(.8f, .95f, .9f), 5, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            laml::transform::create_transform_rotation_yaw_pitch_roll(trans, 15.0f, -80.0f, 0.0f);
+            laml::transform::create_transform_rotation(trans, 15.0f, -80.0f, 0.0f);
         }
 
         { // Camera
@@ -306,7 +309,7 @@ namespace rh {
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
             laml::transform::create_transform_translate(trans, 0.0f, 4.0f, 5.0f);
             laml::Mat4 rotM;
-            laml::transform::create_transform_rotation_yaw_pitch_roll(rotM, 0.0f, -45.0f, 0.0f);
+            laml::transform::create_transform_rotation(rotM, 0.0f, -45.0f, 0.0f);
             trans = laml::mul(trans, rotM);
         }
     }
@@ -322,7 +325,7 @@ namespace rh {
             player.AddComponent<MeshRendererComponent>(mesh);
             player.AddComponent<NativeScriptComponent>().Bind<PlayerController>(player);
 
-            laml::transform::create_transform_rotation_yaw_pitch_roll(mesh->GetSubmeshes()[0].Transform, 90.0f, 0.0f, 0.0f);
+            laml::transform::create_transform_rotation(mesh->GetSubmeshes()[0].Transform, 90.0f, 0.0f, 0.0f);
 
             auto& trans = player.GetComponent<TransformComponent>().Transform;
             laml::transform::create_transform_translate(trans, 0.0f, 1.0f, 0.0f);
@@ -352,7 +355,7 @@ namespace rh {
             auto light = scene->CreateGameObject("Sun");
             light.AddComponent<LightComponent>(LightType::Directional, laml::Vec3(1.0f, 236.0f / 255.0f, 225.0f / 255.0f), 5, 0, 0);
             auto& trans = light.GetComponent<TransformComponent>().Transform;
-            laml::transform::create_transform_rotation_yaw_pitch_roll(trans, 45.0f, -80.0f, 0.0f);
+            laml::transform::create_transform_rotation(trans, 45.0f, -80.0f, 0.0f);
         }
 
         { // Camera
@@ -369,25 +372,25 @@ namespace rh {
             auto& trans = Camera.GetComponent<TransformComponent>().Transform;
             laml::transform::create_transform_translate(trans, 0.0f, 4.0f, 5.0f);
             laml::Mat4 rotM;
-            laml::transform::create_transform_rotation_yaw_pitch_roll(rotM, 0.0f, -45.0f, 0.0f);
+            laml::transform::create_transform_rotation(rotM, 0.0f, -45.0f, 0.0f);
             trans = laml::mul(trans, rotM);
         }
 
         // Ramps at various angles
         laml::Mat3& rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(laml::Vec3(5, 0, -5), 10, 1, 3))->rotation;
-        laml::transform::create_transform_rotation_yaw_pitch_roll(rot, 0.0f, 10.0f, 0.0f);
+        laml::transform::create_transform_rotation(rot, 0.0f, 10.0f, 0.0f);
 
         rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(laml::Vec3(5, 1, -2), 10, 1, 3))->rotation;
-        laml::transform::create_transform_rotation_yaw_pitch_roll(rot, 0.0f, 20.0f, 0.0f);
+        laml::transform::create_transform_rotation(rot, 0.0f, 20.0f, 0.0f);
 
         rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(laml::Vec3(5, 2, 1), 10, 1, 3))->rotation;
-        laml::transform::create_transform_rotation_yaw_pitch_roll(rot, 0.0f, 30.0f, 0.0f);
+        laml::transform::create_transform_rotation(rot, 0.0f, 30.0f, 0.0f);
 
         rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(laml::Vec3(5, 3, 4), 10, 1, 3))->rotation;
-        laml::transform::create_transform_rotation_yaw_pitch_roll(rot, 0.0f, 40.0f, 0.0f);
+        laml::transform::create_transform_rotation(rot, 0.0f, 40.0f, 0.0f);
 
         rot = cWorld.getHullFromID(cWorld.CreateNewCubeHull(laml::Vec3(5, 3.5, 7), 10, 1, 3))->rotation;
-        laml::transform::create_transform_rotation_yaw_pitch_roll(rot, 0.0f, 50.0f, 0.0f);
+        laml::transform::create_transform_rotation(rot, 0.0f, 50.0f, 0.0f);
 
         // Sound stuff
         {

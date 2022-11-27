@@ -136,7 +136,7 @@ namespace rh {
                     updateTransform = true;
                 }
 
-                if (Input::IsKeyPressed(KEY_CODE_R)) {
+                if (Input::IsKeyPressed(KEY_CODE_R) && Input::IsKeyPressed(KEY_CODE_LEFT_SHIFT)) {
                     yaw = 0;
                     pitch = 0;
                     updateTransform = true;

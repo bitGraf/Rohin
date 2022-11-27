@@ -212,7 +212,7 @@ set(ALL_SRC
     ${RESOURCES_SRC}
     ${RESOURCES_NBT_SRC}
     ${SCENE_SRC}
-    ${SCIPTS_SRC}
+    ${SCRIPTS_SRC}
     ${SOUND_SRC}
 )
 
@@ -234,7 +234,7 @@ source_group(Src\\Engine\\Renderer FILES ${RENDERER_SRC})
 source_group(Src\\Engine\\Resources FILES ${RESOURCES_SRC})
 source_group(Src\\Engine\\Resources\\nbt FILES ${RESOURCES_NBT_SRC})
 source_group(Src\\Engine\\Scene FILES ${SCENE_SRC})
-source_group(Src\\Engine\\Scripts FILES ${SCIPTS_SRC})
+source_group(Src\\Engine\\Scripts FILES ${SCRIPTS_SRC})
 source_group(Src\\Engine\\Sound FILES ${SOUND_SRC})
 
 target_link_libraries(${ENGINE_NAME} PUBLIC spdlog imgui OpenAL_Soft stb OpenAL32 opengl32 laml)

@@ -116,6 +116,20 @@ bool Level::OnKeyPressedEvent(rh::KeyPressedEvent& e) {
         return true;
     }
 
+    if (e.GetKeyCode() == KEY_CODE_SPACE) {
+        auto player = m_3DScene.FindByName("Player");
+        if (player) {
+            auto script = player.GetComponent<rh::NativeScriptComponent>().GetScript<rh::PlayerController>();
+            auto pos_script = script->GetPosition();
+            auto transform = player.GetComponent<rh::TransformComponent>().Transform;
+            auto pos_trans = rh::laml::Vec3(transform.c_14, transform.c_24, transform.c_34);
+
+            LOG_DEBUG("Player scipt position: {0}", pos_script);
+            LOG_DEBUG("Player trans position: {0}", pos_trans);
+        }
+        return true;
+    }
+
     if (e.GetKeyCode() == KEY_CODE_O) {
         rh::Renderer::NextOutputMode();
         return true;

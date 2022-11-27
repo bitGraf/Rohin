@@ -408,7 +408,7 @@ namespace rh {
         /* manually fill out submesh data */
         Submesh sm;
         sm.MaterialIndex = 0;
-        sm.Transform = laml::Mat4();
+        sm.Transform = laml::Mat4(1.0f);
         sm.BaseIndex = 0;
         sm.IndexCount = num_inds;
         //sm.BaseVertex = 0; // currently not using this

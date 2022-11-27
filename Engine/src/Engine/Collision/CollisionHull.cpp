@@ -5,7 +5,8 @@ namespace rh {
 
     CollisionHull::CollisionHull() :
         m_hullID(getNextUID()),
-        m_radius(0.0f)
+        m_radius(0.0f),
+        rotation(1.0f)
     {}
 
     int CollisionHull::GetSupport(laml::Vec3 search_dir) {

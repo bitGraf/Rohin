@@ -1,4 +1,4 @@
-#define RUN_TEST_CODE
+//#define RUN_TEST_CODE
 //#define RUN_MATERIAL_CODE
 
 #ifndef RUN_TEST_CODE
@@ -54,15 +54,27 @@ int main(int argc, char** argv) {
     //bool decompose(const Matrix<T, 4, 4> & transform,
     //    Quaternion<T> & rot_quat, Vector<T, 3> & pos_vec, Vector<T, 3> & scale_vec) {
     rh::laml::Mat4 transform(1.0f);
+    rh::laml::Quat quat_in = rh::laml::normalize(rh::laml::Quat(0.7071f, 0.0f, 0.0f, 0.7071f));
     rh::laml::transform::create_transform(transform, 
-        rh::laml::normalize(rh::laml::Quat(1.0f, 2.0f, -0.5f, -1.5f)), 
-        rh::laml::Vec3(2.5f, 2.5f, 4.5f), 
+        quat_in,
+        rh::laml::Vec3(2.5f, 3.5f, 4.5f), 
         rh::laml::Vec3(1.0f, 2.0f, 3.0f));
 
-    rh::laml::Quat rot_quat;
+    rh::laml::Mat3 rot_mat;
     rh::laml::Vec3 pos_vec;
     rh::laml::Vec3 scale_vec;
-    rh::laml::transform::decompose(transform, rot_quat, pos_vec, scale_vec);
+    rh::laml::transform::decompose(transform, rot_mat, pos_vec, scale_vec);
+
+    LOG_INFO("translation: {0}", pos_vec);
+    LOG_INFO("scale: {0}", scale_vec);
+    LOG_INFO("rotation   : {0}", rot_mat);
+    rh::laml::Mat3 mat_test;
+    rh::laml::transform::create_transform_rotation(mat_test, quat_in);
+    LOG_INFO("compared to: {0}", mat_test);
+    LOG_INFO("det(rot_mat) = {0}", rh::laml::det(rot_mat));
+
+    LOG_INFO("quat_in : {0}", quat_in);
+    LOG_INFO("quat_out: {0}", rh::laml::transform::quat_from_mat(rot_mat));
 
     //system("pause");
     return 0;

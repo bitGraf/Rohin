@@ -75,7 +75,7 @@ namespace rh {
         static void ToggleDebugSoundOutput();
         static void ToggleDebugControllerOutput();
 
-        static void Submit(const laml::Mat4& transform = laml::Mat4());
+        static void Submit(const laml::Mat4& transform = laml::Mat4(1.0f));
         static void Submit(const Ref<VertexArray>& vao, const laml::Mat4& transform, const laml::Vec3& color);
         static void SubmitMesh(const Mesh* mesh, const laml::Mat4& transform);
         // ANIM_HOOK static void SubmitMesh(const Mesh* mesh, const laml::Mat4& transform, md5::Animation* anim); // For animation

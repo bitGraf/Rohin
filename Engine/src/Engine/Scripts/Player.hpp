@@ -64,7 +64,7 @@ namespace rh {
                 // handle translation
                 vel = vel + localR * (moveSpeed * Input::GetAxis("AxisMoveRight"));
                 vel = vel + localF * (moveSpeed * Input::GetAxis("AxisMoveForward"));
-                CameraHeight -= 0.65f * Input::GetAxis("AxisRotateUp");
+                CameraHeight -= 0.05f * Input::GetAxis("AxisRotateUp");
                 CameraHeight = std::clamp(CameraHeight, CameraHeightMin, CameraHeightMax);
 
                 if (Input::GetAction("ActionJump") && grounded) {
