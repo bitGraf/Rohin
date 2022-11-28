@@ -25,16 +25,6 @@ out VertexOutput { // all in view-space
     mat3 ViewNormalMatrix;
 } vs_Output;
 
-vec4 calcSkinnedVert() {
-    float finalWeight = 1 - a_BoneWeights.x - a_BoneWeights.y - a_BoneWeights.z; // ensure total weight is 1
-    mat4 poseMat;
-    poseMat  = r_Bones[a_BoneIndices.x] * a_BoneWeights.x;
-    poseMat += r_Bones[a_BoneIndices.y] * a_BoneWeights.y;
-    poseMat += r_Bones[a_BoneIndices.z] * a_BoneWeights.z;
-    poseMat += r_Bones[a_BoneIndices.w] * finalWeight;
-    return poseMat * vec4(a_Position,1);
-}
-
 void main() {
     float finalWeight = 1 - a_BoneWeights[0] - a_BoneWeights[1] - a_BoneWeights[2]; // ensure total weight is 1
     mat4 boneTransform = r_Bones[a_BoneIndices[0]] * a_BoneWeights[0];
@@ -42,7 +32,8 @@ void main() {
     boneTransform += r_Bones[a_BoneIndices[2]] * a_BoneWeights[2];
     boneTransform += r_Bones[a_BoneIndices[3]] * finalWeight;
 
-    vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
+    //vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
+    vec4 localPosition = vec4(a_Position, 1.0);
 
     mat4 model2view = r_View * r_Transform;
     mat4 normalMatrix = transpose(inverse(model2view));

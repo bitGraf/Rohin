@@ -680,8 +680,8 @@ namespace rh {
 
             // set bone transforms
             const auto& skeleton = mesh->GetSkeleton();
-            for (int n = 0; n < skeleton.size(); n++) {
-                const auto& bone = skeleton[n];
+            for (int n = 0; n < skeleton.m_bones.size(); n++) {
+                const auto& bone = skeleton.m_bones[n];
 
                 //shader->SetMat4("r_Bones[" + std::to_string(n) + "]", bone1.transform * bone0.invTransform);
                 shader->SetMat4("r_Bones[" + std::to_string(n) + "]", laml::mul(laml::mul(bone.finalTransform, submesh.Transform), bone.inverseBindPose));

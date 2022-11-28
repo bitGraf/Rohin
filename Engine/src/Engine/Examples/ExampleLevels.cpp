@@ -56,17 +56,18 @@ namespace rh {
         // ANIM_HOOK MaterialCatalog::RegisterMaterial(mats);
 
         MeshCatalog::Register("mesh_plane", "Data/Models/plane.nbt", FileFormat::NBT_Basic);
-        MeshCatalog::Register("tentacle", "Data/Models/output.mesh", FileFormat::MESH_File);
+        MeshCatalog::Register("dancer", "Data/Models/dance.mesh", FileFormat::MESH_File);
         MeshCatalog::Register("mesh_cube", "Data/Models/cube.nbt", FileFormat::NBT_Basic);
 
         // Tentacle
         {
-            auto tentacle = scene->CreateGameObject("Player");
-            auto mesh = MeshCatalog::Get("mesh_cube");
-            mesh->GetSubmeshes()[0].Transform.c_24 += 0.5f;
+            auto tentacle = scene->CreateGameObject("dancer");
+            auto mesh = MeshCatalog::Get("dancer");
+            mesh->GetSubmeshes()[0].Transform = laml::mul(laml::Mat4(100.0f, 100.0f, 100.0f, 1.0f), mesh->GetSubmeshes()[0].Transform);
+            //mesh->GetSubmeshes()[0].Transform.c_24 += 0.5f;
             tentacle.AddComponent<MeshRendererComponent>(mesh);
             auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
-            laml::transform::create_transform_translate(trans, 0.0f, 1.0f, 0.0f);
+            laml::transform::create_transform_translate(trans, 0.0f, 0.0f, 0.0f);
         }
 
         // Player
