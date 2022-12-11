@@ -280,7 +280,8 @@ namespace rh {
                     auto& tag = m_Registry.get<TagComponent>(entity);
                     
                     if (mesh.MeshPtr->HasAnimations()) {
-                        Renderer::DrawSkeletonDebug(tag, transform, mesh, laml::Vec3(.6f, .1f, .9f));
+                        //Renderer::DrawSkeletonDebug(tag, transform, mesh, laml::Vec3(.1f, .6f, .9f), false);
+                        //Renderer::DrawSkeletonDebug(tag, transform, mesh, laml::Vec3(1.f, 1.f, .5f), true);
                     }
                 }
             }
@@ -290,7 +291,7 @@ namespace rh {
                 const auto& tag = group_trans.get<TagComponent>(entity);
                 const auto& transform = group_trans.get<TransformComponent>(entity);
                 laml::Vec3 pos = laml::Vec3(transform.Transform.c_14, transform.Transform.c_24, transform.Transform.c_34);
-                Renderer::Draw3DText(tag.Name, pos, laml::Vec3(.7f, .7f, 1.0f));
+                //Renderer::Draw3DText(tag.Name, pos, laml::Vec3(.7f, .7f, 1.0f));
             }
         }
         

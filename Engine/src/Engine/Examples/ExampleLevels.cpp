@@ -63,11 +63,11 @@ namespace rh {
         {
             auto tentacle = scene->CreateGameObject("dancer");
             auto mesh = MeshCatalog::Get("dancer");
-            mesh->GetSubmeshes()[0].Transform = laml::mul(laml::Mat4(100.0f, 100.0f, 100.0f, 1.0f), mesh->GetSubmeshes()[0].Transform);
+            //mesh->GetSubmeshes()[0].Transform = laml::mul(laml::Mat4(1.0f, 1.0f, 1.0f, 1.0f), mesh->GetSubmeshes()[0].Transform);
             //mesh->GetSubmeshes()[0].Transform.c_24 += 0.5f;
             tentacle.AddComponent<MeshRendererComponent>(mesh);
             auto& trans = tentacle.GetComponent<TransformComponent>().Transform;
-            laml::transform::create_transform_translate(trans, 0.0f, 0.0f, 0.0f);
+            laml::transform::create_transform_translate(trans, 0.0f, 1.0f, 0.0f);
         }
 
         // Player

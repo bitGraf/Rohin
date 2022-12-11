@@ -81,14 +81,15 @@ namespace rh {
         // ANIM_HOOK static void SubmitMesh(const Mesh* mesh, const laml::Mat4& transform, md5::Animation* anim); // For animation
         static void SubmitMesh_drawNormals(const Ref<Mesh>& mesh, const laml::Mat4& transform);
 
-        static void Draw3DText(const std::string& text, const laml::Vec3& pos, const laml::Vec3 color);
+        static void Draw3DText(const std::string& text, const laml::Vec3& pos, const laml::Vec3& color);
         static void DrawSkeletonDebug(
             const TagComponent& tag, 
             const TransformComponent& transform, 
             const MeshRendererComponent& mesh, 
-            const laml::Vec3 color);
+            const laml::Vec3& text_color,
+            bool bind_pose = false);
 
-        static void SubmitLine(laml::Vec3 v0, laml::Vec3 v1, laml::Vec4 color);
+        static void SubmitLine(const laml::Vec3& v0, const laml::Vec3& v1, const laml::Vec4& color);
 
         static void SubmitFullscreenQuad();
 

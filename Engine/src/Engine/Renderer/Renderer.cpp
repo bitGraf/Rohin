@@ -680,11 +680,13 @@ namespace rh {
 
             // set bone transforms
             const auto& skeleton = mesh->GetSkeleton();
-            for (int n = 0; n < skeleton.m_bones.size(); n++) {
-                const auto& bone = skeleton.m_bones[n];
+            for (int n = 0; n < skeleton.bones.size(); n++) {
+                const auto& bone = skeleton.bones[n];
+
+                laml::Mat4 fix(1.0f);
 
                 //shader->SetMat4("r_Bones[" + std::to_string(n) + "]", bone1.transform * bone0.invTransform);
-                shader->SetMat4("r_Bones[" + std::to_string(n) + "]", laml::mul(laml::mul(bone.finalTransform, submesh.Transform), bone.inverseBindPose));
+                shader->SetMat4("r_Bones[" + std::to_string(n) + "]", laml::mul(bone.finalTransform, bone.inverse_model_matrix));
                 //shader->SetMat4("r_Bones[" + std::to_string(n) + "]", laml::Mat4());
             }
 
@@ -738,7 +740,7 @@ namespace rh {
         }
     }
 
-    void Renderer::SubmitLine(laml::Vec3 v0, laml::Vec3 v1, laml::Vec4 color) {
+    void Renderer::SubmitLine(const laml::Vec3& v0, const laml::Vec3& v1, const laml::Vec4& color) {
         auto shader = s_Data.ShaderLibrary->Get("Line3D");
         shader->Bind();
 
@@ -759,7 +761,7 @@ namespace rh {
         s_Data.ShaderLibrary->ReloadAll();
     }
 
-    void Renderer::Draw3DText(const std::string& text, const laml::Vec3& pos, const laml::Vec3 color) {
+    void Renderer::Draw3DText(const std::string& text, const laml::Vec3& pos, const laml::Vec3& color) {
         laml::Vec4 screenSpace = laml::transform::transform_point(laml::mul(s_Data.Lights.projection, s_Data.Lights.view), laml::Vec4(pos, 1.0f));
 
         screenSpace = screenSpace / screenSpace.w;
@@ -775,62 +777,75 @@ namespace rh {
         const TagComponent& tag,
         const TransformComponent& transform,
         const MeshRendererComponent& mesh,
-        const laml::Vec3 color) {
+        const laml::Vec3& text_color, bool bind_pose) {
     
         //laml::Mat3 BlenderCorrection(laml::Vec3(0, 0, 1), laml::Vec3(1, 0, 0), laml::Vec3(0, 1, 0));
-        laml::Mat4 T = laml::mul(transform.Transform, mesh.MeshPtr->GetSubmeshes()[0].Transform);
+        //laml::Mat4 T = laml::mul(transform.Transform, mesh.MeshPtr->GetSubmeshes()[0].Transform);
+        //laml::Mat4 T(100.0f, 100.0f, 100.0f, 1.0f);
+        laml::Mat4 T = transform.Transform;
         float s = 0.075f;
         float length = 0.55f;
         float length2 = 0.05f;
     
-        laml::Vec4 localR(1.0f, 0.0f, 0.0f, 0.0f);
-        laml::Vec4 localF(0.0f, 1.0f, 0.0f, 0.0f);
-        laml::Vec4 localU(0.0f, 0.0f, 1.0f, 0.0f);
+        laml::Vec3 localR(1.0f, 0.0f, 0.0f);
+        laml::Vec3 localF(0.0f, 1.0f, 0.0f);
+        laml::Vec3 localU(0.0f, 0.0f, 1.0f);
+
+        laml::Vec4 bone_color = laml::Vec4(text_color.x, text_color.y, text_color.z, 1.0f) * 0.75f;
     
-        ////for (const auto& joint : anim.Anim->AnimatedSkeleton.Joints) {
-        //auto skele = mesh.MeshPtr->GetSkeleton();
-        //for (int j = 0; j < skele.size(); j++) {
-        //    const auto& joint = skele[j];
-        //    laml::Vec3 start = joint.finalTransform.column4.asVec3();
-        //
-        //    laml::Vec3 boneR = (joint.finalTransform * localR).asVec3();
-        //    laml::Vec3 boneU = (joint.finalTransform * localU).asVec3();
-        //    laml::Vec3 boneF = (joint.finalTransform * localF).asVec3();
-        //
-        //    laml::Vec3 end = start + boneF * length;
-        //    laml::Vec3 mid = start + boneF * length2;
-        //
-        //    laml::Vec3 A = math::TransformPointByMatrix4x4(T, mid + boneR * s);
-        //    laml::Vec3 B = math::TransformPointByMatrix4x4(T, mid + boneU * s);
-        //    laml::Vec3 C = math::TransformPointByMatrix4x4(T, mid - boneR * s);
-        //    laml::Vec3 D = math::TransformPointByMatrix4x4(T, mid - boneU * s);
-        //
-        //    start = math::TransformPointByMatrix4x4(T, start);
-        //    end = math::TransformPointByMatrix4x4(T, end);
-        //
-        //    Renderer::SubmitLine(start, A, laml::Vec4(1, 1, .5f, 1));
-        //    Renderer::SubmitLine(start, B, laml::Vec4(1, 1, .5f, 1));
-        //    Renderer::SubmitLine(start, C, laml::Vec4(1, 1, .5f, 1));
-        //    Renderer::SubmitLine(start, D, laml::Vec4(1, 1, .5f, 1));
-        //
-        //    Renderer::SubmitLine(A, end, laml::Vec4(1, 1, .5f, 1));
-        //    Renderer::SubmitLine(B, end, laml::Vec4(1, 1, .5f, 1));
-        //    Renderer::SubmitLine(C, end, laml::Vec4(1, 1, .5f, 1));
-        //    Renderer::SubmitLine(D, end, laml::Vec4(1, 1, .5f, 1));
-        //
-        //    Renderer::SubmitLine(A, B, laml::Vec4(1, 1, .5f, 1));
-        //    Renderer::SubmitLine(B, C, laml::Vec4(1, 1, .5f, 1));
-        //    Renderer::SubmitLine(C, D, laml::Vec4(1, 1, .5f, 1));
-        //    Renderer::SubmitLine(D, A, laml::Vec4(1, 1, .5f, 1));
-        //
-        //    // draw bone name
-        //    laml::Vec4 screenSpace = (s_Data.Lights.projection * s_Data.Lights.view * laml::Vec4(end, 1));
-        //    screenSpace /= screenSpace.w;
-        //    screenSpace += laml::Vec4(1, 1, 1, 1);
-        //    screenSpace *= 0.5f;
-        //    screenSpace.x *= 1280;
-        //    screenSpace.y *= 720;
-        //    TextRenderer::SubmitText(joint.bone_name, (float)screenSpace.x, 720 - screenSpace.y, color);
-        //}
+        //for (const auto& joint : anim.Anim->AnimatedSkeleton.Joints) {
+        auto skele = mesh.MeshPtr->GetSkeleton();
+        for (int j = 0; j < skele.num_bones; j++) {
+            const auto& joint = skele.bones[j];
+
+            laml::Vec3 translation, scale;
+            laml::Mat3 rotation;
+            if (bind_pose) {
+                laml::transform::decompose(skele.bones[j].model_matrix, rotation, translation, scale);
+            } else {
+                laml::transform::decompose(skele.bones[j].finalTransform, rotation, translation, scale);
+            }
+            laml::Vec3 start = translation;
+            //ENGINE_LOG_DEBUG("{0} Translation: {1}", j, translation);
+        
+            laml::Vec3 boneR = laml::transform::transform_point(rotation, localR);
+            laml::Vec3 boneU = laml::transform::transform_point(rotation, localU);
+            laml::Vec3 boneF = laml::transform::transform_point(rotation, localF);
+        
+            laml::Vec3 end = start + boneF * length;
+            laml::Vec3 mid = start + boneF * length2;
+        
+            laml::Vec3 A = laml::transform::transform_point(T, mid + boneR * s, 1.0f);
+            laml::Vec3 B = laml::transform::transform_point(T, mid + boneU * s, 1.0f);
+            laml::Vec3 C = laml::transform::transform_point(T, mid - boneR * s, 1.0f);
+            laml::Vec3 D = laml::transform::transform_point(T, mid - boneU * s, 1.0f);
+        
+            start = laml::transform::transform_point(T, start, 1.0f);
+            end   = laml::transform::transform_point(T, end, 1.0f);
+        
+            Renderer::SubmitLine(start, A, bone_color);
+            Renderer::SubmitLine(start, B, bone_color);
+            Renderer::SubmitLine(start, C, bone_color);
+            Renderer::SubmitLine(start, D, bone_color);
+        
+            Renderer::SubmitLine(A, end, bone_color);
+            Renderer::SubmitLine(B, end, bone_color);
+            Renderer::SubmitLine(C, end, bone_color);
+            Renderer::SubmitLine(D, end, bone_color);
+        
+            Renderer::SubmitLine(A, B, bone_color);
+            Renderer::SubmitLine(B, C, bone_color);
+            Renderer::SubmitLine(C, D, bone_color);
+            Renderer::SubmitLine(D, A, bone_color);
+        
+            // draw bone name
+            laml::Vec4 screenSpace = laml::transform::transform_point(laml::mul(s_Data.Lights.projection, s_Data.Lights.view), laml::Vec4(end, 1));
+            screenSpace = screenSpace / screenSpace.w;
+            screenSpace = screenSpace + laml::Vec4(1, 1, 1, 1);
+            screenSpace = screenSpace * 0.5f;
+            screenSpace.x *= 1280;
+            screenSpace.y *= 720;
+            TextRenderer::SubmitText(joint.bone_name, (float)screenSpace.x, 720 - screenSpace.y, text_color);
+        }
     }
 }

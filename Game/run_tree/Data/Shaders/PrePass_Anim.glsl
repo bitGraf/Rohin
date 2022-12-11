@@ -32,8 +32,8 @@ void main() {
     boneTransform += r_Bones[a_BoneIndices[2]] * a_BoneWeights[2];
     boneTransform += r_Bones[a_BoneIndices[3]] * finalWeight;
 
-    //vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
-    vec4 localPosition = vec4(a_Position, 1.0);
+    vec4 localPosition = boneTransform * vec4(a_Position, 1.0);
+    //vec4 localPosition = vec4(a_Position, 1.0);
 
     mat4 model2view = r_View * r_Transform;
     mat4 normalMatrix = transpose(inverse(model2view));

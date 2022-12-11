@@ -11,8 +11,8 @@ namespace rh {
 
     static_assert(sizeof(Triangle) == 3 * sizeof(uint32_t));
 
-    static const u8 KNOWN_VERSION_MAJOR = 0;
-    static const u8 KNOWN_VERSION_MINOR = 7;
+    static const u8 KNOWN_VERSION_MAJOR = 1;
+    static const u8 KNOWN_VERSION_MINOR = 0;
     static const u8 KNOWN_VERSION_PATCH = 0;
 
     // anonymous helper funcs
@@ -67,6 +67,9 @@ namespace rh {
     };
     auto read_mat4 = [](std::ifstream& file, laml::Mat4* m) {
         file.read(reinterpret_cast<char*>(m), 16 * sizeof(f32));
+    };
+    auto read_quat = [](std::ifstream& file, laml::Quat* q) {
+        file.read(reinterpret_cast<char*>(q), 4 * sizeof(f32));
     };
     auto VERSION_CHECK = [](char vStr[4])-> bool {
         if (vStr[0] != 'v') { ENGINE_LOG_ERROR("Incorrect format string read from file: '{0}' should be 'v'", vStr[0]);  return false; }
@@ -159,17 +162,6 @@ namespace rh {
             sm.MaterialIndex = read_u32(file);
             sm.IndexCount = read_u32(file);
             read_mat4(file, &sm.Transform);
-
-            // annoying cm-m conversion in fbx
-            // sm.Transform.column1.x /= 100.0f;
-            // sm.Transform.column1.y /= 100.0f;
-            // sm.Transform.column1.z /= 100.0f;
-            // sm.Transform.column2.x /= 100.0f;
-            // sm.Transform.column2.y /= 100.0f;
-            // sm.Transform.column2.z /= 100.0f;
-            // sm.Transform.column3.x /= 100.0f;
-            // sm.Transform.column3.y /= 100.0f;
-            // sm.Transform.column3.z /= 100.0f;
         }
 
         // Joint heirarchy
@@ -179,6 +171,7 @@ namespace rh {
             if (!checkTag(BONE, "BONE", 4)) return;
 
             u16 num_bones = read_u16(file);
+            m_Skeleton.num_bones = num_bones;
 
             for (int n_bone = 0; n_bone < num_bones; n_bone++) {
                 SkeleJoint joint;
@@ -193,9 +186,13 @@ namespace rh {
 
                 joint.parent_idx = read_s32(file);
 
-                file.read(reinterpret_cast<char*>(&joint.inverseBindPose), 16 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&joint.local_matrix), 16 * sizeof(f32));
+                file.read(reinterpret_cast<char*>(&joint.inverse_model_matrix), 16 * sizeof(f32));
 
-                m_Skeleton.m_bones.push_back(joint);
+                joint.model_matrix = laml::inverse(joint.inverse_model_matrix);
+                joint.finalTransform = laml::Mat4(1.0f);
+
+                m_Skeleton.bones.push_back(joint);
             }
         }
 
@@ -367,7 +364,7 @@ namespace rh {
         populateAnimationData(filename);
 
         // TMP
-        SetCurrentAnimation("mixamo.com");
+        SetCurrentAnimation("dance");
 
         m_loaded = true;
     }
@@ -525,73 +522,62 @@ namespace rh {
         m_loaded = true;
     }
 
-    void Mesh::UpdateSkeleton(int f1, int f2, double interp) {
-        //const auto &frame1 = m_currentAnim->frames[f1];
-        //const auto &frame2 = m_currentAnim->frames[f2];
-        //
-        //for (int channel = 0; channel < m_currentAnim->num_channels; channel++) {
-        //    const auto& bone1 = frame1.bones[channel];
-        //    const auto& bone2 = frame2.bones[channel];
-        //
-        //    // interpolate between these two states
-        //    laml::Vec3 position = laml::lerp(bone1.position, bone2.position, (float)interp);
-        //    laml::Quat rotation = laml::slerp(bone1.rotation, bone2.rotation, (float)interp);
-        //    laml::Vec3 scale = laml::lerp(bone1.scale, bone2.scale, (float)interp);
-        //
-        //    // calc the local transform
-        //    laml::Mat4 local_transform;
-        //    laml::transform::create_transform(local_transform, rotation, position, scale);
-        //
-        //    // get the global transform by mul with parent transform
-        //    if (m_Skeleton[channel].parent_idx < 0) {
-        //        // no parent
-        //        m_Skeleton[channel].finalTransform = local_transform;
-        //    }
-        //    else {
-        //        const auto parent_idx = m_Skeleton[channel].parent_idx;
-        //        ENGINE_LOG_ASSERT(channel > parent_idx, "Child bone referencing parent transform that hasn't been set yet!");
-        //        auto parent_transform = m_Skeleton[parent_idx].finalTransform;
-        //        m_Skeleton[channel].finalTransform = laml::mul(parent_transform, local_transform);
-        //    }
-        //}
-    }
-
-    void Mesh::SampleAnimation(float frame_time) {
-        // translation
-        if (m_animCache.translate_cache.m_anim != m_currentAnim) {
-            m_animCache.translate_cache.reset(m_currentAnim, m_animCache.m_LocalTranslations);
-            m_animCache.rotate_cache.reset(m_currentAnim, m_animCache.m_LocalRotations);
-            m_animCache.scale_cache.reset(m_currentAnim, m_animCache.m_LocalScales);
+    void Mesh::UpdateSkeleton(u32 f1, u32 f2, f32 interp) {        
+        for (u32 node_idx = 0; node_idx < m_currentAnim->num_nodes; node_idx++) {
+            SkeleJoint& bone = m_Skeleton.bones[node_idx];
+            const AnimNode& anim_node = m_currentAnim->nodes[node_idx];
+        
+            // interpolate between these two states
+            laml::Vec3 position = laml::lerp(anim_node.translations[f1], anim_node.translations[f2], interp);
+            laml::Quat rotation = laml::slerp(anim_node.rotations[f1], anim_node.rotations[f2], interp);
+            laml::Vec3 scale    = laml::lerp(anim_node.scales[f1], anim_node.scales[f2], interp);
+        
+            // calc the local transform
+            laml::Mat4 local_transform;
+            laml::transform::create_transform(local_transform, rotation, position, scale);
+        
+            // get the global transform by mul with parent transform
+            if (bone.parent_idx == Skeleton::NullIndex) {
+                // no parent
+                laml::Mat4 fix(
+                    0.f, 0.f, 1.f, 0.f,
+                    0.f, -1.f, 0.f, 0.f,
+                    1.f, 0.f, 0.f, 0.f,
+                    0.f, 0.f, 0.f, 1.f);
+                //local_transform = laml::mul(fix, local_transform);
+                bone.finalTransform = local_transform;
+            }
+            else {
+                const auto parent_idx = bone.parent_idx;
+                ENGINE_LOG_ASSERT(node_idx > parent_idx, "Child bone referencing parent transform that hasn't been set yet!");
+                auto parent_transform = m_Skeleton.bones[parent_idx].finalTransform;
+                //bone.finalTransform = laml::mul(parent_transform, laml::mul(bone.local_matrix , local_transform));
+                //bone.finalTransform = laml::mul(parent_transform, laml::mul(bone.local_matrix, local_transform));
+                bone.finalTransform = laml::mul(parent_transform, local_transform);
+            }
         }
-
-        m_animCache.translate_cache.step(frame_time, m_currentAnim->translate_keys);
-        m_animCache.rotate_cache.step(frame_time, m_currentAnim->rotate_keys);
-        m_animCache.scale_cache.step(frame_time, m_currentAnim->scale_keys);
-
-        m_animCache.translate_cache.Interpolate(frame_time, m_animCache.m_LocalTranslations, 
-            [](const laml::Vec3& a, const laml::Vec3& b, const f32 t)->laml::Vec3 {return laml::lerp(a, b, t); });
-        m_animCache.rotate_cache.Interpolate(frame_time, m_animCache.m_LocalRotations,
-            [](const laml::Quat& a, const laml::Quat& b, const f32 t)->laml::Quat {return laml::slerp(a, b, t); });
-        m_animCache.scale_cache.Interpolate(frame_time, m_animCache.m_LocalScales,
-            [](const laml::Vec3& a, const laml::Vec3& b, const f32 t)->laml::Vec3 {return laml::lerp(a, b, t); });
     }
 
     void Mesh::OnUpdate(float dt) {
         // if has animations, update animation state.
-        if (false && m_hasAnimations && m_currentAnim) {
+        if (m_hasAnimations && m_currentAnim) {
             m_animTime += dt;
-
-            //m_animTime -= floorf(m_animTime);
-            float anim_dur = m_currentAnim->duration;
         
-            while (m_animTime > anim_dur) m_animTime -= anim_dur;
-            while (m_animTime < 0.0f) m_animTime += anim_dur;
+            while (m_animTime > m_currentAnim->duration) m_animTime -= m_currentAnim->duration;
+            while (m_animTime < 0.0f) m_animTime += m_currentAnim->duration;
         
-            float frame_time = m_animTime / anim_dur; // remap to the [0,1] range
+            float frame_num = m_animTime * m_currentAnim->frame_rate;
+            u32 frame1 = floor(frame_num);
+            u32 frame2 = ceil(frame_num);
+            f32 interp = (frame_num - static_cast<f32>(frame1));
+            if (frame2 == m_currentAnim->num_samples) {
+                ENGINE_LOG_DEBUG("Looping animation!");
+                frame2 = 0;
+            }
         
-            //ENGINE_LOG_DEBUG("Interpolating between frames {0} and {1} out of {2} [{3}]", frame1, frame2, m_currentAnim->num_frames, interp);
+            //ENGINE_LOG_DEBUG("Interpolating between frames {0} and {1} out of {2} [{3}]", frame1, frame2, m_currentAnim->num_samples, interp);
         
-            SampleAnimation(frame_time);
+            UpdateSkeleton(frame1, frame2, interp);
         }
     }
 
@@ -635,33 +621,48 @@ namespace rh {
 
             u32 Flag = read_u32(file);
 
-            anim.num_channels = read_u16(file);
-            anim.num_translate_keys = read_u16(file);
-            anim.num_rotate_keys = read_u16(file);
-            anim.num_scale_keys = read_u16(file);
-            anim.duration = read_f32(file);
+            //assert((Flag & 0x01) && (KNOWN_VERSION_MINOR == 9) && " ");
+
+            anim.duration   = read_f32(file);
+            anim.frame_rate = read_f32(file);
+            anim.num_nodes  = read_u32(file);
+            anim.num_samples = read_u32(file);
 
             char DATA[4];
             file.read(DATA, 4);
             if (!checkTag(DATA, "DATA", 4)) return;
 
-            anim.translate_keys.resize(anim.num_translate_keys);
-            for (int k = 0; k < anim.num_translate_keys; k++) {
-                anim.translate_keys[k].Track = read_u32(file);
-                anim.translate_keys[k].FrameTime = read_f32(file);
-                anim.translate_keys[k].Value = laml::Vec3(read_f32(file), read_f32(file), read_f32(file));
-            }
-            anim.rotate_keys.resize(anim.num_rotate_keys);
-            for (int k = 0; k < anim.num_rotate_keys; k++) {
-                anim.rotate_keys[k].Track = read_u32(file);
-                anim.rotate_keys[k].FrameTime = read_f32(file);
-                anim.rotate_keys[k].Value = laml::Quat(read_f32(file), read_f32(file), read_f32(file), read_f32(file));
-            }
-            anim.scale_keys.resize(anim.num_scale_keys);
-            for (int k = 0; k < anim.num_scale_keys; k++) {
-                anim.scale_keys[k].Track = read_u32(file);
-                anim.scale_keys[k].FrameTime = read_f32(file);
-                anim.scale_keys[k].Value = laml::Vec3(read_f32(file), read_f32(file), read_f32(file));
+            anim.nodes.resize(anim.num_nodes);
+            for (u32 n = 0; n < anim.num_nodes; n++) {
+                AnimNode& node = anim.nodes[n];
+                node.node_flag   = read_u32(file);
+
+                node.translations.resize(anim.num_samples);
+                node.rotations.resize(anim.num_samples);
+                node.scales.resize(anim.num_samples);
+
+                for (u32 i = 0; i < anim.num_samples; i++) {
+                    f32 x = read_f32(file);
+                    f32 y = read_f32(file);
+                    f32 z = read_f32(file);
+                    node.translations[i] = laml::Vec3(x, y, z);
+                }
+                for (u32 i = 0; i < anim.num_samples; i++) {
+                    //f32 x = read_f32(file);
+                    //f32 y = read_f32(file);
+                    //f32 z = read_f32(file);
+                    //f32 w = read_f32(file);
+                    //node.rotations[i] = laml::Quat(x, y, z, w);
+                    //
+                    //node.rotations[i] = laml::Quat(read_f32(file), read_f32(file), read_f32(file), read_f32(file));
+                    read_quat(file, &node.rotations[i]);
+                }
+                for (u32 i = 0; i < anim.num_samples; i++) {
+                    f32 x = read_f32(file);
+                    f32 y = read_f32(file);
+                    f32 z = read_f32(file);
+                    node.scales[i] = laml::Vec3(x, y, z);
+                }
             }
 
             // Closing tag
@@ -680,7 +681,7 @@ namespace rh {
         // If m_Animations every gets added to, this reference becomes invalid.
         if (m_Animations.find(anim_name) != m_Animations.end()) {
             m_currentAnim = &m_Animations[anim_name];
-            m_animCache.resize(m_currentAnim->num_channels);
+            //m_animCache.resize(m_currentAnim->num_channels);
 
             ENGINE_LOG_INFO("Playing animation [{0}]", anim_name);
         }

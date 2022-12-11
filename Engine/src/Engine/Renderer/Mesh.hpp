@@ -42,55 +42,43 @@ namespace rh {
     };
 
     struct SkeleJoint {
-        laml::Mat4 inverseBindPose;
-        laml::Mat4 finalTransform;
-        std::string bone_name;
         s32 parent_idx;
+        laml::Mat4 local_matrix;
+        laml::Mat4 inverse_model_matrix;
+        std::string bone_name;
+
+        laml::Mat4 finalTransform;
+
+        laml::Mat4 model_matrix;
     };
 
     struct Skeleton {
-        std::vector<SkeleJoint> m_bones;
+        static const s32 NullIndex = -1;
+
+        u32 num_bones;
+
+        std::vector<SkeleJoint> bones;
     };
 
-    struct BoneFrame {
-        laml::Vec3 position;
-        laml::Quat rotation;
-        laml::Vec3 scale;
-    };
+    const u32 CONSTANT_TRANSLATION = 1;
+    const u32 CONSTANT_ROTATION = 2;
+    const u32 CONSTANT_SCALE = 4;
 
-    struct AnimFrame {
-        std::vector<BoneFrame> bones;
+    struct AnimNode {
+        u32 node_flag;
+        std::vector<laml::Vec3> translations;
+        std::vector<laml::Quat> rotations;
+        std::vector<laml::Vec3> scales;
     };
-
-    // A single keyed (by frame time and track number) value for an animation
-    template<typename T>
-    struct AnimationKey
-    {
-        T Value;
-        f32 FrameTime;       // 0.0f = beginning of animation clip, 1.0f = end of animation clip 
-        u32 Track;
-
-        //AnimationKey(const f32 frameTime, const u32 track, const T& value)
-        //    : FrameTime(frameTime)
-        //    , Track(track)
-        //    , Value(value)
-        //{}
-    };
-    using TranslationKey = AnimationKey<laml::Vec3>;
-    using RotationKey = AnimationKey<laml::Quat>;
-    using ScaleKey = AnimationKey<laml::Vec3>;
 
     struct Animation {
-        std::string name;
-        u16 num_channels;
-        u16 num_translate_keys;
-        u16 num_rotate_keys;
-        u16 num_scale_keys;
         f32 duration;
+        f32 frame_rate;
+        u32 num_nodes;
+        u32 num_samples;
 
-        std::vector<TranslationKey> translate_keys;
-        std::vector<RotationKey> rotate_keys;
-        std::vector<ScaleKey> scale_keys;
+        std::string name;
+        std::vector<AnimNode> nodes;
     };
 
     class Submesh
@@ -102,87 +90,6 @@ namespace rh {
         u32 IndexCount;
 
         laml::Mat4 Transform;
-    };
-
-    template<typename T>
-    struct SampleCache {
-        std::vector<T> m_values;
-        std::vector<float> m_frame_times;
-
-        const Animation* m_anim;
-
-        float m_prev_sample_time;
-        u32 m_cursor;
-
-        void resize(u32 num_channels) {
-            m_values.resize(num_channels * 2, T());
-        }
-        void reset(const Animation* anim, const std::vector<T>& values) {
-            for (u32 i = 0, N = static_cast<u32>(values.size()); i < N; ++i) {
-                m_values[NextIndex(i)] = values[i];
-                m_frame_times[NextIndex(i)] = 0.0f;
-            }
-            m_anim = anim;
-            m_cursor = 0;
-        }
-        void step(float sample_time, const std::vector<AnimationKey<T>>& keys) {
-            if ((m_cursor == static_cast<u32>(keys.size())) || (sample_time < m_prev_sample_time)) {
-                Loop();
-            }
-            auto track = keys[m_cursor].Track;
-            while (m_frame_times[NextIndex(track)] <= sample_time) {
-                m_values[CurrentIndex(track)] = m_values[NextIndex(track)];
-                m_values[NextIndex(track)] = keys[m_cursor].Value;
-                m_frame_times[CurrentIndex(track)] = m_frame_times[NextIndex(track)];
-                m_frame_times[NextIndex(track)] = keys[m_cursor].FrameTime;
-
-                if (++m_cursor == static_cast<u32>(keys.size()))
-                {
-                    break;
-                }
-                track = keys[m_cursor].Track;
-            }
-            m_prev_sample_time = sample_time;
-        }
-
-        void Loop() {
-            m_cursor = 0;
-            for (u32 track = 0, N = static_cast<u32>(m_values.size() / 2); track < N; ++track)
-            {
-                m_frame_times[NextIndex(track)] = 0.0;
-            }
-            m_prev_sample_time = 0.0f;
-        }
-
-        void Interpolate(const f32 sampleTime, std::vector<T>& result, const std::function<T(const T&, const T&, const float)>& interpolater)
-        {
-            for (uint32_t i = 0, N = static_cast<uint32_t>(m_values.size()); i < N; i += 2)
-            {
-                const f32 t = (sampleTime - m_frame_times[i]) / (m_frame_times[i + 1] - m_frame_times[i]);
-
-                result[i / 2] = interpolater(m_values[i], m_values[i + 1], t);
-            }
-        }
-
-        static u32 CurrentIndex(const u32 i) { return 2 * i; }
-        static u32 NextIndex(const u32 i) { return 2 * i + 1; }
-    };
-
-    struct AnimCache {
-        SampleCache<laml::Vec3> translate_cache;
-        SampleCache<laml::Quat> rotate_cache;
-        SampleCache<laml::Vec3> scale_cache;
-
-        std::vector<laml::Vec3> m_LocalTranslations;
-        std::vector<laml::Quat> m_LocalRotations;
-        std::vector<laml::Vec3> m_LocalScales;
-
-        void resize(uint32_t numBones)
-        {
-            translate_cache.resize(numBones);
-            rotate_cache.resize(numBones);
-            scale_cache.resize(numBones);
-        }
     };
 
     class Mesh
@@ -214,8 +121,8 @@ namespace rh {
         inline const Skeleton& GetSkeleton() const { return m_Skeleton; }
     private:
         void populateAnimationData(const std::string& filename);
-        void SampleAnimation(float frame_time);
-        void UpdateSkeleton(int frame1, int frame2, double interp);
+        //void SampleAnimation(float frame_time);
+        void UpdateSkeleton(u32 frame1, u32 frame2, f32 interp);
 
     private:
         // Hardware buffer of verts
@@ -239,7 +146,6 @@ namespace rh {
         Animation* m_currentAnim = nullptr;
         bool m_hasAnimations = false;
         f64 m_animTime = 0.0;
-        AnimCache m_animCache;
 
         friend class Renderer;
     };
