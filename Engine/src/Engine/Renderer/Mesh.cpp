@@ -185,6 +185,7 @@ namespace rh {
                 free(name);
 
                 joint.parent_idx = read_s32(file);
+                joint.debug_length = read_f32(file);
 
                 file.read(reinterpret_cast<char*>(&joint.local_matrix), 16 * sizeof(f32));
                 file.read(reinterpret_cast<char*>(&joint.inverse_model_matrix), 16 * sizeof(f32));
@@ -364,6 +365,7 @@ namespace rh {
         populateAnimationData(filename);
 
         // TMP
+        //SetCurrentAnimation("Action");
         SetCurrentAnimation("dance");
 
         m_loaded = true;

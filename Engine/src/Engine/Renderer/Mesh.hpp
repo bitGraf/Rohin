@@ -42,6 +42,7 @@ namespace rh {
     };
 
     struct SkeleJoint {
+        f32 debug_length;
         s32 parent_idx;
         laml::Mat4 local_matrix;
         laml::Mat4 inverse_model_matrix;

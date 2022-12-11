@@ -280,7 +280,7 @@ namespace rh {
                     auto& tag = m_Registry.get<TagComponent>(entity);
                     
                     if (mesh.MeshPtr->HasAnimations()) {
-                        //Renderer::DrawSkeletonDebug(tag, transform, mesh, laml::Vec3(.1f, .6f, .9f), false);
+                        Renderer::DrawSkeletonDebug(tag, transform, mesh, laml::Vec3(.1f, .6f, .9f), false);
                         //Renderer::DrawSkeletonDebug(tag, transform, mesh, laml::Vec3(1.f, 1.f, .5f), true);
                     }
                 }
