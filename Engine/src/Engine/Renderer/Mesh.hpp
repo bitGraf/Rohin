@@ -77,6 +77,8 @@ namespace rh {
         u32 num_nodes;
         u32 num_samples;
 
+        u32 anim_flag;
+
         std::string name;
         std::vector<AnimNode> nodes;
     };

@@ -539,19 +539,12 @@ namespace rh {
             // get the global transform by mul with parent transform
             if (bone.parent_idx == Skeleton::NullIndex) {
                 // no parent
-                laml::Mat4 fix(
-                    0.f, 0.f, 1.f, 0.f,
-                    0.f, -1.f, 0.f, 0.f,
-                    1.f, 0.f, 0.f, 0.f,
-                    0.f, 0.f, 0.f, 1.f);
-                //local_transform = laml::mul(fix, local_transform);
                 bone.finalTransform = local_transform;
             }
             else {
                 const auto parent_idx = bone.parent_idx;
                 ENGINE_LOG_ASSERT(node_idx > parent_idx, "Child bone referencing parent transform that hasn't been set yet!");
                 auto parent_transform = m_Skeleton.bones[parent_idx].finalTransform;
-                //bone.finalTransform = laml::mul(parent_transform, laml::mul(bone.local_matrix , local_transform));
                 //bone.finalTransform = laml::mul(parent_transform, laml::mul(bone.local_matrix, local_transform));
                 bone.finalTransform = laml::mul(parent_transform, local_transform);
             }
@@ -563,16 +556,27 @@ namespace rh {
         if (m_hasAnimations && m_currentAnim) {
             m_animTime += dt;
         
-            while (m_animTime > m_currentAnim->duration) m_animTime -= m_currentAnim->duration;
-            while (m_animTime < 0.0f) m_animTime += m_currentAnim->duration;
+            if (m_currentAnim->anim_flag & 0x02) { // if looping enabled
+                while (m_animTime > m_currentAnim->duration) {
+                    m_animTime -= m_currentAnim->duration;
+                    ENGINE_LOG_DEBUG("Looping animation!");
+                }
+            }
+            else if (m_animTime > m_currentAnim->duration) {
+                m_animTime = m_currentAnim->duration;
+            }
+
+            while (m_animTime < 0.0f) {
+                m_animTime += m_currentAnim->duration;
+            }
         
             float frame_num = m_animTime * m_currentAnim->frame_rate;
             u32 frame1 = floor(frame_num);
             u32 frame2 = ceil(frame_num);
             f32 interp = (frame_num - static_cast<f32>(frame1));
             if (frame2 == m_currentAnim->num_samples) {
-                ENGINE_LOG_DEBUG("Looping animation!");
                 frame2 = 0;
+                frame1 = m_currentAnim->num_samples - 1;
             }
         
             //ENGINE_LOG_DEBUG("Interpolating between frames {0} and {1} out of {2} [{3}]", frame1, frame2, m_currentAnim->num_samples, interp);
@@ -619,7 +623,7 @@ namespace rh {
             file.read(vStr, 4);
             if (!VERSION_CHECK(vStr)) return;
 
-            u32 Flag = read_u32(file);
+            anim.anim_flag = read_u32(file);
 
             //assert((Flag & 0x01) && (KNOWN_VERSION_MINOR == 9) && " ");
 
@@ -653,7 +657,7 @@ namespace rh {
                     //f32 z = read_f32(file);
                     //f32 w = read_f32(file);
                     //node.rotations[i] = laml::Quat(x, y, z, w);
-                    //
+                    
                     //node.rotations[i] = laml::Quat(read_f32(file), read_f32(file), read_f32(file), read_f32(file));
                     read_quat(file, &node.rotations[i]);
                 }
