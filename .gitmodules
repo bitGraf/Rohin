@@ -7,3 +7,6 @@
 [submodule "Engine/deps/GLFW/GLFW"]
 	path = Engine/deps/GLFW/GLFW
 	url = https://github.com/glfw/glfw.git
+[submodule "Engine/deps/math_lib"]
+	path = Engine/deps/math_lib
+	url = https://github.com/bitGraf/math_lib.git

@@ -4,15 +4,15 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Collision/CollisionHull.hpp"
 
-namespace Engine {
+namespace rh {
 
     struct RaycastResult {
         f32 t;
         UID_t colliderID;
-        math::vec3 contactPoint;
-        math::vec3 normal;
+        laml::Vec3 contactPoint;
+        laml::Vec3 normal;
 
-        math::vec3 start, end;
+        laml::Vec3 start, end;
     };
 
 #define MAX_CONTACTS 8
@@ -21,8 +21,8 @@ namespace Engine {
         float TOI;
         UID_t colliderID;
 
-        math::vec3 contact_normal;
-        math::vec3 contact_point;
+        laml::Vec3 contact_normal;
+        laml::Vec3 contact_point;
     };
 
     struct ShapecastResult_multi {
@@ -35,8 +35,8 @@ namespace Engine {
     struct ShapecastResult {
         int iters;
         float TOI;
-        math::vec3 contact_normal;
-        math::vec3 contact_point;
+        laml::Vec3 contact_normal;
+        laml::Vec3 contact_point;
         UID_t colliderID;
     };
 
@@ -45,21 +45,21 @@ namespace Engine {
 #define MAX_INCREASING_ITS 2
 
     struct simplexVertex {
-        math::vec3 point1;
-        math::vec3 point2;
-        math::vec3 point;
+        laml::Vec3 point1;
+        laml::Vec3 point2;
+        laml::Vec3 point;
         float u;
         int index1;
         int index2;
     };
     struct Simplex {
-        math::vec3 GetSearchDirection();
-        void GetWitnessPoints(math::vec3* point1, math::vec3* point2,
+        laml::Vec3 GetSearchDirection();
+        void GetWitnessPoints(laml::Vec3* point1, laml::Vec3* point2,
             float radius1 = -1, float radius2 = -1);
         float GetDistance();
-        void Solve2(const math::vec3& P);
-        void Solve3(const math::vec3& P);
-        void Solve4(const math::vec3& P);
+        void Solve2(const laml::Vec3& P);
+        void Solve3(const laml::Vec3& P);
+        void Solve4(const laml::Vec3& P);
 
         simplexVertex m_vertexA, m_vertexB, m_vertexC, m_vertexD;
         float m_distance;
@@ -79,8 +79,8 @@ namespace Engine {
             e_maxIterations
         };
 
-        math::vec3 point1;
-        math::vec3 point2;
+        laml::Vec3 point1;
+        laml::Vec3 point2;
         float distance;
         int iterations;
         bool m_hit;
@@ -101,30 +101,30 @@ namespace Engine {
 
         void Update(double dt);
 
-        RaycastResult Raycast(math::vec3 start, math::vec3 end);
-        RaycastResult Raycast(math::vec3 start, math::vec3 direction, math::scalar distance);
+        RaycastResult Raycast(laml::Vec3 start, laml::Vec3 end);
+        RaycastResult Raycast(laml::Vec3 start, laml::Vec3 direction, laml::Scalar distance);
 
-        RaycastResult Raycast(UID_t target, math::vec3 start, math::vec3 end);
+        RaycastResult Raycast(UID_t target, laml::Vec3 start, laml::Vec3 end);
 
-        ShapecastResult_multi Shapecast_multi(UID_t id, math::vec3 vel);
-        ShapecastResult Shapecast(UID_t id, math::vec3 vel);
+        ShapecastResult_multi Shapecast_multi(UID_t id, laml::Vec3 vel);
+        ShapecastResult Shapecast(UID_t id, laml::Vec3 vel);
 
-        math::scalar TimeOfImpact(CollisionHull* hull1, math::vec3 vel1,
-            CollisionHull* hull2, math::vec3 vel2,
-            math::vec3* out_normal, math::vec3* out_contact_point,
+        laml::Scalar TimeOfImpact(CollisionHull* hull1, laml::Vec3 vel1,
+            CollisionHull* hull2, laml::Vec3 vel2,
+            laml::Vec3* out_normal, laml::Vec3* out_contact_point,
             int* out_iterations);
-        math::scalar StepGJK(float t,
-            CollisionHull* hull1, math::vec3 vel1,
-            CollisionHull* hull2, math::vec3 vel2,
-            math::vec3* point1, math::vec3* point2,
+        laml::Scalar StepGJK(float t,
+            CollisionHull* hull1, laml::Vec3 vel1,
+            CollisionHull* hull2, laml::Vec3 vel2,
+            laml::Vec3* point1, laml::Vec3* point2,
             float feather_radius);
 
         UID_t CreateNewCubeHull(
-            math::vec3 position, math::scalar size);
+            laml::Vec3 position, laml::Scalar size);
         UID_t CreateNewCubeHull(
-            math::vec3 position, math::scalar xSize, math::scalar ySize, math::scalar zSize);
+            laml::Vec3 position, laml::Scalar xSize, laml::Scalar ySize, laml::Scalar zSize);
         UID_t CreateNewCapsule(
-            math::vec3 position, math::scalar height, math::scalar radius);
+            laml::Vec3 position, laml::Scalar height, laml::Scalar radius);
         CollisionHull* getHullFromID(UID_t id);
 
         /* GJK algorithm */

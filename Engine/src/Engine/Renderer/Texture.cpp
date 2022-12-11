@@ -4,7 +4,7 @@
 #include "Renderer.hpp"
 #include "Engine/Platform/OpenGL/OpenGLTexture.hpp"
 
-namespace Engine {
+namespace rh {
 
     Texture2D* Texture2D::CreateAtLocation(void* ptr, const std::string& path) {
         switch (Renderer::GetAPI()) {

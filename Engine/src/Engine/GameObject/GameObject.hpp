@@ -3,7 +3,7 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Scene/Scene3D.hpp"
 
-namespace Engine {
+namespace rh {
     class GameObject {
     public:
         GameObject()
@@ -49,7 +49,7 @@ namespace Engine {
         GameObject_type GetHandle() const { return m_GameObjectHandle; }
         operator uint32_t() const { return (uint32_t)m_GameObjectHandle; }
         bool operator==(const GameObject& other) const { return (m_GameObjectHandle == other.m_GameObjectHandle) && (m_Scene == other.m_Scene);}
-        bool operator!=(const GameObject& other) const { return ~operator==(other); }
+        bool operator!=(const GameObject& other) const { return (m_GameObjectHandle != other.m_GameObjectHandle) || (m_Scene != other.m_Scene);}
 
         const Scene3D& GetScene() const { return *m_Scene; }
         Scene3D& GetScene() { return *m_Scene; }

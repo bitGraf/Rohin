@@ -1,17 +1,17 @@
 #pragma once
 
-#include "Engine/Core/GameMath.hpp"
+#include "Engine/Core/Base.hpp"
 
-namespace Engine {
+namespace rh {
 
     class Camera {
     public:
         Camera() = default;
-        Camera(const math::mat4& projection) : m_Projection(projection) {}
+        Camera(const laml::Mat4& projection) : m_Projection(projection) {}
         virtual ~Camera() = default;
 
-        const math::mat4& GetProjection() const { return m_Projection; }
+        const laml::Mat4& GetProjection() const { return m_Projection; }
     protected:
-        math::mat4 m_Projection;
+        laml::Mat4 m_Projection;
     };
 }

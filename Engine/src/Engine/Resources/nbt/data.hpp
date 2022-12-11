@@ -3,9 +3,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "Engine\Core\GameMath.hpp"
-
-namespace nbt {
+namespace rh::nbt {
 
 	typedef std::int8_t		nbt_byte;
 	typedef std::int16_t	nbt_short;
@@ -14,7 +12,7 @@ namespace nbt {
 	typedef float			nbt_float;
 	typedef double			nbt_double;
 	typedef std::string		nbt_string;
-    //typedef math::vec3      nbt_vec3;
+    //typedef laml::Vec3      nbt_vec3;
 
     enum class tag_type : nbt_byte
     {

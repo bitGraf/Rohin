@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Engine/Core/Base.hpp"
-#include "Engine/Core/GameMath.hpp"
 #include "Engine/Scene/SceneCamera.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 #include "Engine/Renderer/Light.hpp"
@@ -9,7 +8,7 @@
 #include "Engine/Collision/CollisionWorld.hpp"
 #include <ostream>
 
-namespace Engine {
+namespace rh {
 
     struct TagComponent {
         std::string Name;
@@ -30,21 +29,12 @@ namespace Engine {
 
         DEBUG_OSTR_IMPL(MeshRendererComponent)
     };
-    struct MeshAnimationComponent {
-        md5::Animation* Anim;
-
-        MeshAnimationComponent() = default;
-        MeshAnimationComponent(const MeshAnimationComponent&) = default;
-        MeshAnimationComponent(md5::Animation* anim) : Anim(anim) {}
-
-        DEBUG_OSTR_IMPL(MeshAnimationComponent)
-    };
     struct TransformComponent {
-        math::mat4 Transform;
+        laml::Mat4 Transform;
 
         TransformComponent() = default;
         TransformComponent(const TransformComponent&) = default;
-        TransformComponent(const math::mat4& transform) : Transform(transform) {}
+        TransformComponent(const laml::Mat4& transform) : Transform(transform) {}
 
         DEBUG_OSTR_IMPL(TransformComponent)
     };
@@ -62,13 +52,13 @@ namespace Engine {
 
     struct LightComponent {
         LightType Type;
-        math::vec3 Color;
+        laml::Vec3 Color;
         float Strength;
         float InnerCutoff, OuterCutoff;
 
         LightComponent() = default;
         LightComponent(const LightComponent&) = default;
-        LightComponent(LightType type, const math::vec3& color, float strength, float inner, float outer) 
+        LightComponent(LightType type, const laml::Vec3& color, float strength, float inner, float outer) 
             : Type(type), Color(color), Strength(strength), InnerCutoff(inner), OuterCutoff(outer) {}
 
         DEBUG_OSTR_IMPL(LightComponent)

@@ -4,7 +4,7 @@
 #include <fstream>
 #include <glad/glad.h>
 
-namespace Engine {
+namespace rh {
 
     static GLenum ShaderTypeFromString(const std::string& type) {
         if (type == "vertex")
@@ -672,19 +672,19 @@ namespace Engine {
             UploadUniformInt(uniform->GetLocation(), *(int32_t*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::VEC2:
-            UploadUniformFloat2(uniform->GetLocation(), *(math::vec2*)&buffer.Data[offset]);
+            UploadUniformFloat2(uniform->GetLocation(), *(laml::Vec2*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::VEC3:
-            UploadUniformFloat3(uniform->GetLocation(), *(math::vec3*)&buffer.Data[offset]);
+            UploadUniformFloat3(uniform->GetLocation(), *(laml::Vec3*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::VEC4:
-            UploadUniformFloat4(uniform->GetLocation(), *(math::vec4*)&buffer.Data[offset]);
+            UploadUniformFloat4(uniform->GetLocation(), *(laml::Vec4*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::MAT3:
-            UploadUniformMat3(uniform->GetLocation(), *(math::mat3*)&buffer.Data[offset]);
+            UploadUniformMat3(uniform->GetLocation(), *(laml::Mat3*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::MAT4:
-            UploadUniformMat4(uniform->GetLocation(), *(math::mat4*)&buffer.Data[offset]);
+            UploadUniformMat4(uniform->GetLocation(), *(laml::Mat4*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::STRUCT:
             UploadUniformStruct(uniform, buffer.Data, offset);
@@ -708,19 +708,19 @@ namespace Engine {
             UploadUniformInt(uniform->GetLocation(), *(int32_t*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::VEC2:
-            UploadUniformFloat2(uniform->GetLocation(), *(math::vec2*)&buffer.Data[offset]);
+            UploadUniformFloat2(uniform->GetLocation(), *(laml::Vec2*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::VEC3:
-            UploadUniformFloat3(uniform->GetLocation(), *(math::vec3*)&buffer.Data[offset]);
+            UploadUniformFloat3(uniform->GetLocation(), *(laml::Vec3*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::VEC4:
-            UploadUniformFloat4(uniform->GetLocation(), *(math::vec4*)&buffer.Data[offset]);
+            UploadUniformFloat4(uniform->GetLocation(), *(laml::Vec4*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::MAT3:
-            UploadUniformMat3(uniform->GetLocation(), *(math::mat3*)&buffer.Data[offset]);
+            UploadUniformMat3(uniform->GetLocation(), *(laml::Mat3*)&buffer.Data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::MAT4:
-            UploadUniformMat4Array(uniform->GetLocation(), *(math::mat4*)&buffer.Data[offset], uniform->GetCount());
+            UploadUniformMat4Array(uniform->GetLocation(), *(laml::Mat4*)&buffer.Data[offset], uniform->GetCount());
             break;
         case OpenGLShaderUniformDeclaration::Type::STRUCT:
             UploadUniformStruct(uniform, buffer.Data, offset);
@@ -741,19 +741,19 @@ namespace Engine {
             UploadUniformInt(field.GetLocation(), *(int32_t*)&data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::VEC2:
-            UploadUniformFloat2(field.GetLocation(), *(math::vec2*)&data[offset]);
+            UploadUniformFloat2(field.GetLocation(), *(laml::Vec2*)&data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::VEC3:
-            UploadUniformFloat3(field.GetLocation(), *(math::vec3*)&data[offset]);
+            UploadUniformFloat3(field.GetLocation(), *(laml::Vec3*)&data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::VEC4:
-            UploadUniformFloat4(field.GetLocation(), *(math::vec4*)&data[offset]);
+            UploadUniformFloat4(field.GetLocation(), *(laml::Vec4*)&data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::MAT3:
-            UploadUniformMat3(field.GetLocation(), *(math::mat3*)&data[offset]);
+            UploadUniformMat3(field.GetLocation(), *(laml::Mat3*)&data[offset]);
             break;
         case OpenGLShaderUniformDeclaration::Type::MAT4:
-            UploadUniformMat4(field.GetLocation(), *(math::mat4*)&data[offset]);
+            UploadUniformMat4(field.GetLocation(), *(laml::Mat4*)&data[offset]);
             break;
         default:
             ENGINE_LOG_ASSERT(false, "Unknown uniform type!");
@@ -795,35 +795,35 @@ namespace Engine {
         glUniform1f(location, value);
     }
 
-    void OpenGLShader::UploadUniformFloat2(uint32_t location, const math::vec2& value)
+    void OpenGLShader::UploadUniformFloat2(uint32_t location, const laml::Vec2& value)
     {
         glUniform2f(location, value.x, value.y);
     }
 
-    void OpenGLShader::UploadUniformFloat3(uint32_t location, const math::vec3& value)
+    void OpenGLShader::UploadUniformFloat3(uint32_t location, const laml::Vec3& value)
     {
         glUniform3f(location, value.x, value.y, value.z);
     }
 
-    void OpenGLShader::UploadUniformFloat4(uint32_t location, const math::vec4& value)
+    void OpenGLShader::UploadUniformFloat4(uint32_t location, const laml::Vec4& value)
     {
         glUniform4f(location, value.x, value.y, value.z, value.w);
     }
 
-    void OpenGLShader::UploadUniformMat3(uint32_t location, const math::mat3& value)
+    void OpenGLShader::UploadUniformMat3(uint32_t location, const laml::Mat3& value)
     {
-        glUniformMatrix3fv(location, 1, GL_FALSE, value.ptr());
+        glUniformMatrix3fv(location, 1, GL_FALSE, &value.c_11);
     }
 
-    void OpenGLShader::UploadUniformMat4(uint32_t location, const math::mat4& value)
+    void OpenGLShader::UploadUniformMat4(uint32_t location, const laml::Mat4& value)
     {
-        glUniformMatrix4fv(location, 1, GL_FALSE, value.ptr());
+        glUniformMatrix4fv(location, 1, GL_FALSE, &value.c_11);
     }
 
-    void OpenGLShader::UploadUniformMat4Array(uint32_t location, const math::mat4& values, uint32_t count)
+    void OpenGLShader::UploadUniformMat4Array(uint32_t location, const laml::Mat4& values, uint32_t count)
     {
         ENGINE_LOG_WARN("What the heck is this doing?");
-        glUniformMatrix4fv(location, count, GL_FALSE, values.ptr());
+        glUniformMatrix4fv(location, count, GL_FALSE, &values.c_11);
     }
 
     void OpenGLShader::UploadUniformStruct(OpenGLShaderUniformDeclaration* uniform, byte* buffer, uint32_t offset)
@@ -839,17 +839,17 @@ namespace Engine {
     }
 
     //TODO: turn this logging back on
-    void OpenGLShader::SetMat4(const std::string &name, const math::mat4& value) const {
+    void OpenGLShader::SetMat4(const std::string &name, const laml::Mat4& value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
             //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
             return;
         }
-        glUniformMatrix4fv(loc, 1, GL_FALSE, value.ptr());
+        glUniformMatrix4fv(loc, 1, GL_FALSE, &value.c_11);
 
     }
 
-    void OpenGLShader::SetVec2(const std::string &name, const math::vec2& value) const {
+    void OpenGLShader::SetVec2(const std::string &name, const laml::Vec2& value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
             //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
@@ -858,7 +858,7 @@ namespace Engine {
         glUniform2f(loc, value.x, value.y);
     }
 
-    void OpenGLShader::SetVec3(const std::string &name, const math::vec3& value) const {
+    void OpenGLShader::SetVec3(const std::string &name, const laml::Vec3& value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
             //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());
@@ -867,7 +867,7 @@ namespace Engine {
         glUniform3f(loc, value.x, value.y, value.z);
     }
 
-    void OpenGLShader::SetVec4(const std::string &name, const math::vec4& value) const {
+    void OpenGLShader::SetVec4(const std::string &name, const laml::Vec4& value) const {
         s32 loc = glGetUniformLocation(m_ShaderID, name.c_str());
         if (loc == -1) {
             //ENGINE_LOG_WARN("Chould not find uniform: {0}", name.c_str());

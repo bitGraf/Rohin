@@ -1,7 +1,7 @@
 #include <enpch.hpp>
 #include "Material.hpp"
 
-namespace Engine {
+namespace rh {
 
     Ref<Material> Material::Create(const Ref<Shader>& shader) {
         return std::make_shared<Material>(shader);

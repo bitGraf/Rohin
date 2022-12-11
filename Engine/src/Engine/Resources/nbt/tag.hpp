@@ -9,7 +9,7 @@
 #include "Engine\Resources\nbt\endian.hpp"
 #include "Engine\Resources\nbt\io.hpp"
 
-namespace nbt {
+namespace rh::nbt {
 
     // base tag class
     class tag {
@@ -79,7 +79,7 @@ namespace nbt {
         tag& assign(tag&& rhs) override final { return get_this() = dynamic_cast<tag_primitive<T>&&>(rhs); }
 
         //Constructor
-        constexpr tag_primitive(T val = 0) noexcept : value(val) {}
+        constexpr tag_primitive(T val = static_cast<T>(0.0)) noexcept : value(val) {}
 
         //Getters
         operator T& () { return value; }
@@ -108,12 +108,12 @@ namespace nbt {
     typedef tag_primitive<nbt_long> tag_long;
     typedef tag_primitive<nbt_float> tag_float;
     typedef tag_primitive<nbt_double> tag_double;
-    typedef tag_primitive<math::vec2> tag_vec2;
-    typedef tag_primitive<math::vec3> tag_vec3;
-    typedef tag_primitive<math::vec4> tag_vec4;
-    typedef tag_primitive<math::mat2> tag_mat2;
-    typedef tag_primitive<math::mat3> tag_mat3;
-    typedef tag_primitive<math::mat4> tag_mat4;
+    typedef tag_primitive<laml::Vec2> tag_vec2;
+    typedef tag_primitive<laml::Vec3> tag_vec3;
+    typedef tag_primitive<laml::Vec4> tag_vec4;
+    typedef tag_primitive<laml::Mat2> tag_mat2;
+    typedef tag_primitive<laml::Mat3> tag_mat3;
+    typedef tag_primitive<laml::Mat4> tag_mat4;
 
     // tag_string
     class tag_string final : public tag {
@@ -194,12 +194,12 @@ namespace nbt {
         value& operator=(double val);
         value& operator=(const std::string& str);//TODO: what is this?
         value& operator=(std::string&& str);
-        value& operator=(math::vec2);
-        value& operator=(math::vec3);
-        value& operator=(math::vec4);
-        value& operator=(math::mat2);
-        value& operator=(math::mat3);
-        value& operator=(math::mat4);
+        value& operator=(laml::Vec2);
+        value& operator=(laml::Vec3);
+        value& operator=(laml::Vec4);
+        value& operator=(laml::Mat2);
+        value& operator=(laml::Mat3);
+        value& operator=(laml::Mat4);
 
         //Conversions to primitives and string
         explicit operator int8_t() const;
@@ -209,12 +209,12 @@ namespace nbt {
         explicit operator float() const;
         explicit operator double() const;
         explicit operator const std::string& () const;
-        explicit operator math::vec2() const;
-        explicit operator math::vec3() const;
-        explicit operator math::vec4() const;
-        explicit operator math::mat2() const;
-        explicit operator math::mat3() const;
-        explicit operator math::mat4() const;
+        explicit operator laml::Vec2() const;
+        explicit operator laml::Vec3() const;
+        explicit operator laml::Vec4() const;
+        explicit operator laml::Mat2() const;
+        explicit operator laml::Mat3() const;
+        explicit operator laml::Mat4() const;
 
         ///Returns true if the value is not uninitialized
         explicit operator bool() const { return tag_ != nullptr; }
@@ -266,12 +266,12 @@ namespace nbt {
         value_initializer(const std::string& str);
         value_initializer(std::string&& str);
         value_initializer(const char* str);
-        value_initializer(math::vec2 val);
-        value_initializer(math::vec3 val);
-        value_initializer(math::vec4 val);
-        value_initializer(math::mat2 val);
-        value_initializer(math::mat3 val);
-        value_initializer(math::mat4 val);
+        value_initializer(laml::Vec2 val);
+        value_initializer(laml::Vec3 val);
+        value_initializer(laml::Vec4 val);
+        value_initializer(laml::Mat2 val);
+        value_initializer(laml::Mat3 val);
+        value_initializer(laml::Mat4 val);
     };
 
     //tag_compound
@@ -466,12 +466,12 @@ namespace nbt {
         tag_list(std::initializer_list<tag_int_array> init);
         tag_list(std::initializer_list<tag_long_array> init);
         tag_list(std::initializer_list<value> init);
-        tag_list(std::initializer_list<math::vec2> init);
-        tag_list(std::initializer_list<math::vec3> init);
-        tag_list(std::initializer_list<math::vec4> init);
-        tag_list(std::initializer_list<math::mat2> init);
-        tag_list(std::initializer_list<math::mat3> init);
-        tag_list(std::initializer_list<math::mat4> init);
+        tag_list(std::initializer_list<laml::Vec2> init);
+        tag_list(std::initializer_list<laml::Vec3> init);
+        tag_list(std::initializer_list<laml::Vec4> init);
+        tag_list(std::initializer_list<laml::Mat2> init);
+        tag_list(std::initializer_list<laml::Mat3> init);
+        tag_list(std::initializer_list<laml::Mat4> init);
 
         // get tag by index with bounds checking
         value& at(size_t i);
@@ -550,19 +550,19 @@ namespace nbt {
     // equality functions
     template<class T> bool operator==(const tag_primitive<T>& lhs, const tag_primitive<T>& rhs)
     {
-        return lhs.get() == rhs.get();
+        return (lhs.get() == rhs.get());
     }
     template<class T> bool operator!=(const tag_primitive<T>& lhs, const tag_primitive<T>& rhs)
     {
-        return !(lhs == rhs);
+        return !(lhs.get() == rhs.get());
     }
 
     template<class T> bool operator==(const tag_array<T>& lhs, const tag_array<T>& rhs)
     {
-        return lhs.get() == rhs.get();
+        return (lhs.get() == rhs.get());
     }
     template<class T> bool operator!=(const tag_array<T>& lhs, const tag_array<T>& rhs)
     {
-        return !(lhs == rhs);
+        return !(lhs.get() == rhs.get());
     }
 }

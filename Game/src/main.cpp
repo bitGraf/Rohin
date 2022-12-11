@@ -11,7 +11,7 @@
 
 const int quickstartScene = 1;
 
-class Game : public Engine::Application {
+class Game : public rh::Application {
 public:
     Game() {
         switch (quickstartScene) {
@@ -34,7 +34,7 @@ public:
 private:
 };
 
-Engine::Application* Engine::CreateApplication() {
+rh::Application* rh::CreateApplication() {
     return new Game();
 }
 
@@ -43,25 +43,40 @@ Engine::Application* Engine::CreateApplication() {
 #ifdef RUN_TEST_CODE
 #ifndef RUN_MATERIAL_CODE
 
-#include <stdlib.h>
-#include <string>
-#include <vector>
-#include <unordered_map>
-#include "Engine/Core/GameMath.hpp"
-#include <iostream>
+#include "Engine/Core/Base.hpp"
+#include "Engine.hpp"
 
 int main(int argc, char** argv) {
-    using namespace math;
-    
-    math::mat4 trans;
-    math::CreateTransform(trans, math::mat3(), math::vec3(0, 1, 0), math::vec3(1, .1, 1));
-    std::cout << trans << std::endl;
-    vec3 v(1, 1, -1);
-    std::cout << v << std::endl;
-    v = math::TransformPointByMatrix4x4(trans, v);
-    std::cout << v << std::endl;
+    rh::Logger::Init();
+    LOG_INFO("Logging enabled!");
 
-    system("pause");
+    //template<typename T>
+    //bool decompose(const Matrix<T, 4, 4> & transform,
+    //    Quaternion<T> & rot_quat, Vector<T, 3> & pos_vec, Vector<T, 3> & scale_vec) {
+    rh::laml::Mat4 transform(1.0f);
+    rh::laml::Quat quat_in = rh::laml::normalize(rh::laml::Quat(0.7071f, 0.0f, 0.0f, 0.7071f));
+    rh::laml::transform::create_transform(transform, 
+        quat_in,
+        rh::laml::Vec3(2.5f, 3.5f, 4.5f), 
+        rh::laml::Vec3(1.0f, 2.0f, 3.0f));
+
+    rh::laml::Mat3 rot_mat;
+    rh::laml::Vec3 pos_vec;
+    rh::laml::Vec3 scale_vec;
+    rh::laml::transform::decompose(transform, rot_mat, pos_vec, scale_vec);
+
+    LOG_INFO("translation: {0}", pos_vec);
+    LOG_INFO("scale: {0}", scale_vec);
+    LOG_INFO("rotation   : {0}", rot_mat);
+    rh::laml::Mat3 mat_test;
+    rh::laml::transform::create_transform_rotation(mat_test, quat_in);
+    LOG_INFO("compared to: {0}", mat_test);
+    LOG_INFO("det(rot_mat) = {0}", rh::laml::det(rot_mat));
+
+    LOG_INFO("quat_in : {0}", quat_in);
+    LOG_INFO("quat_out: {0}", rh::laml::transform::quat_from_mat(rot_mat));
+
+    //system("pause");
     return 0;
 }
 
@@ -76,7 +91,7 @@ int main(int argc, char** argv) {
 #include "Engine/Sound/SoundBuffer.hpp"
 #include "Engine/Sound/SoundFileFormats.hpp"
 #include "Engine/Sound/SoundStream.hpp"
-using namespace Engine;
+using namespace rh;
 
 #include "Engine/Resources/nbt/nbt.hpp"
 using namespace nbt;

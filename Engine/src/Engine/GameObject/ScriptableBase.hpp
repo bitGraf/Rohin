@@ -2,15 +2,14 @@
 
 #include "Engine/GameObject/GameObject.hpp"
 
-namespace Engine {
+namespace rh {
     class ScriptableBase {
     public:
         virtual ~ScriptableBase() {}
         
+        // Helper functions for all native scripts
         template<typename Component>
-        Component& GetComponent() {
-            return m_GameObject.GetComponent<Component>();
-        }
+        Component& GetComponent() { return m_GameObject.GetComponent<Component>(); }
 
         GameObject_type GetGameObjectID() const { return m_GameObject.GetHandle(); }
 

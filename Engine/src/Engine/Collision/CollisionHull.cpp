@@ -1,21 +1,21 @@
 #include <enpch.hpp>
 #include "Engine/Collision/CollisionHull.hpp"
 
-namespace Engine {
-    using namespace math;
+namespace rh {
 
     CollisionHull::CollisionHull() :
         m_hullID(getNextUID()),
-        m_radius(0.0f)
+        m_radius(0.0f),
+        rotation(1.0f)
     {}
 
-    int CollisionHull::GetSupport(vec3 search_dir) {
+    int CollisionHull::GetSupport(laml::Vec3 search_dir) {
         /* This ALL happens inside model space */
-        scalar maxDist = vertices[0].dot(search_dir);
+        laml::Scalar maxDist = laml::dot(vertices[0], search_dir);
         int maxIndex = 0;
         for (int n = 0; n < vertices.size(); n++) {
             auto v = &vertices[n];
-            scalar dist = v->dot(search_dir);
+            laml::Scalar dist = laml::dot(*v, search_dir);
 
             if (dist > maxDist) {
                 maxDist = dist;
@@ -27,31 +27,31 @@ namespace Engine {
         return maxIndex;
     }
 
-    vec3 CollisionHull::GetVertWorldSpace(int index) {
-        vec3 local = vertices[index];
-        return rotation * local + position;
+    laml::Vec3 CollisionHull::GetVertWorldSpace(int index) {
+        laml::Vec3 local = vertices[index];
+        return laml::transform::transform_point(rotation, local) + position;
     }
 
     void CollisionHull::bufferData() {
         struct _vertex
         {
-            math::vec3 Position;
+            laml::Vec3 Position;
         };
 
         _vertex* data = reinterpret_cast<_vertex*>(vertices.data());
-        index_t* _indices = reinterpret_cast<index_t*>(faces.data());
+        u16* _indices = reinterpret_cast<u16*>(faces.data());
         u32* indices = (u32*)malloc(faces.size() * 3 * sizeof(u32));
         for (int n = 0; n < faces.size() * 3; n++) {
             indices[n] = _indices[n];
         }
 
-        auto vbo = Engine::VertexBuffer::Create(data, vertices.size() * sizeof(_vertex));
+        auto vbo = rh::VertexBuffer::Create(data, vertices.size() * sizeof(_vertex));
         vbo->SetLayout({
-            { Engine::ShaderDataType::Float3, "a_Position" }
+            { rh::ShaderDataType::Float3, "a_Position" }
             });
-        auto ebo = Engine::IndexBuffer::Create(indices, faces.size() * 3);
+        auto ebo = rh::IndexBuffer::Create(indices, faces.size() * 3);
 
-        wireframe = Engine::VertexArray::Create();
+        wireframe = rh::VertexArray::Create();
         wireframe->Bind();
         wireframe->AddVertexBuffer(vbo);
         wireframe->SetIndexBuffer(ebo);

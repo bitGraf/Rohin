@@ -2,7 +2,7 @@
 
 #include "Engine/Renderer/VertexArray.hpp"
 
-namespace Engine {
+namespace rh {
 
     class OpenGLVertexArray : public VertexArray {
     public:

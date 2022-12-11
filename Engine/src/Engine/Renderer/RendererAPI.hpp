@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Engine/Core/GameMath.hpp"
 #include "VertexArray.hpp"
 
-namespace Engine {
+namespace rh {
     
     class RendererAPI {
     public:
@@ -12,7 +11,7 @@ namespace Engine {
         };
 
     public:
-        virtual void SetClearColor(const math::vec4& color) = 0;
+        virtual void SetClearColor(const laml::Vec4& color) = 0;
         virtual void Clear() = 0;
 
         virtual void Init() = 0;

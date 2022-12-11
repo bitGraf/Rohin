@@ -4,7 +4,7 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 
-namespace Engine {
+namespace rh {
 
     /* Texture2D *******************************************/
     OpenGLTexture2D::OpenGLTexture2D(const std::string& path) 

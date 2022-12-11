@@ -2,7 +2,7 @@
 
 #define TRACK_NEW_AND_DELETE 0
 
-namespace Engine {
+namespace rh {
 
     namespace MemoryTracker {
         void Alloc(size_t sz);

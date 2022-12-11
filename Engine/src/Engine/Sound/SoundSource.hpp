@@ -3,7 +3,7 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Sound/SoundBuffer.hpp"
 
-namespace Engine {
+namespace rh {
 
     class SoundSource {
     public:

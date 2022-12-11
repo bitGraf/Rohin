@@ -11,7 +11,7 @@
 #include "Engine/Scene/Scene.hpp"
 #include "Engine/Core/MemoryTrack.hpp"
 
-namespace Engine {
+namespace rh {
 
     class Application {
     public:

@@ -2,7 +2,7 @@
 
 #include "Engine/Renderer/Texture.hpp"
 
-namespace Engine {
+namespace rh {
 
     class OpenGLTexture2D : public Texture2D {
     public:

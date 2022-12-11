@@ -2,11 +2,11 @@
 
 #include "RendererAPI.hpp"
 
-namespace Engine {
+namespace rh {
 
     class RenderCommand {
     public:
-        inline static void SetClearColor(const math::vec4& color) {
+        inline static void SetClearColor(const laml::Vec4& color) {
             s_RendererAPI->SetClearColor(color);
         }
         inline static void Clear() {

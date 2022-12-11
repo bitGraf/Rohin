@@ -5,7 +5,7 @@
 #include "Engine/Sound/SoundFileFormats.hpp"
 #include "AL/al.h"
 
-namespace Engine {
+namespace rh {
 
     const size_t m_NumBuffers = 8;
     const ALsizei m_BufferSize = 65536; // 32kB

@@ -10,7 +10,7 @@ typedef struct // copied from <stb_trutype.h>
     float xoff, yoff, xadvance;
 } _bakedchar;
 
-namespace Engine {
+namespace rh {
 
     class DynamicFont {
     public:

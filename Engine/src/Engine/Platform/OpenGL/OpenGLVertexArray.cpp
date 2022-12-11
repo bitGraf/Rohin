@@ -3,7 +3,7 @@
 
 #include <glad/glad.h>
 
-namespace Engine {
+namespace rh {
 
     static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type) {
         switch (type) {

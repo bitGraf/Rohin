@@ -2,7 +2,7 @@
 
 #include "Engine/Renderer/Buffer.hpp"
 
-namespace Engine {
+namespace rh {
 
     /* Vertex Buffer *************************************************************/
     class OpenGLVertexBuffer : public VertexBuffer {

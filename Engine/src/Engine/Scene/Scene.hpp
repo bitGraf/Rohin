@@ -4,7 +4,7 @@
 #include "Engine/Event/Event.hpp"
 #include "Engine/Core/Timing.hpp"
 
-namespace Engine {
+namespace rh {
 
     class Scene {
     public:

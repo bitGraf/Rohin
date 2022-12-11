@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <cstring>
 
-namespace Engine {
+namespace rh {
 
     struct Catalog {
         size_t buffer_length;

@@ -9,7 +9,7 @@
 //#include "TextRenderer.hpp"
 #include "Engine/GameObject/Components.hpp"
 
-namespace Engine {
+namespace rh {
     class Renderer
     {
     public:
@@ -40,7 +40,7 @@ namespace Engine {
         */
 
         // Set all shader constants and save for later
-        static void Begin3DScene(const Camera& camera, const math::mat4& transform, 
+        static void Begin3DScene(const Camera& camera, const laml::Mat4& transform, 
             u32 numPointLights, const Light pointLights[32],
             u32 numSpotLights,  const Light spotLights[32],
             const Light& sun);
@@ -60,10 +60,10 @@ namespace Engine {
         static void RenderDebugUI();
 
         // end pre-pass and begin render pipeline
-        static void UpdateLighting(const math::mat4& ViewMatrix,
+        static void UpdateLighting(const laml::Mat4& ViewMatrix,
             u32 numPointLights, const Light pointLights[32],
             u32 numSpotLights, const Light spotLights[32],
-            const Light& sun, const math::mat4& projection);
+            const Light& sun, const laml::Mat4& projection);
         static void UploadLights(const Ref<Shader> shader);
         static void Flush();
         static void Precompute();
@@ -75,21 +75,21 @@ namespace Engine {
         static void ToggleDebugSoundOutput();
         static void ToggleDebugControllerOutput();
 
-        static void Submit(const math::mat4& transform = math::mat4());
-        static void Submit(const Ref<VertexArray>& vao, const math::mat4& transform, const math::vec3& color);
-        static void SubmitMesh(const Mesh* mesh, const math::mat4& transform);
-        static void SubmitMesh(const Mesh* mesh, const math::mat4& transform, md5::Animation* anim); // For animation
-        static void SubmitMesh_drawNormals(const Ref<Mesh>& mesh, const math::mat4& transform);
+        static void Submit(const laml::Mat4& transform = laml::Mat4(1.0f));
+        static void Submit(const Ref<VertexArray>& vao, const laml::Mat4& transform, const laml::Vec3& color);
+        static void SubmitMesh(const Mesh* mesh, const laml::Mat4& transform);
+        // ANIM_HOOK static void SubmitMesh(const Mesh* mesh, const laml::Mat4& transform, md5::Animation* anim); // For animation
+        static void SubmitMesh_drawNormals(const Ref<Mesh>& mesh, const laml::Mat4& transform);
 
-        static void Draw3DText(const std::string& text, const math::vec3& pos, const math::vec3 color);
+        static void Draw3DText(const std::string& text, const laml::Vec3& pos, const laml::Vec3& color);
         static void DrawSkeletonDebug(
             const TagComponent& tag, 
             const TransformComponent& transform, 
             const MeshRendererComponent& mesh, 
-            const MeshAnimationComponent& anim,
-            const math::vec3 color);
+            const laml::Vec3& text_color,
+            bool bind_pose = false);
 
-        static void SubmitLine(math::vec3 v0, math::vec3 v1, math::vec4 color);
+        static void SubmitLine(const laml::Vec3& v0, const laml::Vec3& v1, const laml::Vec4& color);
 
         static void SubmitFullscreenQuad();
 

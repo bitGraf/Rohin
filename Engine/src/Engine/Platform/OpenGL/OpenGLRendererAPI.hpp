@@ -2,11 +2,11 @@
 
 #include "Engine/Renderer/RendererAPI.hpp"
 
-namespace Engine {
+namespace rh {
 
     class OpenGLRendererAPI : public RendererAPI {
     public:
-        virtual void SetClearColor(const math::vec4& color) override;
+        virtual void SetClearColor(const laml::Vec4& color) override;
         virtual void Clear() override;
 
         virtual void Init() override;

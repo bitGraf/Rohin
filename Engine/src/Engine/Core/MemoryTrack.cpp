@@ -8,7 +8,7 @@ void* operator new(std::size_t sz) // no inline, required by [replacement.functi
     if (sz == 0)
         ++sz; // avoid std::malloc(0) which may return nullptr on success
 
-    Engine::MemoryTracker::Alloc(sz);
+    rh::MemoryTracker::Alloc(sz);
     if (void *ptr = std::malloc(sz))
         return ptr;
 
@@ -17,11 +17,11 @@ void* operator new(std::size_t sz) // no inline, required by [replacement.functi
 void operator delete(void* ptr, std::size_t sz) noexcept
 {
     std::free(ptr);
-    Engine::MemoryTracker::Free(sz);
+    rh::MemoryTracker::Free(sz);
 }
 #endif
 
-namespace Engine {
+namespace rh {
 
     namespace MemoryTracker {
 

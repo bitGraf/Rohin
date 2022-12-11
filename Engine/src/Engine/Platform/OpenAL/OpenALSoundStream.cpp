@@ -3,7 +3,7 @@
 #include "OpenALSoundStream.hpp"
 #include "AL/efx.h"
 
-namespace Engine {
+namespace rh {
 
     Ref<SoundStream> SoundStream::Create(const std::string& filename) {
         return std::make_shared<OpenALSoundStream>(filename);

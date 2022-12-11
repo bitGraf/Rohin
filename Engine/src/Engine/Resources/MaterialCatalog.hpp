@@ -3,9 +3,8 @@
 #include "Engine/Core/Base.hpp"
 #include "Engine/Renderer/Mesh.hpp"
 #include "Engine/Resources/nbt/nbt.hpp"
-#include "Engine/Resources/MD5MeshLoader.hpp"
 
-namespace Engine {
+namespace rh {
 
     struct MaterialSpec {
         std::string Name;
@@ -15,7 +14,7 @@ namespace Engine {
         Texture2D* Metalness = nullptr;
         Texture2D* Roughness = nullptr;
         Texture2D* Emissive = nullptr;
-        math::vec3 AlbedoBase;
+        laml::Vec3 AlbedoBase;
         float RoughnessBase = 1;
         float MetalnessBase = 0;
         float TextureScale = 1;
@@ -32,6 +31,6 @@ namespace Engine {
         TextureCube* GetTextureCube(const std::string& texture_path);
 
         void RegisterMaterial(const std::string& mat_name, const nbt::tag_compound& data);
-        void RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap);
+        // ANIM_HOOK void RegisterMaterial(const std::unordered_map<std::string, md5::Material>& materialMap);
     };
 }

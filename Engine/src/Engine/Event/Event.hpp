@@ -6,7 +6,7 @@
 #include <functional>
 #include <string>
 
-namespace Engine {
+namespace rh {
 
     enum class EventType {
         none = 0,

@@ -2,7 +2,7 @@
 #include "Engine/Resources/nbt/io.hpp"
 #include "Engine/Resources/nbt/tag.hpp"
 
-namespace nbt {
+namespace rh::nbt {
 	namespace io {
 		tag_type read_type(std::istream& is) {
 			nbt_byte t;

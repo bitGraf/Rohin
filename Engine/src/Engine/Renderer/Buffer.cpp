@@ -6,7 +6,7 @@
 /* API implementations */
 #include "Engine/Platform/OpenGL/OpenGLBuffer.hpp"
 
-namespace Engine {
+namespace rh {
     Ref<IndexBuffer> IndexBuffer::Create(void* indices, u32 count) {
         switch (Renderer::GetAPI()) {
         case RendererAPI::API::None:

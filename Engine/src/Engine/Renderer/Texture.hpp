@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Engine {
+namespace rh {
 
     class Texture {
     public:

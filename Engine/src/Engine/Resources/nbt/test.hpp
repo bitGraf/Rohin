@@ -6,7 +6,7 @@
     #include "Engine/Renderer/Mesh.hpp"
 #endif
 
-namespace nbtTest {
+namespace rh::nbtTest {
 
 	void test1() {
 		{
@@ -41,7 +41,7 @@ namespace nbtTest {
 	void test2() {
 		{
 			// test if the nbt format can be easily used to store mesh data
-			auto mesh = std::make_shared<Engine::Mesh>("Data/Models/cube.mesh", true);
+			auto mesh = std::make_shared<rh::Mesh>("Data/Models/cube.mesh", true);
 
 			auto verts = mesh->GetVertices();
 			auto inds = mesh->GetIndices();
@@ -58,11 +58,11 @@ namespace nbtTest {
 			};
 
 			struct Vertex {
-				math::vec3 Position;
-				math::vec3 Normal;
-				math::vec3 Tangent;
-				math::vec3 Binormal;
-				math::vec2 Texcoord;
+				laml::Vec3 Position;
+				laml::Vec3 Normal;
+				laml::Vec3 Tangent;
+				laml::Vec3 Binormal;
+				laml::Vec2 Texcoord;
 			};
 			*/
 
@@ -71,13 +71,13 @@ namespace nbtTest {
 			mesh_data["numInds"] = nbt::tag_short(inds.size() * 3);
 
 			std::vector<nbt::nbt_byte> vert_byte_vec;
-			vert_byte_vec.reserve(verts.size() * sizeof(Engine::Vertex));
-			vert_byte_vec.assign(reinterpret_cast<nbt::nbt_byte*>(verts.data()), reinterpret_cast<nbt::nbt_byte*>(verts.data()) + (verts.size() * sizeof(Engine::Vertex)));
+			vert_byte_vec.reserve(verts.size() * sizeof(rh::Vertex));
+			vert_byte_vec.assign(reinterpret_cast<nbt::nbt_byte*>(verts.data()), reinterpret_cast<nbt::nbt_byte*>(verts.data()) + (verts.size() * sizeof(rh::Vertex)));
 			mesh_data["vertices"] = nbt::tag_byte_array(std::move(vert_byte_vec));
 
 			std::vector<nbt::nbt_byte> ind_byte_vec;
-			ind_byte_vec.reserve(inds.size() * sizeof(Engine::Index));
-			ind_byte_vec.assign(reinterpret_cast<nbt::nbt_byte*>(inds.data()), reinterpret_cast<nbt::nbt_byte*>(inds.data()) + (inds.size() * sizeof(Engine::Index)));
+			ind_byte_vec.reserve(inds.size() * sizeof(rh::Index));
+			ind_byte_vec.assign(reinterpret_cast<nbt::nbt_byte*>(inds.data()), reinterpret_cast<nbt::nbt_byte*>(inds.data()) + (inds.size() * sizeof(rh::Index)));
 			mesh_data["indices"] = nbt::tag_byte_array(std::move(ind_byte_vec));
 
 			mesh_data["meshFlag"] = nbt::nbt_byte(0); // placeholder for now
@@ -170,12 +170,12 @@ namespace nbtTest {
         using namespace nbt;
         tag_compound comp{
             { "name", "Level NBT Test" },
-            { "position", math::vec3(1,2,3)} ,
-            {"matrix", math::mat4(1,2,3.4,4)},
+            { "position", laml::Vec3(1,2,3)} ,
+            {"matrix", laml::Mat4(1,2,3.4,4)},
             {"verts", tag_list::of<tag_vec3>({
-                math::vec3(1,2,3),
-                math::vec3(2,3,4),
-                math::vec3(3,4,5)
+                laml::Vec3(1,2,3),
+                laml::Vec3(2,3,4),
+                laml::Vec3(3,4,5)
                 })}
         };
 
@@ -183,7 +183,7 @@ namespace nbtTest {
 
         auto v = comp["position"].as<tag_vec3>().get();
         std::cout << v << std::endl;
-        comp["position"].set(tag_vec3(math::vec3(2,4,5)));
+        comp["position"].set(tag_vec3(laml::Vec3(2,4,5)));
         v = comp["position"].as<tag_vec3>().get();
         std::cout << v << std::endl << std::endl;
 

@@ -2,7 +2,7 @@
 
 #include "OpenALContext.hpp"
 
-namespace Engine {
+namespace rh {
 
     Ref<SoundContext> SoundContext::Create(Ref<SoundDevice> device) {
         return std::make_shared<OpenALContext>(device);
@@ -35,15 +35,15 @@ namespace Engine {
         alcDestroyContext(m_context);
     }
 
-    void OpenALContext::SetListenerPosition(math::vec3 position) const {
+    void OpenALContext::SetListenerPosition(laml::Vec3 position) const {
         alListener3f(AL_POSITION, position.x, position.y, position.z);
     }
 
-    void OpenALContext::SetListenerVelocity(math::vec3 velocity) const {
+    void OpenALContext::SetListenerVelocity(laml::Vec3 velocity) const {
         alListener3f(AL_VELOCITY, velocity.x, velocity.y, velocity.z);
     }
 
-    void OpenALContext::SetListenerOrientation(math::vec3 at, math::vec3 up) const {
+    void OpenALContext::SetListenerOrientation(laml::Vec3 at, laml::Vec3 up) const {
         ALfloat vector[6] = { at.x, at.y, at.z, up.x, up.y, up.z };
         alListenerfv(AL_ORIENTATION, vector);
     }

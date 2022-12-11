@@ -4,7 +4,7 @@
 
 #include "Engine/Platform/OpenGL/OpenGLShader.hpp"
 
-namespace Engine {
+namespace rh {
 
     Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) {
         switch (Renderer::GetAPI()) {

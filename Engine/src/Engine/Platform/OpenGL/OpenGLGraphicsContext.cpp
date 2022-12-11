@@ -4,7 +4,7 @@
 #include <glfw/glfw3.h>
 #include <glad/glad.h>
 
-namespace Engine {
+namespace rh {
 
     OpenGLGraphicsContext::OpenGLGraphicsContext(GLFWwindow* windowHandle) 
         : m_WindowHandle(windowHandle) {

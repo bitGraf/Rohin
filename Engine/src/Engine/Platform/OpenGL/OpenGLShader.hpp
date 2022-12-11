@@ -1,11 +1,10 @@
 #pragma once
 
 #include "Engine/Renderer/Shader.hpp"
-#include "Engine/Core/GameMath.hpp"
 
 typedef unsigned int GLenum;
 
-namespace Engine {
+namespace rh {
 
     class OpenGLShaderUniformDeclaration : public ShaderUniformDeclaration {
     private:
@@ -118,29 +117,29 @@ namespace Engine {
         void SetBool(const std::string &name, bool value) const;
         void SetInt(const std::string &name, s32 value) const;
 
-        void SetVec2(const std::string &name, const math::vec2& value) const;
-        void SetVec4(const std::string &name, const math::vec4& value) const;
+        void SetVec2(const std::string &name, const laml::Vec2& value) const;
+        void SetVec4(const std::string &name, const laml::Vec4& value) const;
 
-        void SetMat2(const std::string &name, const math::mat2& value) const;
-        void SetMat3(const std::string &name, const math::mat3& value) const;
+        void SetMat2(const std::string &name, const laml::Mat2& value) const;
+        void SetMat3(const std::string &name, const laml::Mat3& value) const;
         */
         virtual void SetFloat(const std::string &name, f32 value) const override;
         virtual void SetInt(const std::string &name, s32 value) const override;
-        virtual void SetVec2(const std::string &name, const math::vec2& value) const override;
-        virtual void SetVec3(const std::string &name, const math::vec3& value) const override;
-        virtual void SetVec4(const std::string &name, const math::vec4& value) const override;
-        virtual void SetMat4(const std::string &name, const math::mat4& value) const override;
+        virtual void SetVec2(const std::string &name, const laml::Vec2& value) const override;
+        virtual void SetVec3(const std::string &name, const laml::Vec3& value) const override;
+        virtual void SetVec4(const std::string &name, const laml::Vec4& value) const override;
+        virtual void SetMat4(const std::string &name, const laml::Mat4& value) const override;
 
         // Upload data to uniform location
         void UploadUniformInt(uint32_t location, int32_t value);
         void UploadUniformIntArray(uint32_t location, int32_t* values, int32_t count);
         void UploadUniformFloat(uint32_t location, float value);
-        void UploadUniformFloat2(uint32_t location, const math::vec2& value);
-        void UploadUniformFloat3(uint32_t location, const math::vec3& value);
-        void UploadUniformFloat4(uint32_t location, const math::vec4& value);
-        void UploadUniformMat3(uint32_t location, const math::mat3& values);
-        void UploadUniformMat4(uint32_t location, const math::mat4& values);
-        void UploadUniformMat4Array(uint32_t location, const math::mat4& values, uint32_t count);
+        void UploadUniformFloat2(uint32_t location, const laml::Vec2& value);
+        void UploadUniformFloat3(uint32_t location, const laml::Vec3& value);
+        void UploadUniformFloat4(uint32_t location, const laml::Vec4& value);
+        void UploadUniformMat3(uint32_t location, const laml::Mat3& values);
+        void UploadUniformMat4(uint32_t location, const laml::Mat4& values);
+        void UploadUniformMat4Array(uint32_t location, const laml::Mat4& values, uint32_t count);
 
         void UploadUniformStruct(OpenGLShaderUniformDeclaration* uniform, byte* buffer, uint32_t offset);
 

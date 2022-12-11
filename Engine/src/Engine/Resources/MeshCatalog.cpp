@@ -1,27 +1,28 @@
 #include <enpch.hpp>
 #include "MeshCatalog.hpp"
 
-namespace Engine {
+namespace rh {
 
     namespace MeshCatalog {
         std::unordered_map<std::string, Mesh*> m_MeshList;
 
         void Register(const std::string& mesh_name, const std::string& filepath, FileFormat file_type) {
             switch (file_type) {
-            case FileFormat::MD5_Text: {
-                md5::Model model;
-                md5::LoadMD5MeshFile(filepath, &model);
-                Mesh* mesh = new Mesh(model);
+            case FileFormat::NBT_Basic: {
+                Mesh* mesh = new Mesh(filepath, 0.0f, 0.0f);
                 if (mesh->Loaded()) {
                     m_MeshList[mesh_name] = mesh;
                     ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, filepath);
                 }
             }break;
-            case FileFormat::NBT_Basic: {
+            case FileFormat::MESH_File: {
                 Mesh* mesh = new Mesh(filepath);
                 if (mesh->Loaded()) {
                     m_MeshList[mesh_name] = mesh;
                     ENGINE_LOG_INFO("Registering Mesh: [{0}] from [{1}]", mesh_name, filepath);
+                }
+                else {
+                    ENGINE_LOG_ERROR("Failed to load Mesh [{0}] from [{1}]", mesh_name, filepath);
                 }
             }break;
             case FileFormat::None: {

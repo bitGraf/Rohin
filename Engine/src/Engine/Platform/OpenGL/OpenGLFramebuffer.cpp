@@ -3,7 +3,7 @@
 
 #include <glad/glad.h>
 
-namespace Engine {
+namespace rh {
 
     namespace Utils {
         static bool IsDepthFormat(FramebufferTextureFormat format) {

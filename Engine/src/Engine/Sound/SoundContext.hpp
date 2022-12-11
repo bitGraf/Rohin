@@ -1,11 +1,9 @@
 #pragma once
 
 #include "Engine/Core/Base.hpp"
-#include "Engine/Core/GameMath.hpp"
-
 #include "Engine/Sound/SoundDevice.hpp"
 
-namespace Engine {
+namespace rh {
 
     class SoundContext {
     public:
@@ -15,9 +13,9 @@ namespace Engine {
 
         virtual void* GetNativeContext() const = 0;
 
-        virtual void SetListenerPosition(math::vec3 position) const = 0;
-        virtual void SetListenerVelocity(math::vec3 velocity) const = 0;
-        virtual void SetListenerOrientation(math::vec3 at, math::vec3 up) const = 0;
+        virtual void SetListenerPosition(laml::Vec3 position) const = 0;
+        virtual void SetListenerVelocity(laml::Vec3 velocity) const = 0;
+        virtual void SetListenerOrientation(laml::Vec3 at, laml::Vec3 up) const = 0;
 
         static Ref<SoundContext> Create(Ref<SoundDevice> device);
     };

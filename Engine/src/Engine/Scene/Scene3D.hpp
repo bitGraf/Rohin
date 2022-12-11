@@ -1,12 +1,11 @@
 #pragma once
 
 //#include "Engine/GameObject/Registry.hpp"
-#include "Engine/Core/GameMath.hpp"
 #include "Engine/Collision/CollisionWorld.hpp"
 
 #include <entt/entity/registry.hpp>
 
-namespace Engine {
+namespace rh {
 
     class GameObject;
     class Scene3D {

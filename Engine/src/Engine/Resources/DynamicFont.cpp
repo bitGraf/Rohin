@@ -5,7 +5,7 @@
 
 #include "Engine/Resources/MaterialCatalog.hpp"
 
-namespace Engine {
+namespace rh {
 
     //unsigned char DynamicFont::ttf_buffer[DynamicFont::buffer_size];
     const int buffer_size = 1 << 20;
