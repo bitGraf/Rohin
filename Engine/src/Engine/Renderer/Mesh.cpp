@@ -524,7 +524,7 @@ namespace rh {
         m_loaded = true;
     }
 
-    void Mesh::UpdateSkeleton(u32 f1, u32 f2, f32 interp) {        
+    void Mesh::UpdateSkeleton(u32 f1, u32 f2, f32 interp) {
         for (u32 node_idx = 0; node_idx < m_currentAnim->num_nodes; node_idx++) {
             SkeleJoint& bone = m_Skeleton.bones[node_idx];
             const AnimNode& anim_node = m_currentAnim->nodes[node_idx];

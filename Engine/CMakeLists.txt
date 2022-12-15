@@ -15,6 +15,11 @@ add_subdirectory(deps/math_lib)
 
 add_library(${ENGINE_NAME} STATIC)
 
+set(ANIMATION_SRC
+    # src/Engine/Collision
+    src/Engine/Animation/Animation.cpp
+    src/Engine/Animation/Animation.hpp
+)
 set(CORE_SRC 
     # src/Engine/Core
     src/Engine/Core/Application.cpp
@@ -199,6 +204,7 @@ set(ALL_SRC
     src/enpch.cpp
     src/enpch.hpp
     ${ENGINE_SRC}
+    ${ANIMATION_SRC}
     ${COLLISION_SRC}
     ${CORE_SRC}
     ${EVENT_SRC}
@@ -220,6 +226,7 @@ target_sources(${ENGINE_NAME} PRIVATE ${ALL_SRC})
 
 source_group(Src FILES src/Engine.hpp src/enpch.cpp src/enpch.hpp)
 source_group(Src\\Engine FILES ${ENGINE_SRC})
+source_group(Src\\Engine\\Animation FILES ${ANIMATION_SRC})
 source_group(Src\\Engine\\Collision FILES ${COLLISION_SRC})
 source_group(Src\\Engine\\Core FILES ${CORE_SRC})
 source_group(Src\\Engine\\Event FILES ${EVENT_SRC})
