@@ -1,2 +1,2 @@
 cmake_minimum_required(VERSION 3.20)
-INCLUDE("EngineCMake.cmake")
+INCLUDE("GameCMake.cmake")
