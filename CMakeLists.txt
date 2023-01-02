@@ -22,4 +22,4 @@ set(ROHIN_RENDERER "OpenGL")
 
 # Subdirectories
 add_subdirectory(Engine)
-add_subdirectory(Game)
+#add_subdirectory(Game)

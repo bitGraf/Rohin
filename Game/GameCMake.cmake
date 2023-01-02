@@ -1,6 +1,7 @@
 # The actual game
 if( MSVC )
     SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:mainCRTStartup" )
+    message(STATUS "Linker flags: ${CMAKE_EXE_LINKER_FLAGS}")
 endif()
 
 set(SRC_DIR src)
@@ -21,8 +22,9 @@ set(ALL_SRC
     ${GAME_SCENES_SRC}
     ${GAME_SCRIPTS_SRC}
 )
-add_executable( Game ${ALL_SRC})
-target_link_libraries(Game PUBLIC Engine)
+#add_executable( Game ${ALL_SRC})
+add_library(Game ${ALL_SRC})
+#target_link_libraries(Game PUBLIC Engine)
 target_include_directories(Game PRIVATE ${SRC_DIR})
 source_group(src FILES ${GAME_SRC})
 source_group(src\\Scenes FILES ${GAME_SCENES_SRC})
