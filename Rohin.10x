@@ -7,12 +7,12 @@
 		<Recursive>true</Recursive>
 		<IsVirtual>false</IsVirtual>
 		<IsFolder>false</IsFolder>
-		<BuildCommand></BuildCommand>
+		<BuildCommand>call build.bat</BuildCommand>
 		<RebuildCommand></RebuildCommand>
 		<BuildFileCommand></BuildFileCommand>
 		<CleanCommand></CleanCommand>
 		<BuildWorkingDirectory></BuildWorkingDirectory>
-		<RunCommand>W:\Rohin\build\Engine\Debug\Engine.exe</RunCommand>
+		<RunCommand>unity_build\win32_entry.exe</RunCommand>
 		<DebugCommand></DebugCommand>
 		<ExePathCommand></ExePathCommand>
 		<DebugSln></DebugSln>
@@ -34,6 +34,7 @@
 			<AdditionalIncludePath>C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\um</AdditionalIncludePath>
 			<AdditionalIncludePath>C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\winrt</AdditionalIncludePath>
 			<AdditionalIncludePath>C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\cppwinrt</AdditionalIncludePath>
+			<AdditionalIncludePath>W:\Rohin\Engine\src</AdditionalIncludePath>
 		</AdditionalIncludePaths>
 		<Defines>
 			<Define>HANDMADE_INTERNAL=1</Define>
