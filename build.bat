@@ -23,10 +23,10 @@ del *.pdb > NUL 2> NUL
 
 rem Build the Game.dll
 echo WAITING FOR PDB > lock.tmp
-cl /IW:\Rohin\Engine\src %CommonCompilerFlags% ..\%GamePath%\game.cpp /Fmgame.map /LD /link %CommonLinkerFlags% /PDB:game_%random%.pdb /EXPORT:GetGameAPI
+cl /I..\Engine\src %CommonCompilerFlags% ..\%GamePath%\game.cpp /Fmgame.map /LD /link %CommonLinkerFlags% /PDB:game_%random%.pdb /EXPORT:GetGameAPI
 del lock.tmp
 
 rem Build the Engine.exe
-cl /IW:\Rohin\Engine\src %CommonCompilerFlags% ..\%EnginePath%\Platform\win32\win32_entry.cpp /Fmwin32_entry.map /link %CommonLinkerFlags% user32.lib Gdi32.lib Winmm.lib opengl32.lib
+cl /I..\Engine\src %CommonCompilerFlags% ..\%EnginePath%\Platform\win32\win32_entry.cpp /Fmwin32_entry.map /link %CommonLinkerFlags% user32.lib Gdi32.lib Winmm.lib opengl32.lib
 
 popd

@@ -91,7 +91,11 @@ Win32InitOpenGL(HWND Window) {
         UINT NumFormats;
         
         bool32 ARBResult = wglChoosePixelFormatARB(WindowDC, ARBPixelFormatAttribList, NULL, 1, &ARBSuggestedPixelFormatIndex, &NumFormats);
-        Assert(ARBResult && (ARBSuggestedPixelFormatIndex == SuggestedPixelFormatIndex));
+        //Assert(ARBResult && (ARBSuggestedPixelFormatIndex == SuggestedPixelFormatIndex));
+        if (ARBResult && (ARBSuggestedPixelFormatIndex != SuggestedPixelFormatIndex)) {
+            // We got a "better" pixel format from the wgl extension
+            SetPixelFormat(WindowDC, ARBSuggestedPixelFormatIndex, NULL);
+        }
 
         // now create a higher-version context
         const int ARBContexAttrivbs[] = {
