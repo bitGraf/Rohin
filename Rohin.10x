@@ -37,9 +37,9 @@
 			<AdditionalIncludePath>W:\Rohin\Engine\src</AdditionalIncludePath>
 		</AdditionalIncludePaths>
 		<Defines>
-			<Define>HANDMADE_INTERNAL=1</Define>
-			<Define>HANDMADE_SLOW=1</Define>
-			<Define>HANDMADE_WIN32=1</Define>
+			<Define>ROHIN_INTERNAL=1</Define>
+			<Define>ROHIN_SLOW=1</Define>
+			<Define>ROHIN_WIN32=1</Define>
 		</Defines>
 		<ConfigProperties>
 			<ConfigAndPlatform>

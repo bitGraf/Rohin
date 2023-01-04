@@ -1,11 +1,15 @@
 #include "game.h"
 
+#include "Engine/Core/MemoryArena.cpp"
+
 static gameImport_t *Engine;
 
 struct game_state {
     int32 value;
 
-    const char* ExePath;
+    const char* ExePath; //tmp
+
+    memory_arena CurrentScene;
 };
 
 // TODO: Rewrite the game code to fit into these functions,
@@ -16,6 +20,8 @@ GAME_INIT_FUNC(GameInit) {
     if (!Memory->IsInitialized) {
         GameState->value = 0;
         GameState->ExePath = Engine->GetEXEPath();
+
+        InitializeArena(&GameState->CurrentScene, Kilobytes(1), (uint8*)Memory->TransientStorage);
 
         Memory->IsInitialized = true;
     }

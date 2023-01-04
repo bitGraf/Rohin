@@ -1,7 +1,9 @@
-#ifndef RH_TYPES_H
-#define RH_TYPES_H
+#ifndef BASE_H
+#define BASE_H
 
 #ifndef RH_TYPES_DEFINED
+#define RH_TYPES_DEFINED
+
 #include <stdint.h>
 
 #define local_persist   static
@@ -34,8 +36,6 @@ typedef size_t memory_index;
 
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 
-#define RH_TYPES_DEFINED
 #endif
-
 
 #endif

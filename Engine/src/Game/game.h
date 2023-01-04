@@ -1,10 +1,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "Engine/Types.h"
-//#include "Game/Types.h"
+#include "Engine/Core/Base.hpp"
 
-#if HANDMADE_SLOW
+#if ROHIN_SLOW
 #define Assert(Expression) if (!(Expression)) { *(int *)0 = 0; }
 #else
 #define Assert(Expression)

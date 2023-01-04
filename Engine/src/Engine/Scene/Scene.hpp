@@ -1,9 +1,5 @@
 #pragma once
 
-#include "Engine/Core/Base.hpp"
-#include "Engine/Event/Event.hpp"
-#include "Engine/Core/Timing.hpp"
-
 namespace rh {
 
     class Scene {

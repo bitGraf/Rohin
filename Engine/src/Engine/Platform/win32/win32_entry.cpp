@@ -2,7 +2,7 @@
  * Platform Independent code below!
  *********************************************************/
 
-#if HANDMADE_SLOW
+#if ROHIN_SLOW
 #define Assert(Expression) if (!(Expression)) { *(int *)0 = 0; }
 #else
 #define Assert(Expression)
@@ -17,7 +17,6 @@
 #include <strsafe.h>
 #include <wingdi.h>
 #include <xinput.h>
-#include <gl/gl.h>
 #include "win32_opengl.cpp"
 
 #include "win32_entry.h"
@@ -235,7 +234,7 @@ Win32ToggleFullscreen(HWND Window) {
 }
 
 internal void
-    Win32ProcessKeyboardMessage(game_button_state* NewState,
+Win32ProcessKeyboardMessage(game_button_state* NewState,
                                 bool32 IsDown) {
     if (NewState->EndedDown != IsDown) {
         NewState->EndedDown = IsDown;
@@ -244,21 +243,21 @@ internal void
 }
 
 internal void 
-    Win32GetInputFileLocation(bool32 InputStream, int SlotIndex, int DestCount, char* Dest) {
+Win32GetInputFileLocation(bool32 InputStream, int SlotIndex, int DestCount, char* Dest) {
     char Temp[64];
     wsprintf(Temp, "loop_edit_%d_%s.hmi", SlotIndex, InputStream ? "input" : "state");
     Win32BuildEXEPathFileName(Temp, DestCount, Dest);
 }
 
 internal win32_replay_buffer* 
-    Win32GetReplayBuffer(int Index) {
+Win32GetReplayBuffer(int Index) {
     Assert(Index < ArrayCount(GlobalWin32State.ReplayBuffers));
     win32_replay_buffer* Result = &GlobalWin32State.ReplayBuffers[Index];
     return Result;
 }
 
 internal void
-    Win32BeginRecordingInput(int InputRecordingIndex) {
+Win32BeginRecordingInput(int InputRecordingIndex) {
     win32_replay_buffer* ReplayBuffer = Win32GetReplayBuffer(InputRecordingIndex);
     if (ReplayBuffer->MemoryBlock) {
         GlobalWin32State.InputRecordingIndex = InputRecordingIndex;
@@ -413,7 +412,7 @@ Win32MainWindowCallback(HWND Window,
                 } else if (VKCode == VK_SPACE) {
                     Win32ProcessKeyboardMessage(&KeyboardController->Back, IsDown);
                 }
-#if HANDMADE_INTERNAL
+#if ROHIN_INTERNAL
                 else if (VKCode == 'P') {
                     if (IsDown)
                         GlobalPause = !GlobalPause;
@@ -518,7 +517,7 @@ Win32MainWindowCallback(HWND Window,
 }
 
 internal void
-    Win32ProcessXInputDigitalButton(DWORD XInputButtonState,
+Win32ProcessXInputDigitalButton(DWORD XInputButtonState,
                                     game_button_state* OldState,
                                     DWORD ButtonBit,
                                     game_button_state* NewState) {
@@ -562,8 +561,6 @@ Win32GetSecondsElapsed(LARGE_INTEGER Start, LARGE_INTEGER End) {
     return Result;
 }
 
-//#include <stdio.h>
-
 internal void
 Win32CreateConsoleAndMapStreams() {
     AllocConsole();
@@ -574,7 +571,8 @@ Win32CreateConsoleAndMapStreams() {
     //printf("stdout Mapped to console!\n");
 }
 
-internal void Win32GetEXEFileName() {
+internal void 
+Win32GetEXEFileName() {
     // NOTE: Never use MAX_PATH in code that is user-facing, because it
     // can be dangerous and lead to bad results.
     DWORD SizeOfFilename = GetModuleFileNameA(0, GlobalWin32State.EXEFileName, sizeof(GlobalWin32State.EXEFileName));
@@ -649,7 +647,7 @@ WinMain(HINSTANCE Instance,
     //WindowClass.hIcon;
     WindowClass.lpszClassName = "RhWindowClass";
 
-#if HANDMADE_INTERNAL
+#if ROHIN_INTERNAL
     // Allocate a console for this app
     if (FlagCreateConsole)
         Win32CreateConsoleAndMapStreams();
@@ -677,7 +675,7 @@ WinMain(HINSTANCE Instance,
 
             GlobalRunning = true;
 
-#if HANDMADE_INTERNAL
+#if ROHIN_INTERNAL
             LPVOID BaseAddress = (LPVOID)Terabytes(2);
 #else
             LPVOID BaseAddress = 0;

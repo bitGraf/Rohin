@@ -1,3 +1,5 @@
+#include <gl/gl.h>
+
 /******************************************************************************
  * WGL_ARB_extensions_string 
  * https://registry.khronos.org/OpenGL/extensions/ARB/WGL_ARB_extensions_string.txt
