@@ -11,7 +11,7 @@ echo ==========================================
 rem /std:c++17
 set CompileDefinitions=/DROHIN_INTERNAL=1 /DROHIN_SLOW=1 /DROHIN_WIN32=1
 set WarningFlags=/W4 /WX /wd4189 /wd4201 /wd4100
-set CommonCompilerFlags=/MTd /nologo /Gm- /GR- /EHa- /Odi /std:c++17 %WarningFlags% /FC /Z7 %CompileDefinitions%
+set CommonCompilerFlags=/MTd /nologo /Gm- /GR- /EHa- /Odi /std:c++14 %WarningFlags% /FC /Z7 %CompileDefinitions%
 set CommonLinkerFlags=/incremental:no /opt:ref
 
 set EnginePath=Engine\src\Engine
