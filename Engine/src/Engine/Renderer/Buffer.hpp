@@ -2,6 +2,8 @@
 
 #include "Engine/Core/Base.hpp"
 
+#include <vector>
+
 namespace rh {
 
     enum class ShaderDataType : u8 {
@@ -103,7 +105,7 @@ namespace rh {
         virtual void SetLayout(const BufferLayout& layout) = 0;
         virtual const BufferLayout& GetLayout() const = 0;
 
-        static Ref<VertexBuffer> Create(void* vertices, u32 size);
+        static VertexBuffer* Create(void* vertices, u32 size);
     };
 
     class IndexBuffer
@@ -116,7 +118,7 @@ namespace rh {
 
         virtual u32 GetCount() const = 0;
 
-        static Ref<IndexBuffer> Create(void* indices, u32 count);
+        static IndexBuffer* Create(void* indices, u32 count);
     };
 
 }

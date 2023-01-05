@@ -11,8 +11,8 @@ struct memory_arena {
 
 void InitializeArena(memory_arena* Arena, memory_index Size, uint8* Base);
 
-#define PushStruct(Arena, type) (type*)PushSize(Arena, sizeof(type))
-#define PushArray(Arena, type, count) (type*)PushSize(Arena, (count)*sizeof(type))
-void* PushSize(memory_arena* Arena, memory_index Size);
+#define PushStruct(Arena, type) (type*)PushSize_(Arena, sizeof(type))
+#define PushArray(Arena, type, count) (type*)PushSize_(Arena, (count)*sizeof(type))
+void* PushSize_(memory_arena* Arena, memory_index Size);
 
 #endif

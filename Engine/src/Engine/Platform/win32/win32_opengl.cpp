@@ -1,4 +1,5 @@
 #include "win32_opengl.h"
+#include "../deps/GLAD/src/glad.c"
 
 const char* 
 Win32GetWGLExtensionString(HDC WindowDC) {
@@ -124,6 +125,7 @@ Win32InitOpenGL(HWND Window) {
 #endif
 
         OutputDebugStringA("OpenGL Context created!\n");
+        gladLoadGL(); // Bind the rest of the OpenGL 4.0 functions
 
 
         const char* glVendorString     = (const char*) glGetString(GL_VENDOR);
@@ -136,6 +138,7 @@ Win32InitOpenGL(HWND Window) {
 
 #if 0
         _glGetStringi_PROC glGetStringi = (_glGetStringi_PROC)wglGetProcAddress("glGetStringi");
+#endif
         GLint num_extensions;
         glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
         OutputDebugStringA("OpenGL Extensions:");
@@ -145,7 +148,6 @@ Win32InitOpenGL(HWND Window) {
             OutputDebugStringA(glExtensionsString);
             OutputDebugStringA("\n");
         }
-#endif
 
         // Set VSync
         _wglSwapIntervalEXT_PROC wglSwapIntervalEXT = (_wglSwapIntervalEXT_PROC)wglGetProcAddress("wglSwapIntervalEXT");

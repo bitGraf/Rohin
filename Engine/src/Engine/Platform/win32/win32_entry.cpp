@@ -2,12 +2,6 @@
  * Platform Independent code below!
  *********************************************************/
 
-#if ROHIN_SLOW
-#define Assert(Expression) if (!(Expression)) { *(int *)0 = 0; }
-#else
-#define Assert(Expression)
-#endif
-
 #include "Game/game.h"
 
 /*********************************************************
@@ -20,6 +14,8 @@
 #include "win32_opengl.cpp"
 
 #include "win32_entry.h"
+#include "Engine/Renderer/Renderer.cpp"
+#include "Engine/Platform/OpenGL/OpenGLRenderer.cpp"
 
 // TODO: Global for now
 global_variable bool32 GlobalRunning;
@@ -46,7 +42,7 @@ X_INPUT_SET_STATE(XInputSetStateSub) {
 global_variable x_input_set_state *XInputSetState_ = XInputSetStateSub;
 #define XInputSetState XInputSetState_
 
-internal void
+internal_func void
 CatStrings(size_t SourceACount, char *SourceA,
                size_t SourceBCount, char *SourceB,
                size_t DestCount, char *Dest) {
@@ -63,7 +59,7 @@ CatStrings(size_t SourceACount, char *SourceA,
     *Dest++ = 0;
 }
 
-internal int 
+internal_func int 
 StringLength(char* String) {
     int Count = 0;
     while(*String++) {
@@ -72,7 +68,7 @@ StringLength(char* String) {
     return Count;
 }
 
-internal void 
+internal_func void 
 Win32BuildEXEPathFileName(char* FileName, int DestCount, char* Dest) {
     CatStrings(GlobalWin32State.OnePastLastSlash - GlobalWin32State.EXEFileName, GlobalWin32State.EXEFileName,
                StringLength(FileName), FileName,
@@ -96,7 +92,13 @@ ENGINE_GET_EXE_PATH(Win32GetEXEPath) {
     return GlobalWin32State.EXEFileName;
 }
 
-internal win32_game_code
+internal_func ENGINE_LOG_MESSAGE(Win32LogMessage) {
+    OutputDebugStringA("[Engine]: ");
+    OutputDebugStringA(msg);
+    OutputDebugStringA("\n");
+}
+
+internal_func win32_game_code
 Win32LoadGameCode(char *SourceDLLName, char *TempDLLName, char* LockFileName) {
     win32_game_code Result = {};
 
@@ -114,9 +116,12 @@ Win32LoadGameCode(char *SourceDLLName, char *TempDLLName, char* LockFileName) {
             
             gameImport_t GameImport = {};
             GameImport.Version = 1;
+            GameImport.LogMessage = Win32LogMessage;
             GameImport.GetEXEPath = Win32GetEXEPath;
+            GameImport.BeginFrame = rh::RenderBeginFrame;
+            GameImport.EndFrame   = rh::RenderEndFrame;
 
-            gameExport_t GameExport = GameGetApi(&GameImport);
+            gameExport_t GameExport = GameGetApi(GameImport);
 
             Result.Init        = GameExport.Init;
             Result.Frame       = GameExport.Frame;
@@ -135,7 +140,7 @@ Win32LoadGameCode(char *SourceDLLName, char *TempDLLName, char* LockFileName) {
     return(Result);
 }
 
-internal void
+internal_func void
 Win32UnloadGameCode(win32_game_code *GameCode) {
     if(GameCode->GameCodeDLL) {
         FreeLibrary(GameCode->GameCodeDLL);
@@ -150,7 +155,7 @@ Win32UnloadGameCode(win32_game_code *GameCode) {
     GameCode->Shutdown = 0;
 }
 
-internal void
+internal_func void
 Win32LoadXInput() {
     HMODULE XInputLibrary;
     
@@ -179,7 +184,7 @@ Win32LoadXInput() {
     }
 }
 
-internal win32_window_dimension
+internal_func win32_window_dimension
 Win32GetWindowDimension(HWND Window) {
     win32_window_dimension Result;
 
@@ -191,25 +196,27 @@ Win32GetWindowDimension(HWND Window) {
     return Result;
 }
 
-internal void
+internal_func void
 Win32DisplayBufferToWindow(HDC DeviceContext, int WindowWidth, int WindowHeight) {
-
-    glViewport(0, 0, WindowWidth, WindowHeight);
-
-    glClearColor(1.0f, 0.0f, 1.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
 
     SwapBuffers(DeviceContext);
 
 #if 0
-    glFinish();
-    // Draw text
-    TCHAR text[ ] = "OpenGL single buffer";
-    TextOutA(DeviceContext,0,0,text, ARRAYSIZE(text));
+    if (GlobalWin32State.InputRecordingIndex == 1) {
+        glFinish();
+        // Draw text
+        TCHAR text[ ] = "Recording input:";
+        TextOutA(DeviceContext,0,0,text, ARRAYSIZE(text));
+    } else if (GlobalWin32State.InputPlayingIndex == 1) {
+        glFinish();
+        // Draw text
+        TCHAR text[ ] = "Replaying input:";
+        TextOutA(DeviceContext,0,16,text, ARRAYSIZE(text));
+    }
 #endif
 }
 
-internal void 
+internal_func void 
 Win32ToggleFullscreen(HWND Window) {
     // TODO: Look into ChangeDisplaySettings function to change monitor refresh rate/resolution
     DWORD Style = GetWindowLong(Window, GWL_STYLE);
@@ -233,7 +240,7 @@ Win32ToggleFullscreen(HWND Window) {
     }
 }
 
-internal void
+internal_func void
 Win32ProcessKeyboardMessage(game_button_state* NewState,
                                 bool32 IsDown) {
     if (NewState->EndedDown != IsDown) {
@@ -242,21 +249,21 @@ Win32ProcessKeyboardMessage(game_button_state* NewState,
     }
 }
 
-internal void 
+internal_func void 
 Win32GetInputFileLocation(bool32 InputStream, int SlotIndex, int DestCount, char* Dest) {
     char Temp[64];
     wsprintf(Temp, "loop_edit_%d_%s.hmi", SlotIndex, InputStream ? "input" : "state");
     Win32BuildEXEPathFileName(Temp, DestCount, Dest);
 }
 
-internal win32_replay_buffer* 
+internal_func win32_replay_buffer* 
 Win32GetReplayBuffer(int Index) {
     Assert(Index < ArrayCount(GlobalWin32State.ReplayBuffers));
     win32_replay_buffer* Result = &GlobalWin32State.ReplayBuffers[Index];
     return Result;
 }
 
-internal void
+internal_func void
 Win32BeginRecordingInput(int InputRecordingIndex) {
     win32_replay_buffer* ReplayBuffer = Win32GetReplayBuffer(InputRecordingIndex);
     if (ReplayBuffer->MemoryBlock) {
@@ -275,13 +282,13 @@ Win32BeginRecordingInput(int InputRecordingIndex) {
     }
 }
 
-internal void
+internal_func void
     Win32EndRecordingInput() {
     CloseHandle(GlobalWin32State.RecordingHandle);
     GlobalWin32State.InputRecordingIndex = 0;
 }
 
-internal void
+internal_func void
     Win32BeginInputPlayback(int InputPlayingIndex) {
     win32_replay_buffer* ReplayBuffer = Win32GetReplayBuffer(InputPlayingIndex);
     if (ReplayBuffer->MemoryBlock) {
@@ -301,19 +308,19 @@ internal void
     }
 }
 
-internal void
+internal_func void
     Win32EndInputPlayback() {
     CloseHandle(GlobalWin32State.PlaybackHandle);
     GlobalWin32State.InputPlayingIndex = 0;
 }
 
-internal void 
+internal_func void 
     Win32RecordInput(game_input* NewInput) {
     DWORD BytesWritten;
     WriteFile(GlobalWin32State.RecordingHandle, NewInput, sizeof(*NewInput), &BytesWritten, 0);
 }
 
-internal void 
+internal_func void 
     Win32PlaybackInput(game_input* NewInput) {
     DWORD BytesRead;
     if (ReadFile(GlobalWin32State.PlaybackHandle, NewInput, sizeof(*NewInput), &BytesRead, 0)) {
@@ -516,7 +523,7 @@ Win32MainWindowCallback(HWND Window,
     return Result;
 }
 
-internal void
+internal_func void
 Win32ProcessXInputDigitalButton(DWORD XInputButtonState,
                                     game_button_state* OldState,
                                     DWORD ButtonBit,
@@ -526,7 +533,7 @@ Win32ProcessXInputDigitalButton(DWORD XInputButtonState,
     NewState->HalfTransitionCount = (OldState->EndedDown == NewState->EndedDown) ? 1 : 0;
 }
 
-internal void
+internal_func void
 Win32ProcessPendingMessages() {
     MSG Message;
     while (PeekMessageA(&Message, NULL, 0, 0, PM_REMOVE)) {
@@ -535,7 +542,7 @@ Win32ProcessPendingMessages() {
     }
 }
 
-internal real32
+internal_func real32
 Win32ProcessXInputStickValue(SHORT StickValue, SHORT DeadzoneValue) {
     real32 Value = 0;
 
@@ -561,7 +568,7 @@ Win32GetSecondsElapsed(LARGE_INTEGER Start, LARGE_INTEGER End) {
     return Result;
 }
 
-internal void
+internal_func void
 Win32CreateConsoleAndMapStreams() {
     AllocConsole();
     //SetStdHandle();
@@ -571,7 +578,7 @@ Win32CreateConsoleAndMapStreams() {
     //printf("stdout Mapped to console!\n");
 }
 
-internal void 
+internal_func void 
 Win32GetEXEFileName() {
     // NOTE: Never use MAX_PATH in code that is user-facing, because it
     // can be dangerous and lead to bad results.
@@ -580,6 +587,56 @@ Win32GetEXEFileName() {
     for(char *Scan = GlobalWin32State.EXEFileName; *Scan; ++Scan) {
         if(*Scan == '\\') {
             GlobalWin32State.OnePastLastSlash = Scan + 1;
+        }
+    }
+}
+
+inline void 
+Win32ListRenderCommands(render_command_buffer* Buffer) {
+    uint32 CommandCount = Buffer->ElementCount;
+    uint32 offset = 0;
+    for (uint32 CommandIndex = 0; CommandIndex < CommandCount; ++CommandIndex) {
+        render_command_header* Header = (render_command_header*)(Buffer->Base + offset);
+        offset += Header->Size;
+
+        void* Data = (uint8*)Header + sizeof(*Header);
+        switch(Header->Type) {
+            case render_command_type_CMD_Bind_Shader: {
+                OutputDebugStringA("render_command_type_CMD_Bind_Shader\n");
+            } break;
+            case render_command_type_CMD_Upload_Uniform_int: {
+                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_int\n");
+            } break;
+            case render_command_type_CMD_Upload_Uniform_float: {
+                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_float\n");
+            } break;
+            case render_command_type_CMD_Upload_Uniform_vec2: {
+                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_vec2\n");
+            } break;
+            case render_command_type_CMD_Upload_Uniform_vec3: {
+                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_vec3\n");
+            } break;
+            case render_command_type_CMD_Upload_Uniform_vec4: {
+                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_vec4\n");
+            } break;
+            case render_command_type_CMD_Upload_Uniform_mat4: {
+                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_mat4\n");
+            } break;
+            case render_command_type_CMD_Bind_Framebuffer: {
+                OutputDebugStringA("render_command_type_CMD_Bind_Framebuffer\n");
+            } break;
+            case render_command_type_CMD_Clear_Buffer: {
+                OutputDebugStringA("render_command_type_CMD_Clear_Buffer\n");
+            } break;
+            case render_command_type_CMD_Bind_Texture: {
+                OutputDebugStringA("render_command_type_CMD_Bind_Texture\n");
+            } break;
+            case render_command_type_CMD_Bind_VAO: {
+                OutputDebugStringA("render_command_type_CMD_Bind_VAO\n");
+            } break;
+            case render_command_type_CMD_Submit: {
+                OutputDebugStringA("render_command_type_CMD_Submit\n");
+            } break;
         }
     }
 }
@@ -598,7 +655,7 @@ Win32GetEXEFileName() {
 
 
 
-internal void 
+internal_func void 
 Win32Init() {
     GlobalWin32State.WindowPosition.length = sizeof(GlobalWin32State.WindowPosition);
 
@@ -676,9 +733,9 @@ WinMain(HINSTANCE Instance,
             GlobalRunning = true;
 
 #if ROHIN_INTERNAL
-            LPVOID BaseAddress = (LPVOID)Terabytes(2);
+            uint64 BaseAddress = Terabytes(2);
 #else
-            LPVOID BaseAddress = 0;
+            uint64 BaseAddress = 0;
 #endif
             game_memory GameMemory = {};
             GameMemory.PermanentStorageSize = Megabytes(64);
@@ -686,10 +743,18 @@ WinMain(HINSTANCE Instance,
 
             GlobalWin32State.TotalSize = GameMemory.PermanentStorageSize + GameMemory.TransientStorageSize;
             // TODO: look into MEM_LARGE_PAGES
-            GlobalWin32State.GameMemoryBlock = VirtualAlloc(BaseAddress, (size_t)GlobalWin32State.TotalSize,
+            GlobalWin32State.GameMemoryBlock = VirtualAlloc((LPVOID)BaseAddress, (size_t)GlobalWin32State.TotalSize,
                                                        MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
             GameMemory.PermanentStorage = GlobalWin32State.GameMemoryBlock;
             GameMemory.TransientStorage = ((uint8*)GameMemory.PermanentStorage + GameMemory.PermanentStorageSize);
+
+            
+            uint64 RenderStorageSize = Megabytes(2);
+            void*  RenderStorage = VirtualAlloc((LPVOID)(BaseAddress + GlobalWin32State.TotalSize), (size_t)RenderStorageSize,
+                                               MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+            render_command_buffer CommandBuffer = {};
+            CommandBuffer.MaxSize = (uint32)RenderStorageSize;
+            CommandBuffer.Base = (uint8*)RenderStorage;
 
             for (int ReplayIndex = 0; ReplayIndex < ArrayCount(GlobalWin32State.ReplayBuffers); ReplayIndex++) {
                 win32_replay_buffer* ReplayBuffer = &GlobalWin32State.ReplayBuffers[ReplayIndex];
@@ -883,8 +948,14 @@ WinMain(HINSTANCE Instance,
                         if (GlobalWin32State.InputPlayingIndex) {
                             Win32PlaybackInput(NewInput);
                         }
+                        win32_window_dimension Dimension = Win32GetWindowDimension(Window);
                         if (Game.Frame) {
-                            Game.Frame(&GameMemory, NewInput);
+
+                            Game.Frame(&GameMemory, NewInput, &CommandBuffer);
+                            Win32ListRenderCommands(&CommandBuffer);
+
+                            OpenGLBeginFrame(&Dimension); // <-- move this before Game.Frame, and move glViewport out of this function
+                            OpenGLEndFrame(&CommandBuffer);
                         }
 
                         LARGE_INTEGER WorkCounter = Win32GetWallClock();
@@ -913,7 +984,6 @@ WinMain(HINSTANCE Instance,
                         real32 MSPerFrame = 1000.0f * Win32GetSecondsElapsed(LastCounter, EndCounter);
                         LastCounter = EndCounter;
     
-                        win32_window_dimension Dimension = Win32GetWindowDimension(Window);
                         Win32DisplayBufferToWindow(DeviceContext, Dimension.Width, Dimension.Height);
     
                         FlipWallClock = Win32GetWallClock();

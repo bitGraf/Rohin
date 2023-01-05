@@ -8,9 +8,10 @@ if not defined DevEnvDir (
 
 echo ==========================================
 
+rem /std:c++17
 set CompileDefinitions=/DROHIN_INTERNAL=1 /DROHIN_SLOW=1 /DROHIN_WIN32=1
 set WarningFlags=/W4 /WX /wd4189 /wd4201 /wd4100
-set CommonCompilerFlags=/MTd /nologo /Gm- /GR- /EHa- /Odi %WarningFlags% /FC /Z7 %CompileDefinitions%
+set CommonCompilerFlags=/MTd /nologo /Gm- /GR- /EHa- /Odi /std:c++17 %WarningFlags% /FC /Z7 %CompileDefinitions%
 set CommonLinkerFlags=/incremental:no /opt:ref
 
 set EnginePath=Engine\src\Engine
@@ -23,10 +24,10 @@ del *.pdb > NUL 2> NUL
 
 rem Build the Game.dll
 echo WAITING FOR PDB > lock.tmp
-cl /I..\Engine\src %CommonCompilerFlags% ..\%GamePath%\game.cpp /Fmgame.map /LD /link %CommonLinkerFlags% /PDB:game_%random%.pdb /EXPORT:GetGameAPI
+cl /I..\Engine\src /I..\Engine\deps\math_lib\include /I..\Engine\deps\GLAD\include %CommonCompilerFlags% ..\%GamePath%\game.cpp /Fmgame.map /LD /link %CommonLinkerFlags% /PDB:game_%random%.pdb /EXPORT:GetGameAPI
 del lock.tmp
 
 rem Build the Engine.exe
-cl /I..\Engine\src %CommonCompilerFlags% ..\%EnginePath%\Platform\win32\win32_entry.cpp /Fmwin32_entry.map /link %CommonLinkerFlags% user32.lib Gdi32.lib Winmm.lib opengl32.lib
+cl /I..\Engine\src /I..\Engine\deps\math_lib\include /I..\Engine\deps\GLAD\include %CommonCompilerFlags% ..\%EnginePath%\Platform\win32\win32_entry.cpp /Fmwin32_entry.map /link %CommonLinkerFlags% user32.lib Gdi32.lib Winmm.lib opengl32.lib
 
 popd

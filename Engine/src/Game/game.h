@@ -2,6 +2,7 @@
 #define GAME_H
 
 #include "Engine/Core/Base.hpp"
+#include "Engine/Engine.h"
 
 #if ROHIN_SLOW
 #define Assert(Expression) if (!(Expression)) { *(int *)0 = 0; }
@@ -67,7 +68,7 @@ struct game_input {
 
     game_controller_input Controllers[5];
 };
-inline game_controller_input* 
+inline game_controller_input*
     GetController(game_input* Input, int ControllerIndex) {
     Assert(ControllerIndex < ArrayCount(Input->Controllers));
 
@@ -79,7 +80,7 @@ inline game_controller_input*
 #define GAME_INIT_FUNC(init_name) void init_name(game_memory* Memory)
 typedef GAME_INIT_FUNC(GameInit_t);
 
-#define GAME_FRAME_FUNC(frame_name) void frame_name(game_memory* Memory, game_input* Input)
+#define GAME_FRAME_FUNC(frame_name) void frame_name(game_memory* Memory, game_input* Input, render_command_buffer* CmdBuffer)
 typedef GAME_FRAME_FUNC(GameFrame_t);
 
 #define GAME_SHUTDOWN_FUNC(shutdown_name) void shutdown_name(game_memory* Memory)
@@ -90,26 +91,14 @@ typedef GAME_EVENT_FUNC(GameEvent_t);
 
 struct gameExport_t {
     int Version;
-    
+
     GameInit_t* Init;
     GameFrame_t* Frame;
     GameEvent_t* HandleEvent;
     GameShutdown_t* Shutdown;
 };
 
-// Services that the Engine provides to the Game
-
-#define ENGINE_GET_EXE_PATH(name) const char* name(void)
-typedef ENGINE_GET_EXE_PATH(EngineGetEXEPath_t);
-
-struct gameImport_t {
-    int Version;
-    
-    EngineGetEXEPath_t* GetEXEPath;
-};
-
-#define GAME_GET_API_FUNC(name) gameExport_t name(gameImport_t* Import)
+#define GAME_GET_API_FUNC(name) gameExport_t name(gameImport_t Import)
 typedef GAME_GET_API_FUNC(GameGetApi_t);
-
 
 #endif

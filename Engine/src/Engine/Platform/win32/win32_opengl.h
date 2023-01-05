@@ -1,4 +1,4 @@
-#include <gl/gl.h>
+#include <glad/glad.h>
 
 /******************************************************************************
  * WGL_ARB_extensions_string 

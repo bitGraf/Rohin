@@ -1,4 +1,3 @@
-#include <enpch.hpp>
 #include "Scene3D.hpp"
 
 #include "Engine/GameObject/GameObject.hpp"

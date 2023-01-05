@@ -1,4 +1,3 @@
-#include <enpch.hpp>
 #include "Shader.hpp"
 #include "Renderer.hpp"
 

@@ -1,3 +1,14 @@
+#if 1
+
+#include "Engine/Engine.h"
+#include "Engine/Renderer/CommandBuffer.h"
+
+namespace rh {
+    ENGINE_RENDER_BEGIN_FRAME(RenderBeginFrame);
+    ENGINE_RENDER_END_FRAME(RenderEndFrame);
+}
+
+#else
 #pragma once
 
 #include "RenderCommand.hpp"
@@ -102,3 +113,4 @@ namespace rh {
     };
 
 }
+#endif

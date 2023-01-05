@@ -1,3 +1,62 @@
+#if 1
+
+#include "Renderer.hpp"
+#include "Engine/Renderer/OpenGLRenderer.cpp"
+#include "Engine/Renderer/Light.hpp"
+//#include "Engine/Renderer/Shader.cpp"
+
+namespace rh {
+#if 0
+    struct Lightingdata { // holds view-space lighting data
+        u32 NumPointLights;
+        u32 NumSpotLights;
+        Light pointLights[32];
+        Light spotLights[32];
+        Light sun;
+
+        laml::Mat4 projection;
+        laml::Mat4 view;
+    };
+
+    struct RendererData {
+        rh::ShaderLibrary ShaderLibrary;
+        TextureCube* Skybox;
+
+        VertexArray FullscreenQuad;
+        VertexArray debug_coordinate_axis; //lineRender
+        VertexArray Line;
+
+        // Render buffers
+        Framebuffer gBuffer;
+        Framebuffer DiffuseSpecularLighting;
+        Framebuffer SSAO;
+        Framebuffer screenBuffer;
+        Framebuffer sobelBuffer;
+        Framebuffer mixBuffer1, mixBuffer2;
+
+        Lightingdata Lights;
+
+        u32 OutputMode;
+        bool ToneMap;
+        bool Gamma;
+        bool soundDebug;
+        bool controllerDebug;
+    };
+
+    static RendererData s_Data;
+#endif
+
+    ENGINE_RENDER_BEGIN_FRAME(RenderBeginFrame) {
+
+    }
+
+    ENGINE_RENDER_END_FRAME(RenderEndFrame) {
+
+    }
+
+}
+
+#else
 #include <enpch.hpp>
 #include "Renderer.hpp"
 
@@ -828,3 +887,4 @@ namespace rh {
         }
     }
 }
+#endif
