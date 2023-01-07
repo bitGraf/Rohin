@@ -1,8 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "Engine/Core/Logger.hpp"
-#include "Engine/Benchmark.hpp"
+//#include "Engine/Core/Logger.hpp"
+//#include "Engine/Benchmark.hpp"
 #include "Engine/Core/Base.hpp"
 
 namespace rh {
@@ -10,7 +10,7 @@ namespace rh {
     u32 hash_djb2(unsigned char* str);
 
     /// Convert character string to Unsigned 32-bit Hash
-    stringID operator"" _sid(const char* input, size_t s);
+    u32 operator"" _sid(const char* input, size_t s);
 
 
     /// Strip string of all line comments (#) as well as block comments (/* */)

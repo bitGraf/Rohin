@@ -23,6 +23,7 @@ global_variable bool32 FlagCreateConsole = true;
 #include "Engine/Platform/OpenGL/OpenGLRenderer.cpp"
 #include "Engine/Core/MemoryArena.cpp"
 #include "Engine/Renderer/CommandBuffer.cpp"
+#include "Engine/Core/Utils.hpp"
 
 // TODO: Global for now
 global_variable bool32 GlobalRunning;
@@ -32,6 +33,7 @@ global_variable int GlobalCurrentInputIndex;
 global_variable uint8 ttf_buffer[Megabytes(1)];
 global_variable debug_render_state GlobalDebugRenderState;
 global_variable render_command_buffer GlobalCommandBuffer;
+global_variable bool32 GlobalRenderDebugText = true;
 
 // NOTE: XInputGetState
 #define X_INPUT_GET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_STATE* pState)
@@ -393,6 +395,10 @@ Win32MainWindowCallback(HWND Window,
                             Win32EndInputPlayback();
                         }
                     }
+                } else if (VKCode == VK_F1) {
+                    if (IsDown) {
+                        GlobalRenderDebugText = !GlobalRenderDebugText;
+                    }
                 }
 #endif
                 else if ((VKCode == VK_F4) && AltKeyWasDown) {
@@ -718,7 +724,7 @@ internal_func void InitDebugRenderState() {
     GlobalDebugRenderState.DebugTextRenderer.Shader.r_fontTex.Handle = 4;
     GlobalDebugRenderState.DebugTextRenderer.Shader.r_textColor.Handle = 5;
 
-    rh::laml::transform::create_projection_orthographic(GlobalDebugRenderState.DebugTextRenderer.orthoMat, 0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+    rh::laml::transform::create_projection_orthographic(GlobalDebugRenderState.DebugTextRenderer.orthoMat, 0.0f, 1424.0f, 720.0f, 0.0f, -1.0f, 1.0f);
     real32 QuadVerts[] = {
                          0.0f, 1.0f,
                          0.0f, 0.0f,
@@ -733,7 +739,7 @@ internal_func void InitDebugRenderState() {
     index_buffer IBO = OpenGLCreateIndexBuffer(QuadIndices, 6);
     GlobalDebugRenderState.DebugTextRenderer.TextQuad = OpenGLCreateVertexArray(&VBO, &IBO);
 
-    Win32LoadDynamicFont(&GlobalDebugRenderState.DebugTextRenderer.Font, "Data/Fonts/UbuntuMono-Regular.ttf", 32, 512);
+    Win32LoadDynamicFont(&GlobalDebugRenderState.DebugTextRenderer.Font, "Data/Fonts/UbuntuMono-Regular.ttf", 24.0f, 512);
 }
 
 internal_func void DrawDebugText(char* Text, real32 StartX, real32 StartY, rh::laml::Vec3 Color, TextAlignment Alignment) {
@@ -741,41 +747,20 @@ internal_func void DrawDebugText(char* Text, real32 StartX, real32 StartY, rh::l
     text_renderer* TextRenderer = &GlobalDebugRenderState.DebugTextRenderer;
     dynamic_font* Font = &TextRenderer->Font;
 
-    Render_BindShader(CmdBuffer, TextRenderer->Shader);
-    //CMD_Bind_Shader* BindShaderCommand = PushRenderCommand(CmdBuffer, CMD_Bind_Shader);
-    //BindShaderCommand->ShaderHandle = TextRenderer->Shader.Handle;
-    Render_BindVAO(CmdBuffer, TextRenderer->TextQuad);
-    //CMD_Bind_VAO* BindQuadCommand = PushRenderCommand(CmdBuffer, CMD_Bind_VAO);
-    //BindQuadCommand->VAOHandle = TextRenderer->TextQuad.Handle;
-    Render_BindTexture(CmdBuffer, 0, TextRenderer->Font.TextureHandle);
-    //CMD_Bind_Texture* BindTexCommand = PushRenderCommand(CmdBuffer, CMD_Bind_Texture);
-    //BindTexCommand->TextureSlot = 0;
-    //BindTexCommand->TextureHandle = TextRenderer->Font.TextureHandle;
-    Render_SetFrontCull(CmdBuffer, true);
-    //CMD_Set_Cull* SetCullCommand = PushRenderCommand(CmdBuffer, CMD_Set_Cull);
-    //SetCullCommand->Front = true;
-    Render_SetDepthTest(CmdBuffer, false);
-    //CMD_Set_Depth_Test* SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
-    //SetDepthCommand->Enabled = false;
-    Render_UploadInt(CmdBuffer, TextRenderer->Shader.r_fontTex, 0);
-    //CMD_Upload_Uniform_int* TexIDCommand = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_int);
-    //TexIDCommand->Location = TextRenderer->Shader.r_fontTex.Handle;
-    //TexIDCommand->Value = 0;
-
     real32 X = StartX;
     real32 Y = StartY;
 
     real32 HOffset, VOffset;
     GetTextOffset(&TextRenderer->Font, &HOffset, &VOffset, Alignment, Text);
 
+    Render_BindShader(CmdBuffer, TextRenderer->Shader);
+    Render_BindVAO(CmdBuffer, TextRenderer->TextQuad);
+    Render_BindTexture(CmdBuffer, 0, TextRenderer->Font.TextureHandle);
+    Render_SetFrontCull(CmdBuffer, true);
+    Render_SetDepthTest(CmdBuffer, false);
+    Render_UploadInt(CmdBuffer, TextRenderer->Shader.r_fontTex, 0);
     Render_UploadVec3(CmdBuffer, TextRenderer->Shader.r_textColor, Color);
-    //CMD_Upload_Uniform_vec3* TextColorCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec3);
-    //TextColorCmd->Location = TextRenderer->Shader.r_textColor.Handle;
-    //TextColorCmd->Value = Color;
     Render_UploadMat4(CmdBuffer, TextRenderer->Shader.r_orthoProjection, TextRenderer->orthoMat);
-    //CMD_Upload_Uniform_mat4* ProjMatCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_mat4);
-    //ProjMatCmd->Location = TextRenderer->Shader.r_orthoProjection.Handle;
-    //ProjMatCmd->Value = TextRenderer->orthoMat;
 
     while (*Text) {
         if (*Text == '\n') {
@@ -794,32 +779,20 @@ internal_func void DrawDebugText(char* Text, real32 StartX, real32 StartY, rh::l
             float transX = q.x0;
             float transY = q.y0;
             Render_UploadVec4(CmdBuffer, TextRenderer->Shader.r_transform, rh::laml::Vec4(scaleX, scaleY, transX + HOffset, transY + VOffset));
-            //CMD_Upload_Uniform_vec4* TransformCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4);
-            //TransformCmd->Location = TextRenderer->Shader.r_transform.Handle;
-            //TransformCmd->Value = rh::laml::Vec4(scaleX, scaleY, transX + HOffset, transY + VOffset);
 
             scaleX = q.s1 - q.s0;
             scaleY = q.t1 - q.t0;
             transX = q.s0;
             transY = q.t0;
             Render_UploadVec4(CmdBuffer, TextRenderer->Shader.r_transformUV, rh::laml::Vec4(scaleX, scaleY, transX, transY));
-            //CMD_Upload_Uniform_vec4* TransformUVCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4);
-            //TransformUVCmd->Location = TextRenderer->Shader.r_transformUV.Handle;
-            //TransformUVCmd->Value = rh::laml::Vec4(scaleX, scaleY, transX, transY);
 
             Render_Submit(CmdBuffer, TextRenderer->TextQuad.IndexCount);
-            //CMD_Submit* SubmitCommand = PushRenderCommand(CmdBuffer, CMD_Submit);
-            //SubmitCommand->IndexCount = TextRenderer->TextQuad.IndexCount;
         }
         ++Text;
     }
 
     Render_SetDepthTest(CmdBuffer, true);
-    //SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
-    //SetDepthCommand->Enabled = true;
     Render_SetFrontCull(CmdBuffer, false);
-    //SetCullCommand = PushRenderCommand(CmdBuffer, CMD_Set_Cull);
-    //SetCullCommand->Front = false;
 }
 
 
@@ -975,7 +948,7 @@ WinMain(HINSTANCE Instance,
     if (RegisterClassA(&WindowClass)) {
         HWND Window = CreateWindowExA(
             0,//WS_EX_TOPMOST|WS_EX_LAYERED, 
-            WindowClass.lpszClassName, "Handmade Hero",
+            WindowClass.lpszClassName, "Rohin",
             WS_OVERLAPPEDWINDOW | WS_VISIBLE,
             CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
             0, 0, Instance, 0);
@@ -1060,6 +1033,11 @@ WinMain(HINSTANCE Instance,
                 GlobalCurrentInputIndex = 0;
                 game_input* NewInput = &GlobalWin32State.Input[0];
                 game_input* OldInput = &GlobalWin32State.Input[1];
+
+                rh::MovingAverage<real32, 100> MSLastFrame;
+                rh::MovingAverage<real32, 100> MSWorkLastFrame;
+
+                win32_window_dimension LastDimension = Win32GetWindowDimension(Window);
 
                 while (GlobalRunning) {
                     NewInput->dtForFrame = TargetSecondsElapsedPerFrame;
@@ -1211,17 +1189,44 @@ WinMain(HINSTANCE Instance,
                             Win32PlaybackInput(NewInput);
                         }
                         win32_window_dimension Dimension = Win32GetWindowDimension(Window);
-                        if (Game.Frame) {
-                            OpenGLBeginFrame();
-
-                            Game.Frame(&GameMemory, NewInput, &GlobalCommandBuffer);
-                            //Win32ListRenderCommands(&CommandBuffer);
-
-                            OpenGLEndFrame(&Dimension, &GlobalCommandBuffer);
+                        if ((Dimension.Width != LastDimension.Width) || (Dimension.Height != LastDimension.Height)) {
+                            rh::laml::transform::create_projection_orthographic(GlobalDebugRenderState.DebugTextRenderer.orthoMat, 0.0f, (real32)Dimension.Width, (real32)Dimension.Height, 0.0f, -1.0f, 1.0f);
                         }
+
+
+
+
+                        OpenGLBeginFrame();
+                        if (Game.Frame) {
+                            Game.Frame(&GameMemory, NewInput, &GlobalCommandBuffer);
+                        }
+                        //Win32ListRenderCommands(&CommandBuffer);
+
+                        if (GlobalRenderDebugText) {
+                            char DebugFrameTimeBuff[64];
+                            rh::laml::Vec3 DebugColor(0.85f, .65f, .6f);
+                            rh::laml::Vec3 DebugColorBack(0.3f, .12f, .05f);
+                            real32 offset = 1.0f;
+                        
+                            StringCbPrintfA(DebugFrameTimeBuff, sizeof(DebugFrameTimeBuff),
+                                            "Last frame time: %.02f ms", MSLastFrame.getCurrentAverage());
+                            DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width, 0.0f, DebugColorBack, TextAlignment::ALIGN_TOP_RIGHT);
+                            DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width+offset, offset, DebugColor, TextAlignment::ALIGN_TOP_RIGHT);
+
+                            StringCbPrintfA(DebugFrameTimeBuff, sizeof(DebugFrameTimeBuff),
+                                            "      Work done: %.02f ms", MSWorkLastFrame.getCurrentAverage());
+                            DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width, 24.0f, DebugColorBack, TextAlignment::ALIGN_TOP_RIGHT);
+                            DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width+offset, 24.0f+offset, DebugColor, TextAlignment::ALIGN_TOP_RIGHT);
+                        }
+                        
+                        OpenGLEndFrame(&Dimension, &GlobalCommandBuffer);
+
+
+
 
                         LARGE_INTEGER WorkCounter = Win32GetWallClock();
                         real32 WorkSecondsElapsed = Win32GetSecondsElapsed(LastCounter, WorkCounter);
+                        MSWorkLastFrame.addSample(WorkSecondsElapsed*1000.0f);
     
                         // TODO: Untested! buggy
                         real32 SecondsElapsedForFrame = WorkSecondsElapsed;
@@ -1238,12 +1243,13 @@ WinMain(HINSTANCE Instance,
                                 }
                             } else {
                                 // TODO: Missed Frame Rate!
-                                // TODO: Logging
+                                Win32LogMessage("Frame rate missed!\n");
                             }
                         }
     
                         LARGE_INTEGER EndCounter = Win32GetWallClock();
                         real32 MSPerFrame = 1000.0f * Win32GetSecondsElapsed(LastCounter, EndCounter);
+                        MSLastFrame.addSample(MSPerFrame);
                         LastCounter = EndCounter;
     
                         Win32DisplayBufferToWindow(DeviceContext, Dimension.Width, Dimension.Height);

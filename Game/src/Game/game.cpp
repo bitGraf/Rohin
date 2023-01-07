@@ -244,12 +244,7 @@ GAME_FRAME_FUNC(GameFrame) {
     // Render text
     //void name(char* Text, real32 X, real32 Y, rh::laml::Vec3 Color, TextAlignment Alignment);
     rh::laml::Vec3 TextColor(1.0f, 1.0f, 1.0f);
-    real32 y = 0.0f;
-    Engine.Render.DrawDebugText("Eggwuh", 0.0f, y, 
-                                TextColor, TextAlignment::ALIGN_TOP_LEFT);
-    Engine.Render.DrawDebugText("Running...", 0.0f, y += 32.0f, 
-                                TextColor, TextAlignment::ALIGN_TOP_LEFT);
-    Engine.Render.DrawDebugText("hehe", 0.0f, y += 32.0f, 
+    Engine.Render.DrawDebugText("Eggwuh", 0.0f, 0.0f, 
                                 TextColor, TextAlignment::ALIGN_TOP_LEFT);
 
     // Swap the two arenas, allowing the last frame to be saved
