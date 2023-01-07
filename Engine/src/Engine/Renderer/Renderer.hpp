@@ -1,12 +1,112 @@
 #if 1
 
-#include "Engine/Engine.h"
+#ifndef RENDERER_H
+#define RENDERER_H
+
+#include <stb_truetype.h>
+
 #include "Engine/Renderer/CommandBuffer.h"
+#include "Engine/Renderer/Light.hpp"
+
+// Shader
+struct Shader {
+    uint32 Handle;
+};
+
+struct PBRParameters {
+    float Roughness;
+    float Metalness;
+
+    rh::laml::Vec3 Normal;
+    rh::laml::Vec3 View;
+    float NdotV;
+
+    rh::laml::Vec3 Diffuse;
+    rh::laml::Vec3 Specular;
+};
+
+enum class ShaderDataType : uint8 {
+    None = 0, 
+    Float, Float2, Float3, Float4,
+    Mat3, Mat4, 
+    Int, Int2, Int3, Int4,
+    Bool
+};
+
+//struct vertex_buffer_attribute {
+//    ShaderDataType Type;
+//};
+
+#define MAX_ATTRIBUTES 8
+struct vertex_buffer {
+    uint32 Handle;
+
+    uint8 NumAttributes;
+    ShaderDataType Attributes[MAX_ATTRIBUTES];
+};
+
+struct index_buffer {
+    uint32 Handle;
+    uint32 IndexCount;
+};
+
+struct vertex_array_object { 
+    uint32 Handle; 
+    uint32 IndexCount;
+};
+
+
+/* Text alignmnet */
+enum class TextAlignment : uint8 {
+    ALIGN_TOP_LEFT = 0,
+    ALIGN_MID_LEFT,
+    ALIGN_BOT_LEFT,
+    ALIGN_TOP_MID,
+    ALIGN_MID_MID,
+    ALIGN_BOT_MID,
+    ALIGN_TOP_RIGHT,
+    ALIGN_MID_RIGHT,
+    ALIGN_BOT_RIGHT
+};
+struct dynamic_font {
+    bool32 Initialized;
+    stbtt_bakedchar cdata[96]; // ASCII 32..126 is 95 glyphs
+    uint32 TextureHandle;
+    real32 FontSize;
+    uint32 BitmapRes;
+};
+
+void GetTextOffset(dynamic_font* Font, real32 *HOffset, real32 *VOffset, TextAlignment Alignment, const char* Text);
+
+/* * * * * * * * * * * * * * * * * * * * * *
+Macro to define uniforms of the prototype:
+
+    struct ShaderUniform_##Name { 
+        uint32 Handle; 
+        Typename value; 
+    };
+*/
+#define SHADER_UNIFORM_TYPE_DECL(Name, Typename) struct ShaderUniform_##Name { uint32 Handle; Typename value; };
+
+SHADER_UNIFORM_TYPE_DECL(Int, int);
+SHADER_UNIFORM_TYPE_DECL(Float, float);
+SHADER_UNIFORM_TYPE_DECL(Vec2, rh::laml::Vec2);
+SHADER_UNIFORM_TYPE_DECL(Vec3, rh::laml::Vec3);
+SHADER_UNIFORM_TYPE_DECL(Vec4, rh::laml::Vec4);
+SHADER_UNIFORM_TYPE_DECL(Mat4, rh::laml::Mat4);
+SHADER_UNIFORM_TYPE_DECL(Sampler2D, int);
+SHADER_UNIFORM_TYPE_DECL(Sampler3D, int);
+SHADER_UNIFORM_TYPE_DECL(Light, rh::Light);
+SHADER_UNIFORM_TYPE_DECL(PBRParameters, PBRParameters);
+
+// Renderer
 
 namespace rh {
-    ENGINE_RENDER_BEGIN_FRAME(RenderBeginFrame);
-    ENGINE_RENDER_END_FRAME(RenderEndFrame);
+    //ENGINE_RENDER_BEGIN_FRAME(RenderBeginFrame);
+    //ENGINE_RENDER_END_FRAME(RenderEndFrame);
 }
+
+#endif
 
 #else
 #pragma once

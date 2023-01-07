@@ -1,5 +1,5 @@
 #include "win32_opengl.h"
-#include "../deps/GLAD/src/glad.c"
+#include "../GLAD/src/glad.c"
 
 const char* 
 Win32GetWGLExtensionString(HDC WindowDC) {
@@ -101,7 +101,7 @@ Win32InitOpenGL(HWND Window) {
         // now create a higher-version context
         const int ARBContexAttrivbs[] = {
             WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-            WGL_CONTEXT_MINOR_VERSION_ARB, 0,
+            WGL_CONTEXT_MINOR_VERSION_ARB, 6,
             WGL_CONTEXT_FLAGS_ARB,         WGL_CONTEXT_DEBUG_BIT_ARB|WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
             WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
             0 // End
@@ -132,6 +132,9 @@ Win32InitOpenGL(HWND Window) {
         const char* glRendererString   = (const char*) glGetString(GL_RENDERER);
         const char* glVersionString    = (const char*) glGetString(GL_VERSION);
 
+        GLint MaxUniformLocations;
+        glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS,&MaxUniformLocations);
+
         OutputDebugStringA(glVendorString); OutputDebugStringA("\n");
         OutputDebugStringA(glRendererString); OutputDebugStringA("\n");
         OutputDebugStringA(glVersionString); OutputDebugStringA("\n");
@@ -154,6 +157,35 @@ Win32InitOpenGL(HWND Window) {
         _wglGetSwapIntervalEXT_PROC wglGetSwapIntervalEXT = (_wglGetSwapIntervalEXT_PROC)wglGetProcAddress("wglGetSwapIntervalEXT");
 
         wglSwapIntervalEXT(2); // since my monitor is 120Hz, interval of 2 to lock to 60fps
+
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        glFrontFace(GL_CCW);
+
+        //glEnable(GL_MULTISAMPLE);
+        //glEnable(GL_STENCIL_TEST);
+
+        GLfloat pointSize;
+        glGetFloatv(GL_POINT_SIZE, &pointSize);
+        //ENGINE_LOG_WARN("Default point size: {0}", pointSize);
+        glPointSize(4);
+        glGetFloatv(GL_POINT_SIZE, &pointSize);
+        //ENGINE_LOG_WARN("New point size: {0}", pointSize);
+
+        GLfloat lineWidth;
+        glGetFloatv(GL_LINE_WIDTH, &lineWidth);
+        //ENGINE_LOG_WARN("Default line width: {0}", lineWidth);
+        glLineWidth(2);
+        glGetFloatv(GL_LINE_WIDTH, &lineWidth);
+        //ENGINE_LOG_WARN("New line width: {0}", lineWidth);
+
+        GLfloat maxAniso;
+        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAniso);
+        //ENGINE_LOG_WARN("Max Anisotropy value: {0}", maxAniso);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     } else {
         Assert(!"InvalidCodePath");

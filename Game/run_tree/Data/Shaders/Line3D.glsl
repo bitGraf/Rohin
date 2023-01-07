@@ -1,5 +1,5 @@
 #type vertex
-#version 330 core
+#version 430 core
 layout (location = 0) in float a_Position;
 
 uniform vec3 r_verts[2];
@@ -12,7 +12,7 @@ void main() {
 }
 
 #type fragment
-#version 330 core
+#version 430 core
 out vec4 FragColor;
 
 uniform vec4 r_Color;

@@ -2,8 +2,65 @@
 
 #include "Renderer.hpp"
 #include "Engine/Renderer/OpenGLRenderer.cpp"
-#include "Engine/Renderer/Light.hpp"
 //#include "Engine/Renderer/Shader.cpp"
+
+internal_func real32 GetLength(dynamic_font* Font, const char* Text) {
+    real32 Length = 0;
+    while (*Text && *Text != '\n') {
+        if (*Text >= 32 && *Text < 128) {
+            Length += Font->cdata[*Text - 32].xadvance;
+        }
+        ++Text;
+    }
+    return Length;
+}
+
+void GetTextOffset(dynamic_font* Font, real32 *HOffset, real32 *VOffset, TextAlignment Alignment, const char* Text) {
+    real32 textLength = GetLength(Font, Text);
+    real32 textHeight = Font->FontSize;
+    switch (Alignment) {
+        case TextAlignment::ALIGN_TOP_LEFT: {
+            *HOffset = 0;
+            *VOffset = textHeight;
+        } break;
+        case TextAlignment::ALIGN_MID_LEFT: {
+            *HOffset = 0;
+            *VOffset = textHeight / 2;
+        } break;
+        case TextAlignment::ALIGN_BOT_LEFT: {
+            *HOffset = 0;
+            *VOffset = 0;
+        } break;
+        case TextAlignment::ALIGN_TOP_MID: {
+            *HOffset = -textLength / 2;
+            *VOffset = textHeight;
+        } break;
+        case TextAlignment::ALIGN_MID_MID: {
+            *HOffset = -textLength / 2;
+            *VOffset = textHeight / 2;
+        } break;
+        case TextAlignment::ALIGN_BOT_MID: {
+            *HOffset = -textLength / 2;
+            *VOffset = 0;
+        } break;
+        case TextAlignment::ALIGN_TOP_RIGHT: {
+            *HOffset = -textLength;
+            *VOffset = textHeight;
+        } break;
+        case TextAlignment::ALIGN_MID_RIGHT: {
+            *HOffset = -textLength;
+            *VOffset = textHeight / 2;
+        } break;
+        case TextAlignment::ALIGN_BOT_RIGHT: {
+            *HOffset = -textLength;
+            *VOffset = 0;
+        } break;
+        default: {
+            *HOffset = 0;
+            *VOffset = 0;
+        } break;
+    }
+}
 
 namespace rh {
 #if 0

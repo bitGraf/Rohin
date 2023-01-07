@@ -49,6 +49,9 @@ enum render_command_type {
     render_command_type_CMD_Bind_VAO,
 
     render_command_type_CMD_Submit,
+
+    render_command_type_CMD_Set_Cull,
+    render_command_type_CMD_Set_Depth_Test,
 };
 
 struct render_command_header {
@@ -57,24 +60,31 @@ struct render_command_header {
 };
 
 struct CMD_Bind_Shader {
+    uint32 ShaderHandle;
 };
 struct CMD_Upload_Uniform_int {
-
+    uint32 Location;
+    int32 Value;
 };
 struct CMD_Upload_Uniform_float {
-
+    uint32 Location;
+    real32 Value;
 };
 struct CMD_Upload_Uniform_vec2 {
-
+    uint32 Location;
+    rh::laml::Vec2 Value;
 };
 struct CMD_Upload_Uniform_vec3 {
-
+    uint32 Location;
+    rh::laml::Vec3 Value;
 };
 struct CMD_Upload_Uniform_vec4 {
-
+    uint32 Location;
+    rh::laml::Vec4 Value;
 };
 struct CMD_Upload_Uniform_mat4 {
-
+    uint32 Location;
+    rh::laml::Mat4 Value;
 };
 struct CMD_Bind_Framebuffer {
 
@@ -83,13 +93,20 @@ struct CMD_Clear_Buffer {
     rh::laml::Vec4 ClearColor;
 };
 struct CMD_Bind_Texture {
-
+    uint32 TextureSlot;
+    uint32 TextureHandle;
 };
 struct CMD_Bind_VAO {
-
+    uint32 VAOHandle;
 };
 struct CMD_Submit {
-
+    uint32 IndexCount;
+};
+struct CMD_Set_Cull {
+    bool32 Front;
+};
+struct CMD_Set_Depth_Test {
+    bool32 Enabled;
 };
 
 struct render_command_buffer {

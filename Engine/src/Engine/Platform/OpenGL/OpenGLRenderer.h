@@ -3,8 +3,18 @@
 
 #include "Engine/Core/Base.hpp"
 #include "Engine/Renderer/CommandBuffer.h"
+#include "Engine/Renderer/Renderer.hpp"
 
-internal_func void OpenGLBeginFrame(win32_window_dimension* Dimension);
-internal_func void OpenGLEndFrame(render_command_buffer* CommandBuffer);
+internal_func bool32 OpenGLLoadShader(Shader* shader, uint8* Buffer, uint32 BytesRead);
+
+internal_func vertex_buffer OpenGLCreateVertexBuffer(void* VertexData, uint32 DataSizeInBytes);
+internal_func void OpenGLSetVertexBufferLayout(vertex_buffer* VertexBuffer, uint8 NumAttributes, ShaderDataType First, ...);
+internal_func index_buffer OpenGLCreateIndexBuffer(uint32* IndexData, uint32 IndexCount);
+internal_func vertex_array_object OpenGLCreateVertexArray(vertex_buffer* VBO, index_buffer* IBO);
+
+internal_func uint32 OpenGLCreateTexture(uint8* Bitmap, uint32 Resolution);
+
+internal_func void OpenGLBeginFrame();
+internal_func void OpenGLEndFrame(win32_window_dimension* Dimension, render_command_buffer* CommandBuffer);
 
 #endif

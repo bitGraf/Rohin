@@ -16,6 +16,8 @@
 #include "win32_entry.h"
 #include "Engine/Renderer/Renderer.cpp"
 #include "Engine/Platform/OpenGL/OpenGLRenderer.cpp"
+#include "Engine/Core/MemoryArena.cpp"
+#include "Engine/Renderer/CommandBuffer.cpp"
 
 // TODO: Global for now
 global_variable bool32 GlobalRunning;
@@ -23,6 +25,7 @@ global_variable bool32 GlobalPause;
 global_variable bool32 FlagCreateConsole = false;
 global_variable win32_state GlobalWin32State;
 global_variable int GlobalCurrentInputIndex;
+global_variable uint8 ttf_buffer[Megabytes(1)];
 
 // NOTE: XInputGetState
 #define X_INPUT_GET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_STATE* pState)
@@ -70,10 +73,17 @@ StringLength(char* String) {
 
 internal_func void 
 Win32BuildEXEPathFileName(char* FileName, int DestCount, char* Dest) {
-    CatStrings(GlobalWin32State.OnePastLastSlash - GlobalWin32State.EXEFileName, GlobalWin32State.EXEFileName,
+    CatStrings(GlobalWin32State.OnePastLastSlashEXEFileName - GlobalWin32State.EXEFileName, GlobalWin32State.EXEFileName,
                StringLength(FileName), FileName,
                DestCount, Dest);
 }
+
+//internal_func void 
+//Win32BuildResourcePathFileName(char* FileName, int DestCount, char* Dest) {
+//    CatStrings(GlobalWin32State.OnePastLastSlashEXEFileName - GlobalWin32State.EXEFileName, GlobalWin32State.EXEFileName,
+//               StringLength(FileName), FileName,
+//               DestCount, Dest);
+//}
 
 inline FILETIME
 Win32GetLastWriteTime(char *Filename) {
@@ -96,63 +106,6 @@ internal_func ENGINE_LOG_MESSAGE(Win32LogMessage) {
     OutputDebugStringA("[Engine]: ");
     OutputDebugStringA(msg);
     OutputDebugStringA("\n");
-}
-
-internal_func win32_game_code
-Win32LoadGameCode(char *SourceDLLName, char *TempDLLName, char* LockFileName) {
-    win32_game_code Result = {};
-
-    WIN32_FILE_ATTRIBUTE_DATA Ignored;
-    if (GetFileAttributesExA(LockFileName, GetFileExInfoStandard, &Ignored) == FALSE) {
-        Result.DLLLastWriteTime = Win32GetLastWriteTime(SourceDLLName);
-
-        CopyFileA(SourceDLLName, TempDLLName, FALSE);
-    
-        Result.GameCodeDLL = LoadLibraryA(TempDLLName);
-        if (Result.GameCodeDLL) {
-            // Get the handover function
-            GameGetApi_t* GameGetApi = (GameGetApi_t*)GetProcAddress(Result.GameCodeDLL, "GetGameAPI");
-            if (!GameGetApi) return Result;
-            
-            gameImport_t GameImport = {};
-            GameImport.Version = 1;
-            GameImport.LogMessage = Win32LogMessage;
-            GameImport.GetEXEPath = Win32GetEXEPath;
-            GameImport.BeginFrame = rh::RenderBeginFrame;
-            GameImport.EndFrame   = rh::RenderEndFrame;
-
-            gameExport_t GameExport = GameGetApi(GameImport);
-
-            Result.Init        = GameExport.Init;
-            Result.Frame       = GameExport.Frame;
-            Result.HandleEvent = GameExport.HandleEvent;
-            Result.Shutdown    = GameExport.Shutdown;
-
-            Result.IsValid = (GameGetApi && GameExport.Init && GameExport.Frame && GameExport.Shutdown);
-        }
-        else {
-            OutputDebugStringA("Failed to load game code: LoadLibraryA failed!\n");
-        }
-    } else {
-        OutputDebugStringA("Failed to load game code: lock still in place!\n");
-    }
-
-    return(Result);
-}
-
-internal_func void
-Win32UnloadGameCode(win32_game_code *GameCode) {
-    if(GameCode->GameCodeDLL) {
-        FreeLibrary(GameCode->GameCodeDLL);
-        GameCode->GameCodeDLL = 0;
-    }
-
-    GameCode->IsValid = false;
-
-    GameCode->Init = 0;
-    GameCode->Frame = 0;
-    GameCode->HandleEvent = 0;
-    GameCode->Shutdown = 0;
 }
 
 internal_func void
@@ -583,12 +536,35 @@ Win32GetEXEFileName() {
     // NOTE: Never use MAX_PATH in code that is user-facing, because it
     // can be dangerous and lead to bad results.
     DWORD SizeOfFilename = GetModuleFileNameA(0, GlobalWin32State.EXEFileName, sizeof(GlobalWin32State.EXEFileName));
-    GlobalWin32State.OnePastLastSlash = GlobalWin32State.EXEFileName;
+    GlobalWin32State.OnePastLastSlashEXEFileName = GlobalWin32State.EXEFileName;
     for(char *Scan = GlobalWin32State.EXEFileName; *Scan; ++Scan) {
         if(*Scan == '\\') {
-            GlobalWin32State.OnePastLastSlash = Scan + 1;
+            GlobalWin32State.OnePastLastSlashEXEFileName = Scan + 1;
         }
     }
+}
+
+internal_func void 
+Win32GetResourcePath() {
+    // TODO: make this better
+    // assume folder structure is like this for now:
+    //     Rohin\
+    //       unity_build\
+    //         win32_entry.exe <-- path to this is Win32State.EXEFileName
+    //         game.dll
+    //       Game\
+    //         run_tree\ <-- this is the path I want
+    //           Data\
+    //
+
+    //char* RootDir;
+    //for(char *Scan = GlobalWin32State.EXEFileName; Scan < GlobalWin32State.OnePastLastSlashEXEFileName; ++Scan) {
+    //    if(*Scan == '\\') {
+    //        RootDir = Scan + 1;
+    //    }
+    //}
+
+    // TODO: For now, just run the game in the correct directory :)
 }
 
 inline void 
@@ -641,10 +617,161 @@ Win32ListRenderCommands(render_command_buffer* Buffer) {
     }
 }
 
+bool32 Win32LoadShader(Shader* shader, char* ShaderPath) {
+    bool32 Result = false;
+    //char ShaderFullPath[WIN32_STATE_FILE_NAME_COUNT];
+    //Win32BuildResourcePathFileName
+
+    HANDLE FileHandle = CreateFileA(ShaderPath, 
+                                    GENERIC_READ, FILE_SHARE_READ, NULL, 
+                                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (INVALID_HANDLE_VALUE != FileHandle) {
+        LARGE_INTEGER FileSizeBytes;
+        if (GetFileSizeEx(FileHandle, &FileSizeBytes)) {
+
+            // use FileSizeBytes + 1 to allow a null-terminator to be added
+            FileSizeBytes.QuadPart++;
+            LPVOID Buffer = VirtualAlloc(0, FileSizeBytes.QuadPart,
+                         MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+            DWORD BytesRead;
+            if (Buffer) {
+                if (ReadFile(FileHandle, Buffer, (DWORD)FileSizeBytes.QuadPart, &BytesRead, NULL)) {
+                    ((uint8*)Buffer)[BytesRead] = 0;
+                    // read the entire file into a buffer
+                    OutputDebugStringA("Compiling OpenGL Shader: ");
+                    OutputDebugStringA(ShaderPath);
+                    OutputDebugStringA("\n");
+                    Result = OpenGLLoadShader(shader, (uint8*)Buffer, BytesRead);
+                
+                    CloseHandle(FileHandle);
+                }
+                VirtualFree(Buffer, 0, MEM_RELEASE);
+            }
+        }
+
+    }
+
+    return Result;
+}
+
+//GameState->TextRenderer.Font = Engine.LoadDynamicFont("Data/Fonts/UbuntuMono-Regular.ttf", 32);
+bool32 Win32LoadDynamicFont(dynamic_font* Font, char* FontPath, real32 FontSize, uint32 Resolution) {
+    bool32 Result = false;
+
+    SIZE_T BufferSize = Resolution * Resolution * sizeof(unsigned char);
+    LPVOID BitmapBuffer = VirtualAlloc(0, BufferSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+    if (BitmapBuffer) {
+        uint8* temp_bitmap = (uint8* )BitmapBuffer;
+
+        HANDLE FileHandle = CreateFileA(FontPath, 
+                                        GENERIC_READ, FILE_SHARE_READ, NULL, 
+                                        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (INVALID_HANDLE_VALUE != FileHandle) {
+            LARGE_INTEGER FileSizeBytes;
+            if (GetFileSizeEx(FileHandle, &FileSizeBytes)) {
+
+                Assert(FileSizeBytes.QuadPart < Megabytes(1));
+                LPVOID Buffer = VirtualAlloc(0, FileSizeBytes.QuadPart,
+                                             MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+                if (Buffer) {
+                    DWORD BytesRead;
+                    if (ReadFile(FileHandle, ttf_buffer, (DWORD)FileSizeBytes.QuadPart, &BytesRead, NULL)) {
+                        // read the entire file into a buffer
+                    
+                        int STBResult = stbtt_BakeFontBitmap(ttf_buffer, 0, FontSize, temp_bitmap, Resolution, Resolution, 32, 96, &Font->cdata[0]); // no guarantee this fits!
+                        if (STBResult != -1) {
+                            Result = true;
+
+                            Font->TextureHandle = OpenGLCreateTexture(temp_bitmap, Resolution);
+                            Font->BitmapRes = Resolution;
+                            Font->FontSize = FontSize;
+                            Font->Initialized = true;
+                        }
+                
+                    }
+                    VirtualFree(Buffer, 0, MEM_RELEASE);
+                }
+            }
+
+            CloseHandle(FileHandle);
+        }
+
+        VirtualFree(BitmapBuffer, 0, MEM_RELEASE);
+    }
+
+    return Result;
+}
 
 
 
 
+
+
+
+
+internal_func void
+    Win32UnloadGameCode(win32_game_code *GameCode) {
+    if(GameCode->GameCodeDLL) {
+        FreeLibrary(GameCode->GameCodeDLL);
+        GameCode->GameCodeDLL = 0;
+    }
+
+    GameCode->IsValid = false;
+
+    GameCode->Init = 0;
+    GameCode->Frame = 0;
+    GameCode->HandleEvent = 0;
+    GameCode->Shutdown = 0;
+}
+
+internal_func win32_game_code
+Win32LoadGameCode(char *SourceDLLName, char *TempDLLName, char* LockFileName) {
+    win32_game_code Result = {};
+
+    WIN32_FILE_ATTRIBUTE_DATA Ignored;
+    if (GetFileAttributesExA(LockFileName, GetFileExInfoStandard, &Ignored) == FALSE) {
+        Result.DLLLastWriteTime = Win32GetLastWriteTime(SourceDLLName);
+
+        CopyFileA(SourceDLLName, TempDLLName, FALSE);
+    
+        Result.GameCodeDLL = LoadLibraryA(TempDLLName);
+        if (Result.GameCodeDLL) {
+            // Get the handover function
+            GameGetApi_t* GameGetApi = (GameGetApi_t*)GetProcAddress(Result.GameCodeDLL, "GetGameAPI");
+            if (!GameGetApi) return Result;
+            
+            gameImport_t GameImport = {};
+            GameImport.Version = 1;
+            GameImport.LogMessage = Win32LogMessage;
+            GameImport.GetEXEPath = Win32GetEXEPath;
+            GameImport.LoadShader = Win32LoadShader;
+            GameImport.CreateVertexBuffer = OpenGLCreateVertexBuffer;
+            GameImport.SetVertexBufferLayout = OpenGLSetVertexBufferLayout;
+            GameImport.CreateIndexBuffer = OpenGLCreateIndexBuffer;
+            GameImport.CreateVertexArray = OpenGLCreateVertexArray;
+            GameImport.LoadDynamicFont = Win32LoadDynamicFont;
+            GameImport.GetTextOffset = GetTextOffset;
+
+            gameExport_t GameExport = GameGetApi(GameImport);
+
+            Result.Init        = GameExport.Init;
+            Result.Frame       = GameExport.Frame;
+            Result.HandleEvent = GameExport.HandleEvent;
+            Result.Shutdown    = GameExport.Shutdown;
+
+            Result.IsValid = (GameGetApi && GameExport.Init && GameExport.Frame && GameExport.Shutdown);
+        }
+        else {
+            OutputDebugStringA("Failed to load game code: LoadLibraryA failed!\n");
+        }
+    } else {
+        OutputDebugStringA("Failed to load game code: lock still in place!\n");
+    }
+
+    return(Result);
+}
 
 
 
@@ -666,6 +793,7 @@ Win32Init() {
     GlobalWin32State.PerfCounterFrequency = PerfCounterFrequencyResult.QuadPart;
 
     Win32GetEXEFileName();
+    Win32GetResourcePath();
 
     // NOTE: Set the Windows scheduler granularity to 1ms
     //       so that our Sleep can be more granular
@@ -950,12 +1078,12 @@ WinMain(HINSTANCE Instance,
                         }
                         win32_window_dimension Dimension = Win32GetWindowDimension(Window);
                         if (Game.Frame) {
+                            OpenGLBeginFrame();
 
                             Game.Frame(&GameMemory, NewInput, &CommandBuffer);
-                            Win32ListRenderCommands(&CommandBuffer);
+                            //Win32ListRenderCommands(&CommandBuffer);
 
-                            OpenGLBeginFrame(&Dimension); // <-- move this before Game.Frame, and move glViewport out of this function
-                            OpenGLEndFrame(&CommandBuffer);
+                            OpenGLEndFrame(&Dimension, &CommandBuffer);
                         }
 
                         LARGE_INTEGER WorkCounter = Win32GetWallClock();
@@ -1026,3 +1154,6 @@ WinMain(HINSTANCE Instance,
 
     return 0;
 }
+
+#define STB_TRUETYPE_IMPLEMENTATION
+#include "stb_truetype.h"

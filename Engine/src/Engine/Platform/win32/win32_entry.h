@@ -40,7 +40,10 @@ struct win32_replay_buffer {
 
 struct win32_state {
     char EXEFileName[WIN32_STATE_FILE_NAME_COUNT];
-    char *OnePastLastSlash;
+    char *OnePastLastSlashEXEFileName;
+
+    char ResourcePath[WIN32_STATE_FILE_NAME_COUNT];
+    char *EndOfResourcePath;
 
     game_input Input[2];
     

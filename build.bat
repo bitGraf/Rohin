@@ -15,7 +15,7 @@ set CommonCompilerFlags=/MTd /nologo /Gm- /GR- /EHa- /Odi /std:c++14 %WarningFla
 set CommonLinkerFlags=/incremental:no /opt:ref
 
 set EnginePath=Engine\src\Engine
-set GamePath=Engine\src\Game
+set GamePath=Game\src\Game
 
 IF NOT EXIST unity_build mkdir unity_build
 pushd unity_build
@@ -24,10 +24,10 @@ del *.pdb > NUL 2> NUL
 
 rem Build the Game.dll
 echo WAITING FOR PDB > lock.tmp
-cl /I..\Engine\src /I..\Engine\deps\math_lib\include /I..\Engine\deps\GLAD\include %CommonCompilerFlags% ..\%GamePath%\game.cpp /Fmgame.map /LD /link %CommonLinkerFlags% /PDB:game_%random%.pdb /EXPORT:GetGameAPI
+cl /I..\Engine\deps\stb /I..\Engine\src /I..\Engine\deps\math_lib\include %CommonCompilerFlags% ..\%GamePath%\game.cpp /Fmgame.map /LD /link %CommonLinkerFlags% /PDB:game_%random%.pdb /EXPORT:GetGameAPI
 del lock.tmp
 
 rem Build the Engine.exe
-cl /I..\Engine\src /I..\Engine\deps\math_lib\include /I..\Engine\deps\GLAD\include %CommonCompilerFlags% ..\%EnginePath%\Platform\win32\win32_entry.cpp /Fmwin32_entry.map /link %CommonLinkerFlags% user32.lib Gdi32.lib Winmm.lib opengl32.lib
+cl /I..\Engine\deps\stb /I..\Game\src /I..\Engine\src /I..\Engine\deps\math_lib\include /I..\Engine\src\Engine\Platform\GLAD\include %CommonCompilerFlags% ..\%EnginePath%\Platform\win32\win32_entry.cpp /Fmwin32_entry.map /link %CommonLinkerFlags% user32.lib Gdi32.lib Winmm.lib opengl32.lib
 
 popd

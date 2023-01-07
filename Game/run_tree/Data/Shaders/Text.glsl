@@ -1,13 +1,13 @@
 #type vertex
-#version 330 core
+#version 430 core
 layout (location = 0) in vec2 a_Position;
 
 out vec2 pass_uv;
 
-uniform vec4 r_transform;
-uniform vec4 r_transformUV;
+layout(location = 1) uniform vec4 r_transform;
+layout(location = 2) uniform vec4 r_transformUV;
 
-uniform mat4 r_orthoProjection;
+layout(location = 3) uniform mat4 r_orthoProjection;
 
 void main() {
 
@@ -21,13 +21,13 @@ void main() {
 }
 
 #type fragment
-#version 330 core
+#version 430 core
 out vec4 FragColor;
 
 in vec2 pass_uv;
 
-uniform sampler2D r_fontTex;
-uniform vec3 r_textColor;
+layout(location = 4) uniform sampler2D r_fontTex;
+layout(location = 5) uniform vec3 r_textColor;
 
 void main() {
     float val  = texture(r_fontTex, pass_uv).r;

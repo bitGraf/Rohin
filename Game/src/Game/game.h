@@ -91,6 +91,7 @@ typedef GAME_EVENT_FUNC(GameEvent_t);
 
 struct gameExport_t {
     int Version;
+    bool Invalid;
 
     GameInit_t* Init;
     GameFrame_t* Frame;
