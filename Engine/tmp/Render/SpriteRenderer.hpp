@@ -19,7 +19,7 @@ public:
 	void initRenderData();
 
 private:
-	Shader spriteShader;
+	shader spriteShader;
 	GLuint quadVAO;
 };
 

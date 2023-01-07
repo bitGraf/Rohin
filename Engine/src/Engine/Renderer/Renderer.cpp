@@ -156,7 +156,7 @@ namespace rh {
 
     RendererData s_Data;
 
-    void InitLights(const Ref<Shader> shader) {
+    void InitLights(const Ref<shader> shader) {
         // uploads lights to shader in view-space
 
         // set directional light
@@ -460,7 +460,7 @@ namespace rh {
         ENGINE_LOG_INFO("Showing Controller Debug: {0}", s_Data.controllerDebug);
     }
 
-    void Renderer::UploadLights(const Ref<Shader> shader) {
+    void Renderer::UploadLights(const Ref<shader> shader) {
         // uploads lights to shader in view-space
 
         // set directional light

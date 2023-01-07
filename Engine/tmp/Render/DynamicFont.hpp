@@ -42,7 +42,7 @@ public:
 
 
     GLuint textRectVAO;
-    Shader textShader;
+    shader textShader;
     mat4 orthoMat;
 
     void InitTextRendering();

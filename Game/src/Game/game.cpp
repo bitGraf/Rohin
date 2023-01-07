@@ -174,11 +174,7 @@ struct game_state {
     memory_arena PermArena;
 };
 
-void SubmitText(dynamic_font* Font, const char Text[], real32 StartX, real32 StartY, rh::laml::Vec3 Color, TextAlignment Align) {
-
-}
-
-#define ezLoadShader(ShaderVar, ShaderPath) Engine.Render.LoadShaderFromFile((Shader*)(&ShaderVar), ShaderPath)
+#define ezLoadShader(ShaderVar, ShaderPath) Engine.Render.LoadShaderFromFile((shader*)(&ShaderVar), ShaderPath)
 
 // TODO: Rewrite the game code to fit into these functions,
 //       or add/remove these functions to better fit the game
@@ -242,18 +238,6 @@ GAME_FRAME_FUNC(GameFrame) {
     GameState->TValue += Input->dtForFrame;
 
     // Render
-
-    // macro test, dont really like it >>
-#define CAT_(a, b) a ## b
-#define CAT(a, b) CAT_(a, b)
-#define VARNAME(Var) CAT(Var, __LINE__)
-
-#define Render_ClearColor(GlobalCommandBuffer, r, g, b, a) \
-    CMD_Clear_Buffer* VARNAME(cmd_clear_) = PushRenderCommand(CmdBuffer, CMD_Clear_Buffer); \
-    VARNAME(cmd_clear_)->ClearColor.x = r;\
-    VARNAME(cmd_clear_)->ClearColor.y = g;\
-    VARNAME(cmd_clear_)->ClearColor.z = b;\
-    VARNAME(cmd_clear_)->ClearColor.w = a;
 
     Render_ClearColor(CmdBuffer, GameState->XValue, GameState->YValue, 0.25f*sinf(1.0f*GameState->TValue) + 0.5f, 1.0f);
 

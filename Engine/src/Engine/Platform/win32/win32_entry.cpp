@@ -616,7 +616,7 @@ Win32ListRenderCommands(render_command_buffer* Buffer) {
     }
 }
 
-bool32 Win32LoadShaderFromFile(Shader* shader, char* ResourcePath) {
+bool32 Win32LoadShaderFromFile(shader* shader, char* ResourcePath) {
     bool32 Result = false;
     char ShaderFullPath[WIN32_STATE_FILE_NAME_COUNT];
     CatStrings(GlobalWin32State.ResourcePrefixLength, GlobalWin32State.ResourcePathPrefix, 
@@ -711,15 +711,12 @@ bool32 Win32LoadDynamicFont(dynamic_font* Font, char* ResourcePath, real32 FontS
 
 internal_func void InitDebugRenderState() {
     // Init TextRenderer
-    Win32LoadShaderFromFile((Shader*)(&GlobalDebugRenderState.DebugTextRenderer.Shader), "Data/Shaders/Text.glsl");
+    Win32LoadShaderFromFile((shader*)(&GlobalDebugRenderState.DebugTextRenderer.Shader), "Data/Shaders/Text.glsl");
     GlobalDebugRenderState.DebugTextRenderer.Shader.r_transform.Handle = 1;
     GlobalDebugRenderState.DebugTextRenderer.Shader.r_transformUV.Handle = 2;
     GlobalDebugRenderState.DebugTextRenderer.Shader.r_orthoProjection.Handle = 3;
     GlobalDebugRenderState.DebugTextRenderer.Shader.r_fontTex.Handle = 4;
     GlobalDebugRenderState.DebugTextRenderer.Shader.r_textColor.Handle = 5;
-
-    GlobalDebugRenderState.DebugTextRenderer.Shader.r_transform.value = {1.0f, 1.0f, 0.0f, 0.0f};
-    GlobalDebugRenderState.DebugTextRenderer.Shader.r_transformUV.value = {1.0f, 1.0f, 0.0f, 0.0f};
 
     rh::laml::transform::create_projection_orthographic(GlobalDebugRenderState.DebugTextRenderer.orthoMat, 0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
     real32 QuadVerts[] = {
@@ -744,74 +741,85 @@ internal_func void DrawDebugText(char* Text, real32 StartX, real32 StartY, rh::l
     text_renderer* TextRenderer = &GlobalDebugRenderState.DebugTextRenderer;
     dynamic_font* Font = &TextRenderer->Font;
 
-    CMD_Bind_Shader* BindShaderCommand = PushRenderCommand(CmdBuffer, CMD_Bind_Shader);
-    BindShaderCommand->ShaderHandle = TextRenderer->Shader.Handle;
-    CMD_Bind_VAO* BindQuadCommand = PushRenderCommand(CmdBuffer, CMD_Bind_VAO);
-    BindQuadCommand->VAOHandle = TextRenderer->TextQuad.Handle;
-    CMD_Bind_Texture* BindTexCommand = PushRenderCommand(CmdBuffer, CMD_Bind_Texture);
-    BindTexCommand->TextureSlot = 0;
-    BindTexCommand->TextureHandle = TextRenderer->Font.TextureHandle;
-    CMD_Set_Cull* SetCullCommand = PushRenderCommand(CmdBuffer, CMD_Set_Cull);
-    SetCullCommand->Front = true;
-    CMD_Set_Depth_Test* SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
-    SetDepthCommand->Enabled = false;
-    CMD_Upload_Uniform_int* TexIDCommand = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_int);
-    TexIDCommand->Location = TextRenderer->Shader.r_fontTex.Handle;
-    TexIDCommand->Value = 0;
+    Render_BindShader(CmdBuffer, TextRenderer->Shader);
+    //CMD_Bind_Shader* BindShaderCommand = PushRenderCommand(CmdBuffer, CMD_Bind_Shader);
+    //BindShaderCommand->ShaderHandle = TextRenderer->Shader.Handle;
+    Render_BindVAO(CmdBuffer, TextRenderer->TextQuad);
+    //CMD_Bind_VAO* BindQuadCommand = PushRenderCommand(CmdBuffer, CMD_Bind_VAO);
+    //BindQuadCommand->VAOHandle = TextRenderer->TextQuad.Handle;
+    Render_BindTexture(CmdBuffer, 0, TextRenderer->Font.TextureHandle);
+    //CMD_Bind_Texture* BindTexCommand = PushRenderCommand(CmdBuffer, CMD_Bind_Texture);
+    //BindTexCommand->TextureSlot = 0;
+    //BindTexCommand->TextureHandle = TextRenderer->Font.TextureHandle;
+    Render_SetFrontCull(CmdBuffer, true);
+    //CMD_Set_Cull* SetCullCommand = PushRenderCommand(CmdBuffer, CMD_Set_Cull);
+    //SetCullCommand->Front = true;
+    Render_SetDepthTest(CmdBuffer, false);
+    //CMD_Set_Depth_Test* SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
+    //SetDepthCommand->Enabled = false;
+    Render_UploadInt(CmdBuffer, TextRenderer->Shader.r_fontTex, 0);
+    //CMD_Upload_Uniform_int* TexIDCommand = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_int);
+    //TexIDCommand->Location = TextRenderer->Shader.r_fontTex.Handle;
+    //TexIDCommand->Value = 0;
 
-    {
-        real32 X = StartX;
-        real32 Y = StartY;
+    real32 X = StartX;
+    real32 Y = StartY;
 
-        real32 HOffset, VOffset;
-        GetTextOffset(&TextRenderer->Font, &HOffset, &VOffset, Alignment, Text);
+    real32 HOffset, VOffset;
+    GetTextOffset(&TextRenderer->Font, &HOffset, &VOffset, Alignment, Text);
 
-        CMD_Upload_Uniform_vec3* TextColorCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec3);
-        TextColorCmd->Location = TextRenderer->Shader.r_textColor.Handle;
-        TextColorCmd->Value = Color;
-        CMD_Upload_Uniform_mat4* ProjMatCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_mat4);
-        ProjMatCmd->Location = TextRenderer->Shader.r_orthoProjection.Handle;
-        ProjMatCmd->Value = TextRenderer->orthoMat;
+    Render_UploadVec3(CmdBuffer, TextRenderer->Shader.r_textColor, Color);
+    //CMD_Upload_Uniform_vec3* TextColorCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec3);
+    //TextColorCmd->Location = TextRenderer->Shader.r_textColor.Handle;
+    //TextColorCmd->Value = Color;
+    Render_UploadMat4(CmdBuffer, TextRenderer->Shader.r_orthoProjection, TextRenderer->orthoMat);
+    //CMD_Upload_Uniform_mat4* ProjMatCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_mat4);
+    //ProjMatCmd->Location = TextRenderer->Shader.r_orthoProjection.Handle;
+    //ProjMatCmd->Value = TextRenderer->orthoMat;
 
-        while (*Text) {
-            if (*Text == '\n') {
-                //Increase y by one line,
-                //reset x to start
-                X = StartX;
-                Y += TextRenderer->Font.FontSize;
-            }
-            if (*Text >= 32 && *Text < 128) {
-                stbtt_aligned_quad q;
-                char c = *Text - 32;
-                stbtt_GetBakedQuad((Font->cdata), Font->BitmapRes, Font->BitmapRes, *Text - 32, &X, &Y, &q, 1);//1=opengl & d3d10+,0=d3d9
-
-                float scaleX = q.x1 - q.x0;
-                float scaleY = q.y1 - q.y0;
-                float transX = q.x0;
-                float transY = q.y0;
-                CMD_Upload_Uniform_vec4* TransformCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4);
-                TransformCmd->Location = TextRenderer->Shader.r_transform.Handle;
-                TransformCmd->Value = rh::laml::Vec4(scaleX, scaleY, transX + HOffset, transY + VOffset);
-
-                scaleX = q.s1 - q.s0;
-                scaleY = q.t1 - q.t0;
-                transX = q.s0;
-                transY = q.t0;
-                CMD_Upload_Uniform_vec4* TransformUVCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4);
-                TransformUVCmd->Location = TextRenderer->Shader.r_transformUV.Handle;
-                TransformUVCmd->Value = rh::laml::Vec4(scaleX, scaleY, transX, transY);
-
-                CMD_Submit* SubmitCommand = PushRenderCommand(CmdBuffer, CMD_Submit);
-                SubmitCommand->IndexCount = TextRenderer->TextQuad.IndexCount;
-            }
-            ++Text;
+    while (*Text) {
+        if (*Text == '\n') {
+            //Increase y by one line,
+            //reset x to start
+            X = StartX;
+            Y += TextRenderer->Font.FontSize;
         }
+        if (*Text >= 32 && *Text < 128) {
+            stbtt_aligned_quad q;
+            char c = *Text - 32;
+            stbtt_GetBakedQuad((Font->cdata), Font->BitmapRes, Font->BitmapRes, *Text - 32, &X, &Y, &q, 1);//1=opengl & d3d10+,0=d3d9
+
+            float scaleX = q.x1 - q.x0;
+            float scaleY = q.y1 - q.y0;
+            float transX = q.x0;
+            float transY = q.y0;
+            Render_UploadVec4(CmdBuffer, TextRenderer->Shader.r_transform, rh::laml::Vec4(scaleX, scaleY, transX + HOffset, transY + VOffset));
+            //CMD_Upload_Uniform_vec4* TransformCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4);
+            //TransformCmd->Location = TextRenderer->Shader.r_transform.Handle;
+            //TransformCmd->Value = rh::laml::Vec4(scaleX, scaleY, transX + HOffset, transY + VOffset);
+
+            scaleX = q.s1 - q.s0;
+            scaleY = q.t1 - q.t0;
+            transX = q.s0;
+            transY = q.t0;
+            Render_UploadVec4(CmdBuffer, TextRenderer->Shader.r_transformUV, rh::laml::Vec4(scaleX, scaleY, transX, transY));
+            //CMD_Upload_Uniform_vec4* TransformUVCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4);
+            //TransformUVCmd->Location = TextRenderer->Shader.r_transformUV.Handle;
+            //TransformUVCmd->Value = rh::laml::Vec4(scaleX, scaleY, transX, transY);
+
+            Render_Submit(CmdBuffer, TextRenderer->TextQuad.IndexCount);
+            //CMD_Submit* SubmitCommand = PushRenderCommand(CmdBuffer, CMD_Submit);
+            //SubmitCommand->IndexCount = TextRenderer->TextQuad.IndexCount;
+        }
+        ++Text;
     }
 
-    SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
-    SetDepthCommand->Enabled = true;
-    SetCullCommand = PushRenderCommand(CmdBuffer, CMD_Set_Cull);
-    SetCullCommand->Front = false;
+    Render_SetDepthTest(CmdBuffer, true);
+    //SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
+    //SetDepthCommand->Enabled = true;
+    Render_SetFrontCull(CmdBuffer, false);
+    //SetCullCommand = PushRenderCommand(CmdBuffer, CMD_Set_Cull);
+    //SetCullCommand->Front = false;
 }
 
 

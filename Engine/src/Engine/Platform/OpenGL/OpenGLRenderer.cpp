@@ -222,7 +222,7 @@ FindAfterToken_(uint8* Buffer, uint32 BufferLength, const char Token[], uint8 To
 }
 
 internal_func bool32 
-OpenGLLoadShader(Shader* shader, uint8* Buffer, uint32 BytesRead) {
+OpenGLLoadShader(shader* shader, uint8* Buffer, uint32 BytesRead) {
     uint8* VertexStart = Buffer;
     VertexStart = FindAfterToken(Buffer, BytesRead, "#type vertex");
     Assert(VertexStart);

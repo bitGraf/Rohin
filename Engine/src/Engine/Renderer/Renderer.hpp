@@ -9,11 +9,11 @@
 #include "Engine/Renderer/Light.hpp"
 
 // Shader
-struct Shader {
+struct shader {
     uint32 Handle;
 };
 
-struct PBRParameters {
+struct pbr_parameters {
     float Roughness;
     float Metalness;
 
@@ -82,7 +82,7 @@ Macro to define uniforms of the prototype:
         Typename value; 
     };
 */
-#define SHADER_UNIFORM_TYPE_DECL(Name, Typename) struct ShaderUniform_##Name { uint32 Handle; Typename value; };
+#define SHADER_UNIFORM_TYPE_DECL(Name, Typename) struct ShaderUniform_##Name { uint32 Handle; /*Typename value;*/ };
 
 SHADER_UNIFORM_TYPE_DECL(Int, int);
 SHADER_UNIFORM_TYPE_DECL(Float, float);
@@ -93,7 +93,7 @@ SHADER_UNIFORM_TYPE_DECL(Mat4, rh::laml::Mat4);
 SHADER_UNIFORM_TYPE_DECL(Sampler2D, int);
 SHADER_UNIFORM_TYPE_DECL(Sampler3D, int);
 SHADER_UNIFORM_TYPE_DECL(Light, rh::Light);
-SHADER_UNIFORM_TYPE_DECL(PBRParameters, PBRParameters);
+SHADER_UNIFORM_TYPE_DECL(PBRParameters, pbr_parameters);
 
 // Text rendering
 struct shader_text {
@@ -191,7 +191,7 @@ namespace rh {
             u32 numPointLights, const Light pointLights[32],
             u32 numSpotLights, const Light spotLights[32],
             const Light& sun, const laml::Mat4& projection);
-        static void UploadLights(const Ref<Shader> shader);
+        static void UploadLights(const Ref<shader> shader);
         static void Flush();
         static void Precompute();
 

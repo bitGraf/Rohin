@@ -48,14 +48,14 @@ private:
 
     // Geometry Pass
     void geometryPass(RenderBatch* batch);
-    Shader m_geometryPassShader;
+    shader m_geometryPassShader;
     _dur dur_geometryPass;
     //GBuffer m_gBuffer;
     Framebuffer_new m_gBuffer;
 
     // Screen Pass
     void screenPass(RenderBatch* batch);
-    Shader m_screenShader;
+    shader m_screenShader;
     _dur dur_screenPass;
 
     std::string soStr;
@@ -63,23 +63,23 @@ private:
 
     // SSAO Pass
     void ssaoPass(RenderBatch* batch);
-    Shader m_ssaoPassShader;
+    shader m_ssaoPassShader;
     _dur dur_ssaoPass;
     Framebuffer_new ssaoFBO;
     const unsigned int Kernel_Size = 16;
     std::vector<vec3> ssaoKernel;
     GLuint noiseTexture;
 
-    Shader m_ssaoBlurShader;
+    shader m_ssaoBlurShader;
     Framebuffer_new ssaoBlurFBO;
 
 	// Sprite Pass
-	Shader m_spriteShader;
+	shader m_spriteShader;
 	_dur dur_spritePass;
 	SpriteRenderer spriteRender;
 
     // Debug Pass
-    Shader m_debugMeshShader;
+    shader m_debugMeshShader;
     _dur dur_debug;
     DynamicFont debugFont;
     TriangleMesh* cameraMesh;

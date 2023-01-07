@@ -10,7 +10,7 @@
 typedef ENGINE_LOAD_DYNAMIC_FONT(Engine_LoadDynamicFont_t);
 
 // Render Commands
-#define ENGINE_RENDER_LOAD_SHADER(name) bool32 name(Shader* shader, char* ShaderPath)
+#define ENGINE_RENDER_LOAD_SHADER(name) bool32 name(shader* shader, char* ShaderPath)
 typedef ENGINE_RENDER_LOAD_SHADER(Engine_Render_LoadShaderFromFile_t);
 
 #define ENGINE_RENDER_CREATE_VERTEX_BUFFER(name) vertex_buffer name(void*, uint32, uint8, ShaderDataType, ...)
