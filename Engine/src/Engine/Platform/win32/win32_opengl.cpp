@@ -146,6 +146,9 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
         OutputDebugStringA("OpenGL Context created!\n");
         gladLoadGL(); // Bind the rest of the OpenGL 4.0 functions
 
+        // During init, enable debug output
+        glEnable              ( GL_DEBUG_OUTPUT );
+        glDebugMessageCallback( GLErrorMessageCallback, 0 );
 
         const char* glVendorString     = (const char*) glGetString(GL_VENDOR);
         const char* glRendererString   = (const char*) glGetString(GL_RENDERER);
@@ -217,28 +220,24 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
 
         GLfloat pointSize;
         glGetFloatv(GL_POINT_SIZE, &pointSize);
-        //ENGINE_LOG_WARN("Default point size: {0}", pointSize);
+        printf("Default point size: %f\n", pointSize);
         glPointSize(4);
         glGetFloatv(GL_POINT_SIZE, &pointSize);
-        //ENGINE_LOG_WARN("New point size: {0}", pointSize);
+        printf("New point size: %f\n", pointSize);
 
         GLfloat lineWidth;
         glGetFloatv(GL_LINE_WIDTH, &lineWidth);
-        //ENGINE_LOG_WARN("Default line width: {0}", lineWidth);
-        glLineWidth(2);
+        printf("Default line width: %f\n", lineWidth);
+        glLineWidth(2.0f);
         glGetFloatv(GL_LINE_WIDTH, &lineWidth);
-        //ENGINE_LOG_WARN("New line width: {0}", lineWidth);
+        printf("New line width: %f\n", lineWidth);
 
         GLfloat maxAniso;
         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAniso);
-        //ENGINE_LOG_WARN("Max Anisotropy value: {0}", maxAniso);
+        printf("Max Anisotropy value: %f\n", maxAniso);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        // During init, enable debug output
-        glEnable              ( GL_DEBUG_OUTPUT );
-        glDebugMessageCallback( GLErrorMessageCallback, 0 );
 
     } else {
         Assert(!"InvalidCodePath");
