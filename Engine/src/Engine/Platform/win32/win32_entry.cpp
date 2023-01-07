@@ -4,6 +4,7 @@
 
 #include "Game/game.h"
 
+global_variable bool32 FlagCreateConsole = true;
 /*********************************************************
  * WIN32 Platform specific code below!
  *********************************************************/
@@ -22,7 +23,6 @@
 // TODO: Global for now
 global_variable bool32 GlobalRunning;
 global_variable bool32 GlobalPause;
-global_variable bool32 FlagCreateConsole = false;
 global_variable win32_state GlobalWin32State;
 global_variable int GlobalCurrentInputIndex;
 global_variable uint8 ttf_buffer[Megabytes(1)];
@@ -526,9 +526,9 @@ Win32CreateConsoleAndMapStreams() {
     AllocConsole();
     //SetStdHandle();
     
-    //freopen_s((void**)stdout, "CONOUT$", "w", stdout);
+    freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
     
-    //printf("stdout Mapped to console!\n");
+    printf("stdout Mapped to console!\n");
 }
 
 internal_func void 
@@ -545,26 +545,22 @@ Win32GetEXEFileName() {
 }
 
 internal_func void 
-Win32GetResourcePath() {
-    // TODO: make this better
-    // assume folder structure is like this for now:
-    //     Rohin\
-    //       unity_build\
-    //         win32_entry.exe <-- path to this is Win32State.EXEFileName
-    //         game.dll
-    //       Game\
-    //         run_tree\ <-- this is the path I want
-    //           Data\
-    //
+Win32GetResourcePath(char* ResourcePathPrefix, uint8 PrefixLength) {
+    if (PrefixLength) {
+        // change all '\\' to '/'
+        for (char* Scan = ResourcePathPrefix; *Scan; Scan++) {
+            if (*Scan == '\\') {
+                *Scan = '/';
+            }
+        }
+        if (ResourcePathPrefix[PrefixLength-1] != '/') {
+            ResourcePathPrefix[PrefixLength] = '/';
+            PrefixLength++;
+        }
 
-    //char* RootDir;
-    //for(char *Scan = GlobalWin32State.EXEFileName; Scan < GlobalWin32State.OnePastLastSlashEXEFileName; ++Scan) {
-    //    if(*Scan == '\\') {
-    //        RootDir = Scan + 1;
-    //    }
-    //}
-
-    // TODO: For now, just run the game in the correct directory :)
+        CatStrings(PrefixLength, ResourcePathPrefix, 0, 0, PrefixLength, GlobalWin32State.ResourcePathPrefix);
+        GlobalWin32State.ResourcePrefixLength = PrefixLength;
+    }
 }
 
 inline void 
@@ -617,12 +613,14 @@ Win32ListRenderCommands(render_command_buffer* Buffer) {
     }
 }
 
-bool32 Win32LoadShader(Shader* shader, char* ShaderPath) {
+bool32 Win32LoadShader(Shader* shader, char* ResourcePath) {
     bool32 Result = false;
-    //char ShaderFullPath[WIN32_STATE_FILE_NAME_COUNT];
-    //Win32BuildResourcePathFileName
+    char ShaderFullPath[WIN32_STATE_FILE_NAME_COUNT];
+    CatStrings(GlobalWin32State.ResourcePrefixLength, GlobalWin32State.ResourcePathPrefix, 
+               StringLength(ResourcePath), ResourcePath, 
+               sizeof(ShaderFullPath), ShaderFullPath);
 
-    HANDLE FileHandle = CreateFileA(ShaderPath, 
+    HANDLE FileHandle = CreateFileA(ShaderFullPath, 
                                     GENERIC_READ, FILE_SHARE_READ, NULL, 
                                     OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (INVALID_HANDLE_VALUE != FileHandle) {
@@ -640,7 +638,7 @@ bool32 Win32LoadShader(Shader* shader, char* ShaderPath) {
                     ((uint8*)Buffer)[BytesRead] = 0;
                     // read the entire file into a buffer
                     OutputDebugStringA("Compiling OpenGL Shader: ");
-                    OutputDebugStringA(ShaderPath);
+                    OutputDebugStringA(ResourcePath);
                     OutputDebugStringA("\n");
                     Result = OpenGLLoadShader(shader, (uint8*)Buffer, BytesRead);
                 
@@ -656,7 +654,7 @@ bool32 Win32LoadShader(Shader* shader, char* ShaderPath) {
 }
 
 //GameState->TextRenderer.Font = Engine.LoadDynamicFont("Data/Fonts/UbuntuMono-Regular.ttf", 32);
-bool32 Win32LoadDynamicFont(dynamic_font* Font, char* FontPath, real32 FontSize, uint32 Resolution) {
+bool32 Win32LoadDynamicFont(dynamic_font* Font, char* ResourcePath, real32 FontSize, uint32 Resolution) {
     bool32 Result = false;
 
     SIZE_T BufferSize = Resolution * Resolution * sizeof(unsigned char);
@@ -664,7 +662,12 @@ bool32 Win32LoadDynamicFont(dynamic_font* Font, char* FontPath, real32 FontSize,
     if (BitmapBuffer) {
         uint8* temp_bitmap = (uint8* )BitmapBuffer;
 
-        HANDLE FileHandle = CreateFileA(FontPath, 
+        char FontFullPath[WIN32_STATE_FILE_NAME_COUNT];
+        CatStrings(GlobalWin32State.ResourcePrefixLength, GlobalWin32State.ResourcePathPrefix, 
+                   StringLength(ResourcePath), ResourcePath, 
+                   sizeof(FontFullPath), FontFullPath);
+
+        HANDLE FileHandle = CreateFileA(FontFullPath, 
                                         GENERIC_READ, FILE_SHARE_READ, NULL, 
                                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
         if (INVALID_HANDLE_VALUE != FileHandle) {
@@ -783,7 +786,7 @@ Win32LoadGameCode(char *SourceDLLName, char *TempDLLName, char* LockFileName) {
 
 
 internal_func void 
-Win32Init() {
+Win32Init(LPSTR CommandLine) {
     GlobalWin32State.WindowPosition.length = sizeof(GlobalWin32State.WindowPosition);
 
     GlobalWin32State.Input[2] = {};
@@ -793,7 +796,21 @@ Win32Init() {
     GlobalWin32State.PerfCounterFrequency = PerfCounterFrequencyResult.QuadPart;
 
     Win32GetEXEFileName();
-    Win32GetResourcePath();
+
+    // parse CommandLine to get a resource path
+    char ResourcePathPrefix[256] = { 0 };
+    uint8 PrefixLength = 0;
+    for (char* Scan = CommandLine; *Scan; Scan++) {
+        if ((*Scan == '-') && (*(Scan+1) == 'r')) {
+            char* cpy = ResourcePathPrefix;
+            for (char* Scan2 = (Scan + 3); (*Scan2 && (*Scan2 != ' ')); Scan2++) {
+                *cpy++ = *Scan2;
+                Scan = Scan2;
+                PrefixLength++;
+            }
+        }
+    }
+    Win32GetResourcePath(ResourcePathPrefix, PrefixLength);
 
     // NOTE: Set the Windows scheduler granularity to 1ms
     //       so that our Sleep can be more granular
@@ -812,7 +829,7 @@ WinMain(HINSTANCE Instance,
             LPSTR CommandLine,
             int ShowCode) {
 
-    Win32Init();
+    Win32Init(CommandLine);
 
     char SourceGameCodeDLLFullPath[WIN32_STATE_FILE_NAME_COUNT];
     Win32BuildEXEPathFileName("game.dll", sizeof(SourceGameCodeDLLFullPath), SourceGameCodeDLLFullPath);

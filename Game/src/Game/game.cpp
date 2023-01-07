@@ -327,7 +327,7 @@ GAME_FRAME_FUNC(GameFrame) {
         CMD_Set_Depth_Test* SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
         SetDepthCommand->Enabled = false;
         CMD_Upload_Uniform_int* TexIDCommand = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_int);
-        TexIDCommand->Location = GameState->TextRenderer.Shader.r_fontTex.Handle = 0;
+        TexIDCommand->Location = GameState->TextRenderer.Shader.r_fontTex.Handle;
         TexIDCommand->Value = 0;
 
         // Function call:

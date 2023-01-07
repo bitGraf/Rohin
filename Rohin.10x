@@ -12,7 +12,7 @@
 		<BuildFileCommand></BuildFileCommand>
 		<CleanCommand></CleanCommand>
 		<BuildWorkingDirectory></BuildWorkingDirectory>
-		<RunCommand>unity_build\win32_entry.exe</RunCommand>
+		<RunCommand>unity_build/win32_entry.exe -r W:\Rohin\Game\run_tree</RunCommand>
 		<DebugCommand></DebugCommand>
 		<ExePathCommand></ExePathCommand>
 		<DebugSln></DebugSln>

@@ -17,6 +17,25 @@ Win32GetWGLExtensionString(HDC WindowDC) {
     return 0;
 }
 
+void GLAPIENTRY
+GLErrorMessageCallback(GLenum source,
+                GLenum type,
+                GLuint id,
+                GLenum severity,
+                GLsizei length,
+                const GLchar* message,
+                const void* userParam ) {
+
+    char ErrBuff[1024];
+    wsprintf( ErrBuff, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+            ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message );
+    OutputDebugStringA(ErrBuff);
+    if (FlagCreateConsole) {
+        printf(ErrBuff);
+    }
+}
+
 static void
 Win32InitOpenGL(HWND Window) {
     HDC WindowDC = GetDC(Window);
@@ -141,7 +160,6 @@ Win32InitOpenGL(HWND Window) {
 
 #if 0
         _glGetStringi_PROC glGetStringi = (_glGetStringi_PROC)wglGetProcAddress("glGetStringi");
-#endif
         GLint num_extensions;
         glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
         OutputDebugStringA("OpenGL Extensions:");
@@ -151,6 +169,7 @@ Win32InitOpenGL(HWND Window) {
             OutputDebugStringA(glExtensionsString);
             OutputDebugStringA("\n");
         }
+#endif
 
         // Set VSync
         _wglSwapIntervalEXT_PROC wglSwapIntervalEXT = (_wglSwapIntervalEXT_PROC)wglGetProcAddress("wglSwapIntervalEXT");
@@ -186,6 +205,10 @@ Win32InitOpenGL(HWND Window) {
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        // During init, enable debug output
+        glEnable              ( GL_DEBUG_OUTPUT );
+        glDebugMessageCallback( GLErrorMessageCallback, 0 );
 
     } else {
         Assert(!"InvalidCodePath");

@@ -42,8 +42,8 @@ struct win32_state {
     char EXEFileName[WIN32_STATE_FILE_NAME_COUNT];
     char *OnePastLastSlashEXEFileName;
 
-    char ResourcePath[WIN32_STATE_FILE_NAME_COUNT];
-    char *EndOfResourcePath;
+    char ResourcePathPrefix[WIN32_STATE_FILE_NAME_COUNT];
+    uint32 ResourcePrefixLength;
 
     game_input Input[2];
     
