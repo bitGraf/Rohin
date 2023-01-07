@@ -2,43 +2,6 @@
 
 #include <stdarg.h>
 
-internal_func vertex_buffer OpenGLCreateVertexBuffer(void* VertexData, uint32 DataSizeInBytes) {
-    vertex_buffer Result = {};
-
-    glCreateBuffers(1, &Result.Handle);
-    glBindBuffer(GL_ARRAY_BUFFER, Result.Handle);
-    glBufferData(GL_ARRAY_BUFFER, DataSizeInBytes, VertexData, GL_STATIC_DRAW);
-
-    return Result;
-}
-
-internal_func void OpenGLSetVertexBufferLayout(vertex_buffer* VertexBuffer, uint8 NumAttributes, ShaderDataType First, ...) {
-    va_list Next;
-
-    VertexBuffer->NumAttributes = NumAttributes;
-    VertexBuffer->Attributes[0] = First;
-
-    va_start(Next, First);
-
-    for (int n = 1; n < NumAttributes; n++) {
-        VertexBuffer->Attributes[n] = va_arg(Next, ShaderDataType);
-    }
-
-    va_end(Next);
-}
-
-internal_func index_buffer OpenGLCreateIndexBuffer(uint32* IndexData, uint32 IndexCount) {
-    index_buffer Result = {};
-
-    glCreateBuffers(1, &Result.Handle);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Result.Handle);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexCount*sizeof(uint32), IndexData, GL_STATIC_DRAW);
-
-    Result.IndexCount = IndexCount;
-
-    return Result;
-}
-
 internal_func GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType Type) {
     switch (Type) {
         case ShaderDataType::Float:  return GL_FLOAT;
@@ -114,6 +77,43 @@ internal_func uint32 ShaderDataTypeSize(ShaderDataType Type) {
 
     Assert(false);
     return 0;
+}
+
+internal_func vertex_buffer OpenGLCreateVertexBuffer(void* VertexData, uint32 DataSizeInBytes, uint8 NumAttributes, ShaderDataType First, ...) {
+    vertex_buffer Result = {};
+
+    glCreateBuffers(1, &Result.Handle);
+    glBindBuffer(GL_ARRAY_BUFFER, Result.Handle);
+    glBufferData(GL_ARRAY_BUFFER, DataSizeInBytes, VertexData, GL_STATIC_DRAW);
+
+    va_list Next;
+
+    Result.NumAttributes = NumAttributes;
+    Result.Attributes[0] = First;
+
+    if (NumAttributes > 1) {
+        va_start(Next, First);
+
+        for (int n = 1; n < NumAttributes; n++) {
+            Result.Attributes[n] = va_arg(Next, ShaderDataType);
+        }
+
+        va_end(Next);
+    }
+
+    return Result;
+}
+
+internal_func index_buffer OpenGLCreateIndexBuffer(uint32* IndexData, uint32 IndexCount) {
+    index_buffer Result = {};
+
+    glCreateBuffers(1, &Result.Handle);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Result.Handle);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexCount*sizeof(uint32), IndexData, GL_STATIC_DRAW);
+
+    Result.IndexCount = IndexCount;
+
+    return Result;
 }
 
 internal_func vertex_array_object OpenGLCreateVertexArray(vertex_buffer* VBO, index_buffer* IBO) {

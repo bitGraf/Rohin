@@ -7,8 +7,7 @@
 
 internal_func bool32 OpenGLLoadShader(Shader* shader, uint8* Buffer, uint32 BytesRead);
 
-internal_func vertex_buffer OpenGLCreateVertexBuffer(void* VertexData, uint32 DataSizeInBytes);
-internal_func void OpenGLSetVertexBufferLayout(vertex_buffer* VertexBuffer, uint8 NumAttributes, ShaderDataType First, ...);
+internal_func vertex_buffer OpenGLCreateVertexBuffer(void* VertexData, uint32 DataSizeInBytes, uint8 NumAttributes, ShaderDataType First, ...);
 internal_func index_buffer OpenGLCreateIndexBuffer(uint32* IndexData, uint32 IndexCount);
 internal_func vertex_array_object OpenGLCreateVertexArray(vertex_buffer* VBO, index_buffer* IBO);
 

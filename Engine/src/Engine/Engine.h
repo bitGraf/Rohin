@@ -6,62 +6,56 @@
 #include "Engine/Renderer/Renderer.hpp"
 
 /* Services that the Engine provides to the Game: */
+#define ENGINE_LOAD_DYNAMIC_FONT(name) bool32 name(dynamic_font*, char*, real32, uint32)
+typedef ENGINE_LOAD_DYNAMIC_FONT(Engine_LoadDynamicFont_t);
+
+// Render Commands
+#define ENGINE_RENDER_LOAD_SHADER(name) bool32 name(Shader* shader, char* ShaderPath)
+typedef ENGINE_RENDER_LOAD_SHADER(Engine_Render_LoadShaderFromFile_t);
+
+#define ENGINE_RENDER_CREATE_VERTEX_BUFFER(name) vertex_buffer name(void*, uint32, uint8, ShaderDataType, ...)
+typedef ENGINE_RENDER_CREATE_VERTEX_BUFFER(Engine_Render_CreateVertexBuffer_t);
+
+#define ENGINE_RENDER_CREATE_INDEX_BUFFER(name) index_buffer name(uint32*, uint32)
+typedef ENGINE_RENDER_CREATE_INDEX_BUFFER(Engine_Render_CreateIndexBuffer_t);
+
+#define ENGINE_RENDER_CREATE_VERTEX_ARRAY(name) vertex_array_object name(vertex_buffer*, index_buffer*)
+typedef ENGINE_RENDER_CREATE_VERTEX_ARRAY(Engine_Render_CreateVertexArray_t);
+
+#define ENGINE_RENDER_DRAW_DEBUG_TEXT(name) void name(char* Text, real32 X, real32 Y, rh::laml::Vec3 Color, TextAlignment Alignment);
+typedef ENGINE_RENDER_DRAW_DEBUG_TEXT(Engine_Render_DrawDebugText_t);
+
 
 // Logging
-#define ENGINE_LOG_MESSAGE(name) void name(const char* msg)
-typedef ENGINE_LOG_MESSAGE(EngineLogMessage_t);
+#define ENGINE_DEBUG_LOG_MESSAGE(name) void name(const char* msg)
+typedef ENGINE_DEBUG_LOG_MESSAGE(Engine_Debug_LogMessage_t);
 
-// Filesystem
-#define ENGINE_GET_EXE_PATH(name) const char* name(void)
-typedef ENGINE_GET_EXE_PATH(EngineGetEXEPath_t);
-
-// Renderer
-#define ENGINE_RENDER_LOAD_SHADER(name) bool32 name(Shader* shader, char* ShaderPath)
-typedef ENGINE_RENDER_LOAD_SHADER(EngineRenderLoadShader_t);
-
-#define ENGINE_RENDER_BEGIN_FRAME(name) void name(void)
-typedef ENGINE_RENDER_BEGIN_FRAME(EngineRenderBeginFrame_t);
-
-#define ENGINE_RENDER_END_FRAME(name) void name(void)
-typedef ENGINE_RENDER_END_FRAME(EngineRenderEndFrame_t);
-
-/*
-vertex_buffer OpenGLCreateVertexBuffer(void* VertexData, uint32 DataSizeInBytes);
-void OpenGLSetVertexBufferLayout(uint32 NumAttributes, ShaderDataType first, ...);
-index_buffer OpenGLCreateIndexBuffer(uint32* IndexData, uint32 IndexCount);
-vertex_array_object OpenGLCreateVertexArray(vertex_buffer* VBO, index_buffer* IBO);
- * */
-typedef vertex_buffer EngineRenderCreateVertexBuffer_t(void*, uint32);
-typedef void EngineRenderSetVertexBufferLayout_t(vertex_buffer*, uint8, ShaderDataType, ...);
-typedef index_buffer EngineRenderCreateIndexBuffer_t(uint32*, uint32);
-typedef vertex_array_object EngineRenderCreateVertexArray_t(vertex_buffer*, index_buffer*);
-
-typedef bool32 EngineRenderLoadDynamicFont_t(dynamic_font*, char*, real32, uint32);
-
-//Engine.GetTextOffset(&GameState->TextRenderer.Font, &HOffset, &VOffset, Alignment, Text);
-#define ENGINE_GET_TEXT_OFFSET(name) void name(dynamic_font* Font, real32* HOffset, real32* VOffset, TextAlignment Alignment, const char* Text)
-typedef ENGINE_GET_TEXT_OFFSET(EngineGetTextOffset_t);
+// default
+#define STUB_FUNCTION(name) void name(...)
+typedef STUB_FUNCTION(EngineStubFunction_t);
+STUB_FUNCTION(EngineStubFunction) {
+    return;
+}
 
 struct gameImport_t {
     int Version;
 
-    // Logging stuff
-    EngineLogMessage_t* LogMessage;
-    
-    // Filesystem stuff
-    EngineGetEXEPath_t* GetEXEPath;
+    Engine_LoadDynamicFont_t *LoadDynamicFont;
 
-    // Renderer stuff
-    EngineRenderLoadShader_t* LoadShader;
+    struct {
+        Engine_Render_LoadShaderFromFile_t *LoadShaderFromFile;
 
-    EngineRenderCreateVertexBuffer_t *CreateVertexBuffer;
-    EngineRenderSetVertexBufferLayout_t *SetVertexBufferLayout;
-    EngineRenderCreateIndexBuffer_t *CreateIndexBuffer;
-    EngineRenderCreateVertexArray_t *CreateVertexArray;
+        Engine_Render_CreateVertexBuffer_t *CreateVertexBuffer;
+        Engine_Render_CreateIndexBuffer_t  *CreateIndexBuffer;
+        Engine_Render_CreateVertexArray_t  *CreateVertexArray;
 
-    EngineRenderLoadDynamicFont_t *LoadDynamicFont;
+        Engine_Render_DrawDebugText_t *DrawDebugText;
+    } Render;
 
-    EngineGetTextOffset_t* GetTextOffset;
+    struct {
+        Engine_Debug_LogMessage_t* LogMessage;
+        Engine_Debug_LogMessage_t* LogError;
+    } Logger;
 };
 
 #endif

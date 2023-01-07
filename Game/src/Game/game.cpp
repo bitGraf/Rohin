@@ -152,34 +152,11 @@ struct shader_Mix {
     ShaderUniform_Float r_mixValue;
 };
 
-// Text rendering
-struct shader_text {
-    uint32 Handle;
-
-    ShaderUniform_Vec4 r_transform;
-    ShaderUniform_Vec4 r_transformUV;
-    ShaderUniform_Mat4 r_orthoProjection;
-
-    ShaderUniform_Sampler2D r_fontTex;
-    ShaderUniform_Vec3 r_textColor;
-};
-
-struct text_renderer {
-    shader_text Shader;
-
-    vertex_array_object TextQuad;
-    rh::laml::Mat4 orthoMat;
-    dynamic_font Font;
-};
-
 struct game_state {
     real32 XValue;
     real32 YValue;
 
     real32 TValue;
-
-    // Text rendering
-    text_renderer TextRenderer;
 
     // Shaders
     shader_line ShaderLine;
@@ -192,8 +169,6 @@ struct game_state {
     shader_Screen ShaderScreen;
     shader_Mix ShaderMix;
 
-    const char* ExePath; //tmp
-
     memory_arena FrameArena;
     memory_arena PrevFrameArena;
     memory_arena PermArena;
@@ -203,7 +178,7 @@ void SubmitText(dynamic_font* Font, const char Text[], real32 StartX, real32 Sta
 
 }
 
-#define ezLoadShader(ShaderVar, ShaderPath) Engine.LoadShader((Shader*)(&ShaderVar), ShaderPath)
+#define ezLoadShader(ShaderVar, ShaderPath) Engine.Render.LoadShaderFromFile((Shader*)(&ShaderVar), ShaderPath)
 
 // TODO: Rewrite the game code to fit into these functions,
 //       or add/remove these functions to better fit the game
@@ -211,42 +186,11 @@ GAME_INIT_FUNC(GameInit) {
     game_state* GameState = (game_state*)Memory->PermanentStorage;
 
     if (!Memory->IsInitialized) {
-        GameState->ExePath = Engine.GetEXEPath();
-
         GameState->XValue = 0.5f;
         GameState->YValue = 0.5f;
         GameState->TValue = 0.0f;
 
         //BIND_UNIFORM(GameState->lineShader, r_test);
-
-        // Init TextRenderer
-        ezLoadShader(GameState->TextRenderer.Shader, "Data/Shaders/Text.glsl");
-        GameState->TextRenderer.Shader.r_transform.Handle = 1;
-        GameState->TextRenderer.Shader.r_transformUV.Handle = 2;
-        GameState->TextRenderer.Shader.r_orthoProjection.Handle = 3;
-        GameState->TextRenderer.Shader.r_fontTex.Handle = 4;
-        GameState->TextRenderer.Shader.r_textColor.Handle = 5;
-
-        GameState->TextRenderer.Shader.r_transform.value = {1.0f, 1.0f, 0.0f, 0.0f};
-        GameState->TextRenderer.Shader.r_transformUV.value = {1.0f, 1.0f, 0.0f, 0.0f};
-
-        rh::laml::transform::create_projection_orthographic(GameState->TextRenderer.orthoMat, 0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
-        real32 QuadVerts[] = {
-            0.0f, 1.0f,
-            0.0f, 0.0f,
-            1.0f, 0.0f,
-            1.0f, 1.0f
-        };
-        uint32 QuadIndices[] = {
-            0, 1, 2,
-            0, 2, 3
-        };
-        vertex_buffer VBO = Engine.CreateVertexBuffer(QuadVerts, sizeof(QuadVerts));
-        Engine.SetVertexBufferLayout(&VBO, 1, ShaderDataType::Float2);
-        index_buffer IBO = Engine.CreateIndexBuffer(QuadIndices, 6);
-        GameState->TextRenderer.TextQuad = Engine.CreateVertexArray(&VBO, &IBO);
-
-        Engine.LoadDynamicFont(&GameState->TextRenderer.Font, "Data/Fonts/UbuntuMono-Regular.ttf", 32, 512);
 
         // Init 3D renderer
         ezLoadShader(GameState->ShaderLine, "Data/Shaders/Line.glsl");
@@ -304,7 +248,7 @@ GAME_FRAME_FUNC(GameFrame) {
 #define CAT(a, b) CAT_(a, b)
 #define VARNAME(Var) CAT(Var, __LINE__)
 
-#define Render_ClearColor(CommandBuffer, r, g, b, a) \
+#define Render_ClearColor(GlobalCommandBuffer, r, g, b, a) \
     CMD_Clear_Buffer* VARNAME(cmd_clear_) = PushRenderCommand(CmdBuffer, CMD_Clear_Buffer); \
     VARNAME(cmd_clear_)->ClearColor.x = r;\
     VARNAME(cmd_clear_)->ClearColor.y = g;\
@@ -314,84 +258,15 @@ GAME_FRAME_FUNC(GameFrame) {
     Render_ClearColor(CmdBuffer, GameState->XValue, GameState->YValue, 0.25f*sinf(1.0f*GameState->TValue) + 0.5f, 1.0f);
 
     // Render text
-    {
-        CMD_Bind_Shader* BindShaderCommand = PushRenderCommand(CmdBuffer, CMD_Bind_Shader);
-        BindShaderCommand->ShaderHandle = GameState->TextRenderer.Shader.Handle;
-        CMD_Bind_VAO* BindQuadCommand = PushRenderCommand(CmdBuffer, CMD_Bind_VAO);
-        BindQuadCommand->VAOHandle = GameState->TextRenderer.TextQuad.Handle;
-        CMD_Bind_Texture* BindTexCommand = PushRenderCommand(CmdBuffer, CMD_Bind_Texture);
-        BindTexCommand->TextureSlot = 0;
-        BindTexCommand->TextureHandle = GameState->TextRenderer.Font.TextureHandle;
-        CMD_Set_Cull* SetCullCommand = PushRenderCommand(CmdBuffer, CMD_Set_Cull);
-        SetCullCommand->Front = true;
-        CMD_Set_Depth_Test* SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
-        SetDepthCommand->Enabled = false;
-        CMD_Upload_Uniform_int* TexIDCommand = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_int);
-        TexIDCommand->Location = GameState->TextRenderer.Shader.r_fontTex.Handle;
-        TexIDCommand->Value = 0;
-
-        // Function call:
-        char* Text = "Eggwuh";
-        real32 StartX = 0.0f;
-        real32 StartY = 0.0f;
-        TextAlignment Alignment = TextAlignment::ALIGN_TOP_LEFT;
-        rh::laml::Vec3 Color = { 1.0f, 1.0f, 1.0f };
-        dynamic_font* Font = &GameState->TextRenderer.Font;
-
-        {
-            real32 X = StartX;
-            real32 Y = StartY;
-
-            real32 HOffset, VOffset;
-            Engine.GetTextOffset(&GameState->TextRenderer.Font, &HOffset, &VOffset, Alignment, Text);
-
-            CMD_Upload_Uniform_vec3* TextColorCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec3);
-            TextColorCmd->Location = GameState->TextRenderer.Shader.r_textColor.Handle;
-            TextColorCmd->Value = Color;
-            CMD_Upload_Uniform_mat4* ProjMatCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_mat4);
-            ProjMatCmd->Location = GameState->TextRenderer.Shader.r_orthoProjection.Handle;
-            ProjMatCmd->Value = GameState->TextRenderer.orthoMat;
-
-            while (*Text) {
-                if (*Text == '\n') {
-                    //Increase y by one line,
-                    //reset x to start
-                    X = StartX;
-                    Y += GameState->TextRenderer.Font.FontSize;
-                }
-                if (*Text >= 32 && *Text < 128) {
-                    stbtt_aligned_quad q;
-                    char c = *Text - 32;
-                    stbtt_GetBakedQuad(reinterpret_cast<stbtt_bakedchar*>(Font->cdata), Font->BitmapRes, Font->BitmapRes, *Text - 32, &X, &Y, &q, 1);//1=opengl & d3d10+,0=d3d9
-
-                    float scaleX = q.x1 - q.x0;
-                    float scaleY = q.y1 - q.y0;
-                    float transX = q.x0;
-                    float transY = q.y0;
-                    CMD_Upload_Uniform_vec4* TransformCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4);
-                    TransformCmd->Location = GameState->TextRenderer.Shader.r_transform.Handle;
-                    TransformCmd->Value = rh::laml::Vec4(scaleX, scaleY, transX + HOffset, transY + VOffset);
-
-                    scaleX = q.s1 - q.s0;
-                    scaleY = q.t1 - q.t0;
-                    transX = q.s0;
-                    transY = q.t0;
-                    CMD_Upload_Uniform_vec4* TransformUVCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4);
-                    TransformUVCmd->Location = GameState->TextRenderer.Shader.r_transformUV.Handle;
-                    TransformUVCmd->Value = rh::laml::Vec4(scaleX, scaleY, transX, transY);
-
-                    CMD_Submit* SubmitCommand = PushRenderCommand(CmdBuffer, CMD_Submit);
-                    SubmitCommand->IndexCount = GameState->TextRenderer.TextQuad.IndexCount;
-                }
-                ++Text;
-            }
-        }
-
-        SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
-        SetDepthCommand->Enabled = true;
-        SetCullCommand = PushRenderCommand(CmdBuffer, CMD_Set_Cull);
-        SetCullCommand->Front = false;
-    }
+    //void name(char* Text, real32 X, real32 Y, rh::laml::Vec3 Color, TextAlignment Alignment);
+    rh::laml::Vec3 TextColor(1.0f, 1.0f, 1.0f);
+    real32 y = 0.0f;
+    Engine.Render.DrawDebugText("Eggwuh", 0.0f, y, 
+                                TextColor, TextAlignment::ALIGN_TOP_LEFT);
+    Engine.Render.DrawDebugText("Running...", 0.0f, y += 32.0f, 
+                                TextColor, TextAlignment::ALIGN_TOP_LEFT);
+    Engine.Render.DrawDebugText("hehe", 0.0f, y += 32.0f, 
+                                TextColor, TextAlignment::ALIGN_TOP_LEFT);
 
     // Swap the two arenas, allowing the last frame to be saved
     SwapArenas(GameState->FrameArena, GameState->PrevFrameArena);
@@ -424,6 +299,3 @@ extern "C" GAME_GET_API_FUNC(GetGameAPI) {
 
     return Export;
 }
-
-#define STB_TRUETYPE_IMPLEMENTATION
-#include "stb_truetype.h"

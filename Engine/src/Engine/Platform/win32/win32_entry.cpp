@@ -8,10 +8,14 @@ global_variable bool32 FlagCreateConsole = true;
 /*********************************************************
  * WIN32 Platform specific code below!
  *********************************************************/
+#define VC_EXTRALEAN
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <timeapi.h>
 #include <strsafe.h>
-#include <wingdi.h>
+//#include <wingdi.h>
 #include <xinput.h>
+
 #include "win32_opengl.cpp"
 
 #include "win32_entry.h"
@@ -26,6 +30,8 @@ global_variable bool32 GlobalPause;
 global_variable win32_state GlobalWin32State;
 global_variable int GlobalCurrentInputIndex;
 global_variable uint8 ttf_buffer[Megabytes(1)];
+global_variable debug_render_state GlobalDebugRenderState;
+global_variable render_command_buffer GlobalCommandBuffer;
 
 // NOTE: XInputGetState
 #define X_INPUT_GET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_STATE* pState)
@@ -97,15 +103,12 @@ Win32GetLastWriteTime(char *Filename) {
     return(LastWriteTime);
 }
 
-// sample Engine service provided to the game.dll
-ENGINE_GET_EXE_PATH(Win32GetEXEPath) {
-    return GlobalWin32State.EXEFileName;
-}
-
-internal_func ENGINE_LOG_MESSAGE(Win32LogMessage) {
+internal_func ENGINE_DEBUG_LOG_MESSAGE(Win32LogMessage) {
     OutputDebugStringA("[Engine]: ");
     OutputDebugStringA(msg);
     OutputDebugStringA("\n");
+
+    printf(msg);
 }
 
 internal_func void
@@ -613,7 +616,7 @@ Win32ListRenderCommands(render_command_buffer* Buffer) {
     }
 }
 
-bool32 Win32LoadShader(Shader* shader, char* ResourcePath) {
+bool32 Win32LoadShaderFromFile(Shader* shader, char* ResourcePath) {
     bool32 Result = false;
     char ShaderFullPath[WIN32_STATE_FILE_NAME_COUNT];
     CatStrings(GlobalWin32State.ResourcePrefixLength, GlobalWin32State.ResourcePathPrefix, 
@@ -653,7 +656,6 @@ bool32 Win32LoadShader(Shader* shader, char* ResourcePath) {
     return Result;
 }
 
-//GameState->TextRenderer.Font = Engine.LoadDynamicFont("Data/Fonts/UbuntuMono-Regular.ttf", 32);
 bool32 Win32LoadDynamicFont(dynamic_font* Font, char* ResourcePath, real32 FontSize, uint32 Resolution) {
     bool32 Result = false;
 
@@ -707,7 +709,110 @@ bool32 Win32LoadDynamicFont(dynamic_font* Font, char* ResourcePath, real32 FontS
     return Result;
 }
 
+internal_func void InitDebugRenderState() {
+    // Init TextRenderer
+    Win32LoadShaderFromFile((Shader*)(&GlobalDebugRenderState.DebugTextRenderer.Shader), "Data/Shaders/Text.glsl");
+    GlobalDebugRenderState.DebugTextRenderer.Shader.r_transform.Handle = 1;
+    GlobalDebugRenderState.DebugTextRenderer.Shader.r_transformUV.Handle = 2;
+    GlobalDebugRenderState.DebugTextRenderer.Shader.r_orthoProjection.Handle = 3;
+    GlobalDebugRenderState.DebugTextRenderer.Shader.r_fontTex.Handle = 4;
+    GlobalDebugRenderState.DebugTextRenderer.Shader.r_textColor.Handle = 5;
 
+    GlobalDebugRenderState.DebugTextRenderer.Shader.r_transform.value = {1.0f, 1.0f, 0.0f, 0.0f};
+    GlobalDebugRenderState.DebugTextRenderer.Shader.r_transformUV.value = {1.0f, 1.0f, 0.0f, 0.0f};
+
+    rh::laml::transform::create_projection_orthographic(GlobalDebugRenderState.DebugTextRenderer.orthoMat, 0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+    real32 QuadVerts[] = {
+                         0.0f, 1.0f,
+                         0.0f, 0.0f,
+                         1.0f, 0.0f,
+                         1.0f, 1.0f
+    };
+    uint32 QuadIndices[] = {
+                           0, 1, 2,
+                           0, 2, 3
+    };
+    vertex_buffer VBO = OpenGLCreateVertexBuffer(QuadVerts, sizeof(QuadVerts), 1, ShaderDataType::Float2);
+    index_buffer IBO = OpenGLCreateIndexBuffer(QuadIndices, 6);
+    GlobalDebugRenderState.DebugTextRenderer.TextQuad = OpenGLCreateVertexArray(&VBO, &IBO);
+
+    Win32LoadDynamicFont(&GlobalDebugRenderState.DebugTextRenderer.Font, "Data/Fonts/UbuntuMono-Regular.ttf", 32, 512);
+}
+
+internal_func void DrawDebugText(char* Text, real32 StartX, real32 StartY, rh::laml::Vec3 Color, TextAlignment Alignment) {
+    render_command_buffer* CmdBuffer = &GlobalCommandBuffer;
+    text_renderer* TextRenderer = &GlobalDebugRenderState.DebugTextRenderer;
+    dynamic_font* Font = &TextRenderer->Font;
+
+    CMD_Bind_Shader* BindShaderCommand = PushRenderCommand(CmdBuffer, CMD_Bind_Shader);
+    BindShaderCommand->ShaderHandle = TextRenderer->Shader.Handle;
+    CMD_Bind_VAO* BindQuadCommand = PushRenderCommand(CmdBuffer, CMD_Bind_VAO);
+    BindQuadCommand->VAOHandle = TextRenderer->TextQuad.Handle;
+    CMD_Bind_Texture* BindTexCommand = PushRenderCommand(CmdBuffer, CMD_Bind_Texture);
+    BindTexCommand->TextureSlot = 0;
+    BindTexCommand->TextureHandle = TextRenderer->Font.TextureHandle;
+    CMD_Set_Cull* SetCullCommand = PushRenderCommand(CmdBuffer, CMD_Set_Cull);
+    SetCullCommand->Front = true;
+    CMD_Set_Depth_Test* SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
+    SetDepthCommand->Enabled = false;
+    CMD_Upload_Uniform_int* TexIDCommand = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_int);
+    TexIDCommand->Location = TextRenderer->Shader.r_fontTex.Handle;
+    TexIDCommand->Value = 0;
+
+    {
+        real32 X = StartX;
+        real32 Y = StartY;
+
+        real32 HOffset, VOffset;
+        GetTextOffset(&TextRenderer->Font, &HOffset, &VOffset, Alignment, Text);
+
+        CMD_Upload_Uniform_vec3* TextColorCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec3);
+        TextColorCmd->Location = TextRenderer->Shader.r_textColor.Handle;
+        TextColorCmd->Value = Color;
+        CMD_Upload_Uniform_mat4* ProjMatCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_mat4);
+        ProjMatCmd->Location = TextRenderer->Shader.r_orthoProjection.Handle;
+        ProjMatCmd->Value = TextRenderer->orthoMat;
+
+        while (*Text) {
+            if (*Text == '\n') {
+                //Increase y by one line,
+                //reset x to start
+                X = StartX;
+                Y += TextRenderer->Font.FontSize;
+            }
+            if (*Text >= 32 && *Text < 128) {
+                stbtt_aligned_quad q;
+                char c = *Text - 32;
+                stbtt_GetBakedQuad((Font->cdata), Font->BitmapRes, Font->BitmapRes, *Text - 32, &X, &Y, &q, 1);//1=opengl & d3d10+,0=d3d9
+
+                float scaleX = q.x1 - q.x0;
+                float scaleY = q.y1 - q.y0;
+                float transX = q.x0;
+                float transY = q.y0;
+                CMD_Upload_Uniform_vec4* TransformCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4);
+                TransformCmd->Location = TextRenderer->Shader.r_transform.Handle;
+                TransformCmd->Value = rh::laml::Vec4(scaleX, scaleY, transX + HOffset, transY + VOffset);
+
+                scaleX = q.s1 - q.s0;
+                scaleY = q.t1 - q.t0;
+                transX = q.s0;
+                transY = q.t0;
+                CMD_Upload_Uniform_vec4* TransformUVCmd = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4);
+                TransformUVCmd->Location = TextRenderer->Shader.r_transformUV.Handle;
+                TransformUVCmd->Value = rh::laml::Vec4(scaleX, scaleY, transX, transY);
+
+                CMD_Submit* SubmitCommand = PushRenderCommand(CmdBuffer, CMD_Submit);
+                SubmitCommand->IndexCount = TextRenderer->TextQuad.IndexCount;
+            }
+            ++Text;
+        }
+    }
+
+    SetDepthCommand = PushRenderCommand(CmdBuffer, CMD_Set_Depth_Test);
+    SetDepthCommand->Enabled = true;
+    SetCullCommand = PushRenderCommand(CmdBuffer, CMD_Set_Cull);
+    SetCullCommand->Front = false;
+}
 
 
 
@@ -747,17 +852,21 @@ Win32LoadGameCode(char *SourceDLLName, char *TempDLLName, char* LockFileName) {
             
             gameImport_t GameImport = {};
             GameImport.Version = 1;
-            GameImport.LogMessage = Win32LogMessage;
-            GameImport.GetEXEPath = Win32GetEXEPath;
-            GameImport.LoadShader = Win32LoadShader;
-            GameImport.CreateVertexBuffer = OpenGLCreateVertexBuffer;
-            GameImport.SetVertexBufferLayout = OpenGLSetVertexBufferLayout;
-            GameImport.CreateIndexBuffer = OpenGLCreateIndexBuffer;
-            GameImport.CreateVertexArray = OpenGLCreateVertexArray;
+
             GameImport.LoadDynamicFont = Win32LoadDynamicFont;
-            GameImport.GetTextOffset = GetTextOffset;
+
+            GameImport.Render.LoadShaderFromFile = Win32LoadShaderFromFile;
+            GameImport.Render.CreateVertexBuffer = OpenGLCreateVertexBuffer;
+            GameImport.Render.CreateIndexBuffer = OpenGLCreateIndexBuffer;
+            GameImport.Render.CreateVertexArray = OpenGLCreateVertexArray;
+            GameImport.Render.DrawDebugText = DrawDebugText;
+
+            GameImport.Logger.LogMessage = Win32LogMessage;
+            GameImport.Logger.LogError = Win32LogMessage;
+
 
             gameExport_t GameExport = GameGetApi(GameImport);
+
 
             Result.Init        = GameExport.Init;
             Result.Frame       = GameExport.Frame;
@@ -865,6 +974,7 @@ WinMain(HINSTANCE Instance,
         if (Window) {
             HDC DeviceContext = GetDC(Window);
             Win32InitOpenGL(Window);
+            InitDebugRenderState();
 
             // How do we reliably query this on Windows?
             int MonitorRefreshHz = 60;
@@ -897,9 +1007,8 @@ WinMain(HINSTANCE Instance,
             uint64 RenderStorageSize = Megabytes(2);
             void*  RenderStorage = VirtualAlloc((LPVOID)(BaseAddress + GlobalWin32State.TotalSize), (size_t)RenderStorageSize,
                                                MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-            render_command_buffer CommandBuffer = {};
-            CommandBuffer.MaxSize = (uint32)RenderStorageSize;
-            CommandBuffer.Base = (uint8*)RenderStorage;
+            GlobalCommandBuffer.MaxSize = (uint32)RenderStorageSize;
+            GlobalCommandBuffer.Base = (uint8*)RenderStorage;
 
             for (int ReplayIndex = 0; ReplayIndex < ArrayCount(GlobalWin32State.ReplayBuffers); ReplayIndex++) {
                 win32_replay_buffer* ReplayBuffer = &GlobalWin32State.ReplayBuffers[ReplayIndex];
@@ -1097,10 +1206,10 @@ WinMain(HINSTANCE Instance,
                         if (Game.Frame) {
                             OpenGLBeginFrame();
 
-                            Game.Frame(&GameMemory, NewInput, &CommandBuffer);
+                            Game.Frame(&GameMemory, NewInput, &GlobalCommandBuffer);
                             //Win32ListRenderCommands(&CommandBuffer);
 
-                            OpenGLEndFrame(&Dimension, &CommandBuffer);
+                            OpenGLEndFrame(&Dimension, &GlobalCommandBuffer);
                         }
 
                         LARGE_INTEGER WorkCounter = Win32GetWallClock();

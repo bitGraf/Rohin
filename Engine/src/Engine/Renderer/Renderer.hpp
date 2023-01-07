@@ -33,10 +33,6 @@ enum class ShaderDataType : uint8 {
     Bool
 };
 
-//struct vertex_buffer_attribute {
-//    ShaderDataType Type;
-//};
-
 #define MAX_ATTRIBUTES 8
 struct vertex_buffer {
     uint32 Handle;
@@ -99,14 +95,34 @@ SHADER_UNIFORM_TYPE_DECL(Sampler3D, int);
 SHADER_UNIFORM_TYPE_DECL(Light, rh::Light);
 SHADER_UNIFORM_TYPE_DECL(PBRParameters, PBRParameters);
 
-// Renderer
+// Text rendering
+struct shader_text {
+    uint32 Handle;
 
-namespace rh {
-    //ENGINE_RENDER_BEGIN_FRAME(RenderBeginFrame);
-    //ENGINE_RENDER_END_FRAME(RenderEndFrame);
-}
+    ShaderUniform_Vec4 r_transform;
+    ShaderUniform_Vec4 r_transformUV;
+    ShaderUniform_Mat4 r_orthoProjection;
+
+    ShaderUniform_Sampler2D r_fontTex;
+    ShaderUniform_Vec3 r_textColor;
+};
+
+struct text_renderer {
+    shader_text Shader;
+
+    vertex_array_object TextQuad;
+    rh::laml::Mat4 orthoMat;
+    dynamic_font Font;
+};
+
+struct debug_render_state {
+    text_renderer DebugTextRenderer;
+};
 
 #endif
+
+
+
 
 #else
 #pragma once

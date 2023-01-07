@@ -62,8 +62,8 @@ void GetTextOffset(dynamic_font* Font, real32 *HOffset, real32 *VOffset, TextAli
     }
 }
 
+#else
 namespace rh {
-#if 0
     struct Lightingdata { // holds view-space lighting data
         u32 NumPointLights;
         u32 NumSpotLights;
@@ -101,19 +101,8 @@ namespace rh {
     };
 
     static RendererData s_Data;
-#endif
-
-    ENGINE_RENDER_BEGIN_FRAME(RenderBeginFrame) {
-
-    }
-
-    ENGINE_RENDER_END_FRAME(RenderEndFrame) {
-
-    }
-
 }
 
-#else
 #include <enpch.hpp>
 #include "Renderer.hpp"
 
