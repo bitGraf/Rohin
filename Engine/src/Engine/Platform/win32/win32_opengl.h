@@ -101,7 +101,7 @@ typedef BOOL (__stdcall * _wglChoosePixelFormatARB_PROC)(HDC hdc,const int *piAt
 #define WGL_TYPE_RGBA_ARB                       0x202B
 #define WGL_TYPE_COLORINDEX_ARB                 0x202C
 
-static void Win32InitOpenGL(HWND Window);
+static void Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz);
 
 /******************************************************************************
  * WGL_EXT_swap_control

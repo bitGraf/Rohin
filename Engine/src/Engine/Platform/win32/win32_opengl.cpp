@@ -37,7 +37,7 @@ GLErrorMessageCallback(GLenum source,
 }
 
 static void
-Win32InitOpenGL(HWND Window) {
+Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
     HDC WindowDC = GetDC(Window);
 
     /*
@@ -171,11 +171,41 @@ Win32InitOpenGL(HWND Window) {
         }
 #endif
 
-        // Set VSync
+        // Setup VSync
         _wglSwapIntervalEXT_PROC wglSwapIntervalEXT = (_wglSwapIntervalEXT_PROC)wglGetProcAddress("wglSwapIntervalEXT");
         _wglGetSwapIntervalEXT_PROC wglGetSwapIntervalEXT = (_wglGetSwapIntervalEXT_PROC)wglGetProcAddress("wglGetSwapIntervalEXT");
 
-        wglSwapIntervalEXT(2); // since my monitor is 120Hz, interval of 2 to lock to 60fps
+        HMONITOR CurrentMonitor = MonitorFromWindow(Window, MONITOR_DEFAULTTONEAREST);
+        MONITORINFOEXA MonitorInfo;
+        MonitorInfo.cbSize = { sizeof(MONITORINFOEX) };
+        if (GetMonitorInfoA(CurrentMonitor, &MonitorInfo)) {
+            DEVMODEA MonitorDeviceMode = {sizeof(DEVMODEA)};
+            if (EnumDisplaySettingsA(MonitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &MonitorDeviceMode)) {
+                *MonitorRefreshHz = MonitorDeviceMode.dmDisplayFrequency;
+                printf("Detected monitor refresh rate: %d Hz\n", (int)MonitorDeviceMode.dmDisplayFrequency);
+            }
+        }
+        
+        printf("Requested game refresh rate: %d Hz\n", *GameRefreshHz);
+        if (*GameRefreshHz > *MonitorRefreshHz) {
+            // game update rate is higher than the refresh rate, can't do vsync
+            printf("Requesting %dHz, but the Monitor is only %dHz!\nRun at own risk...\n", *GameRefreshHz, *MonitorRefreshHz);
+        } else {
+            int SwapInterval = 0;
+            if (((*MonitorRefreshHz) % (*GameRefreshHz)) == 0 ) {
+                // monitor refresh rate is an even multiple of the game refresh rate
+                SwapInterval = (*MonitorRefreshHz) / (*GameRefreshHz);
+                wglSwapIntervalEXT(SwapInterval);
+            } else {
+                // not an even multiple -> change the game refresh rate to a lower multiple of the monitor rate
+                SwapInterval = ((*MonitorRefreshHz) / (*GameRefreshHz)) + 1;
+                *GameRefreshHz = (*MonitorRefreshHz) / SwapInterval;
+                printf("Changing game update Hz to %d to be an even multiple of the Minotor update Hz [%d].\n", *GameRefreshHz, *MonitorRefreshHz);
+                wglSwapIntervalEXT(SwapInterval);
+            }
+
+            printf("Swap interval: %d\n", SwapInterval);
+        }
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);

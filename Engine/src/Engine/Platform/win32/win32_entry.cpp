@@ -875,7 +875,7 @@ Win32LoadGameCode(char *SourceDLLName, char *TempDLLName, char* LockFileName) {
 
 
 
-internal_func void 
+internal_func bool32 
 Win32Init(LPSTR CommandLine) {
     GlobalWin32State.WindowPosition.length = sizeof(GlobalWin32State.WindowPosition);
 
@@ -887,11 +887,20 @@ Win32Init(LPSTR CommandLine) {
 
     Win32GetEXEFileName();
 
+#if ROHIN_INTERNAL
+    // Allocate a console for this app
+    if (FlagCreateConsole) {
+        Win32CreateConsoleAndMapStreams();
+    }
+#endif
+
     // parse CommandLine to get a resource path
+    bool32 FoundResourcePath = false;
     char ResourcePathPrefix[256] = { 0 };
     uint8 PrefixLength = 0;
     for (char* Scan = CommandLine; *Scan; Scan++) {
         if ((*Scan == '-') && (*(Scan+1) == 'r')) {
+            FoundResourcePath = true;
             char* cpy = ResourcePathPrefix;
             for (char* Scan2 = (Scan + 3); (*Scan2 && (*Scan2 != ' ')); Scan2++) {
                 *cpy++ = *Scan2;
@@ -900,7 +909,33 @@ Win32Init(LPSTR CommandLine) {
             }
         }
     }
-    Win32GetResourcePath(ResourcePathPrefix, PrefixLength);
+    if (FoundResourcePath) {
+        // .exe run with a -r flag
+        printf("Run with a -r flag\n");
+        Win32GetResourcePath(ResourcePathPrefix, PrefixLength);
+    } else {
+        DWORD dwAttrib = GetFileAttributes("Data");
+
+        if (dwAttrib != INVALID_FILE_ATTRIBUTES && 
+                        (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
+            // the executable is right next to the data folder, no resource prefix needed
+            printf("Found the Data/ directory!\n");
+        } else {
+            // Neither is the case, assuming we are being run in the build/ directory
+            dwAttrib = GetFileAttributes("../Game");
+            if (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+                            (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
+                printf("Looks like you ran from the build/ directory!\n");
+                char DefaultResourcePath[] = "../Game/run_tree/";
+                Win32GetResourcePath(DefaultResourcePath, sizeof(DefaultResourcePath)-1);
+            } else {
+                printf("I don't know where I am!\n");
+                printf("Shutting down...!\n");
+                Sleep(2500);
+                return false;
+            }
+        }
+    }
 
     // NOTE: Set the Windows scheduler granularity to 1ms
     //       so that our Sleep can be more granular
@@ -910,16 +945,20 @@ Win32Init(LPSTR CommandLine) {
     }
 
     Win32LoadXInput();
+
+    return true;
 }
 
 
 int CALLBACK
 WinMain(HINSTANCE Instance,
-            HINSTANCE PrevInstance,
-            LPSTR CommandLine,
-            int ShowCode) {
+        HINSTANCE PrevInstance,
+        LPSTR CommandLine,
+        int ShowCode) {
 
-    Win32Init(CommandLine);
+    if (!Win32Init(CommandLine)) {
+        return -1;
+    }
 
     char SourceGameCodeDLLFullPath[WIN32_STATE_FILE_NAME_COUNT];
     Win32BuildEXEPathFileName("game.dll", sizeof(SourceGameCodeDLLFullPath), SourceGameCodeDLLFullPath);
@@ -939,12 +978,6 @@ WinMain(HINSTANCE Instance,
     //WindowClass.hIcon;
     WindowClass.lpszClassName = "RhWindowClass";
 
-#if ROHIN_INTERNAL
-    // Allocate a console for this app
-    if (FlagCreateConsole)
-        Win32CreateConsoleAndMapStreams();
-#endif
-
     if (RegisterClassA(&WindowClass)) {
         HWND Window = CreateWindowExA(
             0,//WS_EX_TOPMOST|WS_EX_LAYERED, 
@@ -954,17 +987,15 @@ WinMain(HINSTANCE Instance,
             0, 0, Instance, 0);
         if (Window) {
             HDC DeviceContext = GetDC(Window);
-            Win32InitOpenGL(Window);
-            InitDebugRenderState();
 
             // How do we reliably query this on Windows?
             int MonitorRefreshHz = 60;
-            int Win32RefreshRate = GetDeviceCaps(DeviceContext, VREFRESH);
-            if (Win32RefreshRate > 1) {
-                MonitorRefreshHz = Win32RefreshRate;
-            }
-            real32 GameUpdateHz = (MonitorRefreshHz / 2.0f);
-            real32 TargetSecondsElapsedPerFrame = 1.0f / GameUpdateHz;
+            int GameUpdateHz = 60;
+
+            Win32InitOpenGL(Window, &MonitorRefreshHz, &GameUpdateHz);
+            InitDebugRenderState();
+
+            real32 TargetSecondsElapsedPerFrame = 1.0f / (real32)GameUpdateHz;
 
             GlobalRunning = true;
 
@@ -991,6 +1022,7 @@ WinMain(HINSTANCE Instance,
             GlobalCommandBuffer.MaxSize = (uint32)RenderStorageSize;
             GlobalCommandBuffer.Base = (uint8*)RenderStorage;
 
+#if ROHIN_INTERNAL
             for (int ReplayIndex = 0; ReplayIndex < ArrayCount(GlobalWin32State.ReplayBuffers); ReplayIndex++) {
                 win32_replay_buffer* ReplayBuffer = &GlobalWin32State.ReplayBuffers[ReplayIndex];
 
@@ -1012,6 +1044,7 @@ WinMain(HINSTANCE Instance,
                     // TODO: Diagnostic
                 }
             }
+#endif
 
             if (GameMemory.PermanentStorage && GameMemory.TransientStorage) {
 
@@ -1207,16 +1240,24 @@ WinMain(HINSTANCE Instance,
                             rh::laml::Vec3 DebugColor(0.85f, .65f, .6f);
                             rh::laml::Vec3 DebugColorBack(0.3f, .12f, .05f);
                             real32 offset = 1.0f;
+
+                            real32 AvgFrameTime = MSLastFrame.getCurrentAverage();
+                            real32 AvgFrameRate = 1000.0f / AvgFrameTime;
                         
                             StringCbPrintfA(DebugFrameTimeBuff, sizeof(DebugFrameTimeBuff),
-                                            "Last frame time: %.02f ms", MSLastFrame.getCurrentAverage());
+                                            "Last frame time: %.02f ms", AvgFrameTime);
                             DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width, 0.0f, DebugColorBack, TextAlignment::ALIGN_TOP_RIGHT);
                             DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width+offset, offset, DebugColor, TextAlignment::ALIGN_TOP_RIGHT);
 
                             StringCbPrintfA(DebugFrameTimeBuff, sizeof(DebugFrameTimeBuff),
-                                            "      Work done: %.02f ms", MSWorkLastFrame.getCurrentAverage());
+                                            "Work done: %.02f ms", MSWorkLastFrame.getCurrentAverage());
                             DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width, 24.0f, DebugColorBack, TextAlignment::ALIGN_TOP_RIGHT);
                             DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width+offset, 24.0f+offset, DebugColor, TextAlignment::ALIGN_TOP_RIGHT);
+
+                            StringCbPrintfA(DebugFrameTimeBuff, sizeof(DebugFrameTimeBuff),
+                                            "%.0f fps", AvgFrameRate);
+                            DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width, 48.0f, DebugColorBack, TextAlignment::ALIGN_TOP_RIGHT);
+                            DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width+offset, 48.0f+offset, DebugColor, TextAlignment::ALIGN_TOP_RIGHT);
                         }
                         
                         OpenGLEndFrame(&Dimension, &GlobalCommandBuffer);
