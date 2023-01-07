@@ -27,7 +27,7 @@ typedef ENGINE_RENDER_DRAW_DEBUG_TEXT(Engine_Render_DrawDebugText_t);
 
 
 // Logging
-#define ENGINE_DEBUG_LOG_MESSAGE(name) void name(const char* msg)
+#define ENGINE_DEBUG_LOG_MESSAGE(name) void name(const char* msg, ...)
 typedef ENGINE_DEBUG_LOG_MESSAGE(Engine_Debug_LogMessage_t);
 
 // default

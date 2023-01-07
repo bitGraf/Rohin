@@ -216,6 +216,8 @@ GAME_INIT_FUNC(GameInit) {
                         Memory->PermanentStorageSize - sizeof(game_state), 
                         ((uint8*)Memory->PermanentStorage + sizeof(game_state) + Megabytes(4)));
 
+        Engine.Logger.LogMessage("Done with initialization! %d\n", 5);
+
         Memory->IsInitialized = true;
     }
 }

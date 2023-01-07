@@ -16,6 +16,7 @@ global_variable bool32 FlagCreateConsole = true;
 //#include <wingdi.h>
 #include <xinput.h>
 
+internal_func ENGINE_DEBUG_LOG_MESSAGE(Win32LogMessage);
 #include "win32_opengl.cpp"
 
 #include "win32_entry.h"
@@ -53,6 +54,21 @@ X_INPUT_SET_STATE(XInputSetStateSub) {
 global_variable x_input_set_state *XInputSetState_ = XInputSetStateSub;
 #define XInputSetState XInputSetState_
 
+internal_func ENGINE_DEBUG_LOG_MESSAGE(Win32LogMessage) {
+    char MsgBuffer[256] = "[Engine]: ";
+
+    va_list args;
+    va_start(args, msg);
+    StringCbVPrintfA(MsgBuffer+10, sizeof(MsgBuffer)-10, msg, args);
+    va_end(args);
+    
+    OutputDebugStringA(MsgBuffer);
+    //OutputDebugStringA("\n");
+
+    printf(MsgBuffer);
+    //printf("\n");
+}
+
 internal_func void
 CatStrings(size_t SourceACount, char *SourceA,
                size_t SourceBCount, char *SourceB,
@@ -86,13 +102,6 @@ Win32BuildEXEPathFileName(char* FileName, int DestCount, char* Dest) {
                DestCount, Dest);
 }
 
-//internal_func void 
-//Win32BuildResourcePathFileName(char* FileName, int DestCount, char* Dest) {
-//    CatStrings(GlobalWin32State.OnePastLastSlashEXEFileName - GlobalWin32State.EXEFileName, GlobalWin32State.EXEFileName,
-//               StringLength(FileName), FileName,
-//               DestCount, Dest);
-//}
-
 inline FILETIME
 Win32GetLastWriteTime(char *Filename) {
     FILETIME LastWriteTime = {};
@@ -105,21 +114,13 @@ Win32GetLastWriteTime(char *Filename) {
     return(LastWriteTime);
 }
 
-internal_func ENGINE_DEBUG_LOG_MESSAGE(Win32LogMessage) {
-    OutputDebugStringA("[Engine]: ");
-    OutputDebugStringA(msg);
-    OutputDebugStringA("\n");
-
-    printf(msg);
-}
-
 internal_func void
 Win32LoadXInput() {
     HMODULE XInputLibrary;
     
     XInputLibrary = LoadLibraryA("XInput1_4.dll");
     if (XInputLibrary) {
-        OutputDebugStringA("Linking to xinput1_4.dll\n");
+        Win32LogMessage("Linking to xinput1_4.dll\n");
         XInputGetState_ = (x_input_get_state*)GetProcAddress(XInputLibrary, "XInputGetState");
         XInputSetState_ = (x_input_set_state*)GetProcAddress(XInputLibrary, "XInputSetState");
         return;
@@ -127,7 +128,7 @@ Win32LoadXInput() {
 
     XInputLibrary = LoadLibraryA("XInput9_1_0.dll");
     if (XInputLibrary) {
-        OutputDebugStringA("Linking to XInput9_1_0.dll\n");
+        Win32LogMessage("Linking to XInput9_1_0.dll\n");
         XInputGetState_ = (x_input_get_state*)GetProcAddress(XInputLibrary, "XInputGetState");
         XInputSetState_ = (x_input_set_state*)GetProcAddress(XInputLibrary, "XInputSetState");
         return;
@@ -135,11 +136,13 @@ Win32LoadXInput() {
 
     XInputLibrary = LoadLibraryA("xinput1_3.dll");
     if (XInputLibrary) {
-        OutputDebugStringA("Linking to xinput1_3.dll\n");
+        Win32LogMessage("Linking to xinput1_3.dll\n");
         XInputGetState_ = (x_input_get_state*)GetProcAddress(XInputLibrary, "XInputGetState");
         XInputSetState_ = (x_input_set_state*)GetProcAddress(XInputLibrary, "XInputSetState");
         return;
     }
+
+    Win32LogMessage("Could not find any version of XInput.dll!\n");
 }
 
 internal_func win32_window_dimension
@@ -285,7 +288,7 @@ internal_func void
         // There's still input
         if (BytesRead == 0) {
             // Looping the stream
-            OutputDebugStringA("Looping input recording...\n");
+            Win32LogMessage("Looping input recording...\n");
             int PlayingIndex = GlobalWin32State.InputPlayingIndex; 
             Win32EndInputPlayback();
             Win32BeginInputPlayback(PlayingIndex);
@@ -311,11 +314,11 @@ Win32MainWindowCallback(HWND Window,
         } break;
 
         case WM_SIZE: {
-            OutputDebugStringA("WM_SIZE\n");
+            Win32LogMessage("WM_SIZE\n");
         } break;
 
         case WM_CLOSE: {
-            OutputDebugStringA("WM_CLOSE\n");
+            Win32LogMessage("WM_CLOSE\n");
 
             //TODO: Handle this w/ msg to user
             GlobalRunning = false;
@@ -329,11 +332,11 @@ Win32MainWindowCallback(HWND Window,
                 SetLayeredWindowAttributes(Window,RGB(0, 0, 0),128,LWA_ALPHA);
             }
 #endif
-            OutputDebugStringA("WM_ACTIVATEAPP\n");
+            Win32LogMessage("WM_ACTIVATEAPP\n");
         } break;
 
         case WM_DESTROY: {
-            OutputDebugStringA("WM_DESTROY\n");
+            Win32LogMessage("WM_DESTROY\n");
 
             //TODO: Handle this as an error - recreate window?
             GlobalRunning = false;
@@ -414,29 +417,29 @@ Win32MainWindowCallback(HWND Window,
         } break;
 
         case WM_LBUTTONDOWN: { 
-            OutputDebugStringA("Mouse1 Down\n"); 
+            Win32LogMessage("Mouse1 Down\n"); 
             Win32ProcessKeyboardMessage(&Input->MouseButtons[0], true);
         } break;
         case WM_LBUTTONUP: { 
-            OutputDebugStringA("Mouse1 Up\n"); 
+            Win32LogMessage("Mouse1 Up\n"); 
             Win32ProcessKeyboardMessage(&Input->MouseButtons[0], false);
         } break;
 
         case WM_RBUTTONDOWN: { 
-            OutputDebugStringA("Mouse2 Down\n"); 
+            Win32LogMessage("Mouse2 Down\n"); 
             Win32ProcessKeyboardMessage(&Input->MouseButtons[1], true);
         } break;
         case WM_RBUTTONUP: { 
-            OutputDebugStringA("Mouse2 Up\n"); 
+            Win32LogMessage("Mouse2 Up\n"); 
             Win32ProcessKeyboardMessage(&Input->MouseButtons[1], false);
         } break;
 
         case WM_MBUTTONDOWN: { 
-            OutputDebugStringA("Mouse3 Down\n"); 
+            Win32LogMessage("Mouse3 Down\n"); 
             Win32ProcessKeyboardMessage(&Input->MouseButtons[2], true);
         } break;
         case WM_MBUTTONUP: { 
-            OutputDebugStringA("Mouse3 Up\n"); 
+            Win32LogMessage("Mouse3 Up\n"); 
             Win32ProcessKeyboardMessage(&Input->MouseButtons[2], false);
         } break;
 
@@ -445,11 +448,11 @@ Win32MainWindowCallback(HWND Window,
             bool32 IsXButton2 = (WParam & 0x00020000);
 
             if (IsXButton1) {
-                OutputDebugStringA("Mouse4 Down\n");
+                Win32LogMessage("Mouse4 Down\n");
                 Win32ProcessKeyboardMessage(&Input->MouseButtons[3], true);
             }
             else if (IsXButton2) {
-                OutputDebugStringA("Mouse5 Down\n");
+                Win32LogMessage("Mouse5 Down\n");
                 Win32ProcessKeyboardMessage(&Input->MouseButtons[4], true);
             }
         } break;
@@ -458,11 +461,11 @@ Win32MainWindowCallback(HWND Window,
             bool32 IsXButton2 = (WParam & 0x00020000);
 
             if (IsXButton1) {
-                OutputDebugStringA("Mouse4 Up\n");
+                Win32LogMessage("Mouse4 Up\n");
                 Win32ProcessKeyboardMessage(&Input->MouseButtons[3], false);
             }
             else if (IsXButton2) {
-                OutputDebugStringA("Mouse5 Up\n");
+                Win32LogMessage("Mouse5 Up\n");
                 Win32ProcessKeyboardMessage(&Input->MouseButtons[4], false);
             }
         } break;
@@ -583,40 +586,40 @@ Win32ListRenderCommands(render_command_buffer* Buffer) {
         void* Data = (uint8*)Header + sizeof(*Header);
         switch(Header->Type) {
             case render_command_type_CMD_Bind_Shader: {
-                OutputDebugStringA("render_command_type_CMD_Bind_Shader\n");
+                Win32LogMessage("render_command_type_CMD_Bind_Shader\n");
             } break;
             case render_command_type_CMD_Upload_Uniform_int: {
-                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_int\n");
+                Win32LogMessage("render_command_type_CMD_Upload_Uniform_int\n");
             } break;
             case render_command_type_CMD_Upload_Uniform_float: {
-                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_float\n");
+                Win32LogMessage("render_command_type_CMD_Upload_Uniform_float\n");
             } break;
             case render_command_type_CMD_Upload_Uniform_vec2: {
-                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_vec2\n");
+                Win32LogMessage("render_command_type_CMD_Upload_Uniform_vec2\n");
             } break;
             case render_command_type_CMD_Upload_Uniform_vec3: {
-                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_vec3\n");
+                Win32LogMessage("render_command_type_CMD_Upload_Uniform_vec3\n");
             } break;
             case render_command_type_CMD_Upload_Uniform_vec4: {
-                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_vec4\n");
+                Win32LogMessage("render_command_type_CMD_Upload_Uniform_vec4\n");
             } break;
             case render_command_type_CMD_Upload_Uniform_mat4: {
-                OutputDebugStringA("render_command_type_CMD_Upload_Uniform_mat4\n");
+                Win32LogMessage("render_command_type_CMD_Upload_Uniform_mat4\n");
             } break;
             case render_command_type_CMD_Bind_Framebuffer: {
-                OutputDebugStringA("render_command_type_CMD_Bind_Framebuffer\n");
+                Win32LogMessage("render_command_type_CMD_Bind_Framebuffer\n");
             } break;
             case render_command_type_CMD_Clear_Buffer: {
-                OutputDebugStringA("render_command_type_CMD_Clear_Buffer\n");
+                Win32LogMessage("render_command_type_CMD_Clear_Buffer\n");
             } break;
             case render_command_type_CMD_Bind_Texture: {
-                OutputDebugStringA("render_command_type_CMD_Bind_Texture\n");
+                Win32LogMessage("render_command_type_CMD_Bind_Texture\n");
             } break;
             case render_command_type_CMD_Bind_VAO: {
-                OutputDebugStringA("render_command_type_CMD_Bind_VAO\n");
+                Win32LogMessage("render_command_type_CMD_Bind_VAO\n");
             } break;
             case render_command_type_CMD_Submit: {
-                OutputDebugStringA("render_command_type_CMD_Submit\n");
+                Win32LogMessage("render_command_type_CMD_Submit\n");
             } break;
         }
     }
@@ -646,9 +649,7 @@ bool32 Win32LoadShaderFromFile(shader* shader, char* ResourcePath) {
                 if (ReadFile(FileHandle, Buffer, (DWORD)FileSizeBytes.QuadPart, &BytesRead, NULL)) {
                     ((uint8*)Buffer)[BytesRead] = 0;
                     // read the entire file into a buffer
-                    OutputDebugStringA("Compiling OpenGL Shader: ");
-                    OutputDebugStringA(ResourcePath);
-                    OutputDebugStringA("\n");
+                    Win32LogMessage("Compiling OpenGL Shader: %s\n", ResourcePath);
                     Result = OpenGLLoadShader(shader, (uint8*)Buffer, BytesRead);
                 
                     CloseHandle(FileHandle);
@@ -857,10 +858,10 @@ Win32LoadGameCode(char *SourceDLLName, char *TempDLLName, char* LockFileName) {
             Result.IsValid = (GameGetApi && GameExport.Init && GameExport.Frame && GameExport.Shutdown);
         }
         else {
-            OutputDebugStringA("Failed to load game code: LoadLibraryA failed!\n");
+            Win32LogMessage("Failed to load game code: LoadLibraryA failed!\n");
         }
     } else {
-        OutputDebugStringA("Failed to load game code: lock still in place!\n");
+        Win32LogMessage("Failed to load game code: lock still in place!\n");
     }
 
     return(Result);
@@ -942,6 +943,7 @@ Win32Init(LPSTR CommandLine) {
     UINT DesiredSchedulerMS = 1;
     if (!(timeBeginPeriod(DesiredSchedulerMS) == TIMERR_NOERROR)) {
         // ERROR!
+        Win32LogMessage("Could not set Windows scheduler granularity to 1ms!");
     }
 
     Win32LoadXInput();
@@ -1311,6 +1313,7 @@ WinMain(HINSTANCE Instance,
                         real32 FPS = 1000.0f / MSPerFrame;
                         real32 MCPF = ((real32)CyclesElapsed / (1000.0f*1000.0f));
     
+                        //Win32LogMessage("Frame: %.02f ms  %.02ffps   %.02f MHz\n", MSPerFrame, FPS, MCPF);
                         char FPSBuffer[256];
                         StringCbPrintfA(FPSBuffer, sizeof(FPSBuffer), 
                                         "Frame: %.02f ms  %.02ffps   %.02f MHz\n", MSPerFrame, FPS, MCPF);

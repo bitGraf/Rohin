@@ -7,9 +7,7 @@ Win32GetWGLExtensionString(HDC WindowDC) {
     if (wglGetExtensionsStringARB) {
         const char* extensions = wglGetExtensionsStringARB(WindowDC);
         if (extensions) {
-            OutputDebugStringA("WGL Extensions:\n  ");
-            OutputDebugStringA(extensions);
-            OutputDebugStringA("\n");
+            Win32LogMessage("WGL Extensions:\n  %s\n", extensions);
             return extensions;
         }
     }
@@ -143,7 +141,7 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
         HGLRC ActualOpenGLRC = DummyOpenGLRC;
 #endif
 
-        OutputDebugStringA("OpenGL Context created!\n");
+        Win32LogMessage("OpenGL Context created!\n");
         gladLoadGL(); // Bind the rest of the OpenGL 4.0 functions
 
         // During init, enable debug output
@@ -157,20 +155,18 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
         GLint MaxUniformLocations;
         glGetIntegerv(GL_MAX_UNIFORM_LOCATIONS,&MaxUniformLocations);
 
-        OutputDebugStringA(glVendorString); OutputDebugStringA("\n");
-        OutputDebugStringA(glRendererString); OutputDebugStringA("\n");
-        OutputDebugStringA(glVersionString); OutputDebugStringA("\n");
+        Win32LogMessage(glVendorString); OutputDebugStringA("\n");
+        Win32LogMessage(glRendererString); OutputDebugStringA("\n");
+        Win32LogMessage(glVersionString); OutputDebugStringA("\n");
 
 #if 0
         _glGetStringi_PROC glGetStringi = (_glGetStringi_PROC)wglGetProcAddress("glGetStringi");
         GLint num_extensions;
         glGetIntegerv(GL_NUM_EXTENSIONS, &num_extensions);
-        OutputDebugStringA("OpenGL Extensions:");
+        Win32LogMessage("OpenGL Extensions:");
         for (GLint n = 0; n < num_extensions; n++) {
             const char* glExtensionsString = (const char*) glGetStringi(GL_EXTENSIONS, n);
-            OutputDebugStringA("  ");
-            OutputDebugStringA(glExtensionsString);
-            OutputDebugStringA("\n");
+            Win32LogMessage("  %s\n", glExtensionsString);
         }
 #endif
 
@@ -185,14 +181,14 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
             DEVMODEA MonitorDeviceMode = {sizeof(DEVMODEA)};
             if (EnumDisplaySettingsA(MonitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &MonitorDeviceMode)) {
                 *MonitorRefreshHz = MonitorDeviceMode.dmDisplayFrequency;
-                printf("Detected monitor refresh rate: %d Hz\n", (int)MonitorDeviceMode.dmDisplayFrequency);
+                Win32LogMessage("Detected monitor refresh rate: %d Hz\n", (int)MonitorDeviceMode.dmDisplayFrequency);
             }
         }
         
-        printf("Requested game refresh rate: %d Hz\n", *GameRefreshHz);
+        Win32LogMessage("Requested game refresh rate: %d Hz\n", *GameRefreshHz);
         if (*GameRefreshHz > *MonitorRefreshHz) {
             // game update rate is higher than the refresh rate, can't do vsync
-            printf("Requesting %dHz, but the Monitor is only %dHz!\nRun at own risk...\n", *GameRefreshHz, *MonitorRefreshHz);
+            Win32LogMessage("Requesting %dHz, but the Monitor is only %dHz!\nRun at own risk...\n", *GameRefreshHz, *MonitorRefreshHz);
         } else {
             int SwapInterval = 0;
             if (((*MonitorRefreshHz) % (*GameRefreshHz)) == 0 ) {
@@ -203,11 +199,11 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
                 // not an even multiple -> change the game refresh rate to a lower multiple of the monitor rate
                 SwapInterval = ((*MonitorRefreshHz) / (*GameRefreshHz)) + 1;
                 *GameRefreshHz = (*MonitorRefreshHz) / SwapInterval;
-                printf("Changing game update Hz to %d to be an even multiple of the Minotor update Hz [%d].\n", *GameRefreshHz, *MonitorRefreshHz);
+                Win32LogMessage("Changing game update Hz to %d to be an even multiple of the Minotor update Hz [%d].\n", *GameRefreshHz, *MonitorRefreshHz);
                 wglSwapIntervalEXT(SwapInterval);
             }
 
-            printf("Swap interval: %d\n", SwapInterval);
+            Win32LogMessage("Swap interval: %d\n", SwapInterval);
         }
 
         glEnable(GL_DEPTH_TEST);
@@ -220,21 +216,21 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
 
         GLfloat pointSize;
         glGetFloatv(GL_POINT_SIZE, &pointSize);
-        printf("Default point size: %f\n", pointSize);
+        Win32LogMessage("Default point size: %f\n", pointSize);
         glPointSize(4);
         glGetFloatv(GL_POINT_SIZE, &pointSize);
-        printf("New point size: %f\n", pointSize);
+        Win32LogMessage("New point size: %f\n", pointSize);
 
         GLfloat lineWidth;
         glGetFloatv(GL_LINE_WIDTH, &lineWidth);
-        printf("Default line width: %f\n", lineWidth);
+        Win32LogMessage("Default line width: %f\n", lineWidth);
         glLineWidth(2.0f);
         glGetFloatv(GL_LINE_WIDTH, &lineWidth);
-        printf("New line width: %f\n", lineWidth);
+        Win32LogMessage("New line width: %f\n", lineWidth);
 
         GLfloat maxAniso;
         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAniso);
-        printf("Max Anisotropy value: %f\n", maxAniso);
+        Win32LogMessage("Max Anisotropy value: %f\n", maxAniso);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
