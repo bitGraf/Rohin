@@ -248,13 +248,13 @@ Win32BeginRecordingInput(int InputRecordingIndex) {
 }
 
 internal_func void
-    Win32EndRecordingInput() {
+Win32EndRecordingInput() {
     CloseHandle(GlobalWin32State.RecordingHandle);
     GlobalWin32State.InputRecordingIndex = 0;
 }
 
 internal_func void
-    Win32BeginInputPlayback(int InputPlayingIndex) {
+Win32BeginInputPlayback(int InputPlayingIndex) {
     win32_replay_buffer* ReplayBuffer = Win32GetReplayBuffer(InputPlayingIndex);
     if (ReplayBuffer->MemoryBlock) {
         GlobalWin32State.InputPlayingIndex = InputPlayingIndex;
@@ -274,19 +274,19 @@ internal_func void
 }
 
 internal_func void
-    Win32EndInputPlayback() {
+Win32EndInputPlayback() {
     CloseHandle(GlobalWin32State.PlaybackHandle);
     GlobalWin32State.InputPlayingIndex = 0;
 }
 
 internal_func void 
-    Win32RecordInput(game_input* NewInput) {
+Win32RecordInput(game_input* NewInput) {
     DWORD BytesWritten;
     WriteFile(GlobalWin32State.RecordingHandle, NewInput, sizeof(*NewInput), &BytesWritten, 0);
 }
 
 internal_func void 
-    Win32PlaybackInput(game_input* NewInput) {
+Win32PlaybackInput(game_input* NewInput) {
     DWORD BytesRead;
     if (ReadFile(GlobalWin32State.PlaybackHandle, NewInput, sizeof(*NewInput), &BytesRead, 0)) {
         // There's still input
