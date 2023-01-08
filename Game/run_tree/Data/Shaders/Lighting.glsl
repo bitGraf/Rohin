@@ -24,6 +24,7 @@ layout (location = 1) out vec4 out_Specular;
 in vec2 texcoord;
 in vec3 viewRay;
 
+// Light => 6 uniform slots each
 struct Light {
 	vec3 Position;
 	vec3 Direction;
@@ -34,15 +35,15 @@ struct Light {
 };
 
 const int MAX_LIGHTS = 32;
-layout (location = 2) uniform Light r_pointLights[MAX_LIGHTS];
-layout (location = 3) uniform Light r_spotLights[MAX_LIGHTS];
-layout (location = 4) uniform Light r_sun;
+layout (location = 2) uniform Light r_pointLights[MAX_LIGHTS]; // 192 slots
+layout (location = 194) uniform Light r_spotLights[MAX_LIGHTS]; // 192 slots
+layout (location = 386) uniform Light r_sun; // 6 slots
 
-layout (location = 5) uniform mat4 r_View;
+layout (location = 392) uniform mat4 r_View;
 
-layout (location = 6) uniform sampler2D u_normal;
-layout (location = 7) uniform sampler2D u_distance;
-layout (location = 8) uniform sampler2D u_amr;
+layout (location = 393) uniform sampler2D u_normal;
+layout (location = 394) uniform sampler2D u_distance;
+layout (location = 395) uniform sampler2D u_amr;
 
 const vec3 FD = vec3(0.04);
 const float PI = 3.141592;
