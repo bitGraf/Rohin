@@ -118,7 +118,7 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
         // now create a higher-version context
         const int ARBContexAttrivbs[] = {
             WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-            WGL_CONTEXT_MINOR_VERSION_ARB, 6,
+            WGL_CONTEXT_MINOR_VERSION_ARB, 3,
             WGL_CONTEXT_FLAGS_ARB,         WGL_CONTEXT_DEBUG_BIT_ARB|WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
             WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
             0 // End
@@ -135,6 +135,7 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
         } else {
             // Stuck with an OpenGL 1.0 context ;~;
             ActualOpenGLRC = DummyOpenGLRC;
+            Win32LogMessage("Tried to get an OpenGL4.3 context, but could not!\n");
             Assert(!"Not supported!");
         }
 #else
@@ -171,40 +172,17 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
 #endif
 
         // Setup VSync
-        _wglSwapIntervalEXT_PROC wglSwapIntervalEXT = (_wglSwapIntervalEXT_PROC)wglGetProcAddress("wglSwapIntervalEXT");
+        wglSwapIntervalEXT = (_wglSwapIntervalEXT_PROC)wglGetProcAddress("wglSwapIntervalEXT");
         _wglGetSwapIntervalEXT_PROC wglGetSwapIntervalEXT = (_wglGetSwapIntervalEXT_PROC)wglGetProcAddress("wglGetSwapIntervalEXT");
 
-        HMONITOR CurrentMonitor = MonitorFromWindow(Window, MONITOR_DEFAULTTONEAREST);
-        MONITORINFOEXA MonitorInfo;
-        MonitorInfo.cbSize = { sizeof(MONITORINFOEX) };
-        if (GetMonitorInfoA(CurrentMonitor, &MonitorInfo)) {
-            DEVMODEA MonitorDeviceMode = {sizeof(DEVMODEA)};
-            if (EnumDisplaySettingsA(MonitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &MonitorDeviceMode)) {
-                *MonitorRefreshHz = MonitorDeviceMode.dmDisplayFrequency;
-                Win32LogMessage("Detected monitor refresh rate: %d Hz\n", (int)MonitorDeviceMode.dmDisplayFrequency);
-            }
+        int NewRefreshHz = Win32GetMonitorRefreshRate(Window);
+        if (NewRefreshHz) {
+            *MonitorRefreshHz = NewRefreshHz;
+            Win32LogMessage("Detected monitor refresh rate: %d Hz\n", *MonitorRefreshHz);
         }
         
         Win32LogMessage("Requested game refresh rate: %d Hz\n", *GameRefreshHz);
-        if (*GameRefreshHz > *MonitorRefreshHz) {
-            // game update rate is higher than the refresh rate, can't do vsync
-            Win32LogMessage("Requesting %dHz, but the Monitor is only %dHz!\nRun at own risk...\n", *GameRefreshHz, *MonitorRefreshHz);
-        } else {
-            int SwapInterval = 0;
-            if (((*MonitorRefreshHz) % (*GameRefreshHz)) == 0 ) {
-                // monitor refresh rate is an even multiple of the game refresh rate
-                SwapInterval = (*MonitorRefreshHz) / (*GameRefreshHz);
-                wglSwapIntervalEXT(SwapInterval);
-            } else {
-                // not an even multiple -> change the game refresh rate to a lower multiple of the monitor rate
-                SwapInterval = ((*MonitorRefreshHz) / (*GameRefreshHz)) + 1;
-                *GameRefreshHz = (*MonitorRefreshHz) / SwapInterval;
-                Win32LogMessage("Changing game update Hz to %d to be an even multiple of the Minotor update Hz [%d].\n", *GameRefreshHz, *MonitorRefreshHz);
-                wglSwapIntervalEXT(SwapInterval);
-            }
-
-            Win32LogMessage("Swap interval: %d\n", SwapInterval);
-        }
+        Win32UpdateVSync(MonitorRefreshHz, GameRefreshHz);
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -228,9 +206,9 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
         glGetFloatv(GL_LINE_WIDTH, &lineWidth);
         Win32LogMessage("New line width: %f\n", lineWidth);
 
-        GLfloat maxAniso;
-        glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAniso);
-        Win32LogMessage("Max Anisotropy value: %f\n", maxAniso);
+        //GLfloat maxAniso;
+        //glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &maxAniso);
+        //Win32LogMessage("Max Anisotropy value: %f\n", maxAniso);
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -239,4 +217,26 @@ Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz) {
         Assert(!"InvalidCodePath");
     }
     ReleaseDC(Window, WindowDC);
+}
+
+static void Win32UpdateVSync(int* MonitorRefreshHz, int* GameRefreshHz) {
+    if (*GameRefreshHz > *MonitorRefreshHz) {
+        // game update rate is higher than the refresh rate, can't do vsync
+        Win32LogMessage("Requesting %dHz, but the Monitor is only %dHz!\nRun at own risk...\n", *GameRefreshHz, *MonitorRefreshHz);
+    } else {
+        int SwapInterval = 0;
+        if (((*MonitorRefreshHz) % (*GameRefreshHz)) == 0 ) {
+            // monitor refresh rate is an even multiple of the game refresh rate
+            SwapInterval = (*MonitorRefreshHz) / (*GameRefreshHz);
+            wglSwapIntervalEXT(SwapInterval);
+        } else {
+            // not an even multiple -> change the game refresh rate to a lower multiple of the monitor rate
+            SwapInterval = ((*MonitorRefreshHz) / (*GameRefreshHz)) + 1;
+            *GameRefreshHz = (*MonitorRefreshHz) / SwapInterval;
+            Win32LogMessage("Changing game update Hz to %d to be an even multiple of the Monitor update Hz [%d].\n", *GameRefreshHz, *MonitorRefreshHz);
+            wglSwapIntervalEXT(SwapInterval);
+        }
+
+        Win32LogMessage("Swap interval: %d\n", SwapInterval);
+    }
 }

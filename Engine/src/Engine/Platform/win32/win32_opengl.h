@@ -1,3 +1,6 @@
+#define GL_VERSION_4_6
+#define GL_VERSION_4_5
+#define GL_VERSION_4_4
 #include <glad/glad.h>
 
 /******************************************************************************
@@ -102,12 +105,14 @@ typedef BOOL (__stdcall * _wglChoosePixelFormatARB_PROC)(HDC hdc,const int *piAt
 #define WGL_TYPE_COLORINDEX_ARB                 0x202C
 
 static void Win32InitOpenGL(HWND Window, int* MonitorRefreshHz, int* GameRefreshHz);
+static void Win32UpdateVSync(int* MonitorRefreshHz, int* GameRefreshHz);
 
 /******************************************************************************
  * WGL_EXT_swap_control
  * https://registry.khronos.org/OpenGL/extensions/EXT/WGL_EXT_swap_control.txt
  * */
 typedef BOOL (__stdcall * _wglSwapIntervalEXT_PROC)(int interval);
+static _wglSwapIntervalEXT_PROC wglSwapIntervalEXT;
 typedef int (__stdcall * _wglGetSwapIntervalEXT_PROC)(void);
 
 /******************************************************************************

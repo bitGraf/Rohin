@@ -28,6 +28,6 @@ cl /I..\Engine\deps\stb /I..\Engine\src /I..\Engine\deps\math_lib\include %Commo
 del lock.tmp
 
 rem Build the Engine.exe
-cl /I..\Engine\deps\stb /I..\Game\src /I..\Engine\src /I..\Engine\deps\math_lib\include /I..\Engine\src\Engine\Platform\GLAD\include %CommonCompilerFlags% ..\%EnginePath%\Platform\win32\win32_entry.cpp /Fmwin32_entry.map /link %CommonLinkerFlags% user32.lib Gdi32.lib Winmm.lib opengl32.lib
+cl /I..\Engine\deps\stb /I..\Game\src /I..\Engine\src /I..\Engine\deps\math_lib\include /I..\Engine\src\Engine\Platform\GLAD\include %CommonCompilerFlags% ..\%EnginePath%\Platform\win32\win32_entry.cpp /Fmwin32_entry.map /link /SUBSYSTEM:CONSOLE %CommonLinkerFlags% user32.lib Gdi32.lib Winmm.lib opengl32.lib
 
 popd

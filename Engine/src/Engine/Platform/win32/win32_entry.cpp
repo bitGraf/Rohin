@@ -17,6 +17,7 @@ global_variable bool32 FlagCreateConsole = true;
 #include <xinput.h>
 
 internal_func ENGINE_DEBUG_LOG_MESSAGE(Win32LogMessage);
+internal_func int Win32GetMonitorRefreshRate(HWND Window);
 #include "win32_opengl.cpp"
 
 #include "win32_entry.h"
@@ -35,6 +36,9 @@ global_variable uint8 ttf_buffer[Megabytes(1)];
 global_variable debug_render_state GlobalDebugRenderState;
 global_variable render_command_buffer GlobalCommandBuffer;
 global_variable bool32 GlobalRenderDebugText = true;
+global_variable int GlobalGameUpdateHz;
+global_variable int GlobalMonitorRefreshHz;
+global_variable real32 GlobalTargetSecondsElapsedPerFrame;
 
 // NOTE: XInputGetState
 #define X_INPUT_GET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_STATE* pState)
@@ -298,6 +302,21 @@ internal_func void
     }
 }
 
+internal_func int
+Win32GetMonitorRefreshRate(HWND Window) {
+    int MonitorRefreshHz = 0;
+    HMONITOR CurrentMonitor = MonitorFromWindow(Window, MONITOR_DEFAULTTONEAREST);
+    MONITORINFOEXA MonitorInfo;
+    MonitorInfo.cbSize = { sizeof(MONITORINFOEX) };
+    if (GetMonitorInfoA(CurrentMonitor, &MonitorInfo)) {
+        DEVMODEA MonitorDeviceMode = { sizeof(DEVMODEA) };
+        if (EnumDisplaySettingsA(MonitorInfo.szDevice, ENUM_CURRENT_SETTINGS, &MonitorDeviceMode)) {
+            MonitorRefreshHz = MonitorDeviceMode.dmDisplayFrequency;
+        }
+    }
+    return MonitorRefreshHz;
+}
+
 LRESULT CALLBACK
 Win32MainWindowCallback(HWND Window,
                             UINT Message,
@@ -309,6 +328,18 @@ Win32MainWindowCallback(HWND Window,
     game_input* Input = &GlobalWin32State.Input[GlobalCurrentInputIndex];
 
     switch (Message) {
+        case WM_MOVE: {
+            if (GlobalTargetSecondsElapsedPerFrame > 0) {
+                int NewRefreshHz = Win32GetMonitorRefreshRate(Window);
+                if (NewRefreshHz != GlobalMonitorRefreshHz) {
+                    Win32LogMessage("New monitor Refresh Hz [%d] => [%d]\n", GlobalMonitorRefreshHz, NewRefreshHz);
+                    GlobalMonitorRefreshHz = NewRefreshHz;
+                    GlobalGameUpdateHz = 60;
+                    Win32UpdateVSync(&GlobalMonitorRefreshHz, &GlobalGameUpdateHz);
+                    GlobalTargetSecondsElapsedPerFrame = 1.0f / (real32)GlobalGameUpdateHz;
+                }
+            }
+        } break;
         case WM_QUIT: {
             GlobalRunning = false;
         } break;
@@ -535,10 +566,10 @@ Win32GetSecondsElapsed(LARGE_INTEGER Start, LARGE_INTEGER End) {
 
 internal_func void
 Win32CreateConsoleAndMapStreams() {
-    AllocConsole();
+    //AllocConsole();
     //SetStdHandle();
     
-    freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+    //freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
     
     printf("stdout Mapped to console!\n");
 }
@@ -950,13 +981,18 @@ Win32Init(LPSTR CommandLine) {
 
     return true;
 }
-
-
+#if 0
 int CALLBACK
 WinMain(HINSTANCE Instance,
         HINSTANCE PrevInstance,
         LPSTR CommandLine,
         int ShowCode) {
+#else
+int
+main(int argc, char** argv) {
+#endif
+    HINSTANCE Instance = GetModuleHandleA(NULL);
+    LPSTR CommandLine = GetCommandLineA();
 
     if (!Win32Init(CommandLine)) {
         return -1;
@@ -991,13 +1027,13 @@ WinMain(HINSTANCE Instance,
             HDC DeviceContext = GetDC(Window);
 
             // How do we reliably query this on Windows?
-            int MonitorRefreshHz = 60;
-            int GameUpdateHz = 60;
+            GlobalMonitorRefreshHz = 60;
+            GlobalGameUpdateHz = 60;
 
-            Win32InitOpenGL(Window, &MonitorRefreshHz, &GameUpdateHz);
+            Win32InitOpenGL(Window, &GlobalMonitorRefreshHz, &GlobalGameUpdateHz);
             InitDebugRenderState();
 
-            real32 TargetSecondsElapsedPerFrame = 1.0f / (real32)GameUpdateHz;
+            GlobalTargetSecondsElapsedPerFrame = 1.0f / (real32)GlobalGameUpdateHz;
 
             GlobalRunning = true;
 
@@ -1075,7 +1111,7 @@ WinMain(HINSTANCE Instance,
                 win32_window_dimension LastDimension = Win32GetWindowDimension(Window);
 
                 while (GlobalRunning) {
-                    NewInput->dtForFrame = TargetSecondsElapsedPerFrame;
+                    NewInput->dtForFrame = GlobalTargetSecondsElapsedPerFrame;
 
                     FILETIME NewDLLWriteTime = Win32GetLastWriteTime(SourceGameCodeDLLFullPath);
                     if(CompareFileTime(&NewDLLWriteTime, &Game.DLLLastWriteTime) != 0) {
@@ -1275,13 +1311,13 @@ WinMain(HINSTANCE Instance,
                         real32 SecondsElapsedForFrame = WorkSecondsElapsed;
                         bool32 LockFramerate = true;
                         if (LockFramerate) {
-                            if (SecondsElapsedForFrame < TargetSecondsElapsedPerFrame) {
-                                DWORD SleepMS = (DWORD)(1000.0f*(TargetSecondsElapsedPerFrame - SecondsElapsedForFrame));
+                            if (SecondsElapsedForFrame < GlobalTargetSecondsElapsedPerFrame) {
+                                DWORD SleepMS = (DWORD)(1000.0f*(GlobalTargetSecondsElapsedPerFrame - SecondsElapsedForFrame));
                                 if (SleepMS > 0) {
                                     Sleep(SleepMS);
                                 }
     
-                                while (SecondsElapsedForFrame < TargetSecondsElapsedPerFrame) {
+                                while (SecondsElapsedForFrame < GlobalTargetSecondsElapsedPerFrame) {
                                     SecondsElapsedForFrame = Win32GetSecondsElapsed(LastCounter, Win32GetWallClock());
                                 }
                             } else {

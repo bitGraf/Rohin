@@ -82,7 +82,9 @@ internal_func uint32 ShaderDataTypeSize(ShaderDataType Type) {
 internal_func vertex_buffer OpenGLCreateVertexBuffer(void* VertexData, uint32 DataSizeInBytes, uint8 NumAttributes, ShaderDataType First, ...) {
     vertex_buffer Result = {};
 
-    glCreateBuffers(1, &Result.Handle);
+    glGenBuffers(1, &Result.Handle);
+    glBindBuffer(GL_ARRAY_BUFFER, Result.Handle);
+    //glCreateBuffers(1, &Result.Handle); // <- OpenGL 4.5
     glBindBuffer(GL_ARRAY_BUFFER, Result.Handle);
     glBufferData(GL_ARRAY_BUFFER, DataSizeInBytes, VertexData, GL_STATIC_DRAW);
 
@@ -107,7 +109,9 @@ internal_func vertex_buffer OpenGLCreateVertexBuffer(void* VertexData, uint32 Da
 internal_func index_buffer OpenGLCreateIndexBuffer(uint32* IndexData, uint32 IndexCount) {
     index_buffer Result = {};
 
-    glCreateBuffers(1, &Result.Handle);
+    glGenBuffers(1, &Result.Handle);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Result.Handle);
+    // glCreateBuffers(1, &Result.Handle); // OpenGL 4.5
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, Result.Handle);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexCount*sizeof(uint32), IndexData, GL_STATIC_DRAW);
 
@@ -134,7 +138,9 @@ internal_func vertex_array_object OpenGLCreateVertexArray(vertex_buffer* VBO, in
     }
 
     // Create VAO
-    glCreateVertexArrays(1, &Result.Handle);
+    glGenVertexArrays(1, &Result.Handle);
+    glBindVertexArray(Result.Handle);
+    // glCreateVertexArrays(1, &Result.Handle); // OpenGL 4.5
     glBindVertexArray(Result.Handle);
 
     // Add Vertex Buffer
@@ -259,8 +265,8 @@ OpenGLLoadShader(shader* shader, uint8* Buffer, uint32 BytesRead) {
 
         glDeleteShader(vertShaderID);
 
-        OutputDebugStringA("Vertex shader failed to compile: \n");
-        OutputDebugStringA(ErrorBuffer);
+        Win32LogMessage("Vertex shader failed to compile: \n");
+        Win32LogMessage(ErrorBuffer);
 
         return false;
     }
@@ -283,8 +289,8 @@ OpenGLLoadShader(shader* shader, uint8* Buffer, uint32 BytesRead) {
 
         glDeleteShader(fragShaderID);
 
-        OutputDebugStringA("Fragment shader failed to compile: \n");
-        OutputDebugStringA(ErrorBuffer);
+        Win32LogMessage("Fragment shader failed to compile: \n");
+        Win32LogMessage(ErrorBuffer);
 
         return false;
     }
@@ -307,8 +313,8 @@ OpenGLLoadShader(shader* shader, uint8* Buffer, uint32 BytesRead) {
         glDeleteShader(vertShaderID);
         glDeleteShader(fragShaderID);
 
-        OutputDebugStringA("Program failed to link: \n");
-        OutputDebugStringA(ErrorBuffer);
+        Win32LogMessage("Program failed to link: \n");
+        Win32LogMessage(ErrorBuffer);
 
         return false;
     }
