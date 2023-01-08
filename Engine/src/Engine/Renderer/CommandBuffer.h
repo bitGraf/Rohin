@@ -73,7 +73,7 @@ struct CMD_Bind_Shader {
 };
 #define Render_UploadInt(CmdBuffer, Uniform, Int) \
     CMD_Upload_Uniform_int* UNIQUE_VARNAME(cmd_upload_) = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_int); \
-    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Handle;\
+    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Location;\
     UNIQUE_VARNAME(cmd_upload_)->Value = Int;
 struct CMD_Upload_Uniform_int {
     uint32 Location;
@@ -81,7 +81,7 @@ struct CMD_Upload_Uniform_int {
 };
 #define Render_UploadFloat(CmdBuffer, Uniform, Float) \
     CMD_Upload_Uniform_float* UNIQUE_VARNAME(cmd_upload_) = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_float); \
-    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Handle;\
+    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Location;\
     UNIQUE_VARNAME(cmd_upload_)->Value = Float;
 struct CMD_Upload_Uniform_float {
     uint32 Location;
@@ -89,7 +89,7 @@ struct CMD_Upload_Uniform_float {
 };
 #define Render_UploadVec2(CmdBuffer, Uniform, Float2) \
     CMD_Upload_Uniform_vec2* UNIQUE_VARNAME(cmd_upload_) = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec2); \
-    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Handle;\
+    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Location;\
     UNIQUE_VARNAME(cmd_upload_)->Value = Float2;
 struct CMD_Upload_Uniform_vec2 {
     uint32 Location;
@@ -97,7 +97,7 @@ struct CMD_Upload_Uniform_vec2 {
 };
 #define Render_UploadVec3(CmdBuffer, Uniform, Float3) \
     CMD_Upload_Uniform_vec3* UNIQUE_VARNAME(cmd_upload_) = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec3); \
-    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Handle;\
+    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Location;\
     UNIQUE_VARNAME(cmd_upload_)->Value = Float3;
 struct CMD_Upload_Uniform_vec3 {
     uint32 Location;
@@ -105,7 +105,7 @@ struct CMD_Upload_Uniform_vec3 {
 };
 #define Render_UploadVec4(CmdBuffer, Uniform, Float4) \
     CMD_Upload_Uniform_vec4* UNIQUE_VARNAME(cmd_upload_) = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_vec4); \
-    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Handle;\
+    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Location;\
     UNIQUE_VARNAME(cmd_upload_)->Value = Float4;
 struct CMD_Upload_Uniform_vec4 {
     uint32 Location;
@@ -113,7 +113,7 @@ struct CMD_Upload_Uniform_vec4 {
 };
 #define Render_UploadMat4(CmdBuffer, Uniform, Float4x4) \
     CMD_Upload_Uniform_mat4* UNIQUE_VARNAME(cmd_upload_) = PushRenderCommand(CmdBuffer, CMD_Upload_Uniform_mat4); \
-    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Handle;\
+    UNIQUE_VARNAME(cmd_upload_)->Location = Uniform.Location;\
     UNIQUE_VARNAME(cmd_upload_)->Value = Float4x4;
 struct CMD_Upload_Uniform_mat4 {
     uint32 Location;

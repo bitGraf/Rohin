@@ -20,6 +20,11 @@ set GamePath=Game\src\Game
 IF NOT EXIST unity_build mkdir unity_build
 pushd unity_build
 
+rem Compile shader tool to and run it to generate some code
+set ShaderToolCompileFlags=/MTd /nologo /Gm- /GR- /EHsc /Odi /std:c++14 /W4 /WX /wd4189 /wd4201 /wd4100 /FC
+cl ..\Tools\shader_tool\shader_tool.cpp %ShaderToolCompileFlags% /link /SUBSYSTEM:CONSOLE /incremental:no /opt:ref user32.lib
+rem shader_tool.exe
+
 del *.pdb > NUL 2> NUL
 
 rem Build the Game.dll

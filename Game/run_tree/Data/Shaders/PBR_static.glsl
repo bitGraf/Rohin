@@ -57,27 +57,27 @@ struct Light {
 };
 
 const int MAX_LIGHTS = 32;
-layout (location = 1) uniform Light r_pointLights[MAX_LIGHTS]; // 192 slots
-layout (location = 193) uniform Light r_spotLights[MAX_LIGHTS]; // 192 slots
-layout (location = 385) uniform Light r_sun; // 6 slots
-layout (location = 391) uniform vec3 r_CamPos;
+layout (location = 3) uniform Light r_pointLights[MAX_LIGHTS]; // 192 slots
+layout (location = 195) uniform Light r_spotLights[MAX_LIGHTS]; // 192 slots
+layout (location = 387) uniform Light r_sun; // 6 slots
+layout (location = 393) uniform vec3 r_CamPos;
 
 // PBR Textures
-layout (location = 392) uniform sampler2D u_AlbedoTexture;
-layout (location = 393) uniform sampler2D u_NormalTexture;
-layout (location = 394) uniform sampler2D u_MetalnessTexture;
-layout (location = 395) uniform sampler2D u_RoughnessTexture;
+layout (location = 394) uniform sampler2D u_AlbedoTexture;
+layout (location = 395) uniform sampler2D u_NormalTexture;
+layout (location = 396) uniform sampler2D u_MetalnessTexture;
+layout (location = 397) uniform sampler2D u_RoughnessTexture;
 
 // Material properties
-layout (location = 396) uniform vec3 u_AlbedoColor;
-layout (location = 397) uniform float u_Metalness;
-layout (location = 398) uniform float u_Roughness;
+layout (location = 398) uniform vec3 u_AlbedoColor;
+layout (location = 399) uniform float u_Metalness;
+layout (location = 400) uniform float u_Roughness;
 
 // Toggles
-layout (location = 399) uniform float r_AlbedoTexToggle;
-layout (location = 400) uniform float r_NormalTexToggle;
-layout (location = 401) uniform float r_MetalnessTexToggle;
-layout (location = 402) uniform float r_RoughnessTexToggle;
+layout (location = 401) uniform float r_AlbedoTexToggle;
+layout (location = 402) uniform float r_NormalTexToggle;
+layout (location = 403) uniform float r_MetalnessTexToggle;
+layout (location = 404) uniform float r_RoughnessTexToggle;
 
 // For use inside the shader
 struct PBRParameters {

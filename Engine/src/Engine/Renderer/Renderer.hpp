@@ -82,33 +82,54 @@ Macro to define uniforms of the prototype:
         Typename value; 
     };
 */
-#define SHADER_UNIFORM_TYPE_DECL(Name, Typename) struct ShaderUniform_##Name { uint32 Handle; /*Typename value;*/ };
+#define SHADER_UNIFORM_TYPE_DECL(Name, Typename) struct ShaderUniform_##Name { uint32 Location; /*Typename value;*/ };
 
-SHADER_UNIFORM_TYPE_DECL(Int, int);
-SHADER_UNIFORM_TYPE_DECL(Float, float);
-SHADER_UNIFORM_TYPE_DECL(Vec2, rh::laml::Vec2);
-SHADER_UNIFORM_TYPE_DECL(Vec3, rh::laml::Vec3);
-SHADER_UNIFORM_TYPE_DECL(Vec4, rh::laml::Vec4);
-SHADER_UNIFORM_TYPE_DECL(Mat4, rh::laml::Mat4);
-SHADER_UNIFORM_TYPE_DECL(Sampler2D, int);
-SHADER_UNIFORM_TYPE_DECL(Sampler3D, int);
-SHADER_UNIFORM_TYPE_DECL(Light, rh::Light);
+SHADER_UNIFORM_TYPE_DECL(int, int);
+SHADER_UNIFORM_TYPE_DECL(float, float);
+SHADER_UNIFORM_TYPE_DECL(vec2, rh::laml::Vec2);
+SHADER_UNIFORM_TYPE_DECL(vec3, rh::laml::Vec3);
+SHADER_UNIFORM_TYPE_DECL(vec4, rh::laml::Vec4);
+SHADER_UNIFORM_TYPE_DECL(mat4, rh::laml::Mat4);
+SHADER_UNIFORM_TYPE_DECL(sampler2D, int);
+SHADER_UNIFORM_TYPE_DECL(samplerCube, int);
+struct ShaderUniform_Light {
+    ShaderUniform_vec3 Position;
+    ShaderUniform_vec3 Direction;
+    ShaderUniform_vec3 Color;
+    ShaderUniform_float Strength;
+    ShaderUniform_float Inner;
+    ShaderUniform_float Outer;
+};
 SHADER_UNIFORM_TYPE_DECL(PBRParameters, pbr_parameters);
 
 // Text rendering
-struct shader_text {
+#if 1
+// TODO: Split shader folder into game/engine folder
+// -or-
+// Move some shaders into an Engine Resource folder, for things like
+//  debug shaders. Possible bake them into the executable, so 
+//  that it can run without the data/ folder?
+struct shader_Text {
     uint32 Handle;
 
-    ShaderUniform_Vec4 r_transform;
-    ShaderUniform_Vec4 r_transformUV;
-    ShaderUniform_Mat4 r_orthoProjection;
+    ShaderUniform_vec4 r_transform;
+    ShaderUniform_vec4 r_transformUV;
+    ShaderUniform_mat4 r_orthoProjection;
+    ShaderUniform_sampler2D r_fontTex;
+    ShaderUniform_vec3 r_textColor;
 
-    ShaderUniform_Sampler2D r_fontTex;
-    ShaderUniform_Vec3 r_textColor;
+    void InitShaderLocs() {
+        r_transform.Location = 1;
+        r_transformUV.Location = 2;
+        r_orthoProjection.Location = 3;
+        r_fontTex.Location = 4;
+        r_textColor.Location = 5;
+    }
 };
+#endif
 
 struct text_renderer {
-    shader_text Shader;
+    shader_Text Shader;
 
     vertex_array_object TextQuad;
     rh::laml::Mat4 orthoMat;

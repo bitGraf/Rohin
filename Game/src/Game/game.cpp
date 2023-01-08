@@ -16,6 +16,9 @@
 
 static gameImport_t Engine;
 
+#include "W:/Rohin/Tools/shader_tool/out/shaders_generated.cpp"
+
+#if 0
 struct shader_line {
     uint32 Handle;
 
@@ -151,6 +154,7 @@ struct shader_Mix {
     ShaderUniform_Sampler2D r_tex2;
     ShaderUniform_Float r_mixValue;
 };
+#endif
 
 struct game_state {
     real32 XValue;
@@ -159,11 +163,11 @@ struct game_state {
     real32 TValue;
 
     // Shaders
-    shader_line ShaderLine;
-    shader_line_3D ShaderLine3D;
-    shader_prepass_anim ShaderPrepassAnim;
-    shader_prepass ShaderPrepass;
-    shader_ssao ShaderSSAO;
+    shader_Line ShaderLine;
+    shader_Line3D ShaderLine3D;
+    shader_PrePass_Anim ShaderPrepassAnim;
+    shader_PrePass ShaderPrepass;
+    shader_SSAO ShaderSSAO;
     shader_Lighting ShaderLighting;
     shader_Sobel ShaderSobel;
     shader_Screen ShaderScreen;
@@ -174,7 +178,9 @@ struct game_state {
     memory_arena PermArena;
 };
 
-#define ezLoadShader(ShaderVar, ShaderPath) Engine.Render.LoadShaderFromFile((shader*)(&ShaderVar), ShaderPath)
+#define ezLoadShader(ShaderVar, ShaderPath) \
+    Engine.Render.LoadShaderFromFile((shader*)(&ShaderVar), ShaderPath);\
+    ShaderVar.InitShaderLocs();
 
 // TODO: Rewrite the game code to fit into these functions,
 //       or add/remove these functions to better fit the game
@@ -190,13 +196,7 @@ GAME_INIT_FUNC(GameInit) {
 
         // Init 3D renderer
         ezLoadShader(GameState->ShaderLine, "Data/Shaders/Line.glsl");
-        //GameState->ShaderLine.
         ezLoadShader(GameState->ShaderLine3D, "Data/Shaders/Line3D.glsl");
-        GameState->ShaderLine3D.r_verts[0].Handle = 1;
-        GameState->ShaderLine3D.r_verts[1].Handle = 2;
-        GameState->ShaderLine3D.r_View.Handle = 3;
-        GameState->ShaderLine3D.r_Projection.Handle = 4;
-        GameState->ShaderLine3D.r_Color.Handle = 5;
         ezLoadShader(GameState->ShaderPrepassAnim, "Data/Shaders/PrePass.glsl");
         ezLoadShader(GameState->ShaderPrepass, "Data/Shaders/PrePass_Anim.glsl");
         ezLoadShader(GameState->ShaderSSAO, "Data/Shaders/Lighting.glsl");

@@ -750,11 +750,7 @@ bool32 Win32LoadDynamicFont(dynamic_font* Font, char* ResourcePath, real32 FontS
 internal_func void InitDebugRenderState() {
     // Init TextRenderer
     Win32LoadShaderFromFile((shader*)(&GlobalDebugRenderState.DebugTextRenderer.Shader), "Data/Shaders/Text.glsl");
-    GlobalDebugRenderState.DebugTextRenderer.Shader.r_transform.Handle = 1;
-    GlobalDebugRenderState.DebugTextRenderer.Shader.r_transformUV.Handle = 2;
-    GlobalDebugRenderState.DebugTextRenderer.Shader.r_orthoProjection.Handle = 3;
-    GlobalDebugRenderState.DebugTextRenderer.Shader.r_fontTex.Handle = 4;
-    GlobalDebugRenderState.DebugTextRenderer.Shader.r_textColor.Handle = 5;
+    GlobalDebugRenderState.DebugTextRenderer.Shader.InitShaderLocs();
 
     rh::laml::transform::create_projection_orthographic(GlobalDebugRenderState.DebugTextRenderer.orthoMat, 0.0f, 1424.0f, 720.0f, 0.0f, -1.0f, 1.0f);
     real32 QuadVerts[] = {
