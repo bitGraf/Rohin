@@ -1,4 +1,5 @@
 @echo off
+rem WUN WITH: Tools/shader_tool/unity_build/shader_tool.exe Game/run_tree/Data/Shaders/ Game/src/ShaderSrc/shaders_generated.cpp
 rem echo Building!
 
 if not defined DevEnvDir (
@@ -14,5 +15,6 @@ pushd unity_build
 rem Build shader_tool.exe
 set ShaderToolCompileFlags=/MTd /nologo /Gm- /GR- /EHsc /Odi /std:c++14 /W4 /WX /wd4189 /wd4201 /wd4100 /FC
 cl ..\shader_tool.cpp %ShaderToolCompileFlags% /link /SUBSYSTEM:CONSOLE /incremental:no /opt:ref user32.lib
+echo hehe
 
 popd

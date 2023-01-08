@@ -285,29 +285,73 @@ static void OpenShaderFile(char* FullPath, char* cFileName) {
                     ((char*)Buffer)[BytesRead] = 0;
                     // read the entire file into a buffer
                     if (!ProcessShaderFile((char*)Buffer, BytesRead, cFileName)) {
+                        printf("Error processing file\n");
                         AddToErrorList(cFileName);
                     }
                 } else {
+                    printf("Error reading file\n");
                     AddToErrorList(cFileName);
                 }
                 VirtualFree(Buffer, 0, MEM_RELEASE);
             } else {
+                printf("Error allocating buffer\n");
                 AddToErrorList(cFileName);
             }
         } else {
+            printf("Error getting file size\n");
             AddToErrorList(cFileName);
         }
         CloseHandle(FileHandle);
     } else {
+        printf("Error creating file handle\n");
         AddToErrorList(cFileName);
     }
 }
 
-int main(int argc, char** argv) {
-    HINSTANCE Instance = GetModuleHandleA(NULL);
-    LPSTR CommandLine = GetCommandLineA();
+static void 
+ProcessCommandLine(int argc, char** argv, char* PathToShaderDir, char* OutputCodePath) {
+    if (argc == 1) {
+        // run with no args
+        char DefaultPathToShaders[] = "Game/run_tree/Data/Shaders/*";
+        char DefaultPathToOutputCode[] = "Tools/shader_tool/out/shaders_generated.cpp";
+        strcpy(PathToShaderDir, DefaultPathToShaders);
+        strcpy(OutputCodePath, DefaultPathToOutputCode);
+    } else if (argc == 3) {
+        // Tools/shader_tool/unity_build/shader_tool.exe Game/run_tree/Data/Shaders/ Game/src/ShaderSrc/shaders_generated.cpp
+        // Tools/shader_tool/unity_build/shader_tool.exe Game/run_tree/Data/Shaders/ Game/src/ShaderSrc/shaders_generated.cpp
+        strcpy(PathToShaderDir, argv[1]);
+        strcpy(OutputCodePath, argv[2]);
 
-    const char PathToShaders[] = "W:/Rohin/Game/run_tree/Data/Shaders/*";
+        size_t path_length = StringLength(PathToShaderDir);
+        if (PathToShaderDir[path_length] != '*') {
+            PathToShaderDir[path_length+1] = '*';
+        }
+    } else {
+        // idk man
+        printf("Incorrect args passed, shutting down...\n");
+        PathToShaderDir = nullptr;
+        OutputCodePath = nullptr;
+    }
+}
+
+int main(int argc, char** argv) {
+    system("cd");
+    //HINSTANCE Instance = GetModuleHandleA(NULL);
+    //LPSTR CommandLine = GetCommandLineA();
+    //printf("Run with command line: [%s]\n", CommandLine);
+    printf("Command line args:\n");
+    for (int n = 0; n < argc; n++) {
+        printf(" argv[%d] = %s\n", n, argv[n]);
+    }
+    char PathToShaders[256] = { 0 };
+    char OutputCodePath[256] = { 0 };
+    ProcessCommandLine(argc, argv, PathToShaders, OutputCodePath);
+    if ((!PathToShaders[0]) || (!OutputCodePath[0])) {
+        return -1;
+    }
+    printf("PathToShaders = %s\n", PathToShaders);
+    printf("OutputCodePath = %s\n", OutputCodePath); 
+
     WIN32_FIND_DATA ffd;
     HANDLE hFind = FindFirstFileA(PathToShaders, &ffd);
 
@@ -324,11 +368,12 @@ int main(int argc, char** argv) {
             if (StringMatch(Extension, ".glsl")) {
                 char FullPath[MAX_PATH] = { 0 };
                 int n = 0;
-                for (n = 0; n < sizeof(PathToShaders)-2; n++) {
+                size_t path_length = StringLength(PathToShaders);
+                for (n = 0; n < path_length; n++) {
                     FullPath[n] = PathToShaders[n];
                 }
-                size_t name_len = StringLength(ffd.cFileName);
-                for (int i = 0; i < name_len+1; i++) {
+                size_t name_len = StringLength(ffd.cFileName)+1;
+                for (int i = 0; i < name_len; i++) {
                     FullPath[n++] = ffd.cFileName[i];
                 }
 
@@ -350,13 +395,12 @@ int main(int argc, char** argv) {
     } else {
         printf("\n Success! 0 files failed. \n");
 
-        const char PathToOutputCode[] = "W:/Rohin/Tools/shader_tool/out/shaders_generated.cpp";
-        HANDLE FileHandle = CreateFileA(PathToOutputCode, 
+        HANDLE FileHandle = CreateFileA(OutputCodePath, 
                                         GENERIC_WRITE, FILE_SHARE_READ, NULL, 
                                         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
         if (FileHandle) {
 
-            printf("Generating c++ code into %s\n\n", PathToOutputCode);
+            printf("Generating c++ code into %s\n\n", OutputCodePath);
 
             char DateString[256] = { 0 };
             GetDateFormatA(LOCALE_USER_DEFAULT, DATE_LONGDATE, NULL, NULL, DateString, sizeof(DateString));
@@ -452,5 +496,6 @@ int main(int argc, char** argv) {
         }
     }
 
+    system("pause");
     return 0;
 }

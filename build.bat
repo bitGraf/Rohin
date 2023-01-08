@@ -1,4 +1,5 @@
 @echo off
+rem RUN WITH: unity_build/win32_entry.exe -r W:\Rohin\Game\run_tree
 rem echo Building!
 
 if not defined DevEnvDir (
@@ -23,13 +24,13 @@ pushd unity_build
 rem Compile shader tool to and run it to generate some code
 set ShaderToolCompileFlags=/MTd /nologo /Gm- /GR- /EHsc /Odi /std:c++14 /W4 /WX /wd4189 /wd4201 /wd4100 /FC
 cl ..\Tools\shader_tool\shader_tool.cpp %ShaderToolCompileFlags% /link /SUBSYSTEM:CONSOLE /incremental:no /opt:ref user32.lib
-rem shader_tool.exe
+rem shader_tool.exe ../Game/run_tree/Data/Shaders/ ../Game/src/ShaderSrc/shaders_generated.cpp
 
 del *.pdb > NUL 2> NUL
 
 rem Build the Game.dll
 echo WAITING FOR PDB > lock.tmp
-cl /I..\Engine\deps\stb /I..\Engine\src /I..\Engine\deps\math_lib\include %CommonCompilerFlags% ..\%GamePath%\game.cpp /Fmgame.map /LD /link %CommonLinkerFlags% /PDB:game_%random%.pdb /EXPORT:GetGameAPI
+cl /I..\Engine\deps\stb /I..\Game\src /I..\Engine\src /I..\Engine\deps\math_lib\include %CommonCompilerFlags% ..\%GamePath%\game.cpp /Fmgame.map /LD /link %CommonLinkerFlags% /PDB:game_%random%.pdb /EXPORT:GetGameAPI
 del lock.tmp
 
 rem Build the Engine.exe

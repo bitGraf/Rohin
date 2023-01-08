@@ -749,7 +749,7 @@ bool32 Win32LoadDynamicFont(dynamic_font* Font, char* ResourcePath, real32 FontS
 
 internal_func void InitDebugRenderState() {
     // Init TextRenderer
-    Win32LoadShaderFromFile((shader*)(&GlobalDebugRenderState.DebugTextRenderer.Shader), "Data/Shaders/Text.glsl");
+    Win32LoadShaderFromFile((shader*)(&GlobalDebugRenderState.DebugTextRenderer.Shader), "Data/Shaders/debug/Text.glsl");
     GlobalDebugRenderState.DebugTextRenderer.Shader.InitShaderLocs();
 
     rh::laml::transform::create_projection_orthographic(GlobalDebugRenderState.DebugTextRenderer.orthoMat, 0.0f, 1424.0f, 720.0f, 0.0f, -1.0f, 1.0f);
