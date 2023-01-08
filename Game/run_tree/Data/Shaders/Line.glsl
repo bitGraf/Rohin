@@ -3,8 +3,8 @@
 
 layout (location = 0) in vec3 a_Position;
 
-uniform mat4 r_VP;
-uniform mat4 r_Transform;
+layout (location = 1) uniform mat4 r_VP;
+layout (location = 2) uniform mat4 r_Transform;
 
 out VertexOutput {
     vec3 WorldPos;
@@ -28,12 +28,12 @@ in VertexOutput {
 	vec2 tex_coord;
 } vs_Input;
 
-uniform vec3 r_CamPos;
-uniform vec3 r_LineColor;
-uniform float r_LineFadeStart;
-uniform float r_LineFadeEnd;
-uniform float r_LineFadeMaximum;
-uniform float r_LineFadeMinimum;
+layout (location = 3) uniform vec3 r_CamPos;
+layout (location = 4) uniform vec3 r_LineColor;
+layout (location = 5) uniform float r_LineFadeStart;
+layout (location = 6) uniform float r_LineFadeEnd;
+layout (location = 7) uniform float r_LineFadeMaximum;
+layout (location = 8) uniform float r_LineFadeMinimum;
 
 //const mat4 ditherPattern = mat4(
 //    vec4( 0.0f, 0.5f, 0.125f, 0.625f),

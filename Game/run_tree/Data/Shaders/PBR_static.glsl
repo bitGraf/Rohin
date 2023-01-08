@@ -7,8 +7,8 @@ layout (location = 2) in vec3 a_Tangent;
 layout (location = 3) in vec3 a_Binormal;
 layout (location = 4) in vec2 a_TexCoord;
 
-uniform mat4 r_VP;
-uniform mat4 r_Transform;
+layout (location = 1) uniform mat4 r_VP;
+layout (location = 2) uniform mat4 r_Transform;
 
 out VertexOutput {
     vec3 WorldPos;
@@ -46,6 +46,7 @@ const vec3 FD = vec3(0.04);
 const float PI = 3.141592;
 const float Epsilon = 0.00001;
 
+// Light => 6 uniform slots each
 struct Light {
 	vec3 Position;
 	vec3 Direction;
@@ -56,27 +57,27 @@ struct Light {
 };
 
 const int MAX_LIGHTS = 32;
-uniform Light r_pointLights[MAX_LIGHTS];
-uniform Light r_spotLights[MAX_LIGHTS];
-uniform Light r_sun;
-uniform vec3 r_CamPos;
+layout (location = 1) uniform Light r_pointLights[MAX_LIGHTS]; // 192 slots
+layout (location = 193) uniform Light r_spotLights[MAX_LIGHTS]; // 192 slots
+layout (location = 385) uniform Light r_sun;
+layout (location = 386) uniform vec3 r_CamPos;
 
 // PBR Textures
-uniform sampler2D u_AlbedoTexture;
-uniform sampler2D u_NormalTexture;
-uniform sampler2D u_MetalnessTexture;
-uniform sampler2D u_RoughnessTexture;
+layout (location = 387) uniform sampler2D u_AlbedoTexture;
+layout (location = 388) uniform sampler2D u_NormalTexture;
+layout (location = 389) uniform sampler2D u_MetalnessTexture;
+layout (location = 390) uniform sampler2D u_RoughnessTexture;
 
 // Material properties
-uniform vec3 u_AlbedoColor;
-uniform float u_Metalness;
-uniform float u_Roughness;
+layout (location = 391) uniform vec3 u_AlbedoColor;
+layout (location = 392) uniform float u_Metalness;
+layout (location = 393) uniform float u_Roughness;
 
 // Toggles
-uniform float r_AlbedoTexToggle;
-uniform float r_NormalTexToggle;
-uniform float r_MetalnessTexToggle;
-uniform float r_RoughnessTexToggle;
+layout (location = 394) uniform float r_AlbedoTexToggle;
+layout (location = 395) uniform float r_NormalTexToggle;
+layout (location = 396) uniform float r_MetalnessTexToggle;
+layout (location = 397) uniform float r_RoughnessTexToggle;
 
 // For use inside the shader
 struct PBRParameters {

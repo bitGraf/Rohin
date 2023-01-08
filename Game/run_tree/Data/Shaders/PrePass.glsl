@@ -8,10 +8,10 @@ layout (location = 3) in vec3 a_Binormal;
 layout (location = 4) in vec2 a_TexCoord;
 
 // can combine these two into ModelView matrix
-uniform mat4 r_Transform;
-uniform mat4 r_View;
+layout (location = 1) uniform mat4 r_Transform;
+layout (location = 2) uniform mat4 r_View;
 
-uniform mat4 r_Projection;
+layout (location = 3) uniform mat4 r_Projection;
 
 out VertexOutput { // all in view-space
     vec3 Position;
@@ -49,27 +49,27 @@ in VertexOutput {
 } vs_Input;
 
 // PBR Textures
-uniform sampler2D u_AlbedoTexture;
-uniform sampler2D u_NormalTexture;
-uniform sampler2D u_MetalnessTexture;
-uniform sampler2D u_RoughnessTexture;
-uniform sampler2D u_AmbientTexture;
-uniform sampler2D u_EmissiveTexture;
+layout (location = 4) uniform sampler2D u_AlbedoTexture;
+layout (location = 5) uniform sampler2D u_NormalTexture;
+layout (location = 6) uniform sampler2D u_MetalnessTexture;
+layout (location = 7) uniform sampler2D u_RoughnessTexture;
+layout (location = 8) uniform sampler2D u_AmbientTexture;
+layout (location = 9) uniform sampler2D u_EmissiveTexture;
 
 // Material properties
-uniform vec3 u_AlbedoColor;
-uniform float u_Metalness;
-uniform float u_Roughness;
-uniform float u_TextureScale;
+layout (location = 10) uniform vec3 u_AlbedoColor;
+layout (location = 11) uniform float u_Metalness;
+layout (location = 12) uniform float u_Roughness;
+layout (location = 13) uniform float u_TextureScale;
 
 // Toggles
-uniform float r_AlbedoTexToggle;
-uniform float r_NormalTexToggle;
-uniform float r_MetalnessTexToggle;
-uniform float r_RoughnessTexToggle;
-uniform float r_AmbientTexToggle;
-uniform float r_EmissiveTexToggle;
-uniform float r_gammaCorrect;
+layout (location = 14) uniform float r_AlbedoTexToggle;
+layout (location = 15) uniform float r_NormalTexToggle;
+layout (location = 16) uniform float r_MetalnessTexToggle;
+layout (location = 17) uniform float r_RoughnessTexToggle;
+layout (location = 18) uniform float r_AmbientTexToggle;
+layout (location = 19) uniform float r_EmissiveTexToggle;
+layout (location = 20) uniform float r_gammaCorrect;
 
 float linearize_depth(float d,float zNear,float zFar)
 {

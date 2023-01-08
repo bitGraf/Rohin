@@ -9,8 +9,8 @@ layout (location = 4) in vec2 a_TexCoord;
 
 out vec2 tex_coord;
 
-uniform mat4 r_VP;
-uniform mat4 r_Transform;
+layout (location = 1) uniform mat4 r_VP;
+layout (location = 2) uniform mat4 r_Transform;
 
 void main() {
     tex_coord = a_TexCoord;
@@ -24,8 +24,8 @@ layout (location = 0) out vec4 FragColor;
 
 in vec2 tex_coord;
 
-uniform sampler2D u_texture;
-uniform vec4 u_color;
+layout (location = 3) uniform sampler2D u_texture;
+layout (location = 4) uniform vec4 u_color;
 
 void main() {
     FragColor = texture(u_texture, tex_coord) * u_color;

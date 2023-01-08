@@ -7,7 +7,7 @@ layout (location = 2) in vec3 a_Tangent;
 //layout (location = 3) in vec3 a_Binormal;
 //layout (location = 4) in vec2 a_TexCoord;
 
-uniform mat4 r_Transform;
+layout (location = 1) uniform mat4 r_Transform;
 
 out vec3 vs_normal; //world space
 
@@ -35,7 +35,7 @@ layout(line_strip, max_vertices = 2) out;
 //layout(points, max_vertices = 2) out;
 
 in vec3 vs_normal[];
-uniform mat4 r_VP;
+layout (location = 2) uniform mat4 r_VP;
 const float normal_scale = 0.08;
 
 void main() {

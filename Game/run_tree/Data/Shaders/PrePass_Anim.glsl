@@ -10,13 +10,13 @@ layout (location = 5) in ivec4 a_BoneIndices;
 layout (location = 6) in vec4 a_BoneWeights;
 
 const int MAX_BONES = 128;
-uniform mat4 r_Bones[MAX_BONES];
+layout (location = 1) uniform mat4 r_Bones[MAX_BONES]; // 128 slots
 
 // can combine these two into ModelView matrix
-uniform mat4 r_Transform;
-uniform mat4 r_View;
+layout (location = 129) uniform mat4 r_Transform;
+layout (location = 130) uniform mat4 r_View;
 
-uniform mat4 r_Projection;
+layout (location = 131) uniform mat4 r_Projection;
 
 out VertexOutput { // all in view-space
     vec3 Position;
@@ -63,27 +63,27 @@ in VertexOutput {
 } vs_Input;
 
 // PBR Textures
-uniform sampler2D u_AlbedoTexture;
-uniform sampler2D u_NormalTexture;
-uniform sampler2D u_MetalnessTexture;
-uniform sampler2D u_RoughnessTexture;
-uniform sampler2D u_AmbientTexture;
-uniform sampler2D u_EmissiveTexture;
+layout (location = 132) uniform sampler2D u_AlbedoTexture;
+layout (location = 133) uniform sampler2D u_NormalTexture;
+layout (location = 134) uniform sampler2D u_MetalnessTexture;
+layout (location = 135) uniform sampler2D u_RoughnessTexture;
+layout (location = 136) uniform sampler2D u_AmbientTexture;
+layout (location = 137) uniform sampler2D u_EmissiveTexture;
 
 // Material properties
-uniform vec3 u_AlbedoColor;
-uniform float u_Metalness;
-uniform float u_Roughness;
-uniform float u_TextureScale;
+layout (location = 138) uniform vec3 u_AlbedoColor;
+layout (location = 139) uniform float u_Metalness;
+layout (location = 140) uniform float u_Roughness;
+layout (location = 141) uniform float u_TextureScale;
 
 // Toggles
-uniform float r_AlbedoTexToggle;
-uniform float r_NormalTexToggle;
-uniform float r_MetalnessTexToggle;
-uniform float r_RoughnessTexToggle;
-uniform float r_AmbientTexToggle;
-uniform float r_EmissiveTexToggle;
-uniform float r_gammaCorrect;
+layout (location = 142) uniform float r_AlbedoTexToggle;
+layout (location = 143) uniform float r_NormalTexToggle;
+layout (location = 144) uniform float r_MetalnessTexToggle;
+layout (location = 145) uniform float r_RoughnessTexToggle;
+layout (location = 146) uniform float r_AmbientTexToggle;
+layout (location = 147) uniform float r_EmissiveTexToggle;
+layout (location = 148) uniform float r_gammaCorrect;
 
 float linearize_depth(float d,float zNear,float zFar)
 {

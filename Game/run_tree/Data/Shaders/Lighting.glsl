@@ -6,7 +6,7 @@ layout (location = 1) in vec2 a_TexCoord;
 out vec2 texcoord;
 out vec3 viewRay;
 
-uniform mat4 r_Projection;
+layout (location = 1) uniform mat4 r_Projection;
 
 void main() {
     vec4 position = vec4(a_Position.xy, 1.0, 1.0);
@@ -34,15 +34,15 @@ struct Light {
 };
 
 const int MAX_LIGHTS = 32;
-uniform Light r_pointLights[MAX_LIGHTS];
-uniform Light r_spotLights[MAX_LIGHTS];
-uniform Light r_sun;
+layout (location = 2) uniform Light r_pointLights[MAX_LIGHTS];
+layout (location = 3) uniform Light r_spotLights[MAX_LIGHTS];
+layout (location = 4) uniform Light r_sun;
 
-uniform mat4 r_View;
+layout (location = 5) uniform mat4 r_View;
 
-uniform sampler2D u_normal;
-uniform sampler2D u_distance;
-uniform sampler2D u_amr;
+layout (location = 6) uniform sampler2D u_normal;
+layout (location = 7) uniform sampler2D u_distance;
+layout (location = 8) uniform sampler2D u_amr;
 
 const vec3 FD = vec3(0.04);
 const float PI = 3.141592;

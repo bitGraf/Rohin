@@ -18,9 +18,9 @@ out vec4 FragColor;
 
 in vec2 texcoord;
 
-uniform sampler2D r_tex1;
-uniform sampler2D r_tex2;
-uniform float r_mixValue;
+layout (location = 1) uniform sampler2D r_tex1;
+layout (location = 2) uniform sampler2D r_tex2;
+layout (location = 3) uniform float r_mixValue;
 
 void main() {
     vec4 sample1 = texture(r_tex1, texcoord);

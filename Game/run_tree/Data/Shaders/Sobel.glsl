@@ -18,7 +18,7 @@ out vec4 FragColor;
 
 in vec2 texcoord;
 
-uniform sampler2D r_texture;
+layout (location = 1) uniform sampler2D r_texture;
 
 const float offset = 1.0 / 300.0;
 

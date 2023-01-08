@@ -4,7 +4,7 @@ layout (location = 0) in vec3 a_Position;
 
 out vec3 frag_pos;
 
-uniform mat4 r_inverseVP;
+layout (location = 1) uniform mat4 r_inverseVP;
 
 void main() {
     vec4 position = vec4(a_Position.xy, 1.0, 1.0);
@@ -19,7 +19,7 @@ out vec4 FragColor;
 
 in vec3 frag_pos;
 
-uniform samplerCube r_skybox;
+layout (location = 2) uniform samplerCube r_skybox;
 
 void main() {
     FragColor = texture(r_skybox, frag_pos);

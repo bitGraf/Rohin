@@ -18,18 +18,18 @@ out vec4 FragColor;
 
 in vec2 texcoord;
 
-uniform sampler2D u_albedo;
-uniform sampler2D u_normal;
-uniform sampler2D u_amr;
-uniform sampler2D u_depth;
-uniform sampler2D u_diffuse;
-uniform sampler2D u_specular;
-uniform sampler2D u_emissive;
-uniform sampler2D u_ssao;
+layout (location = 1) uniform sampler2D u_albedo;
+layout (location = 2) uniform sampler2D u_normal;
+layout (location = 3) uniform sampler2D u_amr;
+layout (location = 4) uniform sampler2D u_depth;
+layout (location = 5) uniform sampler2D u_diffuse;
+layout (location = 6) uniform sampler2D u_specular;
+layout (location = 7) uniform sampler2D u_emissive;
+layout (location = 8) uniform sampler2D u_ssao;
 
-uniform int r_outputSwitch;
-uniform float r_toneMap;
-uniform float r_gammaCorrect;
+layout (location = 9) uniform int r_outputSwitch;
+layout (location = 10) uniform float r_toneMap;
+layout (location = 11) uniform float r_gammaCorrect;
 
 float makeDepthPretty(float d);
 vec3 ToneMap(vec3 colorIn);

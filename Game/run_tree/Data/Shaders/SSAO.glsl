@@ -18,7 +18,7 @@ layout (location = 0) out vec4 out_SSAO;
 
 in vec2 texcoord;
 
-uniform sampler2D u_amr;
+layout (location = 1) uniform sampler2D u_amr;
 
 const vec3 FD = vec3(0.04);
 const float PI = 3.141592;
