@@ -27,7 +27,7 @@ struct mesh_file_submesh {
     uint32 IndexCount;
     real32 Transform[16];
 };
-struct mesh_file_bone {
+struct mesh_file_joint {
     int32 ParentIndex;
     real32 DebugLength;
     real32 LocalMatrix[16];
@@ -57,7 +57,21 @@ uint8* AdvanceBufferSize_(uint8** Buffer, uint32 Size, uint8* End) {
     return Result;
 }
 
-void LoadMeshFromBuffer(triangle_mesh* Mesh, uint8* Buffer, uint32 BufferSize) {
+void LoadMeshFromBuffer(memory_arena* Arena, triangle_mesh* Mesh, uint8* Buffer, uint32 BufferSize) {
+    /* TODO:
+     * Rewrite mesh file layout to minimize the individual buffer copies we need to do.
+     * Ideally, we read in the header and with the values in the header we can 
+     * pre-"allocate" from the arena and then just do one memcopy into the actual
+     * buffers we need.
+     * 
+     * Reconsider size of integer types in the mesh file format.
+     * We do a lot of:
+     *    -read uint16 from the file
+     *    -convert it to uint8 in the triangle_mesh since we dont expect that high of a number
+     * Would be better for data-packing reasons as well for the file.
+     * 
+     * Mesh file currently does not support materials!
+     * */
     uint8* End = Buffer + BufferSize;
     mesh_file_header* Header = AdvanceBuffer(&Buffer, mesh_file_header, End);
 
@@ -67,25 +81,69 @@ void LoadMeshFromBuffer(triangle_mesh* Mesh, uint8* Buffer, uint32 BufferSize) {
     }
     AdvanceBufferSize_(&Buffer, Header->CommentLength, End);
 
+    // decode mesh flags
     bool32 HasSkeleton = Header->Flag & 0x01;
 
+    Mesh->NumSubmeshes = (uint8)Header->NumSubmeshes;
+    Assert(Mesh->NumSubmeshes == Header->NumSubmeshes); // 16->8 bits conversion
+    Mesh->Submeshes = PushArray(Arena, submesh, Mesh->NumSubmeshes);
     for (int SubmeshIndex = 0; SubmeshIndex < Header->NumSubmeshes; SubmeshIndex++) {
-        mesh_file_submesh* Submesh = AdvanceBuffer(&Buffer, mesh_file_submesh, End);
+        mesh_file_submesh* BufferSubmesh = AdvanceBuffer(&Buffer, mesh_file_submesh, End);
+        submesh* Submesh = &Mesh->Submeshes[SubmeshIndex];
+        Submesh->BaseVertex = 0;
+        Submesh->BaseIndex = BufferSubmesh->BaseIndex;
+        Submesh->MaterialIndex = BufferSubmesh->MaterialIndex; // NOTE: mesh file will always have 0 here...
+        Submesh->IndexCount = BufferSubmesh->IndexCount;
+
+        Submesh->Transform = rh::laml::Mat4(BufferSubmesh->Transform);
+    }
+
+    // TODO: Add proper material support to the file format
+    Mesh->NumMaterials = 1;
+    Assert(Mesh->NumMaterials == 1);
+    Mesh->Materials = PushArray(Arena, material, Mesh->NumMaterials);
+    for (int MaterialIndex = 0; MaterialIndex < 1; MaterialIndex++) {
+        material* Material = &Mesh->Materials[MaterialIndex];
+
+        // Material-> = ....
     }
 
     if (HasSkeleton) {
         AdvanceBufferSize_(&Buffer, 4, End);
-        uint16* NumBones = AdvanceBuffer(&Buffer, uint16, End);
+        uint16* NumJoints = AdvanceBuffer(&Buffer, uint16, End);
+        Mesh->NumJoints = (uint8)(*NumJoints);
+        Assert(Mesh->NumJoints == (*NumJoints)); // 16->8 bits conversion
+        Mesh->Joints = PushArray(Arena, joint, Mesh->NumJoints);
+        Mesh->JointsDebug = PushArray(Arena, joint_debug, Mesh->NumJoints);
 
-        //mesh_file_bone* Bones = AdvanceBufferArray(&Buffer, mesh_file_bone, NumBones, End);
-        for (uint16 BoneIndex = 0; BoneIndex < *NumBones; BoneIndex++) {
-            uint16* BoneNameLength = AdvanceBuffer(&Buffer, uint16, End);
-            AdvanceBufferSize_(&Buffer, *BoneNameLength, End);
+        for (uint16 JointIndex = 0; JointIndex < *NumJoints; JointIndex++) {
+            uint16* JointNameLength = AdvanceBuffer(&Buffer, uint16, End);
+            char* JointName = (char*)AdvanceBufferSize_(&Buffer, *JointNameLength, End);
 
-            mesh_file_bone* Bone = AdvanceBuffer(&Buffer, mesh_file_bone, End);
+            mesh_file_joint* BufferJoint = AdvanceBuffer(&Buffer, mesh_file_joint, End);
+
+            joint* Joint = &Mesh->Joints[JointIndex];
+            Joint->ParentIndex = BufferJoint->ParentIndex;
+            Joint->LocalMatrix = BufferJoint->LocalMatrix;
+            Joint->InverseModelMatrix = BufferJoint->InverseModelMatrix;
+            rh::laml::identity(Joint->FinalTransform);
+
+            joint_debug* JointDebug = &Mesh->JointsDebug[JointIndex];
+            JointDebug->Length = BufferJoint->DebugLength;
+            JointDebug->Name = PushArray(Arena, char, *JointNameLength);
+            // TODO: better string copy code lol
+            for (uint16 nn = 0; nn < *JointNameLength; nn++) {
+                JointDebug->Name[nn] = JointName[nn];
+            }
+            JointDebug->ModelMatrix = rh::laml::inverse(Joint->InverseModelMatrix); // slow!
         }
     }
 
+    // TODO: Do we need to cache the vertices/indices of the mesh? 
+    // or just send them to the GPU and discard.
+    // Easier to just discard, but we might need them.
+    // Only use case I can think of is for the collision geometry, so maybe
+    // we pass it to there first then discard it.
     AdvanceBufferArray(&Buffer, char, 4, End); // DATA
     AdvanceBufferArray(&Buffer, char, 4, End); // IDX\0
 
@@ -100,13 +158,24 @@ void LoadMeshFromBuffer(triangle_mesh* Mesh, uint8* Buffer, uint32 BufferSize) {
         AdvanceBufferArray(&Buffer, char, 4, End); // ANIM
 
         uint16* NumAnimsInCatalog = AdvanceBuffer(&Buffer, uint16, End);
+        Mesh->NumAnimations = (uint8)(*NumAnimsInCatalog);
+        Assert(Mesh->NumAnimations == *NumAnimsInCatalog);
+        Mesh->Animations = PushArray(Arena, animation, Mesh->NumAnimations);
+        Mesh->AnimationsDebug = PushArray(Arena, animation_debug, Mesh->NumAnimations);
 
         for (uint16 Animindex = 0; Animindex < *NumAnimsInCatalog; Animindex++) {
             uint16* AnimNameLen = AdvanceBuffer(&Buffer, uint16, End);
             char* AnimName = AdvanceBufferArray(&Buffer, char, *AnimNameLen, End);
 
-            // create Animation entry with AnimName
-            int m = 5;
+            // No actual animation data is stored here, just the names to look up later...
+            //animation* Animation = &Mesh->Animations[Animindex];
+
+            animation_debug* AnimationDebug = &Mesh->AnimationsDebug[Animindex];
+            AnimationDebug->Name = PushArray(Arena, char, *AnimNameLen);
+            // TODO: better string copy code lol
+            for (uint16 nn = 0; nn < *AnimNameLen; nn++) {
+                AnimationDebug->Name[nn] = AnimName[nn];
+            }
         }
     }
 

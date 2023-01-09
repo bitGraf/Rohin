@@ -23,7 +23,6 @@ struct vertex_anim {
 };
 
 struct submesh {
-public:
     uint32 BaseVertex;
     uint32 BaseIndex;
     uint32 MaterialIndex;
@@ -32,11 +31,54 @@ public:
     rh::laml::Mat4 Transform;
 };
 
-struct triangle_mesh {
-    vertex_array_object VertexArray;
-    //submesh* Submeshes;
+struct joint_debug {
+    real32 Length;
+    char* Name;
+    rh::laml::Mat4 ModelMatrix;
 };
 
-void LoadMeshFromBuffer(triangle_mesh* Mesh, uint8* Buffer, uint32 BufferSize);
+struct joint {
+    static const int32 NullIndex = -1;
+
+    int32 ParentIndex;
+    rh::laml::Mat4 LocalMatrix;
+    rh::laml::Mat4 InverseModelMatrix;
+    rh::laml::Mat4 FinalTransform;
+};
+
+struct animation_debug {
+    char* Name;
+};
+
+struct animation {
+    // TODO:
+};
+
+struct material {
+    // TODO:
+};
+
+struct triangle_mesh {
+    vertex_array_object VertexArray;
+
+    // no more than 255 of each of these... seems reasonable
+    // if NumBones is set to 0, mesh has no animation data associated.
+    uint8 NumSubmeshes;
+    uint8 NumMaterials;
+    uint8 NumJoints;
+    uint8 NumAnimations;
+
+    submesh* Submeshes;
+    material* Materials;
+    joint* Joints;
+    animation* Animations;
+
+#if 1
+    joint_debug* JointsDebug;
+    animation_debug* AnimationsDebug;
+#endif
+};
+
+void LoadMeshFromBuffer(memory_arena* Arena, triangle_mesh* Mesh, uint8* Buffer, uint32 BufferSize);
 
 #endif

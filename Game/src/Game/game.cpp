@@ -10,6 +10,7 @@
 #include "Engine/Core/MemoryArena.cpp"
 #include "Engine/Renderer/CommandBuffer.cpp"
 #include "Engine/Renderer/Renderer.hpp"
+//#include "Game/entity.h"
 
 // CRT
 #include <cmath>
@@ -121,9 +122,11 @@ GAME_INIT_FUNC(GameInit) {
         GameState->NumMeshes = 1;
         GameState->TriangleMeshes = PushArray(&GameState->MeshArena, triangle_mesh, GameState->NumMeshes);
         //Engine.LoadMeshFromFile(&GameState->TransArena, &GameState->TriangleMeshes[0], "Data/Models/dance.mesh");
+
+
         uint32 buffSize;
         uint8* buffer = Engine.ReadEntireFile(&GameState->TransArena, "Data/Models/dance.mesh", &buffSize);
-        LoadMeshFromBuffer(&GameState->TriangleMeshes[0], buffer, buffSize);
+        LoadMeshFromBuffer(&GameState->MeshArena, &GameState->TriangleMeshes[0], buffer, buffSize);
         GameState->TransArena.Used -= buffSize;
 
         Memory->IsInitialized = true;
