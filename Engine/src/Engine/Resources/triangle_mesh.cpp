@@ -116,5 +116,26 @@ void LoadMeshFromBuffer(triangle_mesh* Mesh, uint8* Buffer, uint32 BufferSize) {
     }
     Assert(Buffer == End);
 
+    vertex_buffer VBO;
+    if (HasSkeleton) {
+        VBO = Engine.Render.CreateVertexBuffer(VertexData, (uint32)VertexDataSize, 7, 
+                                               ShaderDataType::Float3,
+                                               ShaderDataType::Float3,
+                                               ShaderDataType::Float3,
+                                               ShaderDataType::Float3,
+                                               ShaderDataType::Float2,
+                                               ShaderDataType::Int4,
+                                               ShaderDataType::Float4);
+    } else {
+        VBO = Engine.Render.CreateVertexBuffer(VertexData, (uint32)VertexDataSize, 5, 
+                                               ShaderDataType::Float3,
+                                               ShaderDataType::Float3,
+                                               ShaderDataType::Float3,
+                                               ShaderDataType::Float3,
+                                               ShaderDataType::Float2);
+    }
+    index_buffer IBO = Engine.Render.CreateIndexBuffer(Indices, Header->NumInds);
+    Mesh->VertexArray = Engine.Render.CreateVertexArray(&VBO, &IBO);
+
     int done = 5;
 }

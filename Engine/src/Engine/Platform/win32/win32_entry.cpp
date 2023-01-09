@@ -1134,8 +1134,8 @@ main(int argc, char** argv) {
                 game_input* NewInput = &GlobalWin32State.Input[0];
                 game_input* OldInput = &GlobalWin32State.Input[1];
 
-                rh::MovingAverage<real32, 100> MSLastFrame;
-                rh::MovingAverage<real32, 100> MSWorkLastFrame;
+                rh::MovingAverage<real32, 30> MSLastFrame;
+                rh::MovingAverage<real32, 30> MSWorkLastFrame;
 
                 win32_window_dimension LastDimension = Win32GetWindowDimension(Window);
 

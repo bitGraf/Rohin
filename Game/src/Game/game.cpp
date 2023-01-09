@@ -10,13 +10,13 @@
 #include "Engine/Core/MemoryArena.cpp"
 #include "Engine/Renderer/CommandBuffer.cpp"
 #include "Engine/Renderer/Renderer.hpp"
-#include "Engine/Resources/triangle_mesh.cpp"
 
 // CRT
 #include <cmath>
 
 static gameImport_t Engine;
 
+#include "Engine/Resources/triangle_mesh.cpp"
 #include "ShaderSrc/shaders_generated.cpp"
 
 struct game_state {
@@ -35,6 +35,16 @@ struct game_state {
     shader_Sobel ShaderSobel;
     shader_Screen ShaderScreen;
     shader_Mix ShaderMix;
+    shader_simple ShaderSimple;
+
+    // Main Camera
+    //scene_camera Camera;
+    rh::laml::Vec3 CameraPosition;
+
+    rh::laml::Mat4 CameraTransform;
+    rh::laml::Mat4 ViewMatrix;
+
+    rh::laml::Mat4 ProjectionMatrix;
 
     // Meshes
     uint32 NumMeshes;
@@ -63,18 +73,30 @@ GAME_INIT_FUNC(GameInit) {
         GameState->YValue = 0.5f;
         GameState->TValue = 0.0f;
 
+        GameState->CameraPosition.x = 0.0f;
+        GameState->CameraPosition.y = 2.0f;
+        GameState->CameraPosition.z = 5.0f;
+        //rh::laml::Mat4 rotM;
+        rh::laml::transform::create_transform_translate(GameState->CameraTransform, GameState->CameraPosition);
+        //rh::laml::transform::create_transform_rotation(rotM, 0.0f, -45.0f, 0.0f);
+        //GameState->CameraTransform = rh::laml::mul(GameState->CameraTransform, rotM);
+        rh::laml::transform::create_view_matrix_from_transform(GameState->ViewMatrix, GameState->CameraTransform);
+
+        rh::laml::transform::create_projection_perspective(GameState->ProjectionMatrix, 75.0f, 16.0f/9.0f, 0.1f, 20.0f);
+
         //BIND_UNIFORM(GameState->lineShader, r_test);
 
         // Init 3D renderer
-        ezLoadShader(GameState->ShaderLine, "Data/Shaders/Line.glsl");
-        ezLoadShader(GameState->ShaderLine3D, "Data/Shaders/Line3D.glsl");
+        ezLoadShader(GameState->ShaderLine,        "Data/Shaders/Line.glsl");
+        ezLoadShader(GameState->ShaderLine3D,      "Data/Shaders/Line3D.glsl");
         ezLoadShader(GameState->ShaderPrepassAnim, "Data/Shaders/PrePass.glsl");
-        ezLoadShader(GameState->ShaderPrepass, "Data/Shaders/PrePass_Anim.glsl");
-        ezLoadShader(GameState->ShaderSSAO, "Data/Shaders/Lighting.glsl");
-        ezLoadShader(GameState->ShaderLighting, "Data/Shaders/SSAO.glsl");
-        ezLoadShader(GameState->ShaderSobel, "Data/Shaders/Screen.glsl");
-        ezLoadShader(GameState->ShaderScreen, "Data/Shaders/Sobel.glsl");
-        ezLoadShader(GameState->ShaderMix, "Data/Shaders/Mix.glsl");
+        ezLoadShader(GameState->ShaderPrepass,     "Data/Shaders/PrePass_Anim.glsl");
+        ezLoadShader(GameState->ShaderSSAO,        "Data/Shaders/Lighting.glsl");
+        ezLoadShader(GameState->ShaderLighting,    "Data/Shaders/SSAO.glsl");
+        ezLoadShader(GameState->ShaderSobel,       "Data/Shaders/Screen.glsl");
+        ezLoadShader(GameState->ShaderScreen,      "Data/Shaders/Sobel.glsl");
+        ezLoadShader(GameState->ShaderMix,         "Data/Shaders/Mix.glsl");
+        ezLoadShader(GameState->ShaderSimple,      "Data/Shaders/simple.glsl");
 
         InitializeArena(&GameState->FrameArena, 
                         Megabytes(2), 
@@ -102,6 +124,7 @@ GAME_INIT_FUNC(GameInit) {
         uint32 buffSize;
         uint8* buffer = Engine.ReadEntireFile(&GameState->TransArena, "Data/Models/dance.mesh", &buffSize);
         LoadMeshFromBuffer(&GameState->TriangleMeshes[0], buffer, buffSize);
+        GameState->TransArena.Used -= buffSize;
 
         Memory->IsInitialized = true;
     }
@@ -128,11 +151,15 @@ GAME_FRAME_FUNC(GameFrame) {
     Render_ClearColor(CmdBuffer, GameState->XValue, GameState->YValue, 0.25f*sinf(1.0f*GameState->TValue) + 0.5f, 1.0f);
 
     // render each mesh
+    Render_BindShader(CmdBuffer, GameState->ShaderSimple);
+    Render_UploadVec4(CmdBuffer, GameState->ShaderSimple.u_color, rh::laml::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
+    Render_UploadMat4(CmdBuffer, GameState->ShaderSimple.r_VP, rh::laml::mul(GameState->ProjectionMatrix, GameState->ViewMatrix));
+    Render_UploadMat4(CmdBuffer, GameState->ShaderSimple.r_Transform, rh::laml::Mat4(1.0f, 1.0f, 1.0f, 1.0f));
     for (uint32 n = 0; n < GameState->NumMeshes; n++) {
         triangle_mesh* Mesh = &GameState->TriangleMeshes[n];
 
-        //Render_BindVAO(CmdBuffer, Mesh->VertexArray);
-        //Render_Submit(CmdBuffer, Mesh->VertexArray.Handle);
+        Render_BindVAO(CmdBuffer, Mesh->VertexArray);
+        Render_Submit(CmdBuffer, Mesh->VertexArray.IndexCount);
     }
 
     // Render text

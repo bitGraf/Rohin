@@ -8,6 +8,31 @@
 #include "Engine/Renderer/CommandBuffer.h"
 #include "Engine/Renderer/Light.hpp"
 
+// Camera
+enum camera_type {
+    Perspective = 0,
+    Orthographic
+};
+struct camera_perspective {
+    real32 m_PerspectiveVerticalFoV;
+    real32 m_PerspectiveNear;
+    real32 m_PerspectiveFar;
+};
+struct camera_orthographic {
+    real32 m_OrthographicSize;
+    real32 m_OrthographicNear; 
+    real32 m_OrthographicFar;
+};
+struct scene_camera {
+    float m_AspectRatio;
+    camera_type Type;
+
+    union {
+        camera_perspective Perspective;
+        camera_perspective Orthographic;
+    };
+};
+
 // Shader
 struct shader {
     uint32 Handle;
