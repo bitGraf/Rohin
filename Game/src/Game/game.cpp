@@ -10,6 +10,7 @@
 #include "Engine/Core/MemoryArena.cpp"
 #include "Engine/Renderer/CommandBuffer.cpp"
 #include "Engine/Renderer/Renderer.hpp"
+#include "Engine/Resources/triangle_mesh.cpp"
 
 // CRT
 #include <cmath>
@@ -35,9 +36,17 @@ struct game_state {
     shader_Screen ShaderScreen;
     shader_Mix ShaderMix;
 
+    // Meshes
+    uint32 NumMeshes;
+    triangle_mesh* TriangleMeshes;
+
+    // PermanentArenas
     memory_arena FrameArena;
     memory_arena PrevFrameArena;
     memory_arena PermArena;
+    // TransientArenas
+    memory_arena MeshArena;
+    memory_arena TransArena;
 };
 
 #define ezLoadShader(ShaderVar, ShaderPath) \
@@ -66,7 +75,6 @@ GAME_INIT_FUNC(GameInit) {
         ezLoadShader(GameState->ShaderSobel, "Data/Shaders/Screen.glsl");
         ezLoadShader(GameState->ShaderScreen, "Data/Shaders/Sobel.glsl");
         ezLoadShader(GameState->ShaderMix, "Data/Shaders/Mix.glsl");
-        
 
         InitializeArena(&GameState->FrameArena, 
                         Megabytes(2), 
@@ -75,10 +83,25 @@ GAME_INIT_FUNC(GameInit) {
                         Megabytes(2), 
                         ((uint8*)Memory->PermanentStorage + sizeof(game_state) + Megabytes(2)));
         InitializeArena(&GameState->PermArena, 
-                        Memory->PermanentStorageSize - sizeof(game_state), 
+                        Memory->PermanentStorageSize - sizeof(game_state) - Megabytes(4), 
                         ((uint8*)Memory->PermanentStorage + sizeof(game_state) + Megabytes(4)));
 
         Engine.Logger.LogMessage("Done with initialization! %d\n", 5);
+
+        // Transient initialization
+        InitializeArena(&GameState->MeshArena,
+                        Megabytes(64),
+                        (uint8*)Memory->TransientStorage);
+        InitializeArena(&GameState->TransArena,
+                        Memory->TransientStorageSize - Megabytes(64),
+                        (uint8*)Memory->TransientStorage + Megabytes(64));
+
+        GameState->NumMeshes = 1;
+        GameState->TriangleMeshes = PushArray(&GameState->MeshArena, triangle_mesh, GameState->NumMeshes);
+        //Engine.LoadMeshFromFile(&GameState->TransArena, &GameState->TriangleMeshes[0], "Data/Models/dance.mesh");
+        uint32 buffSize;
+        uint8* buffer = Engine.ReadEntireFile(&GameState->TransArena, "Data/Models/dance.mesh", &buffSize);
+        LoadMeshFromBuffer(&GameState->TriangleMeshes[0], buffer, buffSize);
 
         Memory->IsInitialized = true;
     }
@@ -102,8 +125,15 @@ GAME_FRAME_FUNC(GameFrame) {
     GameState->TValue += Input->dtForFrame;
 
     // Render
-
     Render_ClearColor(CmdBuffer, GameState->XValue, GameState->YValue, 0.25f*sinf(1.0f*GameState->TValue) + 0.5f, 1.0f);
+
+    // render each mesh
+    for (uint32 n = 0; n < GameState->NumMeshes; n++) {
+        triangle_mesh* Mesh = &GameState->TriangleMeshes[n];
+
+        //Render_BindVAO(CmdBuffer, Mesh->VertexArray);
+        //Render_Submit(CmdBuffer, Mesh->VertexArray.Handle);
+    }
 
     // Render text
     //void name(char* Text, real32 X, real32 Y, rh::laml::Vec3 Color, TextAlignment Alignment);

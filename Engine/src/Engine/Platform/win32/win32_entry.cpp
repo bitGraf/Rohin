@@ -694,6 +694,38 @@ bool32 Win32LoadShaderFromFile(shader* shader, char* ResourcePath) {
     return Result;
 }
 
+uint8* Win32ReadEntireFile(memory_arena* Arena, char* ResourcePath, uint32 *BytesRead) {
+    uint8* Result = nullptr;
+
+    char ResourceFullPath[WIN32_STATE_FILE_NAME_COUNT];
+    CatStrings(GlobalWin32State.ResourcePrefixLength, GlobalWin32State.ResourcePathPrefix, 
+               StringLength(ResourcePath), ResourcePath, 
+               sizeof(ResourceFullPath), ResourceFullPath);
+
+    HANDLE FileHandle = CreateFileA(ResourceFullPath, 
+                                    GENERIC_READ, FILE_SHARE_READ, NULL, 
+                                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (INVALID_HANDLE_VALUE != FileHandle) {
+        LARGE_INTEGER FileSizeBytes;
+        if (GetFileSizeEx(FileHandle, &FileSizeBytes)) {
+
+            LPVOID Buffer = PushSize_(Arena, FileSizeBytes.QuadPart);
+
+            DWORD Win32BytesRead;
+            if (Buffer) {
+                if (ReadFile(FileHandle, Buffer, (DWORD)FileSizeBytes.QuadPart, &Win32BytesRead, NULL)) {
+                    Assert(Win32BytesRead == FileSizeBytes.QuadPart);
+                    Result = (uint8*)Buffer;
+                    *BytesRead = Win32BytesRead;
+                }
+            }
+        }
+        CloseHandle(FileHandle);
+    }
+
+    return Result;
+}
+
 bool32 Win32LoadDynamicFont(dynamic_font* Font, char* ResourcePath, real32 FontSize, uint32 Resolution) {
     bool32 Result = false;
 
@@ -863,6 +895,7 @@ Win32LoadGameCode(char *SourceDLLName, char *TempDLLName, char* LockFileName) {
             GameImport.Version = 1;
 
             GameImport.LoadDynamicFont = Win32LoadDynamicFont;
+            GameImport.ReadEntireFile = Win32ReadEntireFile;
 
             GameImport.Render.LoadShaderFromFile = Win32LoadShaderFromFile;
             GameImport.Render.CreateVertexBuffer = OpenGLCreateVertexBuffer;

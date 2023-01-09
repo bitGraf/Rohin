@@ -100,15 +100,9 @@ struct ShaderUniform_Light {
     ShaderUniform_float Inner;
     ShaderUniform_float Outer;
 };
-SHADER_UNIFORM_TYPE_DECL(PBRParameters, pbr_parameters);
 
 // Text rendering
-#if 1
 // TODO: Split shader folder into game/engine folder
-// -or-
-// Move some shaders into an Engine Resource folder, for things like
-//  debug shaders. Possible bake them into the executable, so 
-//  that it can run without the data/ folder?
 struct shader_Text {
     uint32 Handle;
 
@@ -126,7 +120,6 @@ struct shader_Text {
         r_textColor.Location = 5;
     }
 };
-#endif
 
 struct text_renderer {
     shader_Text Shader;

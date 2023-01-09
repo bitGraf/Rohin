@@ -204,7 +204,7 @@ namespace rh {
 
         // read indices
         std::vector<Triangle> m_Tris;
-        m_Tris.resize(numInds * 3U);
+        m_Tris.resize(numInds / 3U);
         char INDS[4];
         file.read(INDS, 4);
         if (!checkTag(INDS, "IDX", 4)) return;

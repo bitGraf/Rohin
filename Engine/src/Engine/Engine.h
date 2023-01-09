@@ -25,10 +25,14 @@ typedef ENGINE_RENDER_CREATE_VERTEX_ARRAY(Engine_Render_CreateVertexArray_t);
 #define ENGINE_RENDER_DRAW_DEBUG_TEXT(name) void name(char* Text, real32 X, real32 Y, rh::laml::Vec3 Color, TextAlignment Alignment);
 typedef ENGINE_RENDER_DRAW_DEBUG_TEXT(Engine_Render_DrawDebugText_t);
 
-
 // Logging
 #define ENGINE_DEBUG_LOG_MESSAGE(name) void name(const char* msg, ...)
 typedef ENGINE_DEBUG_LOG_MESSAGE(Engine_Debug_LogMessage_t);
+
+// Filesystem
+#define ENGINE_FILESYSTEM_READ_ENTIRE_FILE(name) uint8* name(memory_arena* Arena, char* Filename, uint32* BytesRead)
+typedef ENGINE_FILESYSTEM_READ_ENTIRE_FILE(Engine_Filesystem_ReadEntireFile_t);
+
 
 // default
 #define STUB_FUNCTION(name) void name(...)
@@ -41,6 +45,7 @@ struct gameImport_t {
     int Version;
 
     Engine_LoadDynamicFont_t *LoadDynamicFont;
+    Engine_Filesystem_ReadEntireFile_t *ReadEntireFile;
 
     struct {
         Engine_Render_LoadShaderFromFile_t *LoadShaderFromFile;
