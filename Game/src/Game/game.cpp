@@ -10,7 +10,7 @@
 #include "Engine/Core/MemoryArena.cpp"
 #include "Engine/Renderer/CommandBuffer.cpp"
 #include "Engine/Renderer/Renderer.hpp"
-//#include "Game/entity.h"
+#include "Game/entity.h"
 
 // CRT
 #include <cmath>
@@ -84,6 +84,9 @@ GAME_INIT_FUNC(GameInit) {
         rh::laml::transform::create_view_matrix_from_transform(GameState->ViewMatrix, GameState->CameraTransform);
 
         rh::laml::transform::create_projection_perspective(GameState->ProjectionMatrix, 75.0f, 16.0f/9.0f, 0.1f, 20.0f);
+
+        entity_registry Registry = {};
+        EntityTest(&Registry);
 
         //BIND_UNIFORM(GameState->lineShader, r_test);
 
