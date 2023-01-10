@@ -53,7 +53,7 @@ struct game_state {
 
     // Component archetypes
     entity_registry Registry;
-    entity_view_2d<component_tag, component_transform> View;
+    entity_view_2d<component_transform, component_mesh_render> RenderableMeshes;
 
     // PermanentArenas
     memory_arena FrameArena;
@@ -133,9 +133,17 @@ GAME_INIT_FUNC(GameInit) {
         LoadMeshFromBuffer(&GameState->MeshArena, &GameState->TriangleMeshes[0], buffer, buffSize);
 
         InitEntityRegistry(&GameState->TransArena, &GameState->Registry);
-        EntityTest(&GameState->Registry);
-        InitView(&GameState->TransArena, &GameState->View, &GameState->Registry, component_tag, component_transform);
-        UpdateView(&GameState->View, &GameState->Registry);
+        
+        entity Entity1 = CreateEntityWithComponents(&GameState->Registry, Component_Type_Tag | Component_Type_Transform | Component_Type_MeshRender);
+        func(Entity1);
+        GetComponent<component_mesh_render>(&GameState->Registry, Entity1).vao = GameState->TriangleMeshes[0].VertexArray;
+        GetComponent<component_transform>(&GameState->Registry, Entity1).Scale = {1.0f, 1.0f, 1.0f};
+        GetComponent<component_transform>(&GameState->Registry, Entity1).Orientation = { 0.0f, 0.0f, 0.0f, 1.0f };
+        //entity Entity2 = CreateEntityWithComponents(&GameState->Registry, Component_Type_Tag | Component_Type_MeshRender);
+        //entity Entity3 = CreateEntityWithComponents(&GameState->Registry, Component_Type_Tag | Component_Type_Transform | Component_Type_MeshRender);
+
+        InitView(&GameState->TransArena, &GameState->RenderableMeshes, &GameState->Registry, component_transform, component_mesh_render);
+        UpdateView(&GameState->RenderableMeshes, &GameState->Registry);
 
         Memory->IsInitialized = true;
     }
@@ -145,7 +153,10 @@ GAME_FRAME_FUNC(GameFrame) {
     game_state* GameState = (game_state*)Memory->PermanentStorage;
     // Clear the frame arena for a new frame
     ClearArena(&GameState->FrameArena);
-    UpdateView(&GameState->View, &GameState->Registry);
+
+    // TODO: don't need to recalculate this every frame, 
+    //       unless entities get added/deleted to the registry
+    UpdateView(&GameState->RenderableMeshes, &GameState->Registry);
 
     // Handle input/update state
     game_controller_input* Controller = GetController(Input, 0);
@@ -166,6 +177,19 @@ GAME_FRAME_FUNC(GameFrame) {
     Render_BindShader(CmdBuffer, GameState->ShaderSimple);
     Render_UploadVec4(CmdBuffer, GameState->ShaderSimple.u_color, rh::laml::Vec4(1.0f, 1.0f, 1.0f, 1.0f));
     Render_UploadMat4(CmdBuffer, GameState->ShaderSimple.r_VP, rh::laml::mul(GameState->ProjectionMatrix, GameState->ViewMatrix));
+
+    rh::laml::Mat4 Transform;
+    for (uint16 n = 0; n < GameState->RenderableMeshes.NumComponents; n++) {
+        rh::laml::transform::create_transform(Transform, 
+                                              GameState->RenderableMeshes.AComponents[n].Orientation,
+                                              GameState->RenderableMeshes.AComponents[n].Position,
+                                              GameState->RenderableMeshes.AComponents[n].Scale);
+        Render_UploadMat4(CmdBuffer, GameState->ShaderSimple.r_Transform, Transform);
+
+        Render_BindVAO(CmdBuffer, GameState->RenderableMeshes.BComponents[n].vao);
+        Render_Submit(CmdBuffer, GameState->RenderableMeshes.BComponents[n].vao.IndexCount);
+    }
+#if 0
     Render_UploadMat4(CmdBuffer, GameState->ShaderSimple.r_Transform, rh::laml::Mat4(1.0f, 1.0f, 1.0f, 1.0f));
     for (uint32 n = 0; n < GameState->NumMeshes; n++) {
         triangle_mesh* Mesh = &GameState->TriangleMeshes[n];
@@ -173,11 +197,14 @@ GAME_FRAME_FUNC(GameFrame) {
         Render_BindVAO(CmdBuffer, Mesh->VertexArray);
         Render_Submit(CmdBuffer, Mesh->VertexArray.IndexCount);
     }
+#endif
 
     // Render text
     //void name(char* Text, real32 X, real32 Y, rh::laml::Vec3 Color, TextAlignment Alignment);
     rh::laml::Vec3 TextColor(1.0f, 1.0f, 1.0f);
     Engine.Render.DrawDebugText("Eggwuh", 0.0f, 0.0f, 
+                                TextColor, TextAlignment::ALIGN_TOP_LEFT);
+    Engine.Render.DrawDebugText("Eggwuh", 0.0f, 20.0f, 
                                 TextColor, TextAlignment::ALIGN_TOP_LEFT);
 
     // Swap the two arenas, allowing the last frame to be saved

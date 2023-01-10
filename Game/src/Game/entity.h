@@ -196,26 +196,25 @@ void func(entity Entity) {
 #define SET_BITS(Value, NewValue, Mask) (Value & ~Mask) | (NewValue & Mask)
 entity CreateEntityWithComponents(entity_registry* Registry, uint16 Components) {
     Assert(Registry->NumEntities < Registry->MaxNumEntities);
+    Assert(Registry->Entities);
 
     entity NewEntity = {};
     if (Components & Component_Type_Tag) {
-        // Note: This is SUPPOSED to be incremented first!
-        //       An index of zero is reserved for "Not having the component"
-        Registry->Store_component_tag.NumComponents++;
         uint64 ID = ((uint64)Registry->Store_component_tag.NumComponents) << 52;
 
+        Registry->Store_component_tag.NumComponents++;
         NewEntity.HighBits = SET_BITS(NewEntity.HighBits, ID, 0xFFF0000000000000);
     }
     if (Components & Component_Type_Transform) {
-        Registry->Store_component_transform.NumComponents++;
         uint64 ID = ((uint64)Registry->Store_component_transform.NumComponents) << 40;
 
+        Registry->Store_component_transform.NumComponents++;
         NewEntity.HighBits = SET_BITS(NewEntity.HighBits, ID, 0x000FFF0000000000);
     }
     if (Components & Component_Type_MeshRender) {
-        Registry->Store_component_mesh_render.NumComponents++;
         uint64 ID = ((uint64)Registry->Store_component_mesh_render.NumComponents) << 28;
 
+        Registry->Store_component_mesh_render.NumComponents++;
         NewEntity.HighBits = SET_BITS(NewEntity.HighBits, ID, 0x000000FFF0000000);
     }
     // all the placeholder ones...
@@ -251,16 +250,29 @@ template<> component_transform GetComponentFromEntity(entity_registry* Registry,
 template<> component_mesh_render GetComponentFromEntity(entity_registry* Registry, uint16 ComponentID) 
     { return Registry->Store_component_mesh_render.Components[ComponentID];}
 
-void EntityTest(entity_registry* Registry) {
-    entity Entity1 = CreateEntityWithComponents(Registry, Component_Type_Tag | Component_Type_Transform | Component_Type_MeshRender);
-    entity Entity2 = CreateEntityWithComponents(Registry, Component_Type_Tag | Component_Type_MeshRender);
-    entity Entity3 = CreateEntityWithComponents(Registry, Component_Type_Tag | Component_Type_Transform | Component_Type_MeshRender);
+//GetComponent<component_mesh_render>(&GameState->Registry, Entity);
+template<typename component_type>
+component_type& GetComponent(entity_registry* Registry, entity Entity) {
+    static_assert(false, "Don't use this function by itself! Either used on an invalid type, or used on a placeholder component type!");
+}
 
-    func(Entity1);
-    func(Entity2);
-    func(Entity3);
-
-    return;
+template<> component_tag& 
+GetComponent(entity_registry* Registry, entity Entity) {
+    uint16 ID = GetIDOfComponent<component_tag>(Entity);
+    component_tag& Component = Registry->Store_component_tag.Components[ID];
+    return Component;
+}
+template<> component_transform& 
+GetComponent(entity_registry* Registry, entity Entity) {
+    uint16 ID = GetIDOfComponent<component_transform>(Entity);
+    component_transform& Component = Registry->Store_component_transform.Components[ID];
+    return Component;
+}
+template<> component_mesh_render& 
+GetComponent(entity_registry* Registry, entity Entity) {
+    uint16 ID = GetIDOfComponent<component_mesh_render>(Entity);
+    component_mesh_render& Component = Registry->Store_component_mesh_render.Components[ID];
+    return Component;
 }
 
 /*
@@ -292,6 +304,7 @@ void InitView_(memory_arena* Arena, entity_view_2d<type_a, type_b>* View,
 
 template<typename type_a, typename type_b>
 void UpdateView(entity_view_2d<type_a, type_b>* View, entity_registry* Registry) {
+    View->NumComponents = 0; // reset the view!
     // REALLY dumb method, just loop over all entities and add it to this list if it contains both components...
     for (uint16 n = 0; n < Registry->NumEntities; n++) {
         uint16 CompAID = GetIDOfComponent<type_a>(Registry->Entities[n]);
@@ -302,6 +315,7 @@ void UpdateView(entity_view_2d<type_a, type_b>* View, entity_registry* Registry)
             // add to the view
             View->AComponents[View->NumComponents] = GetComponentFromEntity<type_a>(Registry, CompAID);
             View->BComponents[View->NumComponents] = GetComponentFromEntity<type_b>(Registry, CompBID);
+            View->NumComponents++;
         }
     }
 }
@@ -309,11 +323,11 @@ void UpdateView(entity_view_2d<type_a, type_b>* View, entity_registry* Registry)
 void InitEntityRegistry(memory_arena* Arena, entity_registry* Registry) {
     Registry->NumEntities = 0;
     Registry->Entities = PushArray(Arena, entity, Registry->MaxNumEntities);
-    Registry->Store_component_tag.NumComponents = 0;
+    Registry->Store_component_tag.NumComponents = 1;
     Registry->Store_component_tag.Components = PushArray(Arena, component_tag, Registry->MaxNumEntities);
-    Registry->Store_component_transform.NumComponents = 0;
+    Registry->Store_component_transform.NumComponents = 1;
     Registry->Store_component_transform.Components = PushArray(Arena, component_transform, Registry->MaxNumEntities);
-    Registry->Store_component_mesh_render.NumComponents = 0;
+    Registry->Store_component_mesh_render.NumComponents = 1;
     Registry->Store_component_mesh_render.Components = PushArray(Arena, component_mesh_render, Registry->MaxNumEntities);
 }
 

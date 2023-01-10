@@ -855,6 +855,41 @@ internal_func void DrawDebugText(char* Text, real32 StartX, real32 StartY, rh::l
     Render_SetFrontCull(CmdBuffer, false);
 }
 
+internal_func void 
+Win32GetSystemSpecs() {
+    DWORD buffer_size = 0;
+    DWORD i = 0;
+    SYSTEM_LOGICAL_PROCESSOR_INFORMATION * buffer = 0;
+
+    GetLogicalProcessorInformation(0, &buffer_size);
+    buffer = (SYSTEM_LOGICAL_PROCESSOR_INFORMATION *)malloc(buffer_size);
+    GetLogicalProcessorInformation(&buffer[0], &buffer_size);
+
+    size_t L1LineSize = 0;
+    size_t L2LineSize = 0;
+    size_t L3LineSize = 0;
+    for (i = 0; i != buffer_size / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION); ++i) {
+        if (buffer[i].Relationship == RelationCache && buffer[i].Cache.Level == 1) {
+            L1LineSize = buffer[i].Cache.LineSize;
+            //break;
+        }
+        if (buffer[i].Relationship == RelationCache && buffer[i].Cache.Level == 2) {
+            L2LineSize = buffer[i].Cache.LineSize;
+            //break;
+        }
+        if (buffer[i].Relationship == RelationCache && buffer[i].Cache.Level == 3) {
+            L3LineSize = buffer[i].Cache.LineSize;
+            //break;
+        }
+    }
+
+    free(buffer);
+
+    Win32LogMessage("L1 Cache Line Size: %u bytes\n", L1LineSize);
+    Win32LogMessage("L2 Cache Line Size: %u bytes\n", L2LineSize);
+    Win32LogMessage("L3 Cache Line Size: %u bytes\n", L3LineSize);
+}
+
 
 
 
@@ -1026,6 +1061,8 @@ main(int argc, char** argv) {
     if (!Win32Init(CommandLine)) {
         return -1;
     }
+
+    Win32GetSystemSpecs();
 
     char SourceGameCodeDLLFullPath[WIN32_STATE_FILE_NAME_COUNT];
     Win32BuildEXEPathFileName("game.dll", sizeof(SourceGameCodeDLLFullPath), SourceGameCodeDLLFullPath);
