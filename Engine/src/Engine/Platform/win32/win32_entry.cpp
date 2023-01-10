@@ -1362,6 +1362,14 @@ main(int argc, char** argv) {
                                             "%.0f fps", AvgFrameRate);
                             DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width, 48.0f, DebugColorBack, TextAlignment::ALIGN_TOP_RIGHT);
                             DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width+offset, 48.0f+offset, DebugColor, TextAlignment::ALIGN_TOP_RIGHT);
+
+
+                            StringCbPrintfA(DebugFrameTimeBuff, sizeof(DebugFrameTimeBuff),
+                                            "Render Commands: %d (%dKb/%dMb)", 
+                                            GlobalCommandBuffer.ElementCount, 
+                                            GlobalCommandBuffer.CurrentSize/Kilobytes(1), GlobalCommandBuffer.MaxSize/Megabytes(1));
+                            DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width, 72.0f, DebugColorBack, TextAlignment::ALIGN_TOP_RIGHT);
+                            DrawDebugText(DebugFrameTimeBuff, (real32)Dimension.Width+offset, 72.0f+offset, DebugColor, TextAlignment::ALIGN_TOP_RIGHT);
                         }
                         
                         OpenGLEndFrame(&Dimension, &GlobalCommandBuffer);
