@@ -140,22 +140,22 @@ static_assert(sizeof(component_store<component_tag>) == 16, "sizeof(component_st
 struct entity_registry {
     static const uint16 MaxNumEntities = 4096; // max number storable in 12-bits
     uint16 NumEntities;
-    //uint16 Padding[3];
+    entity* Entities;
     
-    component_store<component_tag> TagComponents;
-    component_store<component_transform> TransformComponents;
-    component_store<component_mesh_render> MeshRenderComponents;
+    component_store<component_tag> Store_component_tag;
+    component_store<component_transform> Store_component_transform;
+    component_store<component_mesh_render> Store_component_mesh_render;
 
 private: // Just so we don't have to see them 
-    component_store<PLACEHOLDER_component_3> TagPlaceholder3;
-    component_store<PLACEHOLDER_component_4> TagPlaceholder4;
-    component_store<PLACEHOLDER_component_5> TagPlaceholder5;
-    component_store<PLACEHOLDER_component_6> TagPlaceholder6;
-    component_store<PLACEHOLDER_component_7> TagPlaceholder7;
-    component_store<PLACEHOLDER_component_8> TagPlaceholder8;
-    component_store<PLACEHOLDER_component_9> TagPlaceholder9;
-}; // this gets padded to 168 bytes (10x16 + 2) + 6 bytes of padding
-static_assert(sizeof(entity_registry) == 168, "sizeof(entity_registry != 168 bytes!");
+    component_store<PLACEHOLDER_component_3> Store_PLACEHOLDER_component_3;
+    component_store<PLACEHOLDER_component_4> Store_PLACEHOLDER_component_4;
+    component_store<PLACEHOLDER_component_5> Store_PLACEHOLDER_component_5;
+    component_store<PLACEHOLDER_component_6> Store_PLACEHOLDER_component_6;
+    component_store<PLACEHOLDER_component_7> Store_PLACEHOLDER_component_7;
+    component_store<PLACEHOLDER_component_8> Store_PLACEHOLDER_component_8;
+    component_store<PLACEHOLDER_component_9> Store_PLACEHOLDER_component_9;
+}; // this gets padded to 176 bytes (11x16)
+static_assert(sizeof(entity_registry) == 176, "sizeof(entity_registry != 176 bytes!");
 
 // how we would get the ID's of each component
 // Could be made more optimale I think by doing 
@@ -196,31 +196,60 @@ void func(entity Entity) {
 #define SET_BITS(Value, NewValue, Mask) (Value & ~Mask) | (NewValue & Mask)
 entity CreateEntityWithComponents(entity_registry* Registry, uint16 Components) {
     Assert(Registry->NumEntities < Registry->MaxNumEntities);
-    Registry->NumEntities++;
 
     entity NewEntity = {};
     if (Components & Component_Type_Tag) {
-        uint64 ID = ((uint64)Registry->TagComponents.NumComponents) << 52;
+        // Note: This is SUPPOSED to be incremented first!
+        //       An index of zero is reserved for "Not having the component"
+        Registry->Store_component_tag.NumComponents++;
+        uint64 ID = ((uint64)Registry->Store_component_tag.NumComponents) << 52;
 
         NewEntity.HighBits = SET_BITS(NewEntity.HighBits, ID, 0xFFF0000000000000);
-        Registry->TagComponents.NumComponents++;
     }
     if (Components & Component_Type_Transform) {
-        uint64 ID = ((uint64)Registry->TransformComponents.NumComponents) << 40;
+        Registry->Store_component_transform.NumComponents++;
+        uint64 ID = ((uint64)Registry->Store_component_transform.NumComponents) << 40;
 
         NewEntity.HighBits = SET_BITS(NewEntity.HighBits, ID, 0x000FFF0000000000);
-        Registry->TransformComponents.NumComponents++;
     }
     if (Components & Component_Type_MeshRender) {
-        uint64 ID = ((uint64)Registry->MeshRenderComponents.NumComponents) << 28;
+        Registry->Store_component_mesh_render.NumComponents++;
+        uint64 ID = ((uint64)Registry->Store_component_mesh_render.NumComponents) << 28;
 
         NewEntity.HighBits = SET_BITS(NewEntity.HighBits, ID, 0x000000FFF0000000);
-        Registry->MeshRenderComponents.NumComponents++;
     }
     // all the placeholder ones...
 
+    //
+    Registry->Entities[Registry->NumEntities] = NewEntity;
+    Registry->NumEntities++;
+
     return NewEntity;
 }
+
+template<typename T> 
+uint16 GetIDOfComponent(entity Entity) { static_assert(false, "Don't use this function by itself! Either used on an invalid type, or used on a placeholder component type!"); }
+
+template<> uint16 GetIDOfComponent<component_tag>(entity Entity)           {return (Entity.HighBits >> 52) & 0xFFF;}
+template<> uint16 GetIDOfComponent<component_transform>(entity Entity)     {return (Entity.HighBits >> 40) & 0xFFF;}
+template<> uint16 GetIDOfComponent<component_mesh_render>(entity Entity)   {return (Entity.HighBits >> 28) & 0xFFF;}
+//template<> uint16 GetIDOfComponent<PLACEHOLDER_component_3>(entity Entity) { return (Entity.HighBits >> 16) & 0xFFF; }
+//template<> uint16 GetIDOfComponent<PLACEHOLDER_component_4>(entity Entity) { return (Entity.HighBits >>  4) & 0xFFF; }
+//template<> uint16 GetIDOfComponent<PLACEHOLDER_component_5>(entity Entity) { return (Entity.LowBits >> 52) & 0xFFF; }
+//template<> uint16 GetIDOfComponent<PLACEHOLDER_component_6>(entity Entity) { return (Entity.LowBits >> 40) & 0xFFF; }
+//template<> uint16 GetIDOfComponent<PLACEHOLDER_component_7>(entity Entity) { return (Entity.LowBits >> 28) & 0xFFF; }
+//template<> uint16 GetIDOfComponent<PLACEHOLDER_component_8>(entity Entity) { return (Entity.LowBits >> 16) & 0xFFF; }
+//template<> uint16 GetIDOfComponent<PLACEHOLDER_component_9>(entity Entity) { return (Entity.LowBits >>  4) & 0xFFF; }
+
+template<typename component_type>
+component_type GetComponentFromEntity(entity_registry* Registry, uint16 ComponentID) {static_assert(false, "Don't use this function by itself! Either used on an invalid type, or used on a placeholder component type!");}
+
+template<> component_tag GetComponentFromEntity(entity_registry* Registry, uint16 ComponentID) 
+    { return Registry->Store_component_tag.Components[ComponentID];}
+template<> component_transform GetComponentFromEntity(entity_registry* Registry, uint16 ComponentID) 
+    { return Registry->Store_component_transform.Components[ComponentID];}
+template<> component_mesh_render GetComponentFromEntity(entity_registry* Registry, uint16 ComponentID) 
+    { return Registry->Store_component_mesh_render.Components[ComponentID];}
 
 void EntityTest(entity_registry* Registry) {
     entity Entity1 = CreateEntityWithComponents(Registry, Component_Type_Tag | Component_Type_Transform | Component_Type_MeshRender);
@@ -232,6 +261,60 @@ void EntityTest(entity_registry* Registry) {
     func(Entity3);
 
     return;
+}
+
+/*
+ * When operating on entities its very quick to iterate over a single component type,
+ * as its stored in a contiguous flat array.
+ * If you want to however, iterate over all entities with Component1 & Component2,
+ * we want a way of iterating over two flat arrays. This is what a view is attempting
+ * to accomplish
+ * 
+ * */
+
+template<typename type_a, typename type_b>
+struct entity_view_2d {
+    uint16 NumComponents;
+    type_a* AComponents;
+    type_b* BComponents;
+};
+
+#define InitView(Arena, View, Registry, TypeA, TypeB) InitView_(Arena, View, Registry, &((Registry)->Store_##TypeA), (&(Registry)->Store_##TypeB))
+template<typename type_a, typename type_b>
+void InitView_(memory_arena* Arena, entity_view_2d<type_a, type_b>* View, 
+               entity_registry* Registry, 
+               component_store<type_a>* StoreA, component_store<type_b>* StoreB) {
+    //typedef entity_view_2d<type_a, type_b> view_type;
+    View->NumComponents = 0;
+    View->AComponents = PushArray(Arena, type_a, Registry->MaxNumEntities);
+    View->BComponents = PushArray(Arena, type_b, Registry->MaxNumEntities);
+}
+
+template<typename type_a, typename type_b>
+void UpdateView(entity_view_2d<type_a, type_b>* View, entity_registry* Registry) {
+    // REALLY dumb method, just loop over all entities and add it to this list if it contains both components...
+    for (uint16 n = 0; n < Registry->NumEntities; n++) {
+        uint16 CompAID = GetIDOfComponent<type_a>(Registry->Entities[n]);
+        uint16 CompBID = GetIDOfComponent<type_b>(Registry->Entities[n]);
+
+        if (CompAID && CompBID) {
+            // it has both!
+            // add to the view
+            View->AComponents[View->NumComponents] = GetComponentFromEntity<type_a>(Registry, CompAID);
+            View->BComponents[View->NumComponents] = GetComponentFromEntity<type_b>(Registry, CompBID);
+        }
+    }
+}
+
+void InitEntityRegistry(memory_arena* Arena, entity_registry* Registry) {
+    Registry->NumEntities = 0;
+    Registry->Entities = PushArray(Arena, entity, Registry->MaxNumEntities);
+    Registry->Store_component_tag.NumComponents = 0;
+    Registry->Store_component_tag.Components = PushArray(Arena, component_tag, Registry->MaxNumEntities);
+    Registry->Store_component_transform.NumComponents = 0;
+    Registry->Store_component_transform.Components = PushArray(Arena, component_transform, Registry->MaxNumEntities);
+    Registry->Store_component_mesh_render.NumComponents = 0;
+    Registry->Store_component_mesh_render.Components = PushArray(Arena, component_mesh_render, Registry->MaxNumEntities);
 }
 
 #endif

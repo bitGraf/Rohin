@@ -51,6 +51,10 @@ struct game_state {
     uint32 NumMeshes;
     triangle_mesh* TriangleMeshes;
 
+    // Component archetypes
+    entity_registry Registry;
+    entity_view_2d<component_tag, component_transform> View;
+
     // PermanentArenas
     memory_arena FrameArena;
     memory_arena PrevFrameArena;
@@ -84,9 +88,6 @@ GAME_INIT_FUNC(GameInit) {
         rh::laml::transform::create_view_matrix_from_transform(GameState->ViewMatrix, GameState->CameraTransform);
 
         rh::laml::transform::create_projection_perspective(GameState->ProjectionMatrix, 75.0f, 16.0f/9.0f, 0.1f, 20.0f);
-
-        entity_registry Registry = {};
-        EntityTest(&Registry);
 
         //BIND_UNIFORM(GameState->lineShader, r_test);
 
@@ -130,7 +131,11 @@ GAME_INIT_FUNC(GameInit) {
         uint32 buffSize;
         uint8* buffer = Engine.ReadEntireFile(&GameState->TransArena, "Data/Models/dance.mesh", &buffSize);
         LoadMeshFromBuffer(&GameState->MeshArena, &GameState->TriangleMeshes[0], buffer, buffSize);
-        GameState->TransArena.Used -= buffSize;
+
+        InitEntityRegistry(&GameState->TransArena, &GameState->Registry);
+        EntityTest(&GameState->Registry);
+        InitView(&GameState->TransArena, &GameState->View, &GameState->Registry, component_tag, component_transform);
+        UpdateView(&GameState->View, &GameState->Registry);
 
         Memory->IsInitialized = true;
     }
@@ -140,6 +145,7 @@ GAME_FRAME_FUNC(GameFrame) {
     game_state* GameState = (game_state*)Memory->PermanentStorage;
     // Clear the frame arena for a new frame
     ClearArena(&GameState->FrameArena);
+    UpdateView(&GameState->View, &GameState->Registry);
 
     // Handle input/update state
     game_controller_input* Controller = GetController(Input, 0);
