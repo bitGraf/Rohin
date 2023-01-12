@@ -4,6 +4,7 @@
 #define RENDERER_H
 
 #include <stb_truetype.h>
+#include <stb_image.h>
 
 #include "Engine/Renderer/CommandBuffer.h"
 #include "Engine/Renderer/Light.hpp"
@@ -76,6 +77,14 @@ struct vertex_array_object {
     uint32 IndexCount;
 };
 
+struct texture_2D {
+    uint32 Handle;
+
+    uint16 Width;
+    uint16 Height;
+    uint16 NumChannels;
+};
+
 
 /* Text alignmnet */
 enum class TextAlignment : uint8 {
@@ -90,9 +99,9 @@ enum class TextAlignment : uint8 {
     ALIGN_BOT_RIGHT
 };
 struct dynamic_font {
+    texture_2D Texture;
     bool32 Initialized;
     stbtt_bakedchar cdata[96]; // ASCII 32..126 is 95 glyphs
-    uint32 TextureHandle;
     real32 FontSize;
     uint32 BitmapRes;
 };

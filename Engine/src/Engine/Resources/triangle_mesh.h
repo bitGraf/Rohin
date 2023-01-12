@@ -55,7 +55,8 @@ struct animation {
 };
 
 struct material {
-    // TODO:
+    texture_2D Diffuse;
+    //texture_2D Normal;
 };
 
 struct triangle_mesh {

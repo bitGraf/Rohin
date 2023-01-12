@@ -6,7 +6,7 @@
 #include "Engine/Renderer/Renderer.hpp"
 
 /* Services that the Engine provides to the Game: */
-#define ENGINE_LOAD_DYNAMIC_FONT(name) bool32 name(dynamic_font*, char*, real32, uint32)
+#define ENGINE_LOAD_DYNAMIC_FONT(name) bool32 name(dynamic_font*, char*, real32, uint16)
 typedef ENGINE_LOAD_DYNAMIC_FONT(Engine_LoadDynamicFont_t);
 
 // Render Commands

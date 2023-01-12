@@ -11,7 +11,7 @@ internal_func vertex_buffer OpenGLCreateVertexBuffer(void* VertexData, uint32 Da
 internal_func index_buffer OpenGLCreateIndexBuffer(uint32* IndexData, uint32 IndexCount);
 internal_func vertex_array_object OpenGLCreateVertexArray(vertex_buffer* VBO, index_buffer* IBO);
 
-internal_func uint32 OpenGLCreateTexture(uint8* Bitmap, uint32 Resolution);
+internal_func void OpenGLCreateTexture(texture_2D* Texture, uint8* Bitmap, uint16 ResolutionX, uint16 ResolutionY, uint16 NumChannels);
 
 internal_func void OpenGLBeginFrame();
 internal_func void OpenGLEndFrame(win32_window_dimension* Dimension, render_command_buffer* CommandBuffer);

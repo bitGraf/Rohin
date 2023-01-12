@@ -178,24 +178,49 @@ internal_func vertex_array_object OpenGLCreateVertexArray(vertex_buffer* VBO, in
 }
 
 
-internal_func uint32 OpenGLCreateTexture(uint8* Bitmap, uint32 Resolution) {
-    uint32 TextureHandle;
+internal_func void OpenGLCreateTexture(texture_2D* Texture, uint8* Bitmap, uint16 ResolutionX, uint16 ResolutionY, uint16 NumChannels) {
 
-    glGenTextures(1, &TextureHandle);
-    glBindTexture(GL_TEXTURE_2D, TextureHandle);
+    glGenTextures(1, &Texture->Handle);
+    glBindTexture(GL_TEXTURE_2D, Texture->Handle);
+    Texture->Width = ResolutionX;
+    Texture->Height = ResolutionY;
+    Texture->NumChannels = NumChannels;
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, Resolution, Resolution, 0, GL_RED, GL_UNSIGNED_BYTE, Bitmap);
+    GLenum InternalFormat = 0;
+    GLenum Format = 0;
+    switch (NumChannels) {
+        case 1: {
+            InternalFormat = GL_R8;
+            Format = GL_RED;
+        } break;
+        case 2: {
+            InternalFormat = GL_RG8;
+            Format = GL_RG;
+        } break;
+        case 3: {
+            InternalFormat = GL_RGB8;
+            Format = GL_RGB;
+        } break;
+        case 4: {
+            InternalFormat = GL_RGBA8;
+            Format = GL_RGBA;
+        } break;
+        default:
+            Assert(false);
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat, ResolutionX, ResolutionY, 0, Format, GL_UNSIGNED_BYTE, Bitmap);
+    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, ResolutionX, ResolutionY, 0, GL_RED, GL_UNSIGNED_BYTE, Bitmap);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    /*
+    // This for font texture
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    
+    // This for everything else
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    */
-
-    return TextureHandle;
 }
 
 #define CheckToken(Start, Token) CheckToken_(Start, Token, sizeof(Token))

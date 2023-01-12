@@ -105,7 +105,9 @@ void LoadMeshFromBuffer(memory_arena* Arena, triangle_mesh* Mesh, uint8* Buffer,
     for (int MaterialIndex = 0; MaterialIndex < 1; MaterialIndex++) {
         material* Material = &Mesh->Materials[MaterialIndex];
 
-        // Material-> = ....
+        // this can't work at the moment.
+        // TODO: time restructure a lot of things now...
+        //Win32LoadTextureFromFile(&Material->Diffuse, "Data/Textures/frog.png");
     }
 
     if (HasSkeleton) {

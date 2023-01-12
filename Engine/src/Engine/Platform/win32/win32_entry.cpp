@@ -18,6 +18,7 @@ global_variable bool32 FlagCreateConsole = true;
 
 internal_func ENGINE_DEBUG_LOG_MESSAGE(Win32LogMessage);
 internal_func int Win32GetMonitorRefreshRate(HWND Window);
+bool32 Win32LoadTextureFromFile(texture_2D* Texture, char* ResourcePath);
 #include "win32_opengl.cpp"
 
 #include "win32_entry.h"
@@ -726,9 +727,30 @@ uint8* Win32ReadEntireFile(memory_arena* Arena, char* ResourcePath, uint32 *Byte
     return Result;
 }
 
-bool32 Win32LoadDynamicFont(dynamic_font* Font, char* ResourcePath, real32 FontSize, uint32 Resolution) {
+bool32 Win32LoadTextureFromFile(texture_2D* Texture, char* ResourcePath) {
+    // TODO: allocations here are yucky!
+
+    char TextureFullPath[WIN32_STATE_FILE_NAME_COUNT];
+    CatStrings(GlobalWin32State.ResourcePrefixLength, GlobalWin32State.ResourcePathPrefix, 
+               StringLength(ResourcePath), ResourcePath, 
+               sizeof(TextureFullPath), TextureFullPath);
+
+    stbi_set_flip_vertically_on_load(true);
+    int Width, Height, NumChannels;
+    stbi_uc* data = stbi_load(TextureFullPath, &Width, &Height, &NumChannels, 0);
+    Assert(data);
+
+    OpenGLCreateTexture(Texture, data, Texture->Width, Texture->Height, Texture->NumChannels);
+
+    stbi_image_free(data);
+
+    return true;
+}
+
+bool32 Win32LoadDynamicFont(dynamic_font* Font, char* ResourcePath, real32 FontSize, uint16 Resolution) {
     bool32 Result = false;
 
+    // TODO: allocations here are yucky
     SIZE_T BufferSize = Resolution * Resolution * sizeof(unsigned char);
     LPVOID BitmapBuffer = VirtualAlloc(0, BufferSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
     if (BitmapBuffer) {
@@ -759,7 +781,7 @@ bool32 Win32LoadDynamicFont(dynamic_font* Font, char* ResourcePath, real32 FontS
                         if (STBResult != -1) {
                             Result = true;
 
-                            Font->TextureHandle = OpenGLCreateTexture(temp_bitmap, Resolution);
+                            OpenGLCreateTexture(&Font->Texture, temp_bitmap, Resolution, Resolution, 1);
                             Font->BitmapRes = Resolution;
                             Font->FontSize = FontSize;
                             Font->Initialized = true;
@@ -815,7 +837,7 @@ internal_func void DrawDebugText(char* Text, real32 StartX, real32 StartY, rh::l
 
     Render_BindShader(CmdBuffer, TextRenderer->Shader);
     Render_BindVAO(CmdBuffer, TextRenderer->TextQuad);
-    Render_BindTexture(CmdBuffer, 0, TextRenderer->Font.TextureHandle);
+    Render_BindTexture(CmdBuffer, 0, TextRenderer->Font.Texture.Handle);
     Render_SetFrontCull(CmdBuffer, true);
     Render_SetDepthTest(CmdBuffer, false);
     Render_UploadInt(CmdBuffer, TextRenderer->Shader.r_fontTex, 0);
@@ -1451,3 +1473,5 @@ main(int argc, char** argv) {
 
 #define STB_TRUETYPE_IMPLEMENTATION
 #include "stb_truetype.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
