@@ -12,3 +12,5 @@ Engine/deps/OpenAL_soft/obj/
 Game/run_tree/Game.*
 build/
 unity_build/
+OLD CODE/
+*.ctm

@@ -2,7 +2,7 @@
 <N10X>
 	<Workspace>
 		<IncludeFilter>*.c,*.cc,*.cpp,*.c++,*.cp,*.cxx,*.h,*.hh,*.hpp,*.h++,*.hp,*.hxx,*.inl,*.cs,*.rs,*.java,*.jav,*.js,*.jsc,*.jsx,*.json,*.cls,*.py,*.rpy,*.php,*.php3,*.phl,*.phtml,*.rhtml,*.tpl,*.phps,*.lua,*.html,*.html5,*.htm,*.xml,*.xaml,*.css,*.ssi,*.haml,*.yaml,*.bat,*.wbf,*.wbt,*.txt,*.cmake,*.make,*.makefile,*.mak,*.mk,*.sh,*.bash,*.csv,*.asp,*.pl,*.mac,*.ws,*.vbs,*.perl,*.src,*.rss,*.inc,*.f,*.go,*.prl,*.plx,*.rb,*.lsp,*.lpx,*.ps1,*.command,*.cbl,*.cob,*.qs,*.wxs,*.ph,*.msc,*.glsl,*.hlsl,*.fx,*.vert,*.tesc,*.tese,*.geom,*.frag,*.comp,*.pssl,*.scons,</IncludeFilter>
-		<ExcludeFilter></ExcludeFilter>
+		<ExcludeFilter>OLD CODE*,</ExcludeFilter>
 		<SyncFiles>true</SyncFiles>
 		<Recursive>true</Recursive>
 		<IsVirtual>false</IsVirtual>
@@ -12,7 +12,7 @@
 		<BuildFileCommand></BuildFileCommand>
 		<CleanCommand></CleanCommand>
 		<BuildWorkingDirectory></BuildWorkingDirectory>
-		<RunCommand>unity_build/win32_entry.exe -r W:\Rohin\Game\run_tree</RunCommand>
+		<RunCommand>build/game.exe -r W:\Rohin\Game\run_tree</RunCommand>
 		<DebugCommand></DebugCommand>
 		<ExePathCommand></ExePathCommand>
 		<DebugSln></DebugSln>
@@ -37,10 +37,10 @@
 			<AdditionalIncludePath>W:\Rohin\Engine\src</AdditionalIncludePath>
 		</AdditionalIncludePaths>
 		<Defines>
-			<Define>ROHIN_INTERNAL=1</Define>
-			<Define>ROHIN_SLOW=1</Define>
-			<Define>ROHIN_WIN32=1</Define>
-			<Define>GLAD_GLAPI_EXPORT</Define>
+			<Define>WIN32</Define>
+			<Define>_WIN64</Define>
+			<Define>_MSC_VER</Define>
+			<Define>RH_INTERNAL</Define>
 		</Defines>
 		<ConfigProperties>
 			<ConfigAndPlatform>

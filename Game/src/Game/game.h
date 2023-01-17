@@ -1,18 +1,19 @@
-#ifndef GAME_H
-#define GAME_H
+#pragma once
 
-#include "Engine/Core/Base.hpp"
-#include "Engine/Engine.h"
+#include <Engine/Defines.h>
 
-#if ROHIN_SLOW
-#define Assert(Expression) if (!(Expression)) { *(int *)0 = 0; }
+// .dll export api
+#ifdef GAME_EXPORT
+// Exports
+#ifdef _MSC_VER
+#define GAME_API extern "C" __declspec(dllexport)
 #else
-#define Assert(Expression)
+#define GAME_API extern "C" __attribute__((visibility("default")))
 #endif
-
-struct thread_context {
-    int Placeholder;
-};
+#else
+// Imports
+#define GAME_API
+#endif
 
 struct game_memory {
     bool32 IsInitialized;
@@ -68,38 +69,6 @@ struct game_input {
 
     game_controller_input Controllers[5];
 };
-inline game_controller_input*
-    GetController(game_input* Input, int ControllerIndex) {
-    Assert(ControllerIndex < ArrayCount(Input->Controllers));
 
-    game_controller_input* Controller = &Input->Controllers[ControllerIndex];
-    return Controller;
-}
-
-// Functions that the Engine.exe calls from Game.dll
-#define GAME_INIT_FUNC(init_name) void init_name(game_memory* Memory)
-typedef GAME_INIT_FUNC(GameInit_t);
-
-#define GAME_FRAME_FUNC(frame_name) void frame_name(game_memory* Memory, game_input* Input, render_command_buffer* CmdBuffer)
-typedef GAME_FRAME_FUNC(GameFrame_t);
-
-#define GAME_SHUTDOWN_FUNC(shutdown_name) void shutdown_name(game_memory* Memory)
-typedef GAME_SHUTDOWN_FUNC(GameShutdown_t);
-
-#define GAME_EVENT_FUNC(handle_event_name) void handle_event_name(game_memory* Memory)
-typedef GAME_EVENT_FUNC(GameEvent_t);
-
-struct gameExport_t {
-    int Version;
-    bool Invalid;
-
-    GameInit_t* Init;
-    GameFrame_t* Frame;
-    GameEvent_t* HandleEvent;
-    GameShutdown_t* Shutdown;
-};
-
-#define GAME_GET_API_FUNC(name) gameExport_t name(gameImport_t Import)
-typedef GAME_GET_API_FUNC(GameGetApi_t);
-
-#endif
+#define GAME_UPDATE_AND_RENDER_FUNC(name) void name(game_memory* Memory, game_input* Input) //, render_command_buffer* CmdBuffer)
+typedef GAME_UPDATE_AND_RENDER_FUNC(game_update_and_render);
