@@ -2,7 +2,16 @@
 
 #include "Render_Types.h"
 
-struct stat_mesh_data;
+global_variable ShaderDataType static_mesh_attribute_list[6] = {
+    ShaderDataType::Float3,
+    ShaderDataType::Float3,
+    ShaderDataType::Float3,
+    ShaderDataType::Float3,
+    ShaderDataType::Float2,
+    ShaderDataType::None // null-terminator
+};
+
+//struct stat_mesh_data;
 struct platform_state;
 struct memory_arena;
 
@@ -19,10 +28,11 @@ bool32 renderer_draw_frame(render_packet* packet);
 void renderer_create_texture(struct texture_2D* texture, const uint8* data);
 void renderer_destroy_texture(struct texture_2D* texture);
 
-void renderer_create_mesh(struct triangle_mesh* mesh, 
+void renderer_create_mesh(triangle_geometry* mesh, 
                           uint32 num_verts, const void* vertices,
-                          uint32 num_inds, const uint32* indices);
-void renderer_destroy_mesh(struct triangle_mesh* mesh);
+                          uint32 num_inds, const uint32* indices,
+                          const ShaderDataType* attributes);
+void renderer_destroy_mesh(triangle_geometry* mesh);
 
 void renderer_shader_create(struct shader* shader_prog, const char* shader_source);
 void renderer_shader_destroy(struct shader* shader_prog);

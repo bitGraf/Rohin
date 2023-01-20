@@ -7,6 +7,7 @@
 #include "Engine/Core/Input.h"
 
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Resources/Resource_Manager.h"
 
 struct RohinEngine {
     RohinApp* app;
@@ -103,6 +104,14 @@ bool32 start_rohin_engine(RohinApp* app) {
         RH_FATAL("Failed to initialize renderer!");
         return false;
     }
+
+    //triangle_geometry mesh;
+    //renderer_create_mesh(&mesh, 0, nullptr, 0, nullptr, static_mesh_attribute_list);
+    static_mesh mesh;
+    if (!resource_load_static_mesh(&mesh, "Data/Models/dance.mesh")) {
+        RH_ERROR("Failed to load mesh data!");
+    }
+
     //platform_init_opengl(&monitor_refresh_hz, &target_framerate);
 
     engine.target_frame_time = 1.0f / ((real32)target_framerate);

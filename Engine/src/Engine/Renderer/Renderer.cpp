@@ -3,6 +3,8 @@
 #include "Renderer_API.h"
 #include "Engine/Core/Logger.h"
 
+#include <stdarg.h>
+
 global_variable renderer_api* backend;
 
 
@@ -55,9 +57,8 @@ void renderer_resized(uint16 width, uint16 height) {
 }
 
 
-struct texture_2D {};
-struct triangle_mesh {};
-struct shader {};
+
+
 
 void renderer_create_texture(struct texture_2D* texture, const uint8* data) {
     backend->create_texture(texture, data);
@@ -66,12 +67,16 @@ void renderer_destroy_texture(struct texture_2D* texture) {
     backend->destroy_texture(texture);
 }
 
-void renderer_create_mesh(struct triangle_mesh* mesh, 
+void renderer_create_mesh(triangle_geometry* mesh, 
                           uint32 num_verts, const void* vertices,
-                          uint32 num_inds, const uint32* indices) {
-    backend->create_mesh(mesh, num_verts, vertices, num_inds, indices);
+                          uint32 num_inds, const uint32* indices,
+                          const ShaderDataType* attributes) {
+    backend->create_mesh(mesh, 
+                         num_verts, vertices, 
+                         num_inds, indices, 
+                         attributes);
 }
-void renderer_destroy_mesh(struct triangle_mesh* mesh) {
+void renderer_destroy_mesh(triangle_geometry* mesh) {
     backend->destroy_mesh(mesh);
 }
 

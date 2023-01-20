@@ -25,6 +25,8 @@ struct AppConfig {
  *   write to console
  *   get_time()
  *   sleep()
+ * 
+ * File I/O
  * */
 
 bool32 platform_startup(AppConfig* config);
@@ -41,3 +43,12 @@ void platform_sleep(uint64 ms);
 
 // rendering stuff
 void platform_swap_buffers();
+
+// file i/o
+struct file_handle {
+    uint64 num_bytes;
+    uint8* data;
+};
+size_t platform_get_full_resource_path(char* buffer, size_t buffer_length, const char* resource_path);
+file_handle platform_read_entire_file(const char* full_path);
+void platform_free_file_data(file_handle* handle);

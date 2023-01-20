@@ -9,6 +9,7 @@
 #ifdef RH_PLATFORM_WINDOWS
 
 #include <Windows.h>
+#include <strsafe.h>
 #include <windowsx.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -37,6 +38,7 @@ struct PlatformState {
 global_variable PlatformState global_win32_state;
 
 LRESULT CALLBACK win32_window_callback(HWND window, uint32 message, WPARAM w_param, LPARAM l_param);
+internal_func void Win32GetResourcePath(char* ResourcePathPrefix, uint8 PrefixLength);
 
 bool32 platform_startup(AppConfig* config) {
     global_win32_state.instance = GetModuleHandleA(NULL);
@@ -54,6 +56,65 @@ bool32 platform_startup(AppConfig* config) {
         for (char *Scan = global_win32_state.exe_filename; *Scan; ++Scan) {
             if (*Scan == '\\') {
                 global_win32_state.one_past_last_slash_exe_filename = Scan + 1;
+            }
+        }
+    }
+
+    // get resource path prefix
+    {
+        bool32 FoundResourcePath = false;
+        char ResourcePathPrefix[256] = { 0 };
+        uint8 PrefixLength = 0;
+        for (char* Scan = global_win32_state.command_line; *Scan; Scan++) {
+            if ((*Scan == '-') && (*(Scan+1) == 'r')) {
+                FoundResourcePath = true;
+                char* cpy = ResourcePathPrefix;
+                for (char* Scan2 = (Scan + 3); (*Scan2 && (*Scan2 != ' ')); Scan2++) {
+                    *cpy++ = *Scan2;
+                    Scan = Scan2;
+                    PrefixLength++;
+                }
+            }
+        }
+        if (FoundResourcePath) {
+            // .exe run with a -r flag
+            RH_DEBUG("Run with a -r flag");
+            Win32GetResourcePath(ResourcePathPrefix, PrefixLength);
+        } else {
+            DWORD dwAttrib = GetFileAttributes("Data");
+
+            if (dwAttrib != INVALID_FILE_ATTRIBUTES && 
+                            (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
+                // the executable is right next to the data folder, no resource prefix needed
+                RH_DEBUG("Found the Data/ directory!");
+            } else {
+                // Neither is the case, assuming we are being run in the build/ directory
+                dwAttrib = GetFileAttributes("../Game");
+                if (dwAttrib != INVALID_FILE_ATTRIBUTES &&
+                                (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
+                    RH_DEBUG("Looks like you ran from the build/ directory!");
+                    char DefaultResourcePath[] = "../Game/run_tree/";
+                    Win32GetResourcePath(DefaultResourcePath, sizeof(DefaultResourcePath)-1);
+                } else {
+                    RH_FATAL("I don't know where I am!");
+                    RH_FATAL("Shutting down...!");
+                    Sleep(2500);
+                    return false;
+                }
+            }
+        }
+
+        // resolve resource paths to get absolute prefix
+        {
+            char buffer[256];
+            DWORD len = GetFullPathNameA(global_win32_state.resource_path_prefix,
+                                         256, buffer, NULL);
+            StringCchCopyA(global_win32_state.resource_path_prefix, len, buffer);
+            global_win32_state.resource_path_prefix_length = lstrlenA(global_win32_state.resource_path_prefix);
+
+            if (global_win32_state.resource_path_prefix[global_win32_state.resource_path_prefix_length] != '\\') {
+                global_win32_state.resource_path_prefix[global_win32_state.resource_path_prefix_length] = '\\';
+                global_win32_state.resource_path_prefix[++global_win32_state.resource_path_prefix_length]   = '\0';
             }
         }
     }
@@ -232,7 +293,7 @@ LRESULT CALLBACK win32_window_callback(HWND window, uint32 message, WPARAM w_par
             event_context context;
             context.u32[0] = width;
             context.u32[1] = height;
-            event_fire(EVENT_CODE_RESIZED, 0, context);
+            event_fire(EVENT_CODE_RESIZED, 0, context); // this will generate tons of resize messages, beware!
         } break;
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
@@ -342,5 +403,118 @@ void* memory_set(void* memory, uint8 value, uint64 size) {
     return memory;
 }
 
+
+internal_func void CatStrings(size_t SourceACount, const char *SourceA,
+                              size_t SourceBCount, const char *SourceB,
+                              size_t DestCount, char *Dest) {
+    // TODO: Dest bounds checking!
+    
+    for(unsigned int Index = 0; Index < SourceACount; ++Index) {
+        *Dest++ = *SourceA++;
+    }
+
+    for(unsigned int Index = 0; Index < SourceBCount; ++Index) {
+        *Dest++ = *SourceB++;
+    }
+
+    *Dest++ = 0;
+}
+
+internal_func size_t StringLength(const char* String) {
+    size_t Count = 0;
+    while(*String++) {
+        ++Count;
+    }
+    return Count;
+}
+
+internal_func void Win32GetResourcePath(char* ResourcePathPrefix, uint8 PrefixLength) {
+    if (PrefixLength) {
+        // change all '\\' to '/'
+        for (char* Scan = ResourcePathPrefix; *Scan; Scan++) {
+            if (*Scan == '\\') {
+                *Scan = '/';
+            }
+        }
+        if (ResourcePathPrefix[PrefixLength-1] != '/') {
+            ResourcePathPrefix[PrefixLength] = '/';
+            PrefixLength++;
+        }
+
+        CatStrings(PrefixLength, ResourcePathPrefix, 0, 0, PrefixLength, global_win32_state.resource_path_prefix);
+        global_win32_state.resource_path_prefix_length = PrefixLength;
+    }
+}
+
+
+
+// file IO
+size_t platform_get_full_resource_path(char* buffer, size_t buffer_length, const char* resource_path) {
+    Assert(global_win32_state.resource_path_prefix);
+
+    size_t resource_path_length = StringLength(resource_path);
+
+    Assert(resource_path_length + global_win32_state.resource_path_prefix_length < buffer_length);
+    CatStrings(global_win32_state.resource_path_prefix_length, global_win32_state.resource_path_prefix,
+               resource_path_length, resource_path,
+               buffer_length, buffer);
+
+    size_t full_length = 0;
+    for (char* scan = buffer; *scan; scan++) {
+        full_length++;
+        if (*scan == '/') {
+            *scan = '\\';
+        }
+    }
+    return full_length;
+}
+
+file_handle platform_read_entire_file(const char* full_path) {
+    file_handle file = {};
+
+    HANDLE FileHandle = CreateFileA(full_path, 
+                                    GENERIC_READ, FILE_SHARE_READ, NULL, 
+                                    OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (INVALID_HANDLE_VALUE != FileHandle) {
+        LARGE_INTEGER FileSizeBytes;
+        if (GetFileSizeEx(FileHandle, &FileSizeBytes)) {
+
+            FileSizeBytes.QuadPart++; // +1 for null-terminator!
+            LPVOID Buffer = VirtualAlloc(0, FileSizeBytes.QuadPart,
+                                         MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+
+            DWORD BytesRead;
+            if (Buffer) {
+                if (ReadFile(FileHandle, Buffer, (DWORD)FileSizeBytes.QuadPart, &BytesRead, NULL)) {
+                    Assert((BytesRead+1) == FileSizeBytes.QuadPart);// +1 for null-terminator!
+
+                    file.num_bytes = BytesRead;
+                    file.data = (uint8*)Buffer;
+                    file.data[BytesRead] = 0; // add a null-terminator just in case!
+
+                    CloseHandle(FileHandle);
+
+                    RH_TRACE("File: %s\n"
+                             "               %llu Bytes", full_path, file.num_bytes);
+
+                    return file;
+                }
+                VirtualFree(Buffer, 0, MEM_RELEASE);
+            }
+        }
+
+    }
+
+    return file;
+}
+void platform_free_file_data(file_handle* handle) {
+    Assert(handle);
+    if (handle->num_bytes > 0 && handle->data) {
+        VirtualFree(handle->data, 0, MEM_RELEASE);
+    }
+
+    handle->num_bytes = 0;
+    handle->data = 0;
+}
 
 #endif //#if RH_PLATFORM_WINDOWS
