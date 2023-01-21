@@ -213,9 +213,9 @@ void OpenGL_api::create_mesh(triangle_geometry* mesh,
 void OpenGL_api::destroy_mesh(triangle_geometry* mesh) {
     glDeleteVertexArrays(1, &mesh->handle);
 }
-void OpenGL_api::shader_create(struct shader* shader_prog, const char* shader_source) {
+void OpenGL_api::create_shader(struct shader* shader_prog, const char* shader_source) {
 
 }
-void OpenGL_api::shader_destroy(struct shader* shader_prog) {
+void OpenGL_api::destroy_shader(struct shader* shader_prog) {
 
 }

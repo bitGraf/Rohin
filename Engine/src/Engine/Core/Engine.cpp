@@ -21,6 +21,7 @@ struct RohinEngine {
     uint8* engine_memory;
     uint64 engine_memory_size;
     memory_arena engine_arena;
+    memory_arena resource_arena;
     memory_arena frame_render_arena;
 
     // tmp, should probably be pulled out into a 'scene' representation
@@ -93,8 +94,9 @@ bool32 start_rohin_engine(RohinApp* app) {
 
     engine.engine_memory_size = Megabytes(64);
     engine.engine_memory = (uint8*)platform_alloc(engine.engine_memory_size, 0);
-    CreateArena(&engine.frame_render_arena, Megabytes(1), engine.engine_memory);
-    CreateArena(&engine.engine_arena, Megabytes(63), engine.engine_memory + Megabytes(1));
+    CreateArena(&engine.frame_render_arena, Megabytes(1),  engine.engine_memory);
+    CreateArena(&engine.engine_arena,       Megabytes(1),  engine.engine_memory + Megabytes(1));
+    CreateArena(&engine.resource_arena,     Megabytes(62), engine.engine_memory + Megabytes(2));
 
     uint32 monitor_refresh_hz = 60;
     uint32 target_framerate = 60;
@@ -105,10 +107,27 @@ bool32 start_rohin_engine(RohinApp* app) {
         return false;
     }
 
-    //triangle_geometry mesh;
+    // resource system startup
+    if (!resource_init(&engine.resource_arena)) {
+        RH_FATAL("Failed to initialize resource manager!");
+        return false;
+    }
+
+    triangle_geometry* Mesh;
+    skeleton* Skeleton;
+    uint32 num_anims;
+    animation* Animations;
     //renderer_create_mesh(&mesh, 0, nullptr, 0, nullptr, static_mesh_attribute_list);
-    static_mesh mesh;
-    if (!resource_load_static_mesh(&mesh, "Data/Models/dance.mesh")) {
+    //triangle_geometry mesh;
+    mesh_file_result result = resource_load_mesh_file("Data/Models/dance.mesh", 
+                                                      &Mesh, 
+                                                      &Skeleton, 
+                                                      &Animations, &num_anims);
+    if (result == mesh_file_result::is_static) {
+        RH_INFO("Loaded static mesh!");
+    } else if (result == mesh_file_result::is_animated) {
+        RH_INFO("Loaded dynamic mesh!");
+    } else if (result == mesh_file_result::error) {
         RH_ERROR("Failed to load mesh data!");
     }
 

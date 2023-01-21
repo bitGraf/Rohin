@@ -2,27 +2,35 @@
 
 #include "Engine/Renderer/Render_Types.h"
 
-struct static_mesh {
-    laml::Mat4 model_transform;
-    triangle_geometry geometry;
+struct joint {
+    static const int32 NullIndex = -1;
+
+    int32 parent_index;
+    laml::Mat4 local_matrix;
+    laml::Mat4 inverse_model_matrix;
+    laml::Mat4 final_transform;
 };
 
-#if 0
-struct anim_mesh {
-    laml::Mat4 model_transform;
-    triangle_geometry geometry;
+struct joint_debug {
+    real32 length;
+    char* name;
+    laml::Mat4 model_matrix;
 };
 
-enum mesh_type {
-    mesh_type_static,
-    mesh_type_animated
+struct skeleton {
+    uint32 flag;
+    uint32 num_joints;
+    joint* joints;
+
+    joint_debug* joints_debug;
 };
 
-struct model {
-    mesh_type Type;
-    union {
-        static_mesh Mesh;
-        anim_mesh AnimMesh;
-    };
+struct animation {
+    char* name;
 };
-#endif
+
+struct material {
+    texture_2D diffuse_map;
+    texture_2D normal_map;
+    texture_2D amr_map;
+};

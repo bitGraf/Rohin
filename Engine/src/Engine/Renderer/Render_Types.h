@@ -36,8 +36,8 @@ struct renderer_api {
                              uint32 num_inds, const uint32* indices,
                              const ShaderDataType* attributes) = 0;
     virtual void destroy_mesh(triangle_geometry* mesh) = 0;
-    virtual void shader_create(struct shader* shader_prog, const char* shader_source_filename) = 0;
-    virtual void shader_destroy(struct shader* shader_prog) = 0;
+    virtual void create_shader(struct shader* shader_prog, const char* shader_source_filename) = 0;
+    virtual void destroy_shader(struct shader* shader_prog) = 0;
 };
 
 struct render_command {
@@ -59,26 +59,6 @@ struct render_packet {
     render_command* commands;
 };
 
-// TODO: not needed here
-struct vertex_static {
-    laml::Vec3 Position;
-    laml::Vec3 Normal;
-    laml::Vec3 Tangent;
-    laml::Vec3 Bitangent;
-    laml::Vec2 Texcoord;
-};
-
-struct vertex_anim {
-    laml::Vec3 Position;
-    laml::Vec3 Normal;
-    laml::Vec3 Tangent;
-    laml::Vec3 Bitangent;
-    laml::Vec2 Texcoord;
-
-    int32 BoneIndices[4];
-    laml::Vec4 BoneWeights;
-};
-
 // the actual geometry that the gpu holds onto
 // separately, a 'resource' will exist to 
 // represent an actual mesh.
@@ -91,7 +71,7 @@ struct triangle_geometry {
 };
 
 struct texture_2D {
-    uint32 handle;
+    uint32 handle; // handle to the gpu version of this data
 
     uint16 width;
     uint16 height;

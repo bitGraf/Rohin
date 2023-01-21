@@ -80,9 +80,9 @@ void renderer_destroy_mesh(triangle_geometry* mesh) {
     backend->destroy_mesh(mesh);
 }
 
-void renderer_shader_create(struct shader* shader_prog, const char* shader_source) {
-    backend->shader_create(shader_prog, shader_source);
+void renderer_create_shader(struct shader* shader_prog, const char* shader_source) {
+    backend->create_shader(shader_prog, shader_source);
 }
-void renderer_shader_destroy(struct shader* shader_prog) {
-    backend->shader_destroy(shader_prog);
+void renderer_destroy_shader(struct shader* shader_prog) {
+    backend->destroy_shader(shader_prog);
 }

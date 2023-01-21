@@ -10,6 +10,16 @@ global_variable ShaderDataType static_mesh_attribute_list[6] = {
     ShaderDataType::Float2,
     ShaderDataType::None // null-terminator
 };
+global_variable ShaderDataType dynamic_mesh_attribute_list[8] = {
+    ShaderDataType::Float3,
+    ShaderDataType::Float3,
+    ShaderDataType::Float3,
+    ShaderDataType::Float3,
+    ShaderDataType::Float2,
+    ShaderDataType::Int4,
+    ShaderDataType::Float4,
+    ShaderDataType::None // null-terminator
+};
 
 //struct stat_mesh_data;
 struct platform_state;
@@ -34,5 +44,5 @@ void renderer_create_mesh(triangle_geometry* mesh,
                           const ShaderDataType* attributes);
 void renderer_destroy_mesh(triangle_geometry* mesh);
 
-void renderer_shader_create(struct shader* shader_prog, const char* shader_source);
-void renderer_shader_destroy(struct shader* shader_prog);
+void renderer_create_shader(struct shader* shader_prog, const char* shader_source);
+void renderer_destroy_shader(struct shader* shader_prog);
