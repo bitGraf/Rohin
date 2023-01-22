@@ -19,3 +19,13 @@ void* PushSize_(memory_arena* Arena, memory_index Size) {
 
     return Result;
 }
+
+memory_arena CreateSubArena(memory_arena* BaseArena, memory_index SubArenaSize) {
+    Assert((BaseArena->Size - BaseArena->Used) >= SubArenaSize);
+    memory_arena sub_arena;
+
+    CreateArena(&sub_arena, SubArenaSize, BaseArena->Base + BaseArena->Used);
+    PushSize_(BaseArena, SubArenaSize);
+
+    return sub_arena;
+}

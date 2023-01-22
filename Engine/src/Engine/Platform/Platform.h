@@ -39,7 +39,7 @@ void platform_console_write(const char* Message, uint8 Color);
 void platform_console_set_title(const char* Message, ...);
 int64 platform_get_wall_clock();
 real64 platform_get_seconds_elapsed(int64 start, int64 end);
-void platform_sleep(uint64 ms);
+RHAPI void platform_sleep(uint64 ms);
 
 // rendering stuff
 void platform_swap_buffers();

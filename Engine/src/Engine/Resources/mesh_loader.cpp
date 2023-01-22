@@ -2,8 +2,10 @@
 
 #include "Engine/Core/Logger.h"
 #include "Engine/Core/Asserts.h"
+#include "Engine/Core/String.h"
 #include "Engine/Platform/Platform.h"
 #include "Engine/Memory/Memory_Arena.h"
+#include "Engine/Memory/MemoryUtils.h"
 
 #include "Engine/Renderer/Renderer.h"
 
@@ -76,19 +78,9 @@ bool32 CheckHeader(mesh_file_header* Header, uint64 Size) {
     return true;
 }
 
-// buffer reading utils
-#define AdvanceBufferArray(Buffer, Type, Count, End) (Type*)AdvanceBufferSize_(Buffer, (Count)*sizeof(Type), End)
-#define AdvanceBuffer(Buffer, Type, End) (Type*)AdvanceBufferSize_(Buffer, sizeof(Type), End)
-uint8* AdvanceBufferSize_(uint8** Buffer, uint32 Size, uint8* End) {
-    Assert((*Buffer + Size) <= End);
-    uint8* Result = *Buffer;
-    *Buffer += Size;
-    return Result;
-}
-
 mesh_file_result resource_load_mesh_file(const char* resource_file_name, 
-                                         triangle_geometry** out_mesh,
-                                         skeleton** out_skeleton,
+                                         triangle_geometry* out_mesh,
+                                         skeleton* out_skeleton,
                                          animation** out_animations, uint32* out_num_anims) {
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
@@ -170,8 +162,9 @@ mesh_file_result resource_load_mesh_file(const char* resource_file_name,
 
         // save to output
         if (out_skeleton) {
-            *out_skeleton = Skeleton;
+            memory_copy(out_skeleton, Skeleton, sizeof(skeleton));
         }
+        // can probably get rid of the memory allocated on the arena after
     }
 
     // TODO: Do we need to cache the vertices/indices of the mesh? 
@@ -214,8 +207,12 @@ mesh_file_result resource_load_mesh_file(const char* resource_file_name,
 
         // save to output
         if (out_animations && out_num_anims) {
-            *out_num_anims = num_animations;
-            *out_animations = Animations;
+            memory_copy(out_num_anims, &num_animations, sizeof(uint32));
+            memory_copy(out_animations, &Animations, sizeof(animation)*num_animations);
+        }
+    } else {
+        if (out_num_anims) {
+            *out_num_anims = 0;
         }
     }
 
@@ -235,10 +232,15 @@ mesh_file_result resource_load_mesh_file(const char* resource_file_name,
 
     // save to output
     if (out_mesh) {
-        *out_mesh = geom;
+        memory_copy(out_mesh, geom, sizeof(triangle_geometry));
     }
 
     platform_free_file_data(&file);
 
     return HasSkeleton ? mesh_file_result::is_animated : mesh_file_result::is_static;
+}
+
+
+bool32 resource_load_anim_file(animation* anim) {
+    return false;
 }

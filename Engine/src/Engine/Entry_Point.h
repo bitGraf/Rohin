@@ -4,6 +4,9 @@
 #include "Engine/Application.h"
 #include "Engine/Core/Engine.h"
 
+// todo: remove this?
+#include "Engine/Platform/Platform.h"
+
 extern bool32 create_application(RohinApp* app);
 
 int main() {
@@ -20,7 +23,11 @@ int main() {
     }
 
     // begin the game-loop
-    start_rohin_engine(&app);
+    if (!start_rohin_engine(&app)) {
+        RH_FATAL("Something went wrong! shutting down...");
+        platform_sleep(2500);
+        return -3;
+    }
 
     return 0;
 }

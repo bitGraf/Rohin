@@ -5,6 +5,7 @@
 
 struct memory_arena;
 struct triangle_geometry;
+struct shader;
 
 enum renderer_api_type {
     RENDERER_API_OPENGL,
@@ -36,27 +37,8 @@ struct renderer_api {
                              uint32 num_inds, const uint32* indices,
                              const ShaderDataType* attributes) = 0;
     virtual void destroy_mesh(triangle_geometry* mesh) = 0;
-    virtual void create_shader(struct shader* shader_prog, const char* shader_source_filename) = 0;
-    virtual void destroy_shader(struct shader* shader_prog) = 0;
-};
-
-struct render_command {
-    laml::Mat4 model_matrix;
-    uint32 mesh_handle;
-    uint32 material_handle;
-};
-
-struct render_packet {
-    memory_arena* arena;
-
-    real32 delta_time;
-
-    laml::Mat4 projection_matrix;
-    laml::Mat4 view_matrix;
-    laml::Vec3 camera_pos;
-
-    uint32 num_commands;
-    render_command* commands;
+    virtual bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) = 0;
+    virtual void destroy_shader(shader* shader_prog) = 0;
 };
 
 // the actual geometry that the gpu holds onto
@@ -77,4 +59,27 @@ struct texture_2D {
     uint16 height;
     uint16 num_channels;
     uint16 flag;
+};
+
+struct shader {
+    uint32 handle; // handle to the gpu version of this data
+};
+
+struct render_command {
+    laml::Mat4 model_matrix;
+    triangle_geometry geom;
+    uint32 material_handle;
+};
+
+struct render_packet {
+    memory_arena* arena;
+
+    real32 delta_time;
+
+    laml::Mat4 projection_matrix;
+    laml::Mat4 view_matrix;
+    laml::Vec3 camera_pos;
+
+    uint32 num_commands;
+    render_command* commands;
 };

@@ -14,3 +14,5 @@ RHAPI void ResetArena(memory_arena* Arena);
 #define PushStruct(Arena, type) (type*)PushSize_(Arena, sizeof(type))
 #define PushArray(Arena, type, count) (type*)PushSize_(Arena, (count)*sizeof(type))
 RHAPI void* PushSize_(memory_arena* Arena, memory_index Size);
+
+RHAPI memory_arena CreateSubArena(memory_arena* BaseArena, memory_index SubArenaSize);

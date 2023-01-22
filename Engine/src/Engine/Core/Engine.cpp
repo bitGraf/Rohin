@@ -1,6 +1,7 @@
 #include "Engine.h"
 
 #include "Engine/Core/Logger.h"
+#include "Engine/Core/Asserts.h"
 #include "Engine/Platform/Platform.h"
 #include "Engine/Memory/Memory_Arena.h"
 #include "Engine/Core/Event.h"
@@ -95,8 +96,8 @@ bool32 start_rohin_engine(RohinApp* app) {
     engine.engine_memory_size = Megabytes(64);
     engine.engine_memory = (uint8*)platform_alloc(engine.engine_memory_size, 0);
     CreateArena(&engine.frame_render_arena, Megabytes(1),  engine.engine_memory);
-    CreateArena(&engine.engine_arena,       Megabytes(1),  engine.engine_memory + Megabytes(1));
-    CreateArena(&engine.resource_arena,     Megabytes(62), engine.engine_memory + Megabytes(2));
+    CreateArena(&engine.engine_arena,       Megabytes(15),  engine.engine_memory + Megabytes(1));
+    CreateArena(&engine.resource_arena,     Megabytes(48), engine.engine_memory + Megabytes(16));
 
     uint32 monitor_refresh_hz = 60;
     uint32 target_framerate = 60;
@@ -113,25 +114,14 @@ bool32 start_rohin_engine(RohinApp* app) {
         return false;
     }
 
-    triangle_geometry* Mesh;
-    skeleton* Skeleton;
-    uint32 num_anims;
-    animation* Animations;
-    //renderer_create_mesh(&mesh, 0, nullptr, 0, nullptr, static_mesh_attribute_list);
-    //triangle_geometry mesh;
-    mesh_file_result result = resource_load_mesh_file("Data/Models/dance.mesh", 
-                                                      &Mesh, 
-                                                      &Skeleton, 
-                                                      &Animations, &num_anims);
-    if (result == mesh_file_result::is_static) {
-        RH_INFO("Loaded static mesh!");
-    } else if (result == mesh_file_result::is_animated) {
-        RH_INFO("Loaded dynamic mesh!");
-    } else if (result == mesh_file_result::error) {
-        RH_ERROR("Failed to load mesh data!");
+    // after resource system is setup
+    if (!renderer_create_pipeline()) {
+        RH_FATAL("Failed to create render pipeline!");
+        return false;
     }
 
-    //platform_init_opengl(&monitor_refresh_hz, &target_framerate);
+    texture_2D texture;
+    resource_load_texture_file("Data/Images/frog.png", &texture);
 
     engine.target_frame_time = 1.0f / ((real32)target_framerate);
     engine.last_frame_time = engine.target_frame_time;
@@ -156,7 +146,6 @@ bool32 start_rohin_engine(RohinApp* app) {
         engine.is_running = true;
 
         engine.app->startup(engine.app);
-        engine.app->initialize(engine.app);
 
         uint64 LastCounter = platform_get_wall_clock();
         uint64 FlipWallClock = platform_get_wall_clock();
@@ -173,6 +162,8 @@ bool32 start_rohin_engine(RohinApp* app) {
         real32 AR = (real32)config.start_width / (real32)config.start_height;
         engine.view_vert_fov = 75.0f;
         laml::transform::create_projection_perspective(engine.projection_matrix, engine.view_vert_fov, AR, 0.1f, 20.0f);
+
+        engine.app->initialize(engine.app);
 
         // Game Loop!
         while(engine.is_running) {

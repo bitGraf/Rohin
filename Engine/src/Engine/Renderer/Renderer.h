@@ -26,6 +26,7 @@ struct platform_state;
 struct memory_arena;
 
 bool32 renderer_initialize(memory_arena* arena, const char* application_name, platform_state* plat_state);
+bool32 renderer_create_pipeline();
 void renderer_shutdown();
 
 void renderer_resized(uint16 width, uint16 height);
@@ -44,5 +45,5 @@ void renderer_create_mesh(triangle_geometry* mesh,
                           const ShaderDataType* attributes);
 void renderer_destroy_mesh(triangle_geometry* mesh);
 
-void renderer_create_shader(struct shader* shader_prog, const char* shader_source);
-void renderer_destroy_shader(struct shader* shader_prog);
+bool32 renderer_create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes);
+void renderer_destroy_shader(shader* shader_prog);

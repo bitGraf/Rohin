@@ -2,11 +2,19 @@
 
 #include "Renderer_API.h"
 #include "Engine/Core/Logger.h"
+#include "Engine/Memory/Memory_Arena.h"
+#include "Engine/Core/Asserts.h"
+
+#include "Engine/Resources/Resource_Manager.h"
 
 #include <stdarg.h>
 
-global_variable renderer_api* backend;
+struct renderer_state {
+    shader simple_shader;
+};
 
+global_variable renderer_api* backend;
+global_variable renderer_state* render_state;
 
 bool32 renderer_initialize(memory_arena* arena, const char* application_name, platform_state* plat_state) {
     if (!renderer_api_create(arena, RENDERER_API_OPENGL, plat_state, &backend)) {
@@ -15,6 +23,19 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
 
     if (!backend->initialize(application_name, plat_state)) {
         RH_FATAL("Renderer API failed to initialize!");
+        return false;
+    }
+
+    render_state = PushStruct(arena, renderer_state);
+
+    return true;
+}
+
+bool32 renderer_create_pipeline() {
+    Assert(render_state);
+
+    if (!resource_load_shader_file("Data/Shaders/simple.glsl", &render_state->simple_shader)) {
+        RH_FATAL("Could not setup the main shader");
         return false;
     }
 
@@ -39,7 +60,9 @@ bool32 renderer_draw_frame(render_packet* packet) {
     if (renderer_begin_Frame(packet->delta_time)) {
         // render all commands in the packet
 
-        
+        for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
+            packet->commands[cmd_index].geom.handle;
+        }
 
         bool32 result = renderer_end_Frame(packet->delta_time);
 
@@ -80,9 +103,9 @@ void renderer_destroy_mesh(triangle_geometry* mesh) {
     backend->destroy_mesh(mesh);
 }
 
-void renderer_create_shader(struct shader* shader_prog, const char* shader_source) {
-    backend->create_shader(shader_prog, shader_source);
+bool32 renderer_create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) {
+    return backend->create_shader(shader_prog, shader_source, num_bytes);
 }
-void renderer_destroy_shader(struct shader* shader_prog) {
+void renderer_destroy_shader(shader* shader_prog) {
     backend->destroy_shader(shader_prog);
 }
