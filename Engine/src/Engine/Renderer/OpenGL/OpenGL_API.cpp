@@ -114,6 +114,11 @@ void OpenGL_api::resized(uint16 width, uint16 height) {
 }
 
 bool32 OpenGL_api::begin_frame(real32 delta_time) {
+    glViewport(0, 0, 1280, 720);
+
+    glClearColor(.24f, .24f, .24f, .24f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     return true;
 }
 bool32 OpenGL_api::end_frame(real32 delta_time) {
@@ -380,4 +385,59 @@ bool32 OpenGL_api::create_shader(shader* shader_prog, const uint8* shader_source
 void OpenGL_api::destroy_shader(shader* shader_prog) {
     glDeleteShader(shader_prog->handle);
     shader_prog->handle = 0;
+}
+
+void OpenGL_api::use_shader(shader* shader_prog) {
+    glUseProgram(shader_prog->handle);
+}
+void OpenGL_api::draw_geometry(triangle_geometry* geom) {
+    glBindVertexArray(geom->handle);
+    glDrawElements(GL_TRIANGLES, geom->num_inds, GL_UNSIGNED_INT, 0);
+}
+
+
+void OpenGL_api::upload_uniform_float(shader* shader_prog, const char* uniform_name, float  value) {
+    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
+
+    glUniform1f(uniform_location, value);
+}
+void OpenGL_api::upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values) {
+    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
+
+    glUniform2fv(uniform_location, 1, values);
+}
+void OpenGL_api::upload_uniform_float3(shader* shader_prog, const char* uniform_name, float* values) {
+    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
+
+    glUniform3fv(uniform_location, 1, values);
+}
+void OpenGL_api::upload_uniform_float4(shader* shader_prog, const char* uniform_name, float* values) {
+    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
+    
+    glUniform4fv(uniform_location, 1, values);
+}
+void OpenGL_api::upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) {
+    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
+
+    glUniformMatrix4fv(uniform_location, 1, GL_FALSE, values);
+}
+void OpenGL_api::upload_uniform_int(shader* shader_prog, const char* uniform_name, int  value) {
+    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
+
+    glUniform1i(uniform_location, value);
+}
+void OpenGL_api::upload_uniform_int2(shader* shader_prog, const char* uniform_name, int* values) {
+    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
+
+    glUniform2iv(uniform_location, 1, values);
+}
+void OpenGL_api::upload_uniform_int3(shader* shader_prog, const char* uniform_name, int* values) {
+    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
+
+    glUniform3iv(uniform_location, 1, values);
+}
+void OpenGL_api::upload_uniform_int4(shader* shader_prog, const char* uniform_name, int* values) {
+    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
+
+    glUniform4iv(uniform_location, 1, values);
 }

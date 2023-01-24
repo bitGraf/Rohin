@@ -225,9 +225,9 @@ mesh_file_result resource_load_mesh_file(const char* resource_file_name,
     // Pass onto the renderer to create
     triangle_geometry* geom = PushStruct(arena, triangle_geometry);
     if (HasSkeleton) {
-        renderer_create_mesh(geom, Header->NumVerts, VertexData, Header->NumInds, Indices, static_mesh_attribute_list);
-    } else {
         renderer_create_mesh(geom, Header->NumVerts, VertexData, Header->NumInds, Indices, dynamic_mesh_attribute_list);
+    } else {
+        renderer_create_mesh(geom, Header->NumVerts, VertexData, Header->NumInds, Indices, static_mesh_attribute_list);
     }
 
     // save to output

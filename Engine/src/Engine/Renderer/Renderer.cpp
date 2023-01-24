@@ -60,8 +60,18 @@ bool32 renderer_draw_frame(render_packet* packet) {
     if (renderer_begin_Frame(packet->delta_time)) {
         // render all commands in the packet
 
+        renderer_use_shader(&render_state->simple_shader);
+
+        laml::Mat4 proj_view = laml::mul(packet->projection_matrix, packet->view_matrix);
+        renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_VP", proj_view._data);
+        laml::Vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
+        renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
+        renderer_upload_uniform_int(&render_state->simple_shader, "u_texture", 0);
+
         for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
-            packet->commands[cmd_index].geom.handle;
+            renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
+                                             packet->commands[cmd_index].model_matrix._data);
+            renderer_draw_geometry(&packet->commands[cmd_index].geom);
         }
 
         bool32 result = renderer_end_Frame(packet->delta_time);
@@ -108,4 +118,40 @@ bool32 renderer_create_shader(shader* shader_prog, const uint8* shader_source, u
 }
 void renderer_destroy_shader(shader* shader_prog) {
     backend->destroy_shader(shader_prog);
+}
+
+
+void renderer_use_shader(shader* shader_prog) {
+    backend->use_shader(shader_prog);
+}
+void renderer_draw_geometry(triangle_geometry* geom) {
+    backend->draw_geometry(geom);
+}
+
+void renderer_upload_uniform_float(shader* shader_prog, const char* uniform_name, float value) {
+    backend->upload_uniform_float(shader_prog, uniform_name, value);
+}
+void renderer_upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values) {
+    backend->upload_uniform_float2(shader_prog, uniform_name, values);
+}
+void renderer_upload_uniform_float3(shader* shader_prog, const char* uniform_name, float* values) {
+    backend->upload_uniform_float3(shader_prog, uniform_name, values);
+}
+void renderer_upload_uniform_float4(shader* shader_prog, const char* uniform_name, float* values) {
+    backend->upload_uniform_float4(shader_prog, uniform_name, values);
+}
+void renderer_upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) {
+    backend->upload_uniform_float4x4(shader_prog, uniform_name, values);
+}
+void renderer_upload_uniform_int(shader* shader_prog, const char* uniform_name, int  value) {
+    backend->upload_uniform_int(shader_prog, uniform_name, value);
+}
+void renderer_upload_uniform_int2(shader* shader_prog, const char* uniform_name, int* values) {
+    backend->upload_uniform_int2(shader_prog, uniform_name, values);
+}
+void renderer_upload_uniform_int3(shader* shader_prog, const char* uniform_name, int* values) {
+    backend->upload_uniform_int3(shader_prog, uniform_name, values);
+}
+void renderer_upload_uniform_int4(shader* shader_prog, const char* uniform_name, int* values) {
+    backend->upload_uniform_int4(shader_prog, uniform_name, values);
 }

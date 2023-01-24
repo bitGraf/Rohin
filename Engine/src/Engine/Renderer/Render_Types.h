@@ -39,6 +39,20 @@ struct renderer_api {
     virtual void destroy_mesh(triangle_geometry* mesh) = 0;
     virtual bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) = 0;
     virtual void destroy_shader(shader* shader_prog) = 0;
+
+    virtual void use_shader(shader* shader_prog) = 0;
+    virtual void draw_geometry(triangle_geometry* geom) = 0;
+
+    // uniforms
+    virtual void upload_uniform_float( shader* shader_prog, const char* uniform_name, float  value) = 0;
+    virtual void upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values) = 0;
+    virtual void upload_uniform_float3(shader* shader_prog, const char* uniform_name, float* values) = 0;
+    virtual void upload_uniform_float4(shader* shader_prog, const char* uniform_name, float* values) = 0;
+    virtual void upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) = 0;
+    virtual void upload_uniform_int( shader* shader_prog, const char* uniform_name, int  value) = 0;
+    virtual void upload_uniform_int2(shader* shader_prog, const char* uniform_name, int* values) = 0;
+    virtual void upload_uniform_int3(shader* shader_prog, const char* uniform_name, int* values) = 0;
+    virtual void upload_uniform_int4(shader* shader_prog, const char* uniform_name, int* values) = 0;
 };
 
 // the actual geometry that the gpu holds onto

@@ -11,7 +11,7 @@ layout (location = 6) in vec4 a_BoneWeights;
 
 out vec2 tex_coord;
 
-layout (location = 1) uniform mat4 r_VP;
+layout (location = 1) uniform mat4 r_VP; // actually proj*view
 layout (location = 2) uniform mat4 r_Transform;
 
 void main() {

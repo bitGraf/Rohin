@@ -47,3 +47,16 @@ void renderer_destroy_mesh(triangle_geometry* mesh);
 
 bool32 renderer_create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes);
 void renderer_destroy_shader(shader* shader_prog);
+
+void renderer_use_shader(shader* shader_prog);
+void renderer_draw_geometry(triangle_geometry* geom);
+
+void renderer_upload_uniform_float( shader* shader_prog, const char* uniform_name, float  value);
+void renderer_upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values);
+void renderer_upload_uniform_float3(shader* shader_prog, const char* uniform_name, float* values);
+void renderer_upload_uniform_float4(shader* shader_prog, const char* uniform_name, float* values);
+void renderer_upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values);
+void renderer_upload_uniform_int( shader* shader_prog, const char* uniform_name, int  value);
+void renderer_upload_uniform_int2(shader* shader_prog, const char* uniform_name, int* values);
+void renderer_upload_uniform_int3(shader* shader_prog, const char* uniform_name, int* values);
+void renderer_upload_uniform_int4(shader* shader_prog, const char* uniform_name, int* values);

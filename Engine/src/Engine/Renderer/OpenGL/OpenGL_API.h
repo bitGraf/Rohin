@@ -21,4 +21,18 @@ struct OpenGL_api final : public renderer_api {
     void destroy_mesh(triangle_geometry* mesh) override final;
     bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) override final;
     void destroy_shader(shader* shader_prog) override final;
+
+    void use_shader(shader* shader_prog) override final;
+    void draw_geometry(triangle_geometry* geom) override final;
+
+    // uniforms
+    void upload_uniform_float( shader* shader_prog, const char* uniform_name, float  value) override final;
+    void upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values) override final;
+    void upload_uniform_float3(shader* shader_prog, const char* uniform_name, float* values) override final;
+    void upload_uniform_float4(shader* shader_prog, const char* uniform_name, float* values) override final;
+    void upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) override final;
+    void upload_uniform_int( shader* shader_prog, const char* uniform_name, int  value) override final;
+    void upload_uniform_int2(shader* shader_prog, const char* uniform_name, int* values) override final;
+    void upload_uniform_int3(shader* shader_prog, const char* uniform_name, int* values) override final;
+    void upload_uniform_int4(shader* shader_prog, const char* uniform_name, int* values) override final;
 };
