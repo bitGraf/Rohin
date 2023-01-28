@@ -11,6 +11,8 @@
 
 struct renderer_state {
     shader simple_shader;
+    uint32 render_width;
+    uint32 render_height;
 };
 
 global_variable renderer_api* backend;
@@ -27,6 +29,8 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
     }
 
     render_state = PushStruct(arena, renderer_state);
+    render_state->render_height = 0;
+    render_state->render_width = 0;
 
     return true;
 }
@@ -48,7 +52,14 @@ void renderer_shutdown() {
 }
 
 bool32 renderer_begin_Frame(real32 delta_time) {
-    return backend->begin_frame(delta_time);
+    if (!backend->begin_frame(delta_time)) {
+        return false;
+    }
+
+    backend->set_viewport(0, 0, render_state->render_width, render_state->render_height);
+    backend->clear_viewport(0, 0, 0, 0);
+
+    return true;
 }
 bool32 renderer_end_Frame(real32 delta_time) {
     bool32 result = backend->end_frame(delta_time);
@@ -85,8 +96,12 @@ bool32 renderer_draw_frame(render_packet* packet) {
     return true;
 }
 
-void renderer_resized(uint16 width, uint16 height) {
-    // resize framebuffers
+void renderer_resized(uint32 width, uint32 height) {
+    if (width != render_state->render_width || height != render_state->render_height) {
+        // resize framebuffers
+        render_state->render_width = width;
+        render_state->render_height = height;
+    }
 }
 
 

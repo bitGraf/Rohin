@@ -38,6 +38,9 @@ bool32 engine_on_resize(uint16 code, void* sender, void* listener, event_context
     real32 height = (real32)context.u32[1];
     laml::transform::create_projection_perspective(engine.projection_matrix, engine.view_vert_fov, width/height, 0.1f, 20.0f);
 
+    renderer_resized(context.u32[0], context.u32[1]);
+    engine.app->on_resize(engine.app, context.u32[0], context.u32[1]);
+
     return false;
 }
 
@@ -107,6 +110,8 @@ bool32 start_rohin_engine(RohinApp* app) {
         RH_FATAL("Failed to initialize renderer!");
         return false;
     }
+    // tmp: remove this!
+    renderer_resized(config.start_width, config.start_height);
 
     // resource system startup
     if (!resource_init(&engine.resource_arena)) {
@@ -121,7 +126,7 @@ bool32 start_rohin_engine(RohinApp* app) {
     }
 
     texture_2D texture;
-    resource_load_texture_file("Data/Images/frog.png", &texture);
+    resource_load_texture_file("Data/Images/Stormtrooper_D.png", &texture);
 
     engine.target_frame_time = 1.0f / ((real32)target_framerate);
     engine.last_frame_time = engine.target_frame_time;

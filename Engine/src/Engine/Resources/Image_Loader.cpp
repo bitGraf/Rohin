@@ -23,6 +23,7 @@ bool32 resource_load_texture_file(const char* resource_file_name,
 
     memory_arena* arena = resource_get_arena();
 
+    stbi_set_flip_vertically_on_load(true);
     // TODO: This calls malloc under the hood!
     //       can be overwritten with #define STBI_MALLOC ...
     int x,y,n;

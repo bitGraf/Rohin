@@ -29,7 +29,7 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
 bool32 renderer_create_pipeline();
 void renderer_shutdown();
 
-void renderer_resized(uint16 width, uint16 height);
+void renderer_resized(uint32 width, uint32 height);
 
 bool32 renderer_draw_frame(render_packet* packet);
 

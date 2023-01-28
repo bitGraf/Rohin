@@ -43,6 +43,9 @@ struct renderer_api {
     virtual void use_shader(shader* shader_prog) = 0;
     virtual void draw_geometry(triangle_geometry* geom) = 0;
 
+    virtual void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) = 0;
+    virtual void clear_viewport(real32 r, real32 g, real32 b, real32 a) = 0;
+
     // uniforms
     virtual void upload_uniform_float( shader* shader_prog, const char* uniform_name, float  value) = 0;
     virtual void upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values) = 0;

@@ -114,7 +114,7 @@ void OpenGL_api::resized(uint16 width, uint16 height) {
 }
 
 bool32 OpenGL_api::begin_frame(real32 delta_time) {
-    glViewport(0, 0, 1280, 720);
+    //glViewport(0, 0, 1280, 720);
 
     glClearColor(.24f, .24f, .24f, .24f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -393,6 +393,15 @@ void OpenGL_api::use_shader(shader* shader_prog) {
 void OpenGL_api::draw_geometry(triangle_geometry* geom) {
     glBindVertexArray(geom->handle);
     glDrawElements(GL_TRIANGLES, geom->num_inds, GL_UNSIGNED_INT, 0);
+}
+
+
+void OpenGL_api::set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) {
+    glViewport(x, y, width, height);
+}
+void OpenGL_api::clear_viewport(real32 r, real32 g, real32 b, real32 a) {
+    glClearColor(r, g, b, a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 
