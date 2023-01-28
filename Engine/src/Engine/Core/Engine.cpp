@@ -126,7 +126,8 @@ bool32 start_rohin_engine(RohinApp* app) {
     }
 
     texture_2D texture;
-    resource_load_texture_file("Data/Images/Stormtrooper_D.png", &texture);
+    //resource_load_texture_file("Data/Images/Stormtrooper_D.png", &texture);
+    resource_load_texture_file("Data/Images/grid/PNG/Orange/texture_08.png", &texture);
 
     engine.target_frame_time = 1.0f / ((real32)target_framerate);
     engine.last_frame_time = engine.target_frame_time;

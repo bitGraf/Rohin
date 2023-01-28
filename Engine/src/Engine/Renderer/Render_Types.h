@@ -82,6 +82,17 @@ struct shader {
     uint32 handle; // handle to the gpu version of this data
 };
 
+struct frame_buffer_attachment {
+    int unused; // todo!
+};
+
+struct frame_buffer {
+    uint32 handle;
+
+    uint32 num_attachments;
+    frame_buffer_attachment* attachments;
+};
+
 struct render_command {
     laml::Mat4 model_matrix;
     triangle_geometry geom;

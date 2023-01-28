@@ -10,9 +10,14 @@
 #include <stdarg.h>
 
 struct renderer_state {
-    shader simple_shader;
     uint32 render_width;
     uint32 render_height;
+
+    // simple render pass
+    shader simple_shader;
+
+    // deferred pbr render pass
+    shader pre_pass_shader;
 };
 
 global_variable renderer_api* backend;
@@ -38,10 +43,27 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
 bool32 renderer_create_pipeline() {
     Assert(render_state);
 
-    if (!resource_load_shader_file("Data/Shaders/simple.glsl", &render_state->simple_shader)) {
+    // setup simple shader
+    //if (!resource_load_shader_file("Data/Shaders/simple.glsl", &render_state->simple_shader)) {
+    if (!resource_load_shader_file("Data/Shaders/simple_triplanar.glsl", &render_state->simple_shader)) {
         RH_FATAL("Could not setup the main shader");
         return false;
     }
+    renderer_use_shader(&render_state->simple_shader);
+    renderer_upload_uniform_int(&render_state->simple_shader, "u_texture", 0);
+
+    // setup prepass shader
+    if (!resource_load_shader_file("Data/Shaders/PrePass.glsl", &render_state->pre_pass_shader)) {
+        RH_FATAL("Could not setup the pre-pass shader");
+        return false;
+    }
+    renderer_use_shader(&render_state->pre_pass_shader);
+    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_AlbedoTexture", 0);
+    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_NormalTexture", 1);
+    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_MetalnessTexture", 2);
+    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_RoughnessTexture", 3);
+    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_AmbientTexture", 4);
+    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_EmissiveTexture", 5);
 
     return true;
 }
@@ -67,23 +89,49 @@ bool32 renderer_end_Frame(real32 delta_time) {
     return result;
 }
 
+#define SIMPLE_RENDER_PASS 1
 bool32 renderer_draw_frame(render_packet* packet) {
     if (renderer_begin_Frame(packet->delta_time)) {
         // render all commands in the packet
 
+#if SIMPLE_RENDER_PASS
         renderer_use_shader(&render_state->simple_shader);
 
         laml::Mat4 proj_view = laml::mul(packet->projection_matrix, packet->view_matrix);
         renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_VP", proj_view._data);
         laml::Vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
         renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
-        renderer_upload_uniform_int(&render_state->simple_shader, "u_texture", 0);
 
         for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
             renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
                                              packet->commands[cmd_index].model_matrix._data);
             renderer_draw_geometry(&packet->commands[cmd_index].geom);
         }
+#else
+        renderer_use_shader(&render_state->pre_pass_shader);
+
+        renderer_upload_uniform_float4x4(&render_state->pre_pass_shader, "r_View", packet->view_matrix._data);
+        renderer_upload_uniform_float4x4(&render_state->pre_pass_shader, "r_Projection", packet->projection_matrix._data);
+        laml::Vec3 color(1.0f, 0.0f, 1.0f);
+        renderer_upload_uniform_float3(&render_state->pre_pass_shader, "u_AlbedoColor", color._data);
+        renderer_upload_uniform_float(&render_state->pre_pass_shader, "u_Metalness", 0.0f);
+        renderer_upload_uniform_float(&render_state->pre_pass_shader, "u_Roughness", 0.5f);
+        renderer_upload_uniform_float(&render_state->pre_pass_shader, "u_TextureScale", 1.0f);
+
+        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_AlbedoTexToggle", 1.0f);
+        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_NormalTexToggle", 0.0f);
+        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_MetalnessTexToggle", 0.0f);
+        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_RoughnessTexToggle", 0.0f);
+        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_AmbientTexToggle", 0.0f);
+        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_EmissiveTexToggle", 0.0f);
+        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_gammaCorrect", 1.0f);
+
+        for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
+            renderer_upload_uniform_float4x4(&render_state->pre_pass_shader, "r_Transform", 
+                                             packet->commands[cmd_index].model_matrix._data);
+            renderer_draw_geometry(&packet->commands[cmd_index].geom);
+        }
+#endif
 
         bool32 result = renderer_end_Frame(packet->delta_time);
 
