@@ -47,6 +47,9 @@ void renderer_destroy_mesh(triangle_geometry* mesh);
 
 bool32 renderer_create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes);
 void renderer_destroy_shader(shader* shader_prog);
+bool32 renderer_create_framebuffer(frame_buffer* fbo, 
+                                   int num_attachments, const frame_buffer_attachment* attachments);
+void renderer_destroy_framebuffer(frame_buffer* fbo);
 
 void renderer_use_shader(shader* shader_prog);
 void renderer_draw_geometry(triangle_geometry* geom);

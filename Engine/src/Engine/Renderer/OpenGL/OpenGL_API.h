@@ -21,6 +21,9 @@ struct OpenGL_api final : public renderer_api {
     void destroy_mesh(triangle_geometry* mesh) override final;
     bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) override final;
     void destroy_shader(shader* shader_prog) override final;
+    bool32 create_framebuffer(frame_buffer* fbo, 
+                              int num_attachments, const frame_buffer_attachment* attachments) override final;
+    void destroy_framebuffer(frame_buffer* fbo) override final;
 
     void use_shader(shader* shader_prog) override final;
     void draw_geometry(triangle_geometry* geom) override final;

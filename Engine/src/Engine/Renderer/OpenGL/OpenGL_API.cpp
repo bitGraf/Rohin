@@ -2,6 +2,7 @@
 
 #include "Engine/Core/Logger.h"
 #include "Engine/Core/Asserts.h"
+#include "Engine/Memory/MemoryUtils.h"
 
 #include "OpenGL_Types.h"
 #include "OpenGL_Platform.h"
@@ -386,6 +387,101 @@ void OpenGL_api::destroy_shader(shader* shader_prog) {
     glDeleteShader(shader_prog->handle);
     shader_prog->handle = 0;
 }
+
+static GLenum DataType(GLenum format) {
+    switch (format) {
+        case GL_R8:
+        case GL_RGB8:
+        case GL_RGBA:
+        case GL_RGBA8: return GL_UNSIGNED_BYTE;
+        case GL_RG16F:
+        case GL_RG32F:
+        case GL_RGBA16F:
+        case GL_RGB32F:
+        case GL_R32F:
+        case GL_RGBA32F: return GL_FLOAT;
+        case GL_DEPTH24_STENCIL8: return GL_UNSIGNED_INT_24_8;
+    }
+
+    Assert(false);
+    return 0;
+}
+
+static GLenum DataFormat(GLenum format) {
+    switch (format) {
+        case GL_R32F:
+        case GL_R8: return GL_RED;
+        case GL_RGB8: return GL_RGB;
+        case GL_RGBA:
+        case GL_RGBA8: return GL_RGBA;
+        case GL_RGB32F: return GL_RGB;
+        case GL_RGBA16F: return GL_RGBA;
+        case GL_RGBA32F: return GL_RGBA;
+    }
+
+    Assert(false);
+    return 0;
+}
+
+bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo, 
+                                      int num_attachments, const frame_buffer_attachment* attachments) {
+
+    glGenFramebuffers(1, &fbo->handle);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo->handle);
+
+    AssertMsg(num_attachments <= 6, "More color attachments not supported atm");
+    memory_copy(&fbo->attachments, attachments, num_attachments*sizeof(frame_buffer_attachment));
+
+    for (int n = 0; n < num_attachments; n++) {
+        GLenum internal_format = 0;
+        GLenum attach_type = 0;
+        bool32 color_attachment = false;
+        switch(fbo->attachments[n].texture_format) {
+            case frame_buffer_texture_format::RED8:    { internal_format = GL_R8;      color_attachment = true; } break;
+            case frame_buffer_texture_format::R32F:    { internal_format = GL_R32F;    color_attachment = true; } break;
+            case frame_buffer_texture_format::RGBA8:   { internal_format = GL_RGBA8;   color_attachment = true; } break;
+            case frame_buffer_texture_format::RGBA16F: { internal_format = GL_RGBA16F; color_attachment = true; } break;
+            case frame_buffer_texture_format::RGBA32F: { internal_format = GL_RGBA32F; color_attachment = true; } break;
+        }
+        switch(fbo->attachments[n].texture_format) {
+            case frame_buffer_texture_format::DEPTH24STENCIL8: { internal_format = GL_DEPTH24_STENCIL8; attach_type = GL_DEPTH_STENCIL_ATTACHMENT; } break;
+            //case frame_buffer_texture_format::DEPTH32F:    { internal_format = GL_R32F;    color_attachment = true; } break;
+        }
+        if (color_attachment) {
+            glGenTextures(1, &fbo->attachments[n].handle);
+            glBindTexture(GL_TEXTURE_2D, fbo->attachments[n].handle);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, internal_format, 
+                         fbo->width, fbo->height, 0, 
+                         DataFormat(internal_format), DataType(internal_format), nullptr);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + n, 
+                                   GL_TEXTURE_2D, fbo->attachments[n].handle, 0);
+        } else {
+            glGenRenderbuffers(1, &fbo->attachments[n].handle);
+            glBindRenderbuffer(GL_RENDERBUFFER, fbo->attachments[n].handle);
+
+            glRenderbufferStorage(GL_RENDERBUFFER, internal_format, fbo->width, fbo->height);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, attach_type, GL_RENDERBUFFER, fbo->attachments[n].handle);
+        }
+    }
+
+    GLenum buffers[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
+    glDrawBuffers(num_attachments-1, buffers);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return true;
+}
+void OpenGL_api::destroy_framebuffer(frame_buffer* fbo) {
+
+}
+
 
 void OpenGL_api::use_shader(shader* shader_prog) {
     glUseProgram(shader_prog->handle);

@@ -6,6 +6,8 @@
 struct memory_arena;
 struct triangle_geometry;
 struct shader;
+struct frame_buffer;
+struct frame_buffer_attachment;
 
 enum renderer_api_type {
     RENDERER_API_OPENGL,
@@ -39,6 +41,9 @@ struct renderer_api {
     virtual void destroy_mesh(triangle_geometry* mesh) = 0;
     virtual bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) = 0;
     virtual void destroy_shader(shader* shader_prog) = 0;
+    virtual bool32 create_framebuffer(frame_buffer* fbo, 
+                                      int num_attachments, const frame_buffer_attachment* attachments) = 0;
+    virtual void destroy_framebuffer(frame_buffer* fbo) = 0;
 
     virtual void use_shader(shader* shader_prog) = 0;
     virtual void draw_geometry(triangle_geometry* geom) = 0;
@@ -82,15 +87,42 @@ struct shader {
     uint32 handle; // handle to the gpu version of this data
 };
 
+enum class frame_buffer_texture_format {
+    None = 0,
+
+    // Color
+    RED8,
+    //RGB8,
+    RGBA8,
+    RGBA16F,
+    RGBA32F,
+    R32F,
+    //RGB32F,
+    //RG32F,
+
+    // Depth/stencil
+    //DEPTH32F,
+    DEPTH24STENCIL8,
+
+    // Defaults
+    Depth = DEPTH24STENCIL8
+};
+
 struct frame_buffer_attachment {
-    int unused; // todo!
+    uint32 handle;
+
+    frame_buffer_texture_format texture_format;
+    laml::Vec4 clear_color;
 };
 
 struct frame_buffer {
     uint32 handle;
 
+    uint32 width;
+    uint32 height;
+
     uint32 num_attachments;
-    frame_buffer_attachment* attachments;
+    frame_buffer_attachment attachments[6];
 };
 
 struct render_command {

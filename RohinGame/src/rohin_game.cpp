@@ -4,6 +4,7 @@
 #include <Engine/Memory/Memory_Arena.h>
 #include <Engine/Renderer/Render_Types.h>
 #include <Engine/Resources/Resource_Manager.h>
+#include <Engine/Core/Input.h>
 
 struct game_state {
     memory_arena perm_arena;
@@ -42,6 +43,13 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     game_state* state = (game_state*)(app->memory.PermanentStorage);
 
     // simulate game state
+    laml::Mat4 transform(1.0f);
+    int32 mouse_x, mouse_y;
+    input_get_mouse_pos(&mouse_x, &mouse_y);
+    real32 yaw = (real32)mouse_x;
+    real32 pitch = 0.0f;//(real32)mouse_y;
+
+    laml::transform::create_transform_rotation(transform, yaw, pitch, 0.0f);
 
     // ...
 
@@ -49,7 +57,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     packet->num_commands = state->num_geometry;
     packet->commands = PushArray(packet->arena, render_command, packet->num_commands);
     for (uint32 n = 0; n < packet->num_commands; n++) {
-        packet->commands[n].model_matrix = laml::Mat4(1.0f);
+        packet->commands[n].model_matrix = transform;
         packet->commands[n].geom = state->geometry[n];
         packet->commands[n].material_handle = 0;
     }

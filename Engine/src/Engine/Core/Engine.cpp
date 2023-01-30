@@ -158,7 +158,7 @@ bool32 start_rohin_engine(RohinApp* app) {
         //uint64 LastCycleCount = __rdtsc();
 
         // initialize scene state
-        engine.camera_pos = {0.0f, 2.0f, 5.0f};
+        engine.camera_pos = {0.0f, 1.75f, 3.0f};
         laml::Mat4 cam_transform;
         laml::transform::create_transform_translate(cam_transform, engine.camera_pos);
         //rh::laml::transform::create_transform_rotation(rotM, 0.0f, -45.0f, 0.0f);

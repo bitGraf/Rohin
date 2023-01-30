@@ -18,6 +18,9 @@ struct renderer_state {
 
     // deferred pbr render pass
     shader pre_pass_shader;
+
+    // framebuffer
+    frame_buffer gbuffer;
 };
 
 global_variable renderer_api* backend;
@@ -64,6 +67,19 @@ bool32 renderer_create_pipeline() {
     renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_RoughnessTexture", 3);
     renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_AmbientTexture", 4);
     renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_EmissiveTexture", 5);
+
+    // create g-buffer
+    laml::Vec4 black;
+    laml::Vec4 _dist(100.0f, 100.0f, 100.0f, 1.0f);
+    frame_buffer_attachment attachments[] = {
+        {0, frame_buffer_texture_format::RGBA8,   black}, // Albedo
+        {0, frame_buffer_texture_format::RGBA16F, black}, // View-space normal
+        {0, frame_buffer_texture_format::RGBA8,   black}, // Ambient/Metallic/Roughness
+        {0, frame_buffer_texture_format::RGBA16F, _dist},  // Distance
+        {0, frame_buffer_texture_format::RGBA8,   black},  // Emissive
+        {0, frame_buffer_texture_format::Depth,   black}  // Depth-buffer
+    };
+    renderer_create_framebuffer(&render_state->gbuffer, 6, attachments);
 
     return true;
 }
@@ -181,6 +197,14 @@ bool32 renderer_create_shader(shader* shader_prog, const uint8* shader_source, u
 }
 void renderer_destroy_shader(shader* shader_prog) {
     backend->destroy_shader(shader_prog);
+}
+
+bool32 renderer_create_framebuffer(frame_buffer* fbo, 
+                                   int num_attachments, const frame_buffer_attachment* attachments) {
+    return backend->create_framebuffer(fbo, num_attachments, attachments);
+}
+void renderer_destroy_framebuffer(frame_buffer* fbo) {
+    backend->destroy_framebuffer(fbo);
 }
 
 
