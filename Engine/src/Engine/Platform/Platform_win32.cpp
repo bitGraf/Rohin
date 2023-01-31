@@ -31,6 +31,13 @@ struct PlatformState {
     WINDOWPLACEMENT window_position; // save the last window position for fullscreen purposes
     real64 inv_performance_counter_frequency;
 
+    RECT mouse_rect;
+    RECT mouse_rect_full;
+
+    bool32 capture_mouse;
+    bool32 hide_mouse;
+    bool32 is_fullscreen;
+
     HDC device_context;
 
     WORD default_console_attributes;
@@ -194,6 +201,17 @@ bool32 platform_startup(AppConfig* config) {
     global_win32_state.default_console_attributes = console_info.wAttributes;
 
     ShowWindow(global_win32_state.window, SW_SHOW);
+
+    GetClipCursor(&global_win32_state.mouse_rect_full);
+    //GetWindowRect(global_win32_state.window, &client_rect);
+    //GetClientRect(global_win32_state.window, &mouse_Rect);
+    global_win32_state.mouse_rect.bottom = client_y + client_height;
+    global_win32_state.mouse_rect.top = client_y;
+    global_win32_state.mouse_rect.left = client_x;
+    global_win32_state.mouse_rect.right = client_x + client_width;
+    if (global_win32_state.capture_mouse) {
+        ClipCursor(&global_win32_state.mouse_rect);
+    }
     
     //GlobalMonitorRefreshHz = 60;
     //GlobalGameUpdateHz = 60;
@@ -274,6 +292,43 @@ void platform_sleep(uint64 ms) {
     Sleep((DWORD)ms);
 }
 
+
+bool32 win32_toggle_fullscreen(HWND Window, WINDOWPLACEMENT* WindowPos) {
+    // TODO: Look into ChangeDisplaySettings function to change monitor refresh rate/resolution
+    DWORD Style = GetWindowLong(Window, GWL_STYLE);
+    if (Style & WS_OVERLAPPEDWINDOW) {
+        MONITORINFO MonitorInfo = { sizeof(MonitorInfo) };
+        if (GetWindowPlacement(Window, WindowPos) &&GetMonitorInfo(MonitorFromWindow(Window, MONITOR_DEFAULTTOPRIMARY), &MonitorInfo)) {
+            SetWindowLong(Window, GWL_STYLE, Style & ~WS_OVERLAPPEDWINDOW);
+            SetWindowPos(Window, HWND_TOP,
+                         MonitorInfo.rcMonitor.left, MonitorInfo.rcMonitor.top,
+                         MonitorInfo.rcMonitor.right - MonitorInfo.rcMonitor.left,
+                         MonitorInfo.rcMonitor.bottom - MonitorInfo.rcMonitor.top,
+                         SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+        }
+        return true;
+    } else {
+        SetWindowLong(Window, GWL_STYLE,
+                      Style | WS_OVERLAPPEDWINDOW);
+        SetWindowPlacement(Window, WindowPos);
+        SetWindowPos(Window, NULL, 0, 0, 0, 0,
+                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                     SWP_NOOWNERZORDER | SWP_FRAMECHANGED);
+        return false;
+    }
+}
+
+void win32_update_mouse_rect(HWND window, long new_width, long new_height, RECT* mouse_rect) {
+    POINT top_left = {0, 0};
+    POINT bottom_right = {new_width, new_height};
+    ClientToScreen(window,&top_left);
+    ClientToScreen(window,&bottom_right);
+    mouse_rect->top = top_left.y;
+    mouse_rect->left = top_left.x;
+    mouse_rect->bottom = bottom_right.y - 1; // -1 for some reason is needed
+    mouse_rect->right = bottom_right.x - 1;
+}
+
 LRESULT CALLBACK win32_window_callback(HWND window, uint32 message, WPARAM w_param, LPARAM l_param) {
     event_context no_data = {};
     switch (message) {
@@ -294,6 +349,11 @@ LRESULT CALLBACK win32_window_callback(HWND window, uint32 message, WPARAM w_par
             context.u32[0] = width;
             context.u32[1] = height;
             event_fire(EVENT_CODE_RESIZED, 0, context); // this will generate tons of resize messages, beware!
+            
+            win32_update_mouse_rect(window, (long)width, (long)height, &global_win32_state.mouse_rect);
+            if (global_win32_state.capture_mouse) {
+                ClipCursor(&global_win32_state.mouse_rect);
+            }
         } break;
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
@@ -320,6 +380,22 @@ LRESULT CALLBACK win32_window_callback(HWND window, uint32 message, WPARAM w_par
             //RH_DEBUG("Key [%s]=[%d] %s", input_get_key_string(key), key, pressed ? "down" : "up");
 
             input_process_key(key, (uint8)pressed);
+
+            bool32 AltKeyWasDown = (l_param & (1 << 29));
+            if (pressed && AltKeyWasDown) {
+                if (key == KEY_RETURN) {
+                    RH_INFO("Toggle Fullscreen");
+                    global_win32_state.is_fullscreen = win32_toggle_fullscreen(global_win32_state.window, &global_win32_state.window_position);
+                } else if (key == KEY_M) {
+                    RH_INFO("Toggle mouse capture");
+                    global_win32_state.capture_mouse = !global_win32_state.capture_mouse;
+                    if (global_win32_state.capture_mouse) {
+                        ClipCursor(&global_win32_state.mouse_rect);
+                    } else {
+                        ClipCursor(&global_win32_state.mouse_rect_full);
+                    }
+                }
+            }
 
             return 0;
         } break;

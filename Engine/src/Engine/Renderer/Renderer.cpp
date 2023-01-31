@@ -110,6 +110,10 @@ bool32 renderer_draw_frame(render_packet* packet) {
     if (renderer_begin_Frame(packet->delta_time)) {
         // render all commands in the packet
 
+        laml::Mat4 cam_transform;
+        laml::transform::create_transform(cam_transform, packet->camera_orientation, packet->camera_pos);
+        laml::transform::create_view_matrix_from_transform(packet->view_matrix, cam_transform);
+
 #if SIMPLE_RENDER_PASS
         renderer_use_shader(&render_state->simple_shader);
 

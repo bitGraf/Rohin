@@ -138,7 +138,9 @@ struct render_packet {
 
     laml::Mat4 projection_matrix;
     laml::Mat4 view_matrix;
+
     laml::Vec3 camera_pos;
+    laml::Quat camera_orientation;
 
     uint32 num_commands;
     render_command* commands;

@@ -27,9 +27,7 @@ struct RohinEngine {
 
     // tmp, should probably be pulled out into a 'scene' representation
     real32 view_vert_fov;
-    laml::Vec3 camera_pos;
     laml::Mat4 projection_matrix;
-    laml::Mat4 view_matrix;
 };
 global_variable RohinEngine engine;
 
@@ -157,14 +155,6 @@ bool32 start_rohin_engine(RohinApp* app) {
         uint64 FlipWallClock = platform_get_wall_clock();
         //uint64 LastCycleCount = __rdtsc();
 
-        // initialize scene state
-        engine.camera_pos = {0.0f, 1.75f, 3.0f};
-        laml::Mat4 cam_transform;
-        laml::transform::create_transform_translate(cam_transform, engine.camera_pos);
-        //rh::laml::transform::create_transform_rotation(rotM, 0.0f, -45.0f, 0.0f);
-        //GameState->CameraTransform = rh::laml::mul(GameState->CameraTransform, rotM);
-        laml::transform::create_view_matrix_from_transform(engine.view_matrix, cam_transform);
-
         real32 AR = (real32)config.start_width / (real32)config.start_height;
         engine.view_vert_fov = 75.0f;
         laml::transform::create_projection_perspective(engine.projection_matrix, engine.view_vert_fov, AR, 0.1f, 20.0f);
@@ -185,8 +175,6 @@ bool32 start_rohin_engine(RohinApp* app) {
 
                 packet->delta_time = engine.last_frame_time;
                 packet->projection_matrix = engine.projection_matrix;
-                packet->view_matrix = engine.view_matrix;
-                packet->camera_pos = engine.camera_pos;
 
                 engine.app->update_and_render(engine.app, packet, engine.last_frame_time);
 

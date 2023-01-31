@@ -6,12 +6,22 @@
 #include <Engine/Resources/Resource_Manager.h>
 #include <Engine/Core/Input.h>
 
+struct player_state {
+    laml::Vec3 position;
+    laml::Quat orientation;
+};
+
 struct game_state {
     memory_arena perm_arena;
     memory_arena mesh_arena;
 
+    triangle_geometry* level_geom;
+    triangle_geometry* player_geom;
+
     uint32 num_geometry;
     triangle_geometry* geometry;
+
+    player_state player;
 };
 
 bool32 game_startup(RohinApp* app) {
@@ -21,8 +31,11 @@ bool32 game_startup(RohinApp* app) {
     CreateArena(&state->perm_arena, app->memory.PermanentStorageSize, (uint8*)app->memory.PermanentStorage + sizeof(game_state));
     state->mesh_arena = CreateSubArena(&state->perm_arena, Megabytes(1));
 
-    state->num_geometry = 1;
-    state->geometry = PushArray(&state->mesh_arena, triangle_geometry, state->num_geometry);
+    state->level_geom = PushStruct(&state->mesh_arena, triangle_geometry);
+    state->player_geom = nullptr;
+    
+    state->num_geometry = 0;
+    state->geometry = nullptr;
 
     app->memory.IsInitialized = true;
 
@@ -34,7 +47,11 @@ bool32 game_initialize(RohinApp* app) {
 
     game_state* state = (game_state*)(app->memory.PermanentStorage);
 
-    resource_load_mesh_file("Data/Models/dance.mesh", &state->geometry[0], 0, 0, 0);
+    resource_load_mesh_file("Data/Models/level1.mesh", state->level_geom, 0, 0, 0);
+    resource_load_mesh_file("Data/Models/dance.mesh", state->player_geom, 0, 0, 0);
+
+    state->player.position = {0.0f, 1.0f, 0.0f};
+    state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
 
     return true;
 }
@@ -43,17 +60,46 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     game_state* state = (game_state*)(app->memory.PermanentStorage);
 
     // simulate game state
-    laml::Mat4 transform(1.0f);
+    laml::Mat4 eye(1.0f);
     int32 mouse_x, mouse_y;
     input_get_mouse_pos(&mouse_x, &mouse_y);
-    real32 yaw = (real32)mouse_x;
+    real32 yaw = -(real32)mouse_x;
     real32 pitch = 0.0f;//(real32)mouse_y;
 
-    laml::transform::create_transform_rotation(transform, yaw, pitch, 0.0f);
+    // TODO: this is a silly way to go, why not just ypr->quat
+    laml::Mat3 player_rot;
+    laml::transform::create_transform_rotation(player_rot, yaw, pitch, 0.0f);
+    state->player.orientation = laml::transform::quat_from_mat(player_rot);
+
+    laml::Vec3 right = player_rot._cols[0];
+    laml::Vec3 up = player_rot._cols[1];
+    laml::Vec3 forward = -player_rot._cols[2];
+    laml::Vec3 vel(0.0f);
+    real32 speed = input_is_key_down(KEY_LSHIFT) ? 10.0f : 2.5f;
+    if (input_is_key_down(KEY_W)) {
+        vel = forward;
+    } else if (input_is_key_down(KEY_S)) {
+        vel = -forward;
+    }
+    if (input_is_key_down(KEY_D)) {
+        vel = vel + right;
+    } else if (input_is_key_down(KEY_A)) {
+        vel = vel - right;
+    }
+    state->player.position = state->player.position + (speed * vel * delta_time);
+
+    laml::Mat4 player_transform;
+    laml::transform::create_transform(player_transform, state->player.orientation, state->player.position);
 
     // ...
 
     // push all the render commands to the render_packet
+    packet->num_commands = 1;
+    packet->commands = PushArray(packet->arena, render_command, packet->num_commands);\
+    packet->commands[0].model_matrix = eye;
+    packet->commands[0].geom = *state->level_geom;
+    packet->commands[0].material_handle = 0;
+#if 0
     packet->num_commands = state->num_geometry;
     packet->commands = PushArray(packet->arena, render_command, packet->num_commands);
     for (uint32 n = 0; n < packet->num_commands; n++) {
@@ -61,6 +107,11 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         packet->commands[n].geom = state->geometry[n];
         packet->commands[n].material_handle = 0;
     }
+#endif
+
+    // calculate view-point
+    packet->camera_pos = state->player.position;
+    packet->camera_orientation = state->player.orientation;
 
     return true;
 }
