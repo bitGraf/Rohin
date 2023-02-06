@@ -3,13 +3,12 @@
 
 layout (location = 0) in vec3 vertPos;
 layout (location = 1) in vec3 a_Normal;
-layout (location = 2) in vec3 a_Tangent;
-layout (location = 3) in vec3 a_Bitangent;
-layout (location = 4) in vec2 vertTexCoord;
-layout (location = 5) in ivec4 a_BoneIndices;
-layout (location = 6) in vec4 a_BoneWeights;
+//layout (location = 2) in vec3 a_Tangent;
+//layout (location = 3) in vec3 a_Bitangent;
+//layout (location = 4) in vec2 vertTexCoord;
+//layout (location = 5) in ivec4 a_BoneIndices;
+//layout (location = 6) in vec4 a_BoneWeights;
 
-out vec2 tex_coord;
 out vec3 world_pos;
 out vec3 world_normal;
 
@@ -17,7 +16,6 @@ layout (location = 1) uniform mat4 r_VP; // actually proj*view
 layout (location = 2) uniform mat4 r_Transform;
 
 void main() {
-    tex_coord = vertTexCoord;
     world_pos = vec3(r_Transform * vec4(vertPos, 1.0));
     world_normal = vec3(r_Transform * vec4(a_Normal, 0.0));
 
@@ -32,7 +30,6 @@ void main() {
 
 layout (location = 0) out vec4 FragColor;
 
-in vec2 tex_coord;
 in vec3 world_pos;
 in vec3 world_normal;
 

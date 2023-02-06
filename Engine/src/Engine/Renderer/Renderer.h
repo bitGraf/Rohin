@@ -42,7 +42,7 @@ bool32 renderer_end_wireframe();
 void renderer_create_texture(struct texture_2D* texture, const uint8* data);
 void renderer_destroy_texture(struct texture_2D* texture);
 
-void renderer_create_mesh(triangle_geometry* mesh, 
+RHAPI void renderer_create_mesh(triangle_geometry* mesh, 
                           uint32 num_verts, const void* vertices,
                           uint32 num_inds, const uint32* indices,
                           const ShaderDataType* attributes);
