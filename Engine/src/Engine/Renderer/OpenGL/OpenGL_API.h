@@ -28,6 +28,8 @@ struct OpenGL_api final : public renderer_api {
 
     void use_shader(shader* shader_prog) override final;
     void draw_geometry(triangle_geometry* geom) override final;
+    void draw_geometry_lines(triangle_geometry* geom) override final;
+    void draw_geometry_points(triangle_geometry* geom) override final;
 
     void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) override final;
     void clear_viewport(real32 r, real32 g, real32 b, real32 a) override final;

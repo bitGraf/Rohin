@@ -56,6 +56,8 @@ void renderer_destroy_framebuffer(frame_buffer* fbo);
 
 void renderer_use_shader(shader* shader_prog);
 void renderer_draw_geometry(triangle_geometry* geom);
+void renderer_draw_geometry_lines(triangle_geometry* geom);
+void renderer_draw_geometry_points(triangle_geometry* geom);
 
 void renderer_upload_uniform_float( shader* shader_prog, const char* uniform_name, float  value);
 void renderer_upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values);

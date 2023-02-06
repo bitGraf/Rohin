@@ -225,34 +225,29 @@ bool32 renderer_draw_frame(render_packet* packet) {
         if (packet->col_grid) {
             collision_grid* grid = packet->col_grid;
 
-            real32 min_x = -((real32)(grid->num_rows / 2)) * grid->cell_size;
-            real32 min_y = -((real32)(grid->num_levels / 2)) * grid->cell_size;
-            real32 min_z = -((real32)(grid->num_cols / 2)) * grid->cell_size;
+            real32 min_x = -((real32)(grid->num_x / 2)) * grid->cell_size;
+            real32 min_y = -((real32)(grid->num_y / 2)) * grid->cell_size;
+            real32 min_z = -((real32)(grid->num_z / 2)) * grid->cell_size;
 
-            real32 max_x = ((real32)(grid->num_rows / 2)) * grid->cell_size;
-            real32 max_y = ((real32)(grid->num_levels / 2)) * grid->cell_size;
-            real32 max_z = ((real32)(grid->num_cols / 2)) * grid->cell_size;
+            real32 max_x = ((real32)(grid->num_x / 2)) * grid->cell_size;
+            real32 max_y = ((real32)(grid->num_y / 2)) * grid->cell_size;
+            real32 max_z = ((real32)(grid->num_z / 2)) * grid->cell_size;
 
             laml::Vec3 min_cell(min_x, min_y, min_z);
             laml::Vec3 max_cell(max_x, max_y, max_z);
 
             laml::Vec3 cell_offset(grid->cell_size);
 
-            laml::Mat4 cell_transform;
-            for (uint16 level = 0; level < grid->num_levels; level++) {
-                for (uint16 row = 0; row < grid->num_rows; row++) {
-                    for (uint16 col = 0; col < grid->num_cols; col++) {
-                        if (grid->cells[level][row][col].num_surfaces > 0) {
-                            laml::Vec3 translation = min_cell + (cell_offset * laml::Vec3((real32)row, (real32)level, (real32)col));
-                            laml::transform::create_transform_translate(cell_transform, translation);
+            laml::Mat4 cell_transform(1.0f);
+            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
+                                             cell_transform._data);
 
-                            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
-                                                             cell_transform._data);
-                            renderer_draw_geometry(&render_state->cube_geom);
-                        }
-                    }
-                }
-            }
+            wire_color = { .7f, 0.6f, 0.35f, 1.0f };
+            renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
+            renderer_draw_geometry_lines(&packet->col_grid->geom);
+            //wire_color = { .8f, 0.4f, 0.25f, 1.0f };
+            //renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
+            //renderer_draw_geometry_points(&packet->col_grid->geom);
         }
 
         renderer_end_wireframe();
@@ -330,6 +325,12 @@ void renderer_use_shader(shader* shader_prog) {
 }
 void renderer_draw_geometry(triangle_geometry* geom) {
     backend->draw_geometry(geom);
+}
+void renderer_draw_geometry_lines(triangle_geometry* geom) {
+    backend->draw_geometry_lines(geom);
+}
+void renderer_draw_geometry_points(triangle_geometry* geom) {
+    backend->draw_geometry_points(geom);
 }
 
 void renderer_upload_uniform_float(shader* shader_prog, const char* uniform_name, float value) {

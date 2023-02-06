@@ -511,6 +511,15 @@ void OpenGL_api::draw_geometry(triangle_geometry* geom) {
     glBindVertexArray(geom->handle);
     glDrawElements(GL_TRIANGLES, geom->num_inds, GL_UNSIGNED_INT, 0);
 }
+void OpenGL_api::draw_geometry_lines(triangle_geometry* geom) {
+    glBindVertexArray(geom->handle);
+    glDrawElements(GL_LINES, geom->num_inds, GL_UNSIGNED_INT, 0);
+}
+void OpenGL_api::draw_geometry_points(triangle_geometry* geom) {
+    glBindVertexArray(geom->handle);
+    glDrawElements(GL_POINTS, geom->num_inds, GL_UNSIGNED_INT, 0);
+}
+
 
 
 void OpenGL_api::set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) {

@@ -72,7 +72,7 @@ bool32 game_startup(RohinApp* app) {
     // collision grid
     // 32x256x256, centered on (0,0,0)
     // grid_size of 1
-    collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 1.0f, 32, 256, 256);
+    collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 1.0f, 64, 32, 64);
 
     return true;
 }

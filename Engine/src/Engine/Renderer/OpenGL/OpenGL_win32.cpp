@@ -268,6 +268,10 @@ bool32 OpenGL_create_context() {
     win32_update_vsync(MonitorRefreshHz, GameRefreshHz);
 #endif
 
+    //glEnable(GL_LINE_SMOOTH);
+    //glLineWidth(2.0f);
+    glPointSize(4.0f);
+
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
