@@ -34,7 +34,7 @@ global_variable RohinEngine engine;
 bool32 engine_on_resize(uint16 code, void* sender, void* listener, event_context context) {
     real32 width  = (real32)context.u32[0];
     real32 height = (real32)context.u32[1];
-    laml::transform::create_projection_perspective(engine.projection_matrix, engine.view_vert_fov, width/height, 0.1f, 20.0f);
+    laml::transform::create_projection_perspective(engine.projection_matrix, engine.view_vert_fov, width/height, 0.1f, 100.0f);
 
     renderer_resized(context.u32[0], context.u32[1]);
     engine.app->on_resize(engine.app, context.u32[0], context.u32[1]);
@@ -54,14 +54,16 @@ bool32 engine_on_event(uint16 code, void* sender, void* listener, event_context 
             }
     }
 
-    RH_TRACE("Engine[0x%016llX] recieved event code %d \n         "
-             "Sender=[0x%016llX] \n         "
-             "Listener=[0x%016llX] \n         "
-             "Data=[%llu], [%u,%u], [%hu,%hu,%hu,%hu]",
-             (uintptr_t)(&engine), code, (uintptr_t)sender, (uintptr_t)listener,
-             context.u64,
-             context.u32[0], context.u32[1],
-             context.u16[0], context.u16[1], context.u16[2], context.u16[3]);
+    if ((code != EVENT_CODE_KEY_PRESSED)) {
+        RH_TRACE("Engine[0x%016llX] recieved event code %d \n         "
+                 "Sender=[0x%016llX] \n         "
+                 "Listener=[0x%016llX] \n         "
+                 "Data=[%llu], [%u,%u], [%hu,%hu,%hu,%hu]",
+                 (uintptr_t)(&engine), code, (uintptr_t)sender, (uintptr_t)listener,
+                 context.u64,
+                 context.u32[0], context.u32[1],
+                 context.u16[0], context.u16[1], context.u16[2], context.u16[3]);
+    }
 
     return false;
 }
@@ -125,7 +127,10 @@ bool32 start_rohin_engine(RohinApp* app) {
 
     texture_2D texture;
     //resource_load_texture_file("Data/Images/Stormtrooper_D.png", &texture);
-    resource_load_texture_file("Data/Images/grid/PNG/Orange/texture_08.png", &texture);
+    //resource_load_texture_file("Data/Images/grid/PNG/Orange/texture_08.png", &texture);
+    //resource_load_texture_file("Data/Images/copper/albedo.png", &texture);
+    resource_load_texture_file("Data/Images/frog.png", &texture);
+    //resource_load_texture_file("Data/Images/waffle/WaffleSlab2_albedo.png", &texture);
 
     engine.target_frame_time = 1.0f / ((real32)target_framerate);
     engine.last_frame_time = engine.target_frame_time;
@@ -145,7 +150,7 @@ bool32 start_rohin_engine(RohinApp* app) {
         engine.app->memory.PermanentStorage = memory;
         engine.app->memory.PermanentStorageSize = engine.app->app_config.requested_permanant_memory;
         engine.app->memory.TransientStorage = ((uint8*)memory + engine.app->memory.PermanentStorageSize);
-        engine.app->memory.TransientStorageSize = engine.app->app_config.requested_permanant_memory;
+        engine.app->memory.TransientStorageSize = engine.app->app_config.requested_transient_memory;
 
         engine.is_running = true;
 
@@ -157,7 +162,7 @@ bool32 start_rohin_engine(RohinApp* app) {
 
         real32 AR = (real32)config.start_width / (real32)config.start_height;
         engine.view_vert_fov = 75.0f;
-        laml::transform::create_projection_perspective(engine.projection_matrix, engine.view_vert_fov, AR, 0.1f, 20.0f);
+        laml::transform::create_projection_perspective(engine.projection_matrix, engine.view_vert_fov, AR, 0.1f, 100.0f);
 
         engine.app->initialize(engine.app);
 
@@ -175,6 +180,7 @@ bool32 start_rohin_engine(RohinApp* app) {
 
                 packet->delta_time = engine.last_frame_time;
                 packet->projection_matrix = engine.projection_matrix;
+                packet->col_grid = nullptr;
 
                 engine.app->update_and_render(engine.app, packet, engine.last_frame_time);
 

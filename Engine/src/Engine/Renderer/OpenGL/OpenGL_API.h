@@ -11,6 +11,7 @@ struct OpenGL_api final : public renderer_api {
     bool32 begin_frame(real32 delta_time) override final;
     bool32 end_frame(real32 delta_time) override final;
 
+    bool32 set_draw_mode(render_draw_mode mode) override final;
 
     void create_texture(struct texture_2D* texture, const uint8* data) override final;
     void destroy_texture(struct texture_2D* texture) override final;

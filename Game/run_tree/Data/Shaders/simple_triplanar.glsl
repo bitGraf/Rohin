@@ -21,8 +21,8 @@ void main() {
     world_pos = vec3(r_Transform * vec4(vertPos, 1.0));
     world_normal = vec3(r_Transform * vec4(a_Normal, 0.0));
 
-    world_pos = vertPos;
-    world_normal = a_Normal;
+    //world_pos = vertPos;
+    //world_normal = a_Normal;
 
     gl_Position = r_VP * r_Transform * vec4(vertPos, 1.0);
 }

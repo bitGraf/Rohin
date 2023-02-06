@@ -5,6 +5,9 @@
 #include <Engine/Renderer/Render_Types.h>
 #include <Engine/Resources/Resource_Manager.h>
 #include <Engine/Core/Input.h>
+#include <Engine/Core/Event.h>
+
+#include <Engine/Collision/Collision.h>
 
 struct player_state {
     laml::Vec3 position;
@@ -13,6 +16,7 @@ struct player_state {
 
 struct game_state {
     memory_arena perm_arena;
+    memory_arena trans_arena;
     memory_arena mesh_arena;
 
     triangle_geometry* level_geom;
@@ -22,7 +26,29 @@ struct game_state {
     triangle_geometry* geometry;
 
     player_state player;
+
+    collision_grid grid;
 };
+
+bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context) {
+    game_state* state = (game_state*)listener;
+
+    uint16 key_code = context.u16[0];
+    if (key_code == KEY_P) {
+        laml::Vec3 pos = state->player.position;
+        RH_INFO("Player position: [%4.1f,%4.1f,%4.1f]", pos.x, pos.y, pos.z);
+    }
+    //RH_TRACE("Game[0x%016llX] recieved event code %d \n         "
+    //         "Sender=[0x%016llX] \n         "
+    //         "Listener=[0x%016llX] \n         "
+    //         "Data=[%llu], [%u,%u], [%hu,%hu,%hu,%hu]",
+    //         state, code, (uintptr_t)sender, (uintptr_t)listener,
+    //         context.u64,
+    //         context.u32[0], context.u32[1],
+    //         context.u16[0], context.u16[1], context.u16[2], context.u16[3]);
+
+    return false;
+}
 
 bool32 game_startup(RohinApp* app) {
     RH_INFO("Game startup.");
@@ -31,6 +57,8 @@ bool32 game_startup(RohinApp* app) {
     CreateArena(&state->perm_arena, app->memory.PermanentStorageSize, (uint8*)app->memory.PermanentStorage + sizeof(game_state));
     state->mesh_arena = CreateSubArena(&state->perm_arena, Megabytes(1));
 
+    CreateArena(&state->trans_arena, app->memory.TransientStorageSize, (uint8*)app->memory.TransientStorage);
+
     state->level_geom = PushStruct(&state->mesh_arena, triangle_geometry);
     state->player_geom = nullptr;
     
@@ -38,6 +66,13 @@ bool32 game_startup(RohinApp* app) {
     state->geometry = nullptr;
 
     app->memory.IsInitialized = true;
+
+    event_register(EVENT_CODE_KEY_PRESSED, state, on_key_event);
+
+    // collision grid
+    // 32x256x256, centered on (0,0,0)
+    // grid_size of 1
+    collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 1.0f, 32, 256, 256);
 
     return true;
 }
@@ -63,7 +98,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     laml::Mat4 eye(1.0f);
     int32 mouse_x, mouse_y;
     input_get_mouse_pos(&mouse_x, &mouse_y);
-    real32 yaw = -(real32)mouse_x;
+    real32 yaw = -0.75f * ((real32)mouse_x);
     real32 pitch = 0.0f;//(real32)mouse_y;
 
     // TODO: this is a silly way to go, why not just ypr->quat
@@ -95,7 +130,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
     // push all the render commands to the render_packet
     packet->num_commands = 1;
-    packet->commands = PushArray(packet->arena, render_command, packet->num_commands);\
+    packet->commands = PushArray(packet->arena, render_command, packet->num_commands);
     packet->commands[0].model_matrix = eye;
     packet->commands[0].geom = *state->level_geom;
     packet->commands[0].material_handle = 0;
@@ -107,6 +142,10 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         packet->commands[n].geom = state->geometry[n];
         packet->commands[n].material_handle = 0;
     }
+#endif
+
+#if 1
+    packet->col_grid = &state->grid;
 #endif
 
     // calculate view-point

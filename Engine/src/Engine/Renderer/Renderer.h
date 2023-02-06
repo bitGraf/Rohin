@@ -33,6 +33,9 @@ void renderer_resized(uint32 width, uint32 height);
 
 bool32 renderer_draw_frame(render_packet* packet);
 
+bool32 renderer_begin_wireframe();
+bool32 renderer_end_wireframe();
+
 // functions to create/destroy render objects
 // things like meshes, shaders, textures, etc.
 

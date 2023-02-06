@@ -126,6 +126,27 @@ bool32 OpenGL_api::end_frame(real32 delta_time) {
     return true;
 }
 
+bool32 OpenGL_api::set_draw_mode(render_draw_mode mode) {
+    switch (mode) {
+        case render_draw_mode::Normal: {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            glDisable(GL_POLYGON_OFFSET_LINE);
+            glEnable(GL_CULL_FACE);
+        }; break;
+        case render_draw_mode::Wireframe: {
+            glPolygonOffset(0, -1);
+            glEnable(GL_POLYGON_OFFSET_LINE);
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            glDisable(GL_CULL_FACE);
+        }; break;
+        case render_draw_mode::Points: {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+        }; break;
+    }
+
+    return true;
+}
+
 
 
 void OpenGL_api::create_texture(struct texture_2D* texture, const uint8* data) {
@@ -192,7 +213,7 @@ vertex_layout calculate_stride(const ShaderDataType* attributes) {
 
 
 void OpenGL_api::create_mesh(triangle_geometry* mesh, 
-                             uint32 num_verts, const void* vertices, 
+                             uint32 num_verts, const void* vertices,
                              uint32 num_inds, const uint32* indices,
                              const ShaderDataType* attributes) {
     // to be in the triangle_mesh struct

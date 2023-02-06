@@ -8,6 +8,7 @@ struct triangle_geometry;
 struct shader;
 struct frame_buffer;
 struct frame_buffer_attachment;
+struct collision_grid;
 
 enum renderer_api_type {
     RENDERER_API_OPENGL,
@@ -21,6 +22,12 @@ enum class ShaderDataType : uint8 {
     Bool
 };
 
+enum class render_draw_mode : uint8 {
+    Normal = 0,
+    Wireframe,
+    Points
+};
+
 struct renderer_api {
     //struct platform_state* plat_state; // platform-specific state
     uint64 frame_number;
@@ -31,6 +38,8 @@ struct renderer_api {
 
     virtual bool32 begin_frame(real32 delta_time) = 0;
     virtual bool32 end_frame(real32 delta_time) = 0;
+
+    virtual bool32 set_draw_mode(render_draw_mode mode) = 0;
 
     virtual void create_texture(struct texture_2D* texture, const uint8* data) = 0;
     virtual void destroy_texture(struct texture_2D* texture) = 0;
@@ -144,4 +153,7 @@ struct render_packet {
 
     uint32 num_commands;
     render_command* commands;
+
+    // tmp: for collision grid testing
+    collision_grid* col_grid;
 };

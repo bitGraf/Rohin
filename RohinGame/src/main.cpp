@@ -7,16 +7,16 @@ bool32 create_application(RohinApp* app);
 bool32 create_application(RohinApp* app) {
     app->app_config.application_name = "Rohin Game";
     
-    //app->app_config.start_x = 540;
-    //app->app_config.start_y = 100;
-    //app->app_config.start_width = 1280;
-    //app->app_config.start_height = 720;
-    app->app_config.start_width = 640;
-    app->app_config.start_height = 360;
-    app->app_config.start_x = 600;
-    app->app_config.start_y = 300;
+    app->app_config.start_x = 540;
+    app->app_config.start_y = 100;
+    app->app_config.start_width = 1280;
+    app->app_config.start_height = 720;
+    //app->app_config.start_width = 640;
+    //app->app_config.start_height = 360;
+    //app->app_config.start_x = 600;
+    //app->app_config.start_y = 300;
 
-    app->app_config.requested_permanant_memory = Megabytes(16);
+    app->app_config.requested_permanant_memory = Megabytes(32);
     app->app_config.requested_transient_memory = Megabytes(256);
 
     app->startup = game_startup;

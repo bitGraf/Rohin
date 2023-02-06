@@ -7,6 +7,8 @@
 
 #include "Engine/Resources/Resource_Manager.h"
 
+#include "Engine/Collision/Collision_Types.h"
+
 #include <stdarg.h>
 
 struct renderer_state {
@@ -21,6 +23,10 @@ struct renderer_state {
 
     // framebuffer
     frame_buffer gbuffer;
+
+    // debug wireframe
+    shader wireframe_shader;
+    triangle_geometry cube_geom;
 };
 
 global_variable renderer_api* backend;
@@ -68,6 +74,13 @@ bool32 renderer_create_pipeline() {
     renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_AmbientTexture", 4);
     renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_EmissiveTexture", 5);
 
+    // setup wireframe shader
+    if (!resource_load_shader_file("Data/Shaders/wireframe.glsl", &render_state->wireframe_shader)) {
+        RH_FATAL("Could not setup the wireframe shader");
+        return false;
+    }
+    renderer_use_shader(&render_state->pre_pass_shader);
+
     // create g-buffer
     laml::Vec4 black;
     laml::Vec4 _dist(100.0f, 100.0f, 100.0f, 1.0f);
@@ -80,6 +93,47 @@ bool32 renderer_create_pipeline() {
         {0, frame_buffer_texture_format::Depth,   black}  // Depth-buffer
     };
     renderer_create_framebuffer(&render_state->gbuffer, 6, attachments);
+
+    // create cube mesh for debug purposes
+    real32 s = 0.5f;
+    real32 cube_verts[] = {
+        -s, -s, -s, // 0
+         s, -s, -s, // 1
+         s,  s, -s, // 2
+        -s,  s, -s, // 3
+
+        -s, -s,  s, // 4
+         s, -s,  s, // 5
+         s,  s,  s, // 6
+        -s,  s,  s, // 7
+    };
+    uint32 cube_inds[] = {
+        // bottom face
+        0, 1, 2,
+        0, 2, 3,
+
+        // top face
+        4, 5, 6,
+        4, 6, 7,
+
+        //front face
+        0, 1, 5,
+        0, 5, 4,
+
+        //back face
+        2, 3, 7,
+        2, 7, 6,
+
+        //right face
+        1, 2, 6,
+        1, 6, 5,
+
+        // left face
+        3, 0, 4,
+        3, 4, 7
+    };
+    const ShaderDataType cube_attrs[] = {ShaderDataType::Float3, ShaderDataType::None};
+    backend->create_mesh(&render_state->cube_geom, 8, cube_verts, 36, cube_inds, cube_attrs);
 
     return true;
 }
@@ -153,6 +207,56 @@ bool32 renderer_draw_frame(render_packet* packet) {
         }
 #endif
 
+        // Render debug wireframes
+        renderer_begin_wireframe();
+        renderer_use_shader(&render_state->wireframe_shader);
+
+        //laml::Mat4 proj_view = laml::mul(packet->projection_matrix, packet->view_matrix);
+        renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_VP", proj_view._data);
+        laml::Vec4 wire_color(.6f, 0.5f, 0.65f, 1.0f);
+        renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
+
+        for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
+            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform", 
+                                             packet->commands[cmd_index].model_matrix._data);
+            renderer_draw_geometry(&packet->commands[cmd_index].geom);
+        }
+
+        if (packet->col_grid) {
+            collision_grid* grid = packet->col_grid;
+
+            real32 min_x = -((real32)(grid->num_rows / 2)) * grid->cell_size;
+            real32 min_y = -((real32)(grid->num_levels / 2)) * grid->cell_size;
+            real32 min_z = -((real32)(grid->num_cols / 2)) * grid->cell_size;
+
+            real32 max_x = ((real32)(grid->num_rows / 2)) * grid->cell_size;
+            real32 max_y = ((real32)(grid->num_levels / 2)) * grid->cell_size;
+            real32 max_z = ((real32)(grid->num_cols / 2)) * grid->cell_size;
+
+            laml::Vec3 min_cell(min_x, min_y, min_z);
+            laml::Vec3 max_cell(max_x, max_y, max_z);
+
+            laml::Vec3 cell_offset(grid->cell_size);
+
+            laml::Mat4 cell_transform;
+            for (uint16 level = 0; level < grid->num_levels; level++) {
+                for (uint16 row = 0; row < grid->num_rows; row++) {
+                    for (uint16 col = 0; col < grid->num_cols; col++) {
+                        if (grid->cells[level][row][col].num_surfaces > 0) {
+                            laml::Vec3 translation = min_cell + (cell_offset * laml::Vec3((real32)row, (real32)level, (real32)col));
+                            laml::transform::create_transform_translate(cell_transform, translation);
+
+                            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
+                                                             cell_transform._data);
+                            renderer_draw_geometry(&render_state->cube_geom);
+                        }
+                    }
+                }
+            }
+        }
+
+        renderer_end_wireframe();
+
         bool32 result = renderer_end_Frame(packet->delta_time);
 
         if (!result) {
@@ -170,6 +274,15 @@ void renderer_resized(uint32 width, uint32 height) {
         render_state->render_width = width;
         render_state->render_height = height;
     }
+}
+
+bool32 renderer_begin_wireframe() {
+    backend->set_draw_mode(render_draw_mode::Wireframe);
+    return true;
+}
+bool32 renderer_end_wireframe() {
+    backend->set_draw_mode(render_draw_mode::Normal);
+    return true;
 }
 
 
