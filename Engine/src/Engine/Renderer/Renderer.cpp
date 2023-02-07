@@ -176,7 +176,7 @@ bool32 renderer_draw_frame(render_packet* packet) {
         laml::Vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
         renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
 
-        for (uint32 cmd_index = 1; cmd_index < packet->num_commands; cmd_index++) {
+        for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
             renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
                                              packet->commands[cmd_index].model_matrix._data);
             renderer_draw_geometry(&packet->commands[cmd_index].geom);
@@ -217,7 +217,7 @@ bool32 renderer_draw_frame(render_packet* packet) {
         laml::Vec4 wire_color(.6f, 0.5f, 0.65f, 1.0f);
         renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
 
-        for (uint32 cmd_index = 1; cmd_index < packet->num_commands; cmd_index++) {
+        for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
             renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform", 
                                              packet->commands[cmd_index].model_matrix._data);
             renderer_draw_geometry(&packet->commands[cmd_index].geom);

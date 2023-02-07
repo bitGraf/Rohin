@@ -2,6 +2,8 @@
 
 #include "Engine/Resources/Resource_Types.h"
 
+struct collision_grid;
+
 enum class mesh_file_result : int32 {
     error = -1,
     is_static,
@@ -16,6 +18,9 @@ RHAPI mesh_file_result resource_load_mesh_file(const char* resource_file_name,
                                          triangle_geometry* mesh,
                                          skeleton* anim_data,
                                          animation** animations, uint32* num_anims);
+RHAPI mesh_file_result resource_load_mesh_file_for_level(const char* resource_file_name,
+                                                         triangle_geometry* geom,
+                                                         collision_grid* grid);
 
 //bool32 resource_load_anim_file(animation* anim);
 bool32 resource_load_shader_file(const char* resource_file_name,

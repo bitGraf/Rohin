@@ -49,6 +49,9 @@ void collision_grid_add_triangle(memory_arena* arena, collision_grid* grid, coll
     int32 min_z = (grid->num_z/2) + (int32)(floor(min_z_world - grid->origin.z) / grid->cell_size);
 
     // TODO: check if these bounds fit within the whole grid!!
+    max_x = max_x >= grid->num_x ? grid->num_x-1 : max_x;
+    max_y = max_y >= grid->num_y ? grid->num_y-1 : max_y;
+    max_z = max_z >= grid->num_z ? grid->num_z-1 : max_z;
 
     uint32 triangle_idx = 0;
     if (reserve) {
