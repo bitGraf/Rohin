@@ -221,6 +221,10 @@ bool32 renderer_draw_frame(render_packet* packet) {
             renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform", 
                                              packet->commands[cmd_index].model_matrix._data);
             renderer_draw_geometry(&packet->commands[cmd_index].geom);
+            
+            laml::Vec4 point_color = { .8f, 0.4f, 0.25f, 1.0f };
+            renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", point_color._data);
+            renderer_draw_geometry_points(&packet->commands[cmd_index].geom);
         }
 
         if (packet->col_grid && packet->col_grid->num_filled_cells>0) {

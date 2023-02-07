@@ -86,15 +86,21 @@ bool32 game_initialize(RohinApp* app) {
     // load the level geometry into the collision grid
     // 32x256x256, centered on (0,0,0)
     // grid_size of 1
-    state->triangle.v1 = { -0.1f, 0.2f,  1.7f };
-    state->triangle.v2 = { -0.1f, 4.0f, -3.8f };
-    state->triangle.v3 = { -1.1f, 0.2f, -3.8f };
+    //[TRACE]:   Triangle 54/954
+    //[WARN]:  Triangle 54:
+    //v1: (-6.7, 0.0, 5.7)
+    //v2: (-2.0, 0.0, 7.0)
+    //v3: (-4.0, 0.0, 6.0)
+    //[TRACE]: Done!
+    state->triangle.v1 = { -6.7f, 0.0f, 5.7f };
+    state->triangle.v2 = { -2.0f, 0.0f, 7.0f };
+    state->triangle.v3 = { -4.0f, 0.0f, 6.0f };
     laml::Vec3 origin = state->triangle.v1 + state->triangle.v2 + state->triangle.v3;
     origin = origin / 3.0f;
-    collision_create_grid(&state->trans_arena, &state->grid, {0.0f, 2.0f, 0.0f}, 0.05f, 64, 128, 64);
+    collision_create_grid(&state->trans_arena, &state->grid, {-5.0f, -0.0f, 0.0f}, 0.05f, 256, 8, 256);
     //collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 0.5f, 64, 32, 64);
     //collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 1.0f, 64, 32, 64);
-    resource_load_mesh_file_for_level("Data/Models/level1_full.mesh", state->level_geom, &state->grid);
+    resource_load_mesh_file_for_level("Data/Models/level1.mesh", state->level_geom, &state->grid);
     //collision_grid_add_triangle(&state->trans_arena, &state->grid, state->triangle, true);
     //collision_grid_add_triangle(&state->trans_arena, &state->grid, state->triangle, false);
 

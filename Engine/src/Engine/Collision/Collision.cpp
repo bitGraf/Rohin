@@ -72,8 +72,9 @@ void collision_grid_add_triangle(memory_arena* arena, collision_grid* grid, coll
                 laml::Vec3 cube_center = laml::Vec3(cube_x, cube_y, cube_z) + laml::Vec3(0.5f, 0.5f, 0.5f);
                 cube_center = (cube_center* grid->cell_size + grid->origin);
 
-                //RH_TRACE("cube_center: [%.1f,%.1f,%.1f]", cube_center.x, cube_center.y, cube_center.z);
+                //RH_TRACE("cube_center: [%.3f,%.3f,%.3f]", cube_center.x, cube_center.y, cube_center.z);
 
+#if USING_GPU_GEMS_3_INTERSECTION
                 // put triangle into 'unit-cube' space to test
                 collision_triangle tri_mod;
                 tri_mod.v1 = (triangle.v1 - cube_center) / grid->cell_size;
@@ -81,7 +82,11 @@ void collision_grid_add_triangle(memory_arena* arena, collision_grid* grid, coll
                 tri_mod.v3 = (triangle.v3 - cube_center) / grid->cell_size;
 
                 if (triangle_cube_intersect(tri_mod) == INSIDE) {
+#else
+                if (triangle_cube_intersect(triangle, cube_center, laml::Vec3(grid->cell_size, grid->cell_size, grid->cell_size))) {
+#endif
                     collision_grid_cell* cell = &grid->cells[x][y][z];
+                    //RH_INFO("Intersects! [%d,%d,%d] => %d", x, y, z, triangle_idx);
                     // add this triangle to this cell
                     if (reserve) {
                         if (cell->_num_to_allocate == 0) {

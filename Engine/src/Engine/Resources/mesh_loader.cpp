@@ -374,7 +374,9 @@ mesh_file_result resource_load_mesh_file_for_level(const char* resource_file_nam
             collision_grid_add_triangle(arena, grid, triangles[n], false);
         }
     } else {
+        RH_TRACE("Reserving level triangles to grid!");
         for (uint32 n = 0; n < num_tris; n++) {
+            //RH_TRACE("  Triangle %d/%d", n, num_tris);
             uint32 I0 = Indices[n*3 + 0];
             uint32 I1 = Indices[n*3 + 1];
             uint32 I2 = Indices[n*3 + 2];
@@ -388,9 +390,24 @@ mesh_file_result resource_load_mesh_file_for_level(const char* resource_file_nam
             collision_grid_add_triangle(arena, grid, triangles[n], true);
         }
 
+        RH_TRACE("Commiting level triangles to grid!");
         for (uint32 n = 0; n < num_tris; n++) {
+            //RH_TRACE("  Triangle %d/%d", n, num_tris);
             collision_grid_add_triangle(arena, grid, triangles[n], false);
+
+            if (n == 54) {
+                RH_TRACE("  Triangle %d/%d", n, num_tris);
+                collision_triangle tri = triangles[n];
+                RH_WARN("Triangle 54: \n          "
+                           "v1: (%.1f, %.1f, %.1f)\n          "
+                           "v2: (%.1f, %.1f, %.1f)\n          "
+                           "v3: (%.1f, %.1f, %.1f)",
+                           tri.v1.x, tri.v1.y, tri.v1.z,
+                           tri.v2.x, tri.v2.y, tri.v2.z,
+                           tri.v3.x, tri.v3.y, tri.v3.z);
+            }
         }
+        RH_TRACE("Done!");
     }
     //arena->Used = arena_save;
 
