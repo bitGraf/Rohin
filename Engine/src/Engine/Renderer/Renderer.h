@@ -56,6 +56,7 @@ void renderer_destroy_framebuffer(frame_buffer* fbo);
 
 void renderer_use_shader(shader* shader_prog);
 void renderer_draw_geometry(triangle_geometry* geom);
+void renderer_draw_geometry(triangle_geometry* geom, uint32 start_idx, uint32 num_inds);
 void renderer_draw_geometry_lines(triangle_geometry* geom);
 void renderer_draw_geometry_points(triangle_geometry* geom);
 

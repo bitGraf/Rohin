@@ -9,6 +9,8 @@ RHAPI void collision_create_grid(memory_arena* arena, collision_grid* grid, laml
 RHAPI void collision_grid_add_triangle(memory_arena* arena, collision_grid* grid, collision_triangle triangle, bool32 reserve);
 RHAPI void collision_grid_finalize(memory_arena* arena, collision_grid* grid);
 
+RHAPI laml::Vec3 collision_cell_to_world(collision_grid* grid, uint32 grid_x, uint32 grid_y, uint32 grid_z);
+
 #define USING_GPU_GEMS_3_INTERSECTION 0
 #if USING_GPU_GEMS_3_INTERSECTION
 #define INSIDE 0

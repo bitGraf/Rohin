@@ -147,6 +147,32 @@ bool32 OpenGL_api::set_draw_mode(render_draw_mode mode) {
     return true;
 }
 
+bool32 OpenGL_api::set_highlight_mode(bool32 enabled) {
+    if (enabled) {
+        glPolygonOffset(0, -1);
+        glEnable(GL_POLYGON_OFFSET_FILL);
+        glEnable(GL_POLYGON_OFFSET_LINE);
+        glDisable(GL_CULL_FACE);
+    } else {
+        glDisable(GL_POLYGON_OFFSET_FILL);
+        glDisable(GL_POLYGON_OFFSET_LINE);
+        glEnable(GL_CULL_FACE);
+    }
+
+    return true;
+}
+
+bool32 OpenGL_api::disable_depth_test() {
+    glDisable(GL_DEPTH_TEST);
+
+    return true;
+}
+bool32 OpenGL_api::enable_depth_test() {
+    glEnable(GL_DEPTH_TEST);
+
+    return true;
+}
+
 
 
 void OpenGL_api::create_texture(struct texture_2D* texture, const uint8* data) {
@@ -510,6 +536,11 @@ void OpenGL_api::use_shader(shader* shader_prog) {
 void OpenGL_api::draw_geometry(triangle_geometry* geom) {
     glBindVertexArray(geom->handle);
     glDrawElements(GL_TRIANGLES, geom->num_inds, GL_UNSIGNED_INT, 0);
+}
+void OpenGL_api::draw_geometry(triangle_geometry* geom, uint32 start_idx, uint32 num_inds) {
+    glBindVertexArray(geom->handle);
+    //glDrawElements(GL_TRIANGLES, num_inds, GL_UNSIGNED_INT, (void*)(&start_idx));
+    glDrawElements(GL_TRIANGLES, num_inds, GL_UNSIGNED_INT, (void*)(start_idx * sizeof(GLuint)));
 }
 void OpenGL_api::draw_geometry_lines(triangle_geometry* geom) {
     glBindVertexArray(geom->handle);

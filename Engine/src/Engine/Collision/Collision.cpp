@@ -180,3 +180,11 @@ void collision_grid_finalize(memory_arena* arena, collision_grid* grid) {
 
     arena->Used = arena_save;
 }
+
+laml::Vec3 collision_cell_to_world(collision_grid* grid, uint32 grid_x, uint32 grid_y, uint32 grid_z) {
+    real32 cube_x = (real32)grid_x - (real32)grid->num_x / 2.0f;
+    real32 cube_y = (real32)grid_y - (real32)grid->num_y / 2.0f;
+    real32 cube_z = (real32)grid_z - (real32)grid->num_z / 2.0f;
+
+    return grid->origin + laml::Vec3(cube_x, cube_y, cube_z)*grid->cell_size;
+}

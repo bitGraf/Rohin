@@ -12,6 +12,9 @@ struct OpenGL_api final : public renderer_api {
     bool32 end_frame(real32 delta_time) override final;
 
     bool32 set_draw_mode(render_draw_mode mode) override final;
+    bool32 set_highlight_mode(bool32 enabled) override final;
+    bool32 disable_depth_test() override final;
+    bool32 enable_depth_test() override final;
 
     void create_texture(struct texture_2D* texture, const uint8* data) override final;
     void destroy_texture(struct texture_2D* texture) override final;
@@ -28,6 +31,7 @@ struct OpenGL_api final : public renderer_api {
 
     void use_shader(shader* shader_prog) override final;
     void draw_geometry(triangle_geometry* geom) override final;
+    void draw_geometry(triangle_geometry* geom, uint32 start_idx, uint32 num_inds) override final;
     void draw_geometry_lines(triangle_geometry* geom) override final;
     void draw_geometry_points(triangle_geometry* geom) override final;
 

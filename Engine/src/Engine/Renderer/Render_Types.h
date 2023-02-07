@@ -40,6 +40,10 @@ struct renderer_api {
     virtual bool32 end_frame(real32 delta_time) = 0;
 
     virtual bool32 set_draw_mode(render_draw_mode mode) = 0;
+    virtual bool32 disable_depth_test() = 0;
+    virtual bool32 enable_depth_test() = 0;
+
+    virtual bool32 set_highlight_mode(bool32 enabled) = 0;
 
     virtual void create_texture(struct texture_2D* texture, const uint8* data) = 0;
     virtual void destroy_texture(struct texture_2D* texture) = 0;
@@ -56,6 +60,7 @@ struct renderer_api {
 
     virtual void use_shader(shader* shader_prog) = 0;
     virtual void draw_geometry(triangle_geometry* geom) = 0;
+    virtual void draw_geometry(triangle_geometry* geom, uint32 start_idx, uint32 num_inds) = 0;
     virtual void draw_geometry_lines(triangle_geometry* geom) = 0;
     virtual void draw_geometry_points(triangle_geometry* geom) = 0;
 
@@ -158,4 +163,5 @@ struct render_packet {
 
     // tmp: for collision grid testing
     collision_grid* col_grid;
+    uint32 gx, gy, gz;
 };

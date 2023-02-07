@@ -33,6 +33,7 @@ struct game_state {
     player_state player;
 
     collision_grid grid;
+    uint32 gx, gy, gz;
 
     collision_triangle triangle;
     triangle_geometry tri_geom;
@@ -45,6 +46,51 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
     if (key_code == KEY_P) {
         laml::Vec3 pos = state->player.position;
         RH_INFO("Player position: [%4.1f,%4.1f,%4.1f]", pos.x, pos.y, pos.z);
+    } else if (key_code == KEY_RIGHT) {
+        if (input_is_key_down(KEY_LSHIFT)) {
+            collision_grid_cell* cell = &state->grid.cells[state->gx][state->gy][state->gz];
+            do {
+                state->gz++;
+                if (state->gz == state->grid.num_z) {
+                    state->gz = 0;
+                    state->gy++;
+                    if (state->gy == state->grid.num_y) {
+                        state->gy = 0;
+                        state->gx++;
+                        if (state->gx == state->grid.num_x) {
+                            state->gx = 0;
+                        }
+                    }
+                }
+                cell = &state->grid.cells[state->gx][state->gy][state->gz];
+            } while (cell->num_surfaces == 0);
+        } else {
+            state->gz++;
+            if (state->gz == state->grid.num_z) {
+                state->gz = 0;
+                state->gy++;
+                if (state->gy == state->grid.num_y) {
+                    state->gy = 0;
+                    state->gx++;
+                    if (state->gx == state->grid.num_x) {
+                        state->gx = 0;
+                    }
+                }
+            }
+        }
+    } else if (key_code == KEY_C) {
+        collision_grid_cell cell = state->grid.cells[state->gx][state->gy][state->gz];
+
+        RH_TRACE("[%d,%d,%d]\n         %d triangles", state->gx, state->gy, state->gz, cell.num_surfaces);
+        for (uint32 n = 0; n < cell.num_surfaces; n++) {
+            collision_triangle tri = state->grid.triangles[cell.surfaces[n]];
+            RH_TRACE(" #%d [%f,%f,%f]\n        "
+                     "     [%f,%f,%f]\n        "
+                     "     [%f,%f,%f]\n", n, 
+                     tri.v1.x, tri.v1.y, tri.v1.z,
+                     tri.v2.x, tri.v2.y, tri.v2.z,
+                     tri.v3.x, tri.v3.y, tri.v3.z);
+        }
     }
     //RH_TRACE("Game[0x%016llX] recieved event code %d \n         "
     //         "Sender=[0x%016llX] \n         "
@@ -102,7 +148,7 @@ bool32 game_initialize(RohinApp* app) {
     state->triangle.v3 = { -4.0f, 0.0f, 6.0f };
     laml::Vec3 origin = state->triangle.v1 + state->triangle.v2 + state->triangle.v3;
     origin = origin / 3.0f;
-    collision_create_grid(&state->trans_arena, &state->grid, {-5.0f, -0.0f, 0.0f}, 0.05f, 256, 8, 256);
+    collision_create_grid(&state->trans_arena, &state->grid, {-5.0f, -0.0f, 0.0f}, 0.25f, 64, 4, 64);
     //collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 0.5f, 64, 32, 64);
     //collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 1.0f, 64, 32, 64);
     resource_load_mesh_file_for_level("Data/Models/level1.mesh", state->level_geom, &state->grid);
@@ -127,11 +173,40 @@ bool32 game_initialize(RohinApp* app) {
     state->player.position = {0.0f, 1.0f, 0.0f};
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
 
+    state->gx = 12;
+    state->gy = 2;
+    state->gz = 23;
+
     return true;
 }
 
 bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta_time) {
     game_state* state = (game_state*)(app->memory.PermanentStorage);
+
+    if (input_is_key_down(KEY_T)) {
+        static int delay = 0;
+        delay++;
+        if (delay == 4) {
+            collision_grid_cell* cell = &state->grid.cells[state->gx][state->gy][state->gz];
+            do {
+                state->gz++;
+                if (state->gz == state->grid.num_z) {
+                    state->gz = 0;
+                    state->gy++;
+                    if (state->gy == state->grid.num_y) {
+                        state->gy = 0;
+                        state->gx++;
+                        if (state->gx == state->grid.num_x) {
+                            state->gx = 0;
+                        }
+                    }
+                }
+                cell = &state->grid.cells[state->gx][state->gy][state->gz];
+            } while (cell->num_surfaces == 0);
+
+            delay = 0;
+        }
+    }
 
     // simulate game state
     laml::Mat4 eye(1.0f);
@@ -215,6 +290,9 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
 #if 1
     packet->col_grid = &state->grid;
+    packet->gx = state->gx;
+    packet->gy = state->gy;
+    packet->gz = state->gz;
 #endif
 
     // calculate view-point
