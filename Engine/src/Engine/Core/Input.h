@@ -147,9 +147,12 @@ RHAPI bool32 input_was_button_up(mouse_button_codes button);
 
 RHAPI void input_get_mouse_pos(int32* x, int32* y);
 RHAPI void input_get_prev_mouse_pos(int32* x, int32* y);
+RHAPI void input_get_raw_mouse_offset(int32* dx, int32* dy);
 
 void input_process_mouse_button(mouse_button_codes button, uint8 pressed);
 void input_process_mouse_move(int32 mouse_x, int32 mouse_y);
 void input_process_mouse_wheel(int32 mouse_z);
+
+void input_process_raw_mouse_move(int32 mouse_dx, int32 mouse_dy);
 
 RHAPI const char* input_get_key_string(keyboard_keys key);

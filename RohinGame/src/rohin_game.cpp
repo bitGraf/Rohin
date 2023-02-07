@@ -14,6 +14,9 @@
 struct player_state {
     laml::Vec3 position;
     laml::Quat orientation;
+
+    real32 pitch;
+    real32 yaw;
 };
 
 struct game_state {
@@ -57,6 +60,8 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
 
 bool32 game_startup(RohinApp* app) {
     RH_INFO("Game startup.");
+
+    // TODO: make sure memory is zeroed at this point
 
     game_state* state = (game_state*)(app->memory.PermanentStorage);
     CreateArena(&state->perm_arena, app->memory.PermanentStorageSize, (uint8*)app->memory.PermanentStorage + sizeof(game_state));
@@ -130,14 +135,37 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
     // simulate game state
     laml::Mat4 eye(1.0f);
-    int32 mouse_x, mouse_y;
-    input_get_mouse_pos(&mouse_x, &mouse_y);
-    real32 yaw = -0.75f * ((real32)mouse_x);
-    real32 pitch = -0.35f * (real32)mouse_y;
+    //int32 mouse_x, mouse_y;
+    //input_get_mouse_pos(&mouse_x, &mouse_y);
+    //real32 yaw = -0.75f * ((real32)mouse_x);
+    //real32 pitch = -0.35f * (real32)mouse_y;
+    int32 mouse_dx, mouse_dy;
+    //input_get_mouse_offset(&mouse_dx, &mouse_dy);
+    //int32 x, y, px, py;
+    //input_get_mouse_pos(&x, &y);
+    //input_get_prev_mouse_pos(&px, &py);
+    //mouse_dx = x - px;
+    //mouse_dy = y - py;
+    input_get_raw_mouse_offset(&mouse_dx, &mouse_dy);
+    real32 x_sens = 10.0f;
+    real32 y_sens = 5.0f;
+    state->player.yaw   -= x_sens*mouse_dx*delta_time;
+    state->player.pitch -= y_sens*mouse_dy*delta_time;
+    if (state->player.pitch > 85.0f) {
+        state->player.pitch = 85.0f;
+    } else if (state->player.pitch < -85.0f) {
+        state->player.pitch = -85.0f;
+    }
+    if (state->player.yaw > 360.0f) {
+        state->player.yaw -= 360.0f;
+    } else if (state->player.yaw < 0.0f) {
+        state->player.yaw += 360.0f;
+    }
 
     // TODO: this is a silly way to go, why not just ypr->quat
     laml::Mat3 player_rot;
-    laml::transform::create_transform_rotation(player_rot, yaw, pitch, 0.0f);
+    //laml::transform::create_transform_rotation(player_rot, yaw, pitch, 0.0f);
+    laml::transform::create_transform_rotation(player_rot, state->player.yaw, state->player.pitch, 0.0f);
     state->player.orientation = laml::transform::quat_from_mat(player_rot);
 
     laml::Vec3 right = player_rot._cols[0];

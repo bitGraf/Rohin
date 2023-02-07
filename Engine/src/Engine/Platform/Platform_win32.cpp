@@ -15,6 +15,15 @@
 #include <stdio.h>
 //#include "Engine/Platform/WGL/win32_opengl.h"
 
+// https://learn.microsoft.com/en-us/windows/win32/dxtecharts/taking-advantage-of-high-dpi-mouse-movement?redirectedfrom=MSDN#wm_input
+// you can #include <hidusage.h> for these defines
+#ifndef HID_USAGE_PAGE_GENERIC
+#define HID_USAGE_PAGE_GENERIC         ((USHORT) 0x01)
+#endif
+#ifndef HID_USAGE_GENERIC_MOUSE
+#define HID_USAGE_GENERIC_MOUSE        ((USHORT) 0x02)
+#endif
+
 // platform_win32.cpp manages this struct, no one else needs to access it
 #define WIN32_STATE_FILE_NAME_COUNT MAX_PATH
 struct PlatformState {
@@ -217,6 +226,13 @@ bool32 platform_startup(AppConfig* config) {
     //GlobalGameUpdateHz = 60;
     //GlobalMonitorRefreshHz = Win32GetMonitorRefreshRate(Window);
 
+    RAWINPUTDEVICE Rid[1];
+    Rid[0].usUsagePage = HID_USAGE_PAGE_GENERIC; 
+    Rid[0].usUsage = HID_USAGE_GENERIC_MOUSE; 
+    Rid[0].dwFlags = RIDEV_INPUTSINK;   
+    Rid[0].hwndTarget = global_win32_state.window;
+    RegisterRawInputDevices(Rid, 1, sizeof(Rid[0]));
+
     return true;
 }
 
@@ -394,6 +410,14 @@ LRESULT CALLBACK win32_window_callback(HWND window, uint32 message, WPARAM w_par
                     } else {
                         ClipCursor(&global_win32_state.mouse_rect_full);
                     }
+                } else if (key == KEY_H) {
+                    RH_INFO("Toggle mouse hide");
+                    global_win32_state.hide_mouse = !global_win32_state.hide_mouse;
+                    if (global_win32_state.hide_mouse) {
+                        ShowCursor(FALSE);
+                    } else {
+                        ShowCursor(TRUE);
+                    }
                 }
             }
 
@@ -404,6 +428,25 @@ LRESULT CALLBACK win32_window_callback(HWND window, uint32 message, WPARAM w_par
             int32 y_pos = GET_Y_LPARAM(l_param);
 
             input_process_mouse_move(x_pos, y_pos);
+        } break;
+        case WM_INPUT: 
+        {
+            UINT dwSize = sizeof(RAWINPUT);
+            static BYTE lpb[sizeof(RAWINPUT)];
+
+            GetRawInputData((HRAWINPUT)l_param, RID_INPUT, lpb, &dwSize, sizeof(RAWINPUTHEADER));
+
+            RAWINPUT* raw = (RAWINPUT*)lpb;
+
+            if (raw->header.dwType == RIM_TYPEMOUSE) 
+            {
+                int xPosRelative = raw->data.mouse.lLastX;
+                int yPosRelative = raw->data.mouse.lLastY;
+
+                //RH_TRACE("Mouse dx: %d", xPosRelative);
+                input_process_raw_mouse_move(xPosRelative, yPosRelative);
+            } 
+            break;
         } break;
         case WM_MOUSEWHEEL: {
             int32 z_delta = GET_WHEEL_DELTA_WPARAM(w_param);
@@ -591,6 +634,15 @@ void platform_free_file_data(file_handle* handle) {
 
     handle->num_bytes = 0;
     handle->data = 0;
+}
+
+void platform_update_mouse() {
+    if (global_win32_state.hide_mouse) {
+        LONG center_x = (global_win32_state.mouse_rect.left + global_win32_state.mouse_rect.right) / 2;
+        LONG center_y = (global_win32_state.mouse_rect.bottom + global_win32_state.mouse_rect.top) / 2;
+
+        SetCursorPos(center_x,center_y);
+    }
 }
 
 #endif //#if RH_PLATFORM_WINDOWS

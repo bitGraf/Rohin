@@ -40,6 +40,7 @@ void platform_console_set_title(const char* Message, ...);
 int64 platform_get_wall_clock();
 real64 platform_get_seconds_elapsed(int64 start, int64 end);
 RHAPI void platform_sleep(uint64 ms);
+void platform_update_mouse();
 
 // rendering stuff
 void platform_swap_buffers();

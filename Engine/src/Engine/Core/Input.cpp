@@ -1,9 +1,12 @@
 #include "Input.h"
 
 #include "Engine/Core/Asserts.h"
+#include "Engine/Core/Logger.h"
 #include "Engine/Memory/MemoryUtils.h"
 #include "Engine/Memory/Memory_Arena.h"
 #include "Engine/Core/Event.h"
+
+#include "Engine/Platform/Platform.h"
 
 // snapshot of a current keyboard state
 struct keyboard_state {
@@ -22,6 +25,9 @@ struct input_system_state {
     keyboard_state keyboard_previous;
     mouse_state mouse_current;
     mouse_state mouse_previous;
+
+    int32 mouse_raw_dx;
+    int32 mouse_raw_dy;
 };
 
 global_variable input_system_state* global_input_state;
@@ -49,10 +55,17 @@ void input_shutdown() {
 void input_update(real32 delta_time) {
     Assert(global_input_state);
 
+    platform_update_mouse();
+
     // swap previous and current input states
     // actually perform a copy, so that state is persisted
     memory_copy(&global_input_state->keyboard_previous, &global_input_state->keyboard_current, sizeof(keyboard_state));
     memory_copy(&global_input_state->mouse_previous, &global_input_state->mouse_current, sizeof(mouse_state));
+
+    global_input_state->mouse_raw_dx = 0;
+    global_input_state->mouse_raw_dy = 0;
+
+    // TODO: move mouse cursor to center of screen if captured
 }
 
 // internal functions to respond to key events
@@ -91,11 +104,19 @@ void input_process_mouse_move(int32 mouse_x, int32 mouse_y) {
         global_input_state->mouse_current.x_pos = mouse_x;
         global_input_state->mouse_current.y_pos = mouse_y;
 
+        //RH_TRACE("Mouse x: %d", mouse_x);
+
         event_context data;
         data.i32[0] = mouse_x;
         data.i32[1] = mouse_y;
         event_fire(EVENT_CODE_MOUSE_MOVED, 0, data);
     }
+}
+void input_process_raw_mouse_move(int32 mouse_dx, int32 mouse_dy) {
+    Assert(global_input_state);
+
+    global_input_state->mouse_raw_dx += mouse_dx;
+    global_input_state->mouse_raw_dy += mouse_dy;
 }
 
 void input_process_mouse_wheel(int32 mouse_z) {
@@ -146,15 +167,20 @@ RHAPI bool32 input_was_button_up(mouse_button_codes button) {
     return (bool)global_input_state->mouse_previous.buttons[button] == false;
 }
 
-RHAPI void input_get_mouse_pos(int32* x, int32* y) {
+void input_get_mouse_pos(int32* x, int32* y) {
     Assert(global_input_state);
     *x = global_input_state->mouse_current.x_pos;
     *y = global_input_state->mouse_current.y_pos;
 }
-RHAPI void input_get_prev_mouse_pos(int32* x, int32* y) {
+void input_get_prev_mouse_pos(int32* x, int32* y) {
     Assert(global_input_state);
     *x = global_input_state->mouse_previous.x_pos;
     *y = global_input_state->mouse_previous.y_pos;
+}
+void input_get_raw_mouse_offset(int32* dx, int32* dy) {
+    Assert(global_input_state);
+    *dx = global_input_state->mouse_raw_dx;
+    *dy = global_input_state->mouse_raw_dy;
 }
 
 RHAPI const char* input_get_key_string(keyboard_keys key) {
