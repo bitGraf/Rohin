@@ -356,7 +356,23 @@ mesh_file_result resource_load_mesh_file_for_level(const char* resource_file_nam
     uint32 num_tris = Header->NumInds / 3;
     collision_triangle* triangles = PushArray(arena, collision_triangle, num_tris);
     if (HasSkeleton) {
-        Assert(false);
+        for (uint32 n = 0; n < num_tris; n++) {
+            uint32 I0 = Indices[n*3 + 0];
+            uint32 I1 = Indices[n*3 + 1];
+            uint32 I2 = Indices[n*3 + 2];
+
+            vertex_anim* verts = (vertex_anim*)VertexData;
+            
+            triangles[n].v1 = verts[I0].Position;
+            triangles[n].v2 = verts[I1].Position;
+            triangles[n].v3 = verts[I2].Position;
+
+            collision_grid_add_triangle(arena, grid, triangles[n], true);
+        }
+
+        for (uint32 n = 0; n < num_tris; n++) {
+            collision_grid_add_triangle(arena, grid, triangles[n], false);
+        }
     } else {
         for (uint32 n = 0; n < num_tris; n++) {
             uint32 I0 = Indices[n*3 + 0];

@@ -30,6 +30,9 @@ struct game_state {
     player_state player;
 
     collision_grid grid;
+
+    collision_triangle triangle;
+    triangle_geometry tri_geom;
 };
 
 bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context) {
@@ -83,10 +86,32 @@ bool32 game_initialize(RohinApp* app) {
     // load the level geometry into the collision grid
     // 32x256x256, centered on (0,0,0)
     // grid_size of 1
-    collision_create_grid(&state->trans_arena, &state->grid, { 20.0f, -0.5f, -5.0f }, 1.0f, 64, 32, 64);
+    state->triangle.v1 = { -0.1f, 0.2f,  1.7f };
+    state->triangle.v2 = { -0.1f, 4.0f, -3.8f };
+    state->triangle.v3 = { -1.1f, 0.2f, -3.8f };
+    laml::Vec3 origin = state->triangle.v1 + state->triangle.v2 + state->triangle.v3;
+    origin = origin / 3.0f;
+    collision_create_grid(&state->trans_arena, &state->grid, {0.0f, 2.0f, 0.0f}, 0.05f, 64, 128, 64);
+    //collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 0.5f, 64, 32, 64);
     //collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 1.0f, 64, 32, 64);
-    resource_load_mesh_file_for_level("Data/Models/level1.mesh", state->level_geom, &state->grid);
+    resource_load_mesh_file_for_level("Data/Models/level1_full.mesh", state->level_geom, &state->grid);
+    //collision_grid_add_triangle(&state->trans_arena, &state->grid, state->triangle, true);
+    //collision_grid_add_triangle(&state->trans_arena, &state->grid, state->triangle, false);
+
     collision_grid_finalize(&state->trans_arena, &state->grid);
+
+    struct _vert {
+        laml::Vec3 position;
+        laml::Vec3 normal;
+    };
+    laml::Vec3 norm = laml::cross(state->triangle.v2 - state->triangle.v1, state->triangle.v3 - state->triangle.v1);
+    _vert verts[] = {
+                      {state->triangle.v1, norm},
+                      {state->triangle.v2, norm},
+                      {state->triangle.v3, norm}};
+    uint32 inds[] = { 0, 1, 2 };
+    const ShaderDataType attr[] = {ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::None};
+    renderer_create_mesh(&state->tri_geom, 3, verts, 3, inds, attr);
 
     state->player.position = {0.0f, 1.0f, 0.0f};
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -142,6 +167,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     
     packet->commands[0].model_matrix = eye;
     packet->commands[0].geom = *state->level_geom;
+    //packet->commands[0].geom = state->tri_geom;
     packet->commands[0].material_handle = 0;
 #if 0
     packet->num_commands = state->num_geometry;

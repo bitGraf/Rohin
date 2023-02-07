@@ -27,8 +27,6 @@ void collision_create_grid(memory_arena* arena, collision_grid* grid, laml::Vec3
             }
         }
     }
-
-    
 }
 
 void collision_grid_add_triangle(memory_arena* arena, collision_grid* grid, collision_triangle triangle, bool32 reserve) {
@@ -40,18 +38,19 @@ void collision_grid_add_triangle(memory_arena* arena, collision_grid* grid, coll
     real32 min_y_world = laml::min(laml::Vec3(triangle.v1.y, triangle.v2.y, triangle.v3.y));
     real32 min_z_world = laml::min(laml::Vec3(triangle.v1.z, triangle.v2.z, triangle.v3.z));
 
-    int32 max_x = (grid->num_x/2) + (int32)(floor(max_x_world - grid->origin.x) / grid->cell_size);
-    int32 max_y = (grid->num_y/2) + (int32)(floor(max_y_world - grid->origin.y) / grid->cell_size);
-    int32 max_z = (grid->num_z/2) + (int32)(floor(max_z_world - grid->origin.z) / grid->cell_size);
+    int32 max_x = (grid->num_x/2) + (int32)(floor((max_x_world - grid->origin.x) / grid->cell_size));
+    int32 max_y = (grid->num_y/2) + (int32)(floor((max_y_world - grid->origin.y) / grid->cell_size));
+    int32 max_z = (grid->num_z/2) + (int32)(floor((max_z_world - grid->origin.z) / grid->cell_size));
+    int32 min_x = (grid->num_x/2) + (int32)(floor((min_x_world - grid->origin.x) / grid->cell_size));
+    int32 min_y = (grid->num_y/2) + (int32)(floor((min_y_world - grid->origin.y) / grid->cell_size));
+    int32 min_z = (grid->num_z/2) + (int32)(floor((min_z_world - grid->origin.z) / grid->cell_size));
 
-    int32 min_x = (grid->num_x/2) + (int32)(floor(min_x_world - grid->origin.x) / grid->cell_size);
-    int32 min_y = (grid->num_y/2) + (int32)(floor(min_y_world - grid->origin.y) / grid->cell_size);
-    int32 min_z = (grid->num_z/2) + (int32)(floor(min_z_world - grid->origin.z) / grid->cell_size);
-
-    // TODO: check if these bounds fit within the whole grid!!
     max_x = max_x >= grid->num_x ? grid->num_x-1 : max_x;
     max_y = max_y >= grid->num_y ? grid->num_y-1 : max_y;
     max_z = max_z >= grid->num_z ? grid->num_z-1 : max_z;
+    min_x = min_x < 0 ? 0 : min_x;
+    min_y = min_y < 0 ? 0 : min_y;
+    min_z = min_z < 0 ? 0 : min_z;
 
     uint32 triangle_idx = 0;
     if (reserve) {
@@ -65,22 +64,21 @@ void collision_grid_add_triangle(memory_arena* arena, collision_grid* grid, coll
     }
 
     for (int x = min_x; x <= max_x; x++) {
-        real32 cube_x = (real32)x - (real32)grid->num_x / 2.0f;
+        real32 cube_x = (real32)(x - (grid->num_x / 2));
         for (int y = min_y; y <= max_y; y++) {
-            real32 cube_y = (real32)y - (real32)grid->num_y / 2.0f;
+            real32 cube_y = (real32)(y - (grid->num_y / 2));
             for (int z = min_z; z <= max_z; z++) {
-                real32 cube_z = (real32)z - (real32)grid->num_z / 2.0f;
-                laml::Vec3 cube_center = grid->origin + laml::Vec3(cube_x, cube_y, cube_z)*grid->cell_size;
-                laml::Vec3 o(0.5f, 0.5f, 0.5f);
-                cube_center = cube_center + o;
+                real32 cube_z = (real32)(z - (grid->num_z / 2));
+                laml::Vec3 cube_center = laml::Vec3(cube_x, cube_y, cube_z) + laml::Vec3(0.5f, 0.5f, 0.5f);
+                cube_center = (cube_center* grid->cell_size + grid->origin);
 
                 //RH_TRACE("cube_center: [%.1f,%.1f,%.1f]", cube_center.x, cube_center.y, cube_center.z);
 
                 // put triangle into 'unit-cube' space to test
                 collision_triangle tri_mod;
-                tri_mod.v1 = (triangle.v1 / grid->cell_size) - cube_center;
-                tri_mod.v2 = (triangle.v2 / grid->cell_size) - cube_center;
-                tri_mod.v3 = (triangle.v3 / grid->cell_size) - cube_center;
+                tri_mod.v1 = (triangle.v1 - cube_center) / grid->cell_size;
+                tri_mod.v2 = (triangle.v2 - cube_center) / grid->cell_size;
+                tri_mod.v3 = (triangle.v3 - cube_center) / grid->cell_size;
 
                 if (triangle_cube_intersect(tri_mod) == INSIDE) {
                     collision_grid_cell* cell = &grid->cells[x][y][z];
