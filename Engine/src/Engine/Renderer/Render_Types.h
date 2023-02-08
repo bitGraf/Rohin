@@ -10,6 +10,15 @@ struct frame_buffer;
 struct frame_buffer_attachment;
 struct collision_grid;
 
+struct collision_sector {
+    int32 x_min;
+    int32 x_max;
+    int32 y_min;
+    int32 y_max;
+    int32 z_min; 
+    int32 z_max;
+};
+
 enum renderer_api_type {
     RENDERER_API_OPENGL,
 };
@@ -163,5 +172,5 @@ struct render_packet {
 
     // tmp: for collision grid testing
     collision_grid* col_grid;
-    uint32 gx, gy, gz;
+    collision_sector sector;
 };

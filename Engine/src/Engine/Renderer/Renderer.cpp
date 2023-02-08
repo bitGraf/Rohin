@@ -257,22 +257,32 @@ bool32 renderer_draw_frame(render_packet* packet) {
             backend->set_highlight_mode(true);
 
             collision_grid* grid = packet->col_grid;
-            collision_grid_cell* cell = &packet->col_grid->cells[packet->gx][packet->gy][packet->gz];
-            laml::Vec3 cell_pos = collision_cell_to_world(packet->col_grid, packet->gx, packet->gy, packet->gz);
-            laml::Mat4 cell_transform;
-            laml::transform::create_transform_translate(cell_transform, cell_pos);
-            laml::Mat4 scale_m;
-            laml::transform::create_transform_scale(scale_m, laml::Vec3(grid->cell_size));
-            cell_transform = laml::mul(cell_transform, scale_m);
-            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
-                                             cell_transform._data);
-            wire_color = { .35f, 0.6f, 0.7f, 0.5f };
-            renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
 
-            backend->disable_depth_test();
-            renderer_draw_geometry_lines(&render_state->cube_geom);
-            backend->enable_depth_test();
+            // render sector of cells
+            for (int32 x = packet->sector.x_min; x <= packet->sector.x_max; x++) {
+                for (int32 y = packet->sector.y_min; y <= packet->sector.y_max; y++) {
+                    for (int32 z = packet->sector.z_min; z <= packet->sector.z_max; z++) {
+                        collision_grid_cell* cell = &packet->col_grid->cells[x][y][z];
 
+                        laml::Vec3 cell_pos = collision_cell_to_world(packet->col_grid, x, y, z);
+                        laml::Mat4 cell_transform;
+                        laml::transform::create_transform_translate(cell_transform, cell_pos);
+                        laml::Mat4 scale_m;
+                        laml::transform::create_transform_scale(scale_m, laml::Vec3(grid->cell_size));
+                        cell_transform = laml::mul(cell_transform, scale_m);
+                        renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
+                                                         cell_transform._data);
+                        wire_color = { .35f, 0.6f, 0.7f, 0.5f };
+                        renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
+
+                        backend->disable_depth_test();
+                        renderer_draw_geometry_lines(&render_state->cube_geom);
+                        backend->enable_depth_test();
+                    }
+                }
+            }
+
+#if 0
             if (cell->num_surfaces > 0) {
                 renderer_use_shader(&render_state->simple_shader);
 
@@ -288,6 +298,7 @@ bool32 renderer_draw_frame(render_packet* packet) {
                     renderer_draw_geometry(&packet->commands[0].geom, start_idx, 3);
                 }
             }
+#endif
 
             backend->set_highlight_mode(false);
         }

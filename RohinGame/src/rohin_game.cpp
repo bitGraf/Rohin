@@ -15,8 +15,13 @@ struct player_state {
     laml::Vec3 position;
     laml::Quat orientation;
 
+    real32 scale;
+
     real32 pitch;
     real32 yaw;
+
+    real32 height;
+    real32 radius;
 };
 
 struct game_state {
@@ -31,12 +36,19 @@ struct game_state {
     triangle_geometry* geometry;
 
     player_state player;
+    player_state debug_camera;
 
     collision_grid grid;
     uint32 gx, gy, gz;
 
     collision_triangle triangle;
     triangle_geometry tri_geom;
+
+    collision_capsule capsule;
+    triangle_geometry capsule_geom;
+    collision_sector sector;
+
+    real32 theta;
 };
 
 bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context) {
@@ -79,6 +91,14 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
             }
         }
     } else if (key_code == KEY_C) {
+        RH_TRACE("Collision sector:\n         "
+                 "x: %d->%d\n         "
+                 "y: %d->%d\n         "
+                 "z: %d->%d\n         ",
+                 state->sector.x_min, state->sector.x_max,
+                 state->sector.y_min, state->sector.y_max,
+                 state->sector.z_min, state->sector.z_max);
+#if 0
         collision_grid_cell cell = state->grid.cells[state->gx][state->gy][state->gz];
 
         RH_TRACE("[%d,%d,%d]\n         %d triangles", state->gx, state->gy, state->gz, cell.num_surfaces);
@@ -91,6 +111,7 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
                      tri.v2.x, tri.v2.y, tri.v2.z,
                      tri.v3.x, tri.v3.y, tri.v3.z);
         }
+#endif
     }
     //RH_TRACE("Game[0x%016llX] recieved event code %d \n         "
     //         "Sender=[0x%016llX] \n         "
@@ -148,7 +169,8 @@ bool32 game_initialize(RohinApp* app) {
     state->triangle.v3 = { -4.0f, 0.0f, 6.0f };
     laml::Vec3 origin = state->triangle.v1 + state->triangle.v2 + state->triangle.v3;
     origin = origin / 3.0f;
-    collision_create_grid(&state->trans_arena, &state->grid, {-5.0f, -0.0f, 0.0f}, 0.25f, 64, 4, 64);
+
+    collision_create_grid(&state->trans_arena, &state->grid, {25.0f, -0.0f, -5.0f}, 0.5f, 256, 16, 256);
     //collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 0.5f, 64, 32, 64);
     //collision_create_grid(&state->trans_arena, &state->grid, { 0.0f, 0.0f, 0.0f }, 1.0f, 64, 32, 64);
     resource_load_mesh_file_for_level("Data/Models/level1.mesh", state->level_geom, &state->grid);
@@ -172,10 +194,17 @@ bool32 game_initialize(RohinApp* app) {
 
     state->player.position = {0.0f, 1.0f, 0.0f};
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
+    state->player.scale = 0.5f;
+    state->player.height = 2.0f;
+    state->player.radius = 0.5f;
+    laml::Vec3 world_up(0.0f, 1.0f, 0.0f);
+    collision_create_capsule(&state->capsule, &state->capsule_geom, state->player.height, state->player.radius, world_up);
+    resource_load_mesh_file("Data/Models/dance.mesh", &state->capsule_geom, 0, 0, 0);
 
     state->gx = 12;
     state->gy = 2;
     state->gz = 23;
+    state->theta = 0.0f;
 
     return true;
 }
@@ -208,44 +237,40 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         }
     }
 
+    state->theta += 45.0f*delta_time;
+    //state->theta = 5.0f;
+    state->player.position.x = 5.0f * cos(state->theta*laml::constants::deg2rad<real32>);
+    state->player.position.y = 0.1f;
+    state->player.position.z = 5.0f * sin(state->theta*laml::constants::deg2rad<real32>);
+    collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->player.position);
+
     // simulate game state
     laml::Mat4 eye(1.0f);
-    //int32 mouse_x, mouse_y;
-    //input_get_mouse_pos(&mouse_x, &mouse_y);
-    //real32 yaw = -0.75f * ((real32)mouse_x);
-    //real32 pitch = -0.35f * (real32)mouse_y;
     int32 mouse_dx, mouse_dy;
-    //input_get_mouse_offset(&mouse_dx, &mouse_dy);
-    //int32 x, y, px, py;
-    //input_get_mouse_pos(&x, &y);
-    //input_get_prev_mouse_pos(&px, &py);
-    //mouse_dx = x - px;
-    //mouse_dy = y - py;
     input_get_raw_mouse_offset(&mouse_dx, &mouse_dy);
     real32 x_sens = 10.0f;
     real32 y_sens = 5.0f;
-    state->player.yaw   -= x_sens*mouse_dx*delta_time;
-    state->player.pitch -= y_sens*mouse_dy*delta_time;
-    if (state->player.pitch > 85.0f) {
-        state->player.pitch = 85.0f;
-    } else if (state->player.pitch < -85.0f) {
-        state->player.pitch = -85.0f;
+    state->debug_camera.yaw   -= x_sens*mouse_dx*delta_time;
+    state->debug_camera.pitch -= y_sens*mouse_dy*delta_time;
+    if (state->debug_camera.pitch > 85.0f) {
+        state->debug_camera.pitch = 85.0f;
+    } else if (state->debug_camera.pitch < -85.0f) {
+        state->debug_camera.pitch = -85.0f;
     }
-    if (state->player.yaw > 360.0f) {
-        state->player.yaw -= 360.0f;
-    } else if (state->player.yaw < 0.0f) {
-        state->player.yaw += 360.0f;
+    if (state->debug_camera.yaw > 360.0f) {
+        state->debug_camera.yaw -= 360.0f;
+    } else if (state->debug_camera.yaw < 0.0f) {
+        state->debug_camera.yaw += 360.0f;
     }
 
     // TODO: this is a silly way to go, why not just ypr->quat
-    laml::Mat3 player_rot;
-    //laml::transform::create_transform_rotation(player_rot, yaw, pitch, 0.0f);
-    laml::transform::create_transform_rotation(player_rot, state->player.yaw, state->player.pitch, 0.0f);
-    state->player.orientation = laml::transform::quat_from_mat(player_rot);
+    laml::Mat3 camera_rot;
+    laml::transform::create_transform_rotation(camera_rot, state->debug_camera.yaw, state->debug_camera.pitch, 0.0f);
+    state->debug_camera.orientation = laml::transform::quat_from_mat(camera_rot);
 
-    laml::Vec3 right = player_rot._cols[0];
-    laml::Vec3 up = player_rot._cols[1];
-    laml::Vec3 forward = -player_rot._cols[2];
+    laml::Vec3 right = camera_rot._cols[0];
+    laml::Vec3 up = camera_rot._cols[1];
+    laml::Vec3 forward = -camera_rot._cols[2];
     laml::Vec3 vel(0.0f);
     real32 speed = input_is_key_down(KEY_LSHIFT) ? 10.0f : 2.5f;
     if (input_is_key_down(KEY_W)) {
@@ -263,21 +288,26 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     } else if (input_is_key_down(KEY_LCONTROL)) {
         vel = vel - up;
     }
-    state->player.position = state->player.position + (speed * vel * delta_time);
+    state->debug_camera.position = state->debug_camera.position + (speed * vel * delta_time);
 
     laml::Mat4 player_transform;
-    laml::transform::create_transform(player_transform, state->player.orientation, state->player.position);
+    laml::Vec3 player_scale(state->player.scale);
+    laml::transform::create_transform(player_transform, state->player.orientation, state->player.position, player_scale);
 
     // ...
 
     // push all the render commands to the render_packet
-    packet->num_commands = 1;
+    packet->num_commands = 2;
     packet->commands = PushArray(packet->arena, render_command, packet->num_commands);
     
     packet->commands[0].model_matrix = eye;
     packet->commands[0].geom = *state->level_geom;
     //packet->commands[0].geom = state->tri_geom;
     packet->commands[0].material_handle = 0;
+
+    packet->commands[1].model_matrix = player_transform;
+    packet->commands[1].geom = state->capsule_geom;
+    packet->commands[1].material_handle = 1;
 #if 0
     packet->num_commands = state->num_geometry;
     packet->commands = PushArray(packet->arena, render_command, packet->num_commands);
@@ -290,14 +320,12 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
 #if 1
     packet->col_grid = &state->grid;
-    packet->gx = state->gx;
-    packet->gy = state->gy;
-    packet->gz = state->gz;
+    packet->sector = state->sector;
 #endif
 
     // calculate view-point
-    packet->camera_pos = state->player.position;
-    packet->camera_orientation = state->player.orientation;
+    packet->camera_pos = state->debug_camera.position;
+    packet->camera_orientation = state->debug_camera.orientation;
 
     return true;
 }

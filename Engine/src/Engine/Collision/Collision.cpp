@@ -188,3 +188,43 @@ laml::Vec3 collision_cell_to_world(collision_grid* grid, uint32 grid_x, uint32 g
 
     return grid->origin + laml::Vec3(cube_x, cube_y, cube_z)*grid->cell_size;
 }
+
+
+void collision_create_capsule(collision_capsule* capsule, triangle_geometry* geom, real32 height, real32 radius, laml::Vec3 N) {
+    capsule->radius = radius;
+    real32 s = height - (2*radius); // distance between A and B
+
+    N = laml::normalize(N);
+    capsule->A = radius*N;
+    capsule->B = (s + radius)*N;
+
+    if (geom) {
+        // generate capsule geometry for debug rendering
+        RH_WARN("Geometry not being generated yet for the capsule!");
+    }
+}
+
+void collision_grid_get_sector(collision_grid* grid, collision_sector* sector, collision_capsule* capsule, laml::Vec3 position) {
+    // find extents of the capsule in world coords
+    laml::Vec3 radius_vec(capsule->radius);
+    laml::Vec3 world_max_a = position + capsule->A + radius_vec;
+    laml::Vec3 world_max_b = position + capsule->B + radius_vec;
+    laml::Vec3 world_min_a = position + capsule->A - radius_vec;
+    laml::Vec3 world_min_b = position + capsule->B - radius_vec;
+
+    real32 max_x_world = laml::max(laml::Vec2(world_max_a.x, world_max_b.x));
+    real32 max_y_world = laml::max(laml::Vec2(world_max_a.y, world_max_b.y));
+    real32 max_z_world = laml::max(laml::Vec2(world_max_a.z, world_max_b.z));
+    real32 min_x_world = laml::min(laml::Vec2(world_min_a.x, world_min_b.x));
+    real32 min_y_world = laml::min(laml::Vec2(world_min_a.y, world_min_b.y));
+    real32 min_z_world = laml::min(laml::Vec2(world_min_a.z, world_min_b.z));
+
+    // convert to grid cells
+    sector->x_max = (grid->num_x/2) + (int32)(floor((max_x_world - grid->origin.x) / grid->cell_size));
+    sector->y_max = (grid->num_y/2) + (int32)(floor((max_y_world - grid->origin.y) / grid->cell_size));
+    sector->z_max = (grid->num_z/2) + (int32)(floor((max_z_world - grid->origin.z) / grid->cell_size));
+
+    sector->x_min = (grid->num_x/2) + (int32)(floor((min_x_world - grid->origin.x) / grid->cell_size));
+    sector->y_min = (grid->num_y/2) + (int32)(floor((min_y_world - grid->origin.y) / grid->cell_size));
+    sector->z_min = (grid->num_z/2) + (int32)(floor((min_z_world - grid->origin.z) / grid->cell_size));
+}

@@ -10,6 +10,18 @@ struct collision_triangle {
     laml::Vec3 v3;
 };
 
+struct collision_capsule {
+    laml::Vec3 A;
+    laml::Vec3 B;
+    real32 radius;
+};
+
+//struct collision_sector {
+//    int32 x_min, x_max;
+//    int32 y_min, y_max;
+//    int32 z_min, z_max;
+//};
+
 struct collision_grid_cell {
     uint32 num_surfaces;
     uint32 _num_to_allocate;
