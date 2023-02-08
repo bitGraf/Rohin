@@ -259,10 +259,12 @@ bool32 renderer_draw_frame(render_packet* packet) {
             collision_grid* grid = packet->col_grid;
 
             // render sector of cells
+            uint32 num_tris_to_collect = 0;
             for (int32 x = packet->sector.x_min; x <= packet->sector.x_max; x++) {
                 for (int32 y = packet->sector.y_min; y <= packet->sector.y_max; y++) {
                     for (int32 z = packet->sector.z_min; z <= packet->sector.z_max; z++) {
                         collision_grid_cell* cell = &packet->col_grid->cells[x][y][z];
+                        num_tris_to_collect += cell->num_surfaces;
 
                         laml::Vec3 cell_pos = collision_cell_to_world(packet->col_grid, x, y, z);
                         laml::Mat4 cell_transform;
@@ -282,15 +284,48 @@ bool32 renderer_draw_frame(render_packet* packet) {
                 }
             }
 
-#if 0
-            if (cell->num_surfaces > 0) {
+            if (num_tris_to_collect > 0) {
+                uint32* all_triangles = PushArray(packet->arena, uint32, num_tris_to_collect);
+                uint32 curr_tri_idx = 0;
+                for (int32 x = packet->sector.x_min; x <= packet->sector.x_max; x++) {
+                    for (int32 y = packet->sector.y_min; y <= packet->sector.y_max; y++) {
+                        for (int32 z = packet->sector.z_min; z <= packet->sector.z_max; z++) {
+                            collision_grid_cell* cell = &packet->col_grid->cells[x][y][z];
+                            for (uint32 n = 0; n < cell->num_surfaces; n++) {
+                                all_triangles[curr_tri_idx++] = cell->surfaces[n];
+                            }
+                        }
+                    }
+                }
+
+                // all_triangles now has a lot of duplicates... find the unique ones
+                uint32 num_unique_tris = 0;
+                uint32* unique_triangles = PushArray(packet->arena, uint32, num_tris_to_collect);
+                for (uint32 dupe_tri_idx = 0; dupe_tri_idx < num_tris_to_collect; dupe_tri_idx++) {
+                    uint32 curr_idx = all_triangles[dupe_tri_idx];
+
+                    bool32 found = false;
+                    for (uint32 unique_idx = 0; unique_idx < num_unique_tris; unique_idx++) {
+                        if (unique_triangles[unique_idx] == curr_idx) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        unique_triangles[num_unique_tris++] = curr_idx;
+                    }
+                }
+
+                //RH_DEBUG("%d/%d unique triangles!", num_unique_tris, num_tris_to_collect);
+
                 renderer_use_shader(&render_state->simple_shader);
 
                 color = laml::Vec4(1.0f, 0.2f, 0.5f, 1.0f);
                 renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
 
-                for (uint32 n = 0; n < cell->num_surfaces; n++) {
-                    uint32 tri_idx = cell->surfaces[n];
+                for (uint32 n = 0; n < num_unique_tris; n++) {
+                    uint32 tri_idx = unique_triangles[n];
 
                     uint32 start_idx = tri_idx * 3;
                     renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
@@ -298,7 +333,6 @@ bool32 renderer_draw_frame(render_packet* packet) {
                     renderer_draw_geometry(&packet->commands[0].geom, start_idx, 3);
                 }
             }
-#endif
 
             backend->set_highlight_mode(false);
         }
