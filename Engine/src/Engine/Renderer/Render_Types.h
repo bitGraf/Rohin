@@ -11,6 +11,8 @@ struct frame_buffer_attachment;
 struct collision_grid;
 
 struct collision_sector {
+    bool32 inside;
+
     int32 x_min;
     int32 x_max;
     int32 y_min;

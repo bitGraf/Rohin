@@ -253,7 +253,7 @@ bool32 renderer_draw_frame(render_packet* packet) {
         }
 
         // Draw the highlighted cube/faces
-        if (packet->col_grid) {
+        if (packet->col_grid && packet->sector.inside) {
             backend->set_highlight_mode(true);
 
             collision_grid* grid = packet->col_grid;

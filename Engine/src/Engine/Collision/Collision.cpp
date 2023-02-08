@@ -227,4 +227,21 @@ void collision_grid_get_sector(collision_grid* grid, collision_sector* sector, c
     sector->x_min = (grid->num_x/2) + (int32)(floor((min_x_world - grid->origin.x) / grid->cell_size));
     sector->y_min = (grid->num_y/2) + (int32)(floor((min_y_world - grid->origin.y) / grid->cell_size));
     sector->z_min = (grid->num_z/2) + (int32)(floor((min_z_world - grid->origin.z) / grid->cell_size));
+
+    // bounds checking
+    if (sector->x_min >= grid->num_x || sector->y_min >= grid->num_y || sector->z_min >= grid->num_z ||
+        sector->x_max < 0 || sector->y_max < 0 || sector->z_max < 0) {
+        // completely outside of the grid!
+        sector->inside = false;
+        return;
+    }
+    // clip the sector to the actual grid
+    sector->x_max = (sector->x_max >= grid->num_x) ? (grid->num_x-1) : sector->x_max;
+    sector->y_max = (sector->y_max >= grid->num_y) ? (grid->num_y-1) : sector->y_max;
+    sector->z_max = (sector->z_max >= grid->num_z) ? (grid->num_z-1) : sector->z_max;
+
+    sector->x_min = (sector->x_min < 0) ? 0 : sector->x_min;
+    sector->y_min = (sector->y_min < 0) ? 0 : sector->y_min;
+    sector->z_min = (sector->z_min < 0) ? 0 : sector->z_min;
+    sector->inside = true;
 }

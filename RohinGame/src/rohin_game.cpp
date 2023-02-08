@@ -49,16 +49,14 @@ struct game_state {
     collision_sector sector;
 
     real32 theta;
+    bool32 paused;
 };
 
 bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context) {
     game_state* state = (game_state*)listener;
 
     uint16 key_code = context.u16[0];
-    if (key_code == KEY_P) {
-        laml::Vec3 pos = state->player.position;
-        RH_INFO("Player position: [%4.1f,%4.1f,%4.1f]", pos.x, pos.y, pos.z);
-    } else if (key_code == KEY_RIGHT) {
+    if (key_code == KEY_RIGHT) {
         if (input_is_key_down(KEY_LSHIFT)) {
             collision_grid_cell* cell = &state->grid.cells[state->gx][state->gy][state->gz];
             do {
@@ -112,6 +110,8 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
                      tri.v3.x, tri.v3.y, tri.v3.z);
         }
 #endif
+    } else if (key_code == KEY_P) {
+        state->paused = !state->paused;
     }
     //RH_TRACE("Game[0x%016llX] recieved event code %d \n         "
     //         "Sender=[0x%016llX] \n         "
@@ -196,7 +196,7 @@ bool32 game_initialize(RohinApp* app) {
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     state->player.scale = 0.5f;
     state->player.height = 2.0f;
-    state->player.radius = 0.5f;
+    state->player.radius = 0.3f;
     laml::Vec3 world_up(0.0f, 1.0f, 0.0f);
     collision_create_capsule(&state->capsule, &state->capsule_geom, state->player.height, state->player.radius, world_up);
     resource_load_mesh_file("Data/Models/dance.mesh", &state->capsule_geom, 0, 0, 0);
@@ -237,12 +237,14 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         }
     }
 
-    state->theta += 45.0f*delta_time;
-    //state->theta = 5.0f;
+    if (!state->paused) {
+        state->theta += 45.0f*delta_time;
+    }
     state->player.position.x = 5.0f * cos(state->theta*laml::constants::deg2rad<real32>);
     state->player.position.y = 0.1f;
     state->player.position.z = 5.0f * sin(state->theta*laml::constants::deg2rad<real32>);
-    collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->player.position);
+    //collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->player.position);
+    collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->debug_camera.position + laml::Vec3(0.0f, -1.0f, 0.0f));
 
     // simulate game state
     laml::Mat4 eye(1.0f);
