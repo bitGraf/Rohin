@@ -782,11 +782,11 @@ bool32 segment_intersect_cylinder(laml::Vec3 p, laml::Vec3 q, laml::Vec3 sphere_
     return (t <= segment_length);
 }
 
-bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule capsule, laml::Vec3 capsule_position) {
+bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule capsule) {
 #if 1
     // turn capsule into a line segment
-    laml::Vec3 A = capsule.A + capsule_position;
-    laml::Vec3 B = capsule.B + capsule_position;
+    laml::Vec3 A = capsule.A;// + capsule_position;
+    laml::Vec3 B = capsule.B;// + capsule_position;
     // turn triangle into the minkowski sum of triangle and sphere
     //  - points become spheres
           /*(triangle.v1, capsule.radius)*/

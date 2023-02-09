@@ -13,6 +13,8 @@ RHAPI void collision_create_capsule(collision_capsule* capsule, triangle_geometr
 
 RHAPI void collision_grid_get_sector(collision_grid* grid, collision_sector* sector, collision_capsule* capsule, laml::Vec3 position);
 
+RHAPI uint32* collision_get_unique_triangles(collision_grid* grid, collision_sector* sector, memory_arena* arena, collision_capsule* capsule, uint32* num_tris);
+
 RHAPI laml::Vec3 collision_cell_to_world(collision_grid* grid, uint32 grid_x, uint32 grid_y, uint32 grid_z);
 //RHAPI laml::Vec3 collision_world_to_cell(collision_grid* grid, uint32 grid_x, uint32 grid_y, uint32 grid_z);
 
@@ -25,7 +27,7 @@ RHAPI bool32 triangle_cube_intersect(collision_triangle t);
 RHAPI bool32 triangle_cube_intersect(collision_triangle t, laml::Vec3 box_center, laml::Vec3 box_halfsize);
 #endif
 
-RHAPI bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule capsule, laml::Vec3 capsule_position);
+RHAPI bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule capsule);
 
 
 RHAPI bool32 segment_intersect_triangle(laml::Vec3 p, laml::Vec3 q, laml::Vec3 a, laml::Vec3 b, laml::Vec3 c,

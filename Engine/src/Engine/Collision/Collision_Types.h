@@ -1,8 +1,10 @@
 #pragma once
 
-//#include "Engine/Defines.h"
-//#include <laml/laml.hpp>
-#include "Engine/Renderer/Render_Types.h"
+#include "Engine/Defines.h"
+#include <laml/laml.hpp>
+//#include "Engine/Renderer/Render_Types.h"
+
+struct triangle_geometry;
 
 struct collision_triangle {
     laml::Vec3 v1;
@@ -16,11 +18,16 @@ struct collision_capsule {
     real32 radius;
 };
 
-//struct collision_sector {
-//    int32 x_min, x_max;
-//    int32 y_min, y_max;
-//    int32 z_min, z_max;
-//};
+struct collision_sector {
+    bool32 inside;
+
+    int32 x_min;
+    int32 x_max;
+    int32 y_min;
+    int32 y_max;
+    int32 z_min; 
+    int32 z_max;
+};
 
 struct collision_grid_cell {
     uint32 num_surfaces;
@@ -47,5 +54,5 @@ struct collision_grid {
     collision_triangle* triangles;
     collision_grid_cell*** cells; // cells[level][row][col]
 
-    triangle_geometry geom;
+    triangle_geometry* geom;
 };

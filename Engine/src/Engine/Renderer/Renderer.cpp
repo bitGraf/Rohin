@@ -212,6 +212,10 @@ bool32 renderer_draw_frame(render_packet* packet) {
         laml::Vec4 wire_color(.6f, 0.5f, 0.65f, 1.0f);
         renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
 
+        renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
+                                         packet->capsule_geom.model_matrix._data);
+        renderer_draw_geometry(&packet->capsule_geom.geom);
+
         for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
             renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
                                              packet->commands[cmd_index].model_matrix._data);
@@ -224,52 +228,32 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
         renderer_end_wireframe();
 
+#if DRAW_COLLISION_GRID
         if (packet->col_grid && packet->col_grid->num_filled_cells > 0) {
-            collision_grid* grid = packet->col_grid;
-
-            real32 min_x = -((real32)(grid->num_x / 2)) * grid->cell_size;
-            real32 min_y = -((real32)(grid->num_y / 2)) * grid->cell_size;
-            real32 min_z = -((real32)(grid->num_z / 2)) * grid->cell_size;
-
-            real32 max_x = ((real32)(grid->num_x / 2)) * grid->cell_size;
-            real32 max_y = ((real32)(grid->num_y / 2)) * grid->cell_size;
-            real32 max_z = ((real32)(grid->num_z / 2)) * grid->cell_size;
-
-            laml::Vec3 min_cell(min_x, min_y, min_z);
-            laml::Vec3 max_cell(max_x, max_y, max_z);
-
-            laml::Vec3 cell_offset(grid->cell_size);
-
             laml::Mat4 cell_transform(1.0f);
             renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
                                              cell_transform._data);
 
             wire_color = { .7f, 0.6f, 0.35f, 1.0f };
             renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
-            renderer_draw_geometry_lines(&packet->col_grid->geom);
+            renderer_draw_geometry_lines(packet->col_grid->geom);
             //wire_color = { .8f, 0.4f, 0.25f, 1.0f };
             //renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
             //renderer_draw_geometry_points(&packet->col_grid->geom);
         }
-
+#endif
         // Draw the highlighted cube/faces
         if (packet->col_grid && packet->sector.inside) {
             backend->set_highlight_mode(true);
 
             collision_grid* grid = packet->col_grid;
 
-            collision_capsule capsule;
-            capsule.A = packet->A;
-            capsule.B = packet->B;
-            capsule.radius = packet->radius;
-
+#if DRAW_SECTOR
             // render sector of cells
-            uint32 num_tris_to_collect = 0;
             for (int32 x = packet->sector.x_min; x <= packet->sector.x_max; x++) {
                 for (int32 y = packet->sector.y_min; y <= packet->sector.y_max; y++) {
                     for (int32 z = packet->sector.z_min; z <= packet->sector.z_max; z++) {
                         collision_grid_cell* cell = &packet->col_grid->cells[x][y][z];
-                        num_tris_to_collect += cell->num_surfaces;
 
                         laml::Vec3 cell_pos = collision_cell_to_world(packet->col_grid, x, y, z);
                         laml::Mat4 cell_transform;
@@ -288,59 +272,45 @@ bool32 renderer_draw_frame(render_packet* packet) {
                     }
                 }
             }
+#endif
 
-            if (num_tris_to_collect > 0) {
-                uint32* all_triangles = PushArray(packet->arena, uint32, num_tris_to_collect);
-                uint32 curr_tri_idx = 0;
-                for (int32 x = packet->sector.x_min; x <= packet->sector.x_max; x++) {
-                    for (int32 y = packet->sector.y_min; y <= packet->sector.y_max; y++) {
-                        for (int32 z = packet->sector.z_min; z <= packet->sector.z_max; z++) {
-                            collision_grid_cell* cell = &packet->col_grid->cells[x][y][z];
-                            for (uint32 n = 0; n < cell->num_surfaces; n++) {
-                                all_triangles[curr_tri_idx++] = cell->surfaces[n];
-                            }
-                        }
-                    }
-                }
-
-                // all_triangles now has a lot of duplicates... find the unique ones
-                uint32 num_unique_tris = 0;
-                uint32* unique_triangles = PushArray(packet->arena, uint32, num_tris_to_collect);
-                for (uint32 dupe_tri_idx = 0; dupe_tri_idx < num_tris_to_collect; dupe_tri_idx++) {
-                    uint32 curr_idx = all_triangles[dupe_tri_idx];
-
-                    bool32 found = false;
-                    for (uint32 unique_idx = 0; unique_idx < num_unique_tris; unique_idx++) {
-                        if (unique_triangles[unique_idx] == curr_idx) {
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found) {
-                        unique_triangles[num_unique_tris++] = curr_idx;
-                    }
-                }
-
-                //RH_DEBUG("%d/%d unique triangles!", num_unique_tris, num_tris_to_collect);
-
+            if (packet->num_tris > 0) {
                 renderer_use_shader(&render_state->simple_shader);
 
-                color = laml::Vec4(1.0f, 0.2f, 0.5f, 1.0f);
+                color = laml::Vec4(0.5f, 0.6f, 0.4f, 1.0f);
                 renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
 
                 renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
                                                  packet->commands[0].model_matrix._data);
 
-                for (uint32 n = 0; n < num_unique_tris; n++) {
-                    uint32 tri_idx = unique_triangles[n];
+                // draw possible triangles
+                for (uint32 n = 0; n < packet->num_tris; n++) {
+                    uint32 tri_idx = packet->triangle_indices[n];
 
-                    uint32 start_idx = tri_idx * 3;
-                    // tmp
-                    if (triangle_capsule_intersect(grid->triangles[tri_idx], capsule, packet->capsule_position)) {
-                        //RH_WARN("Colliding with triangle %d", tri_idx);
+                    // TODO: dumb
+                    // check that it isn't an intersecting oene
+                    bool32 draw = true;
+                    for (uint32 nn = 0; nn < packet->num_intersecting_tris; nn++) {
+                        if (tri_idx == packet->intersecting_triangle_indices[nn]) {
+                            draw = false;
+                            break;
+                        }
+                    }
+
+                    if (draw) {
+                        uint32 start_idx = tri_idx * 3;
                         renderer_draw_geometry(&packet->commands[0].geom, start_idx, 3);
                     }
+                }
+
+                // draw intersecting triangles
+                color = laml::Vec4(0.7f, 0.2f, 0.5f, 1.0f);
+                renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
+                for (uint32 n = 0; n < packet->num_intersecting_tris; n++) {
+                    uint32 tri_idx = packet->intersecting_triangle_indices[n];
+
+                    uint32 start_idx = tri_idx * 3;
+                    renderer_draw_geometry(&packet->commands[0].geom, start_idx, 3);
                 }
             }
 

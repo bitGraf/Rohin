@@ -3,23 +3,14 @@
 #include "Engine/Defines.h"
 #include <laml/laml.hpp>
 
+#include "Engine/Collision/Collision_Types.h"
+
 struct memory_arena;
 struct triangle_geometry;
 struct shader;
 struct frame_buffer;
 struct frame_buffer_attachment;
 struct collision_grid;
-
-struct collision_sector {
-    bool32 inside;
-
-    int32 x_min;
-    int32 x_max;
-    int32 y_min;
-    int32 y_max;
-    int32 z_min; 
-    int32 z_max;
-};
 
 enum renderer_api_type {
     RENDERER_API_OPENGL,
@@ -172,10 +163,15 @@ struct render_packet {
     uint32 num_commands;
     render_command* commands;
 
-    // tmp: for collision grid testing
+    // for collision visualization
     collision_grid* col_grid;
+    collision_capsule capsule;
+    render_command capsule_geom;
+
     collision_sector sector;
-    laml::Vec3 A, B;
-    real32 radius;
-    laml::Vec3 capsule_position;
+    uint32 num_tris;
+    uint32* triangle_indices;
+
+    uint32 num_intersecting_tris;
+    uint32* intersecting_triangle_indices;
 };

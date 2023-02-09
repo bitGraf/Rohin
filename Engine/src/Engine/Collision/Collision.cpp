@@ -17,6 +17,8 @@ void collision_create_grid(memory_arena* arena, collision_grid* grid, laml::Vec3
     grid->num_y = num_y;
     grid->num_z = num_z;
 
+    grid->geom = PushStruct(arena, triangle_geometry);
+
     grid->cells = PushArray(arena, collision_grid_cell**, num_x);
     for (uint16 x = 0; x < num_x; x++) {
         grid->cells[x] = PushArray(arena, collision_grid_cell*, num_y);
@@ -178,7 +180,7 @@ void collision_grid_finalize(memory_arena* arena, collision_grid* grid) {
         }
     }
 
-    renderer_create_mesh(&grid->geom, num_verts, verts, num_inds, inds, cube_attrs);
+    renderer_create_mesh(grid->geom, num_verts, verts, num_inds, inds, cube_attrs);
 
     arena->Used = arena_save;
 }
@@ -294,4 +296,67 @@ void collision_grid_get_sector(collision_grid* grid, collision_sector* sector, c
     sector->y_min = (sector->y_min < 0) ? 0 : sector->y_min;
     sector->z_min = (sector->z_min < 0) ? 0 : sector->z_min;
     sector->inside = true;
+}
+
+uint32* collision_get_unique_triangles(collision_grid* grid, collision_sector* sector, memory_arena* arena, collision_capsule* capsule, uint32* num_tris) {
+    //if (sector == nullptr) {
+    //    // get everything
+    //    *num_tris = grid->num_triangles;
+    //    return grid->triangles;
+    //}
+
+    *num_tris = 0;
+    if (!sector->inside) return nullptr;
+
+    // query sector of cells
+    uint32 num_possible_tris = 0;
+    for (int32 x = sector->x_min; x <= sector->x_max; x++) {
+        for (int32 y = sector->y_min; y <= sector->y_max; y++) {
+            for (int32 z = sector->z_min; z <= sector->z_max; z++) {
+                collision_grid_cell* cell = &grid->cells[x][y][z];
+                num_possible_tris += cell->num_surfaces;
+            }
+        }
+    }
+
+    if (num_possible_tris == 0) return nullptr;
+
+    memory_index arena_save = arena->Used;
+    uint32* unique_triangles = PushArray(arena, uint32, num_possible_tris);
+    uint32* all_triangles = PushArray(arena, uint32, num_possible_tris);
+    uint32 curr_tri_idx = 0;
+    for (int32 x = sector->x_min; x <= sector->x_max; x++) {
+        for (int32 y = sector->y_min; y <= sector->y_max; y++) {
+            for (int32 z = sector->z_min; z <= sector->z_max; z++) {
+                collision_grid_cell* cell = &grid->cells[x][y][z];
+                for (uint32 n = 0; n < cell->num_surfaces; n++) {
+                    all_triangles[curr_tri_idx++] = cell->surfaces[n];
+                }
+            }
+        }
+    }
+
+    // all_triangles now has a lot of duplicates... find the unique ones
+    uint32 num_unique_tris = 0;
+    for (uint32 dupe_tri_idx = 0; dupe_tri_idx < num_possible_tris; dupe_tri_idx++) {
+        uint32 curr_idx = all_triangles[dupe_tri_idx];
+
+        bool32 found = false;
+        for (uint32 unique_idx = 0; unique_idx < num_unique_tris; unique_idx++) {
+            if (unique_triangles[unique_idx] == curr_idx) {
+                found = true;
+                break;
+            }
+        }
+
+        if (!found) {
+            unique_triangles[num_unique_tris++] = curr_idx;
+        }
+    }
+
+    // 'shrink' the 'allocated' arrays down to the correct size
+    arena->Used = arena_save + num_unique_tris*sizeof(uint32);
+
+    *num_tris = num_unique_tris;
+    return unique_triangles;
 }
