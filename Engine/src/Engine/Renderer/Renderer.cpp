@@ -246,7 +246,7 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
             wire_color = { .7f, 0.6f, 0.35f, 1.0f };
             renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
-            //renderer_draw_geometry_lines(&packet->col_grid->geom);
+            renderer_draw_geometry_lines(&packet->col_grid->geom);
             //wire_color = { .8f, 0.4f, 0.25f, 1.0f };
             //renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
             //renderer_draw_geometry_points(&packet->col_grid->geom);
@@ -257,6 +257,11 @@ bool32 renderer_draw_frame(render_packet* packet) {
             backend->set_highlight_mode(true);
 
             collision_grid* grid = packet->col_grid;
+
+            collision_capsule capsule;
+            capsule.A = packet->A;
+            capsule.B = packet->B;
+            capsule.radius = packet->radius;
 
             // render sector of cells
             uint32 num_tris_to_collect = 0;
@@ -324,13 +329,18 @@ bool32 renderer_draw_frame(render_packet* packet) {
                 color = laml::Vec4(1.0f, 0.2f, 0.5f, 1.0f);
                 renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
 
+                renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
+                                                 packet->commands[0].model_matrix._data);
+
                 for (uint32 n = 0; n < num_unique_tris; n++) {
                     uint32 tri_idx = unique_triangles[n];
 
                     uint32 start_idx = tri_idx * 3;
-                    renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
-                                                     packet->commands[0].model_matrix._data);
-                    renderer_draw_geometry(&packet->commands[0].geom, start_idx, 3);
+                    // tmp
+                    if (triangle_capsule_intersect(grid->triangles[tri_idx], capsule, packet->capsule_position)) {
+                        //RH_WARN("Colliding with triangle %d", tri_idx);
+                        renderer_draw_geometry(&packet->commands[0].geom, start_idx, 3);
+                    }
                 }
             }
 

@@ -1,5 +1,7 @@
 #include "Collision.h"
 
+#include "Engine/Core/Logger.h"
+
 
 #if USING_GPU_GEMS_3_INTERSECTION
 // Cube-Triangle intersection code taken from Graphics Gems III - V.7 TRIANGLE-CUBE INTERSECTION appendix sample
@@ -498,3 +500,380 @@ bool32 triangle_cube_intersect(collision_triangle t, laml::Vec3 box_center, laml
     return triBoxOverlap(box_center._data, box_halfsize._data, triverts);
 }
 #endif
+
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+laml::Vec3 ClosestPointOnLineSegment(laml::Vec3 A, laml::Vec3 B, laml::Vec3 point) {
+    laml::Vec3 AB = B - A;
+    real32 t = laml::dot(point - A, AB) / laml::dot(AB, AB);
+    t = min(max(t, 0), 1);
+    return A + t*AB;
+}
+
+laml::Vec3 ClosestPointOnTriangle(laml::Vec3 point, laml::Vec3 p0, laml::Vec3 p1, laml::Vec3 p2) {
+    // Determine whether line_plane_intersection is inside all triangle edges: 
+    laml::Vec3 c0 = laml::cross(point - p0, p1 - p0);
+    laml::Vec3 c1 = laml::cross(point - p1, p2 - p1);
+    laml::Vec3 c2 = laml::cross(point - p2, p0 - p2);
+    laml::Vec3 N = laml::normalize(laml::cross(p1 - p0, p2 - p0));
+    bool inside = (laml::dot(c0, N) <= 0) && (laml::dot(c1, N) <= 0) && (laml::dot(c2, N) <= 0);
+ 
+    if(inside) {
+        return point;
+    } else {
+        laml::Vec3 result;
+
+        // Edge 1:
+        laml::Vec3 point1 = ClosestPointOnLineSegment(p0, p1, point);
+        laml::Vec3 v1 = point - point1;
+        float distsq = laml::dot(v1, v1);
+        float best_dist = distsq;
+        result = point1;
+ 
+        // Edge 2:
+        laml::Vec3 point2 = ClosestPointOnLineSegment(p1, p2, point);
+        laml::Vec3 v2 = point - point2;
+        distsq = laml::dot(v2, v2);
+        if(distsq < best_dist) {
+            result = point2;
+            best_dist = distsq;
+        }
+ 
+        // Edge 3:
+        laml::Vec3 point3 = ClosestPointOnLineSegment(p2, p0, point);
+        laml::Vec3 v3 = point - point3;
+        distsq = laml::dot(v3, v3);
+        if(distsq < best_dist) {
+            result = point3;
+            best_dist = distsq;
+        }
+
+        return result;
+    }
+}
+
+bool32 triangle_sphere_intersect(laml::Vec3 p0, laml::Vec3 p1, laml::Vec3 p2, laml::Vec3 sphere_center, real32 sphere_radius) {
+    laml::Vec3 N = laml::normalize(laml::cross(p1 - p0, p2 - p0)); // plane normal
+    real32 dist = laml::dot(sphere_center - p0, N); // signed distance between sphere and plane
+    //if(!mesh.is_double_sided() && dist > 0)
+    //    continue; // can pass through back side of triangle (optional)
+    //if(dist < -radius || dist > radius)
+    //    continue; // no intersection
+    if (dist < -sphere_radius || dist > sphere_radius) {
+        return false;
+    }
+
+    laml::Vec3 point0 = sphere_center - N * dist; // projected sphere center on triangle plane
+ 
+    // Now determine whether point0 is inside all triangle edges: 
+    laml::Vec3 c0 = laml::cross(point0 - p0, p1 - p0);
+    laml::Vec3 c1 = laml::cross(point0 - p1, p2 - p1);
+    laml::Vec3 c2 = laml::cross(point0 - p2, p0 - p2);
+    bool inside = laml::dot(c0, N) <= 0 && laml::dot(c1, N) <= 0 && laml::dot(c2, N) <= 0;
+
+    real32 radiussq = sphere_radius * sphere_radius; // sphere radius squared
+ 
+    // Edge 1:
+    laml::Vec3 point1 = ClosestPointOnLineSegment(p0, p1, sphere_center);
+    laml::Vec3 v1 = sphere_center - point1;
+    real32 distsq1 = laml::dot(v1, v1);
+    bool intersects = distsq1 < radiussq;
+ 
+    // Edge 2:
+    laml::Vec3 point2 = ClosestPointOnLineSegment(p1, p2, sphere_center);
+    laml::Vec3 v2 = sphere_center - point2;
+    real32 distsq2 = laml::dot(v2, v2);
+    intersects |= distsq2 < radiussq;
+ 
+    // Edge 3:
+    laml::Vec3 point3 = ClosestPointOnLineSegment(p2, p0, sphere_center);
+    laml::Vec3 v3 = sphere_center - point3;
+    real32 distsq3 = laml::dot(v3, v3);
+    intersects |= distsq3 < radiussq;
+
+    if(inside || intersects) {
+        laml::Vec3 best_point = point0;
+        laml::Vec3 intersection_vec;
+ 
+        if(inside) {
+            intersection_vec = sphere_center - point0;
+        } else {
+            laml::Vec3 d = sphere_center - point1;
+            real32 best_distsq = laml::dot(d, d);
+            best_point = point1;
+            intersection_vec = d;
+ 
+            d = sphere_center - point2;
+            real32 distsq = laml::dot(d, d);
+            if(distsq < best_distsq) {
+                distsq = best_distsq;
+                best_point = point2;
+                intersection_vec = d;
+            }
+ 
+            d = sphere_center - point3;
+            distsq = laml::dot(d, d);
+            if(distsq < best_distsq) {
+                distsq = best_distsq;
+                best_point = point3; 
+                intersection_vec = d;
+            }
+        }
+
+        real32 len = laml::length(intersection_vec);
+        laml::Vec3 penetration_normal = intersection_vec / len;
+        real32 penetration_depth = sphere_radius - len;
+        return true;
+    }
+
+    return false;
+}
+
+// line segment pq tested against triangle abc.
+// returns if they are intersecting. If true, uvw is the barycentric coordinates of the intersection, and
+// t is the parameter along the line segment at intersection with the plane
+bool32 segment_intersect_triangle(laml::Vec3 p, laml::Vec3 q, laml::Vec3 a, laml::Vec3 b, laml::Vec3 c,
+                                         real32& u, real32& v, real32& w, real32& t) {
+    laml::Vec3 ab = b - a;
+    laml::Vec3 ac = c - a;
+    laml::Vec3 qp = p - q;
+
+    // compute triangle normal
+    laml::Vec3 n = laml::cross(ab, ac);
+
+    // compute denominator d. if d <= 0, segment is parallel to or points away from the triangle, so exit early.
+    real32 d = laml::dot(qp, n);
+    if (abs(d) <= laml::eps<real32>) {
+        // parallel
+        return false;
+    }
+    if (d < 0.0f) {
+        n = -n;
+        d = -d;
+        qp = -qp;
+    }
+
+    // compute intesection t value of pq with plane of triangle. segment intersects if 0 <= t <= 1.
+    laml::Vec3 ap = p - a;
+    t = laml::dot(ap, n);
+    if (t < 0.0f) return false;
+    if (t > d) return false; // remove htis line if you want a ray test (instaed of segment)
+
+    // compute barycentric coords of intersect point, to see if within triangle
+    laml::Vec3 e = laml::cross(qp, ap);
+    v = laml::dot(ac, e);
+    if (v < 0.0f || v > d) return false;
+    w = -laml::dot(ab, e);
+    if (w < 0.0f || (v + w) > d) return false;
+
+    // segment/ray intersect triangle. perform delayed division
+    real32 ood = 1.0f / d;
+    t *= ood;
+    v *= ood;
+    w *= ood;
+    u = 1.0f - v - w;
+    return true;
+}
+
+// line segment ab tested against cylinder pq with radius r.
+// returns if they are intersecting, and at what point t along the segment.
+bool32 segment_intersect_cylinder(laml::Vec3 sa, laml::Vec3 sb, laml::Vec3 p, laml::Vec3 q, real32 r,
+                                         real32& t) {
+    laml::Vec3 d = q-p, m = sa-p, n = sb-sa;
+    real32 md = laml::dot(m, d);
+    real32 nd = laml::dot(n, d);
+    real32 dd = laml::dot(d, d);
+
+    // test if segment fully outside either endcap of cylinder
+    if (md < 0.0f && md + nd < 0.0f) return false; // segment outside of 'p' side of cylinder
+    if (md > dd && md + nd < dd) return false;     // segment outside of 'a' side of cylinder
+
+    real32 nn = laml::dot(n, n);
+    real32 mn = laml::dot(m, n);
+    real32 a = dd * nn - nd*nd;
+    real32 k = laml::dot(m, m) - r*r;
+    real32 c = dd * k - md*md;
+
+    if (abs(a) < laml::eps<real32>) {
+        // segment runs parallel to cylinder axis
+        if (c > 0.0f) return false; // 'a' and hus the segment lie outside cylinder
+        // now known that segment intersects cylinderl figure out how it intersects
+        if (md < 0.0f) t = -mn / nn;
+        else if (md > dd) t = (nd - mn) / nn;
+        else t = 0.0f;
+        return true;
+    }
+
+    real32 b = dd*mn - nd*md;
+    real32 discr = b*b - a*c;
+    if (discr < 0.0f) return false; // no real roots, no intersection
+
+    // NOTE: adding this to account for a weird case
+    if (c < 0 && discr > laml::eps<real32>) {
+        // A is inside the cylinder, so we know it intersects.
+        real32 t1 = (-b - sqrt(discr)) / a;
+        real32 t2 = (-b + sqrt(discr)) / a;
+
+        if (t1 < 0.0f || t1 > 1.0f) {
+            // check if other soln is valid
+            if (t2 < 0.0f || t2 > 1.0f) {
+                return false;
+            } else {
+                t = t2;
+            }
+        } else {
+            // t1 is valid
+            t = t1;
+        }
+    } else {
+        t = (-b - sqrt(discr)) / a;
+    }
+    //
+
+    //t = (-b - sqrt(discr)) / a;
+    if (t < 0.0f || t > 1.0f) return false; // intersection lies outside segment
+    if (md + t * nd < 0.0f) {
+        // intersection outside of cylinder on 'p' side
+        if (nd < 0.0f) return false; // segment pointing away from endcap
+        t = -md / nd;
+        // keep intersection if Dot(S(T) - p, S(t) - p) <= r^2
+        return k + 2*t*(mn + t * nn) <= 0.0f;
+    } else if (md + t*nd > dd) {
+        // inteerscetion outside of cylinder on 'q' side
+        if (nd >= 0.0f) return false;
+        t = (dd - md) / nd;
+        return k + dd - 2 * md + t * (2 * (mn - nd) + t * nn) <= 0.0f;
+    }
+
+    // segment intersects cyylinder between endcaps; t is correct
+    return true;
+}
+
+#if 0
+static bool32 ray_intersect_cylinder(laml::Vec3 p, laml::Vec3 d, laml::Vec3 sphere_center, real32 radius,
+                                     real32& t) {
+    laml::Vec3 m = p - sphere_center;
+    real32 b = laml::dot(m, d);
+    real32 c = laml::dot(m, m) - radius*radius;
+    // exit if r's origin oustide s (c > 0) and r pointing away from s (b > 0)
+    if (c > 0.0f && b > 0.0f) return false;
+    real32 discr = b*b - c;
+    if (discr < 0.0f) return false;
+    t = -b - sqrt(discr);
+    if (t < 0.0f) t = 0.0f;
+    return true;
+}
+#endif
+
+bool32 segment_intersect_cylinder(laml::Vec3 p, laml::Vec3 q, laml::Vec3 sphere_center, real32 radius,
+                                         real32& t) {
+    laml::Vec3 d = q - p;
+    real32 segment_length = laml::length(d);
+    d = d / segment_length;
+    laml::Vec3 m = p - sphere_center;
+    real32 b = laml::dot(m, d);
+    real32 c = laml::dot(m, m) - radius*radius;
+    // exit if r's origin oustide s (c > 0) and r pointing away from s (b > 0)
+    if (c > 0.0f && b > 0.0f) return false;
+    real32 discr = b*b - c;
+    if (discr < 0.0f) return false;
+    t = -b - sqrt(discr);
+    if (t < 0.0f) t = 0.0f;
+    return (t <= segment_length);
+}
+
+bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule capsule, laml::Vec3 capsule_position) {
+#if 1
+    // turn capsule into a line segment
+    laml::Vec3 A = capsule.A + capsule_position;
+    laml::Vec3 B = capsule.B + capsule_position;
+    // turn triangle into the minkowski sum of triangle and sphere
+    //  - points become spheres
+          /*(triangle.v1, capsule.radius)*/
+          /*(triangle.v2, capsule.radius)*/
+          /*(triangle.v3, capsule.radius)*/
+    //  - edges become cylinders
+          /*(triangle.v1, triangle.v2, capsule.radius)*/
+          /*(triangle.v2, triangle.v3, capsule.radius)*/
+          /*(triangle.v3, triangle.v1, capsule.radius)*/
+    //  - face becomes two faces, moved outwards by radius along normal
+    laml::Vec3 edge12_norm = laml::normalize(triangle.v2 - triangle.v1);
+    laml::Vec3 edge13_norm = laml::normalize(triangle.v3 - triangle.v1);
+    laml::Vec3 triangle_normal = laml::normalize(laml::cross(edge12_norm, edge13_norm));
+    laml::Vec3 triangle_to_ray = laml::normalize(A - triangle.v1);
+    real32 offset = (laml::dot(triangle_to_ray, triangle_normal) > 0.0f) ? capsule.radius : -capsule.radius;
+    collision_triangle closest_face;
+    closest_face.v1 = triangle.v1 + (offset*triangle_normal);
+    closest_face.v2 = triangle.v2 + (offset*triangle_normal);
+    closest_face.v3 = triangle.v3 + (offset*triangle_normal);
+
+    // capsule/sphere intersection can be done in 3 parts then:
+    // 1) test line segment against closest face to segment (what if the capsule straddles the shape?)
+    {
+        real32 u, v, w, t;
+        if (segment_intersect_triangle(A, B, closest_face.v1, closest_face.v2, closest_face.v3, u, v, w, t)) {
+            // intersection!
+            return true;
+        } // otherwise, continue on...
+    }
+    // 2) test line segment against each cylinder
+    {
+        real32 t;
+        if (segment_intersect_cylinder(A, B, triangle.v1, triangle.v2, capsule.radius, t)) {
+            // intersection with edge 12!
+            return true;
+        } else if (segment_intersect_cylinder(A, B, triangle.v2, triangle.v3, capsule.radius, t)) {
+            // intersection with edge 23!
+            return true;
+        } else if (segment_intersect_cylinder(A, B, triangle.v3, triangle.v1, capsule.radius, t)) {
+            // intersection with edge 31!
+            return true;
+        } // otherwise, continue on...
+    }
+    // 3) test line segment against each sphere
+    {
+        real32 t;
+        if (segment_intersect_cylinder(A, B, triangle.v1, capsule.radius, t)) {
+            // intersection with vertex 1!
+            return true;
+        } else if (segment_intersect_cylinder(A, B, triangle.v2, capsule.radius, t)) {
+            // intersection with vertex 2!
+            return true;
+        } else if (segment_intersect_cylinder(A, B, triangle.v3, capsule.radius, t)) {
+            // intersection with vertex 3!
+            return true;
+        }
+    }
+    // if no intersection yet, shapes are not touching
+
+    return false;
+
+#else
+    laml::Vec3 capsule_normal = laml::normalize(capsule.B - capsule.A);
+
+    laml::Vec3 A = capsule.A + capsule_position;
+    laml::Vec3 B = capsule.B + capsule_position;
+
+    // triangle/ray-plane intersection
+    // N is the triangle plane normal
+    laml::Vec3 N = laml::normalize(laml::cross(triangle.v2 - triangle.v1, triangle.v3 - triangle.v1));
+    real32 t = laml::dot(N, (triangle.v1 - A) / abs(laml::dot(N, capsule_normal)));
+    laml::Vec3 line_plane_intersection = A + capsule_normal*t;
+
+    // find closest triangle point to reference point
+    laml::Vec3 reference_point;
+    if (abs(laml::dot(capsule_normal, N)) < laml::eps<real32>) {
+        //reference_point = ClosestPointOnTriangle(A, triangle.v1, triangle.v2, triangle.v3);
+
+        laml::Vec3 sphere_center = B; //ClosestPointOnLineSegment(A, B, reference_point);
+
+        return triangle_sphere_intersect(triangle.v1, triangle.v2, triangle.v3, sphere_center, capsule.radius);
+    } else {
+        reference_point = ClosestPointOnTriangle(line_plane_intersection, triangle.v1, triangle.v2, triangle.v3);
+
+        laml::Vec3 sphere_center = ClosestPointOnLineSegment(A, B, reference_point);
+
+        return triangle_sphere_intersect(triangle.v1, triangle.v2, triangle.v3, sphere_center, capsule.radius);
+    }
+#endif
+}

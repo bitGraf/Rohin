@@ -24,3 +24,9 @@ RHAPI bool32 triangle_cube_intersect(collision_triangle t);
 #else
 RHAPI bool32 triangle_cube_intersect(collision_triangle t, laml::Vec3 box_center, laml::Vec3 box_halfsize);
 #endif
+
+RHAPI bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule capsule, laml::Vec3 capsule_position);
+
+
+RHAPI bool32 segment_intersect_triangle(laml::Vec3 p, laml::Vec3 q, laml::Vec3 a, laml::Vec3 b, laml::Vec3 c,
+                                        real32& u, real32& v, real32& w, real32& t);

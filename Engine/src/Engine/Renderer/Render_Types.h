@@ -175,4 +175,7 @@ struct render_packet {
     // tmp: for collision grid testing
     collision_grid* col_grid;
     collision_sector sector;
+    laml::Vec3 A, B;
+    real32 radius;
+    laml::Vec3 capsule_position;
 };

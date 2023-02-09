@@ -152,6 +152,16 @@ bool32 game_startup(RohinApp* app) {
 bool32 game_initialize(RohinApp* app) {
     RH_INFO("Game initialize.");
 
+    laml::Vec3 p(-1.54175f, 0.2f, -0.436441f);
+    laml::Vec3 q(-1.54175f, 1.6f, -0.436441f);
+
+    laml::Vec3 a(0.0f, 0.3f, 0.0f);
+    laml::Vec3 b(-2.0f, 0.3f, -2.0f);
+    laml::Vec3 c(-2.0f, 0.3f, 0.0f);
+
+    real32 u, v, w, t;
+    segment_intersect_triangle(p, q, a, b, c, u, v, w, t);
+
     game_state* state = (game_state*)(app->memory.PermanentStorage);
     resource_load_mesh_file("Data/Models/dance.mesh", state->player_geom, 0, 0, 0);
 
@@ -201,6 +211,7 @@ bool32 game_initialize(RohinApp* app) {
     laml::Vec3 world_up(0.0f, 1.0f, 0.0f);
     collision_create_capsule(&state->capsule, &state->capsule_geom, state->player.height, state->player.radius, world_up);
     //resource_load_mesh_file("Data/Models/dance.mesh", &state->capsule_geom, 0, 0, 0);
+    //state->capsule.B = state->capsule.B + laml::Vec3(0.01f);
 
     state->gx = 12;
     state->gy = 2;
@@ -241,9 +252,9 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     if (!state->paused) {
         state->theta += 45.0f*delta_time;
     }
-    state->player.position.x = 5.0f * cos(state->theta*laml::constants::deg2rad<real32>);
-    state->player.position.y = 0.1f;
-    state->player.position.z = 5.0f * sin(state->theta*laml::constants::deg2rad<real32>);
+    state->player.position.x = 1.75f + 5.0f * cos(state->theta*laml::constants::deg2rad<real32>);
+    state->player.position.y = -0.1f;
+    state->player.position.z = -4.2f + 5.0f * sin(state->theta*laml::constants::deg2rad<real32>);
     collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->player.position);
     //collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->debug_camera.position + laml::Vec3(0.0f, -1.0f, 0.0f));
 
@@ -324,6 +335,10 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 #if 1
     packet->col_grid = &state->grid;
     packet->sector = state->sector;
+    packet->A = state->capsule.A;
+    packet->B = state->capsule.B;
+    packet->radius = state->capsule.radius;
+    packet->capsule_position = state->player.position;
 #endif
 
     // calculate view-point
