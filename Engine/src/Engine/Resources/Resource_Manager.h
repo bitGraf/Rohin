@@ -21,6 +21,7 @@ RHAPI mesh_file_result resource_load_mesh_file(const char* resource_file_name,
 RHAPI mesh_file_result resource_load_mesh_file_for_level(const char* resource_file_name,
                                                          triangle_geometry* geom,
                                                          collision_grid* grid);
+RHAPI bool32 resource_load_debug_mesh_data(const char* resource_file_name, debug_geometry* geom);
 
 //bool32 resource_load_anim_file(animation* anim);
 bool32 resource_load_shader_file(const char* resource_file_name,

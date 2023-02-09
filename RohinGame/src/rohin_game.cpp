@@ -194,12 +194,13 @@ bool32 game_initialize(RohinApp* app) {
 
     state->player.position = {0.0f, 1.0f, 0.0f};
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
-    state->player.scale = 0.5f;
+    //state->player.scale = 0.5f;
+    state->player.scale = 1.0f;
     state->player.height = 2.0f;
     state->player.radius = 0.3f;
     laml::Vec3 world_up(0.0f, 1.0f, 0.0f);
     collision_create_capsule(&state->capsule, &state->capsule_geom, state->player.height, state->player.radius, world_up);
-    resource_load_mesh_file("Data/Models/dance.mesh", &state->capsule_geom, 0, 0, 0);
+    //resource_load_mesh_file("Data/Models/dance.mesh", &state->capsule_geom, 0, 0, 0);
 
     state->gx = 12;
     state->gy = 2;
@@ -243,8 +244,8 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     state->player.position.x = 5.0f * cos(state->theta*laml::constants::deg2rad<real32>);
     state->player.position.y = 0.1f;
     state->player.position.z = 5.0f * sin(state->theta*laml::constants::deg2rad<real32>);
-    //collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->player.position);
-    collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->debug_camera.position + laml::Vec3(0.0f, -1.0f, 0.0f));
+    collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->player.position);
+    //collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->debug_camera.position + laml::Vec3(0.0f, -1.0f, 0.0f));
 
     // simulate game state
     laml::Mat4 eye(1.0f);

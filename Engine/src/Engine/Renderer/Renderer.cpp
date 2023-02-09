@@ -246,7 +246,7 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
             wire_color = { .7f, 0.6f, 0.35f, 1.0f };
             renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
-            renderer_draw_geometry_lines(&packet->col_grid->geom);
+            //renderer_draw_geometry_lines(&packet->col_grid->geom);
             //wire_color = { .8f, 0.4f, 0.25f, 1.0f };
             //renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
             //renderer_draw_geometry_points(&packet->col_grid->geom);

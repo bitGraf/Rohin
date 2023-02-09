@@ -34,3 +34,15 @@ struct material {
     texture_2D normal_map;
     texture_2D amr_map;
 };
+
+struct debug_geometry {
+    struct debug_vertex {
+        laml::Vec3 position;
+        laml::Vec3 normal;
+    };
+
+    uint32 num_verts;
+    uint32 num_inds;
+    debug_vertex* vertices;
+    uint32* indices;
+};

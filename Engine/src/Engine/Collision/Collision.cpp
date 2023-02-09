@@ -5,6 +5,8 @@
 #include "Engine/Memory/Memory_Arena.h"
 #include "Engine/Renderer/Renderer.h"
 
+#include "Engine/Resources/Resource_Manager.h"
+
 void collision_create_grid(memory_arena* arena, collision_grid* grid, laml::Vec3 origin, real32 cell_size, 
                            uint16 num_x, uint16 num_y, uint16 num_z) {
 
@@ -201,6 +203,54 @@ void collision_create_capsule(collision_capsule* capsule, triangle_geometry* geo
     if (geom) {
         // generate capsule geometry for debug rendering
         RH_WARN("Geometry not being generated yet for the capsule!");
+
+        debug_geometry sphere_bot;
+        resource_load_debug_mesh_data("Data/Models/debug/sphere_bot.stl", &sphere_bot);
+        debug_geometry sphere_top;
+        resource_load_debug_mesh_data("Data/Models/debug/sphere_top.stl", &sphere_top);
+        debug_geometry open_cylinder;
+        resource_load_debug_mesh_data("Data/Models/debug/open_cylinder.stl", &open_cylinder);
+
+        debug_geometry combined;
+        combined.num_verts = sphere_bot.num_verts + sphere_top.num_verts + open_cylinder.num_verts;
+        combined.num_inds  = sphere_bot.num_inds  + sphere_top.num_inds  + open_cylinder.num_inds;
+        
+        memory_arena* arena = resource_get_arena();
+        combined.vertices = PushArray(arena, debug_geometry::debug_vertex, combined.num_verts);
+        combined.indices  = PushArray(arena, uint32, combined.num_inds);
+
+        uint32 curr_vert = 0;
+        uint32 curr_idx = 0;
+        uint32 idx_offset = 0;
+        for (uint32 n = 0; n < sphere_bot.num_verts; n++) {
+            // bottom verts need to be scaled by radius, then have capsule.A added
+            combined.vertices[curr_vert].position = (sphere_bot.vertices[n].position * capsule->radius) + capsule->A;
+            combined.vertices[curr_vert++].normal = sphere_bot.vertices[n].normal;
+
+            combined.indices[curr_idx++] = idx_offset + sphere_bot.indices[n];
+        }
+        idx_offset = curr_idx;
+        for (uint32 n = 0; n < sphere_top.num_verts; n++) {
+            // top verts need to be scaled by radius, then have capsule.B added
+            combined.vertices[curr_vert].position = (sphere_top.vertices[n].position * capsule->radius) + capsule->B;
+            combined.vertices[curr_vert++].normal =  sphere_top.vertices[n].normal;
+
+            combined.indices[curr_idx++] = idx_offset + sphere_top.indices[n];
+        }
+        idx_offset = curr_idx;
+        real32 capsule_inner_height = laml::length(capsule->B - capsule->A);
+        laml::Vec3 cylinder_scale(capsule->radius, capsule_inner_height, capsule->radius);
+        for (uint32 n = 0; n < open_cylinder.num_verts; n++) {
+            // cylinder verts need to be scaled (by radius in the x/z plane, and the height in the y direction), then have capsule.A added
+            combined.vertices[curr_vert].position = (open_cylinder.vertices[n].position * cylinder_scale) + capsule->A;
+            combined.vertices[curr_vert++].normal =  open_cylinder.vertices[n].normal;
+
+            combined.indices[curr_idx++] = idx_offset + open_cylinder.indices[n];
+        }
+
+        // now create geometry on the gpu for rendering
+        ShaderDataType debug_attr[] = {ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::None};
+        renderer_create_mesh(geom, combined.num_verts, combined.vertices, combined.num_inds, combined.indices, debug_attr);
     }
 }
 
