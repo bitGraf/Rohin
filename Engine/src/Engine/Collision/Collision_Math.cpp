@@ -1,7 +1,13 @@
 #include "Collision.h"
 
 #include "Engine/Core/Logger.h"
+#include "Engine/Core/Asserts.h"
 
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))
+
+#define max3(a,b,c) ((((a)>(b))&&((a)>(c))) ? (a) : (((b)>(c)) ? (b) : (c)))
+#define min3(a,b,c) ((((a)<(b))&&((a)<(c))) ? (a) : (((b)<(c)) ? (b) : (c)))
 
 #if USING_GPU_GEMS_3_INTERSECTION
 // Cube-Triangle intersection code taken from Graphics Gems III - V.7 TRIANGLE-CUBE INTERSECTION appendix sample
@@ -491,6 +497,7 @@ int triBoxOverlap(float boxcenter[3],float boxhalfsize[3],float triverts[3][3])
     return 1;   /* box and triangle overlaps */
 }
 
+#if 1
 bool32 triangle_cube_intersect(collision_triangle t, laml::Vec3 box_center, laml::Vec3 box_halfsize) {
     float triverts[3][3];
     memory_copy(triverts[0], t.v1._data, 3*sizeof(float));
@@ -499,10 +506,170 @@ bool32 triangle_cube_intersect(collision_triangle t, laml::Vec3 box_center, laml
 
     return triBoxOverlap(box_center._data, box_halfsize._data, triverts);
 }
+#else
+
+bool32 sat_test(laml::Vec3 v0, laml::Vec3 v1, laml::Vec3 v2, laml::Vec3 n) {
+    real32 e0, e1, e2;
+    e0 = e1 = e2 = 0.25f;
+
+    laml::Vec3 u0(1.0f, 0.0f, 0.0f);
+    laml::Vec3 u1(0.0f, 1.0f, 0.0f);
+    laml::Vec3 u2(0.0f, 0.0f, 1.0f);
+
+    real32 p0 = laml::dot(v0, n);
+    real32 p1 = laml::dot(v1, n);
+    real32 p2 = laml::dot(v2, n);
+    real32 r = e0*abs(laml::dot(u0, n)) + e1*abs(laml::dot(u1, n)) + e2*abs(laml::dot(u1, n));
+
+    real32 pmin = min3(p0, p1, p2);
+    real32 pmax = max3(p0, p1, p2);
+
+    bool32 intersecting;
+    if (pmax < -r || pmin > r) {
+        intersecting = false;
+    } else {
+        intersecting = false;
+    }
+
+    return intersecting;
+}
+
+bool32 triangle_cube_intersect(collision_triangle t, laml::Vec3 box_center, laml::Vec3 box_halfsize) {
+    real32 e0 = box_halfsize.x;
+    real32 e1 = box_halfsize.y;
+    real32 e2 = box_halfsize.z;
+
+    real32 p0, p1, r;
+
+    // translate triangle as conceptually moving aabb to origin
+    laml::Vec3 v0 = t.v1 - box_center;
+    laml::Vec3 v1 = t.v2 - box_center;
+    laml::Vec3 v2 = t.v3 - box_center;
+
+    // compute edge vectors for triangle
+    laml::Vec3 f0 = laml::normalize(v1 - v0);
+    laml::Vec3 f1 = laml::normalize(v2 - v1);
+    laml::Vec3 f2 = laml::normalize(v0 - v2);
+
+    laml::Vec3 u0(1.0f, 0.0f, 0.0f);
+    laml::Vec3 u1(0.0f, 1.0f, 0.0f);
+    laml::Vec3 u2(0.0f, 0.0f, 1.0f);
+
+    real32 l;
+    RH_INFO("start");
+    laml::Vec3 a00 = laml::cross(u0, f0);
+    l = laml::length_sq(a00);
+    if (laml::length_sq(a00) < laml::eps<real32>) RH_INFO("ignore plane 1");
+    laml::Vec3 a01 = laml::cross(u0, f1);
+    l = laml::length_sq(a01);
+    if (laml::length_sq(a01) < laml::eps<real32>) RH_INFO("ignore plane 2");
+    laml::Vec3 a02 = laml::cross(u0, f2);
+    l = laml::length_sq(a02);
+    if (laml::length_sq(a02) < laml::eps<real32>) RH_INFO("ignore plane 3");
+    laml::Vec3 a10 = laml::cross(u1, f0);
+    l = laml::length_sq(a10);
+    if (laml::length_sq(a10) < laml::eps<real32>) RH_INFO("ignore plane 4");
+    laml::Vec3 a11 = laml::cross(u1, f1);
+    l = laml::length_sq(a11);
+    if (laml::length_sq(a11) < laml::eps<real32>) RH_INFO("ignore plane 5");
+    laml::Vec3 a12 = laml::cross(u1, f2);
+    l = laml::length_sq(a12);
+    if (laml::length_sq(a12) < laml::eps<real32>) RH_INFO("ignore plane 6");
+    laml::Vec3 a20 = laml::cross(u2, f0);
+    l = laml::length_sq(a20);
+    if (laml::length_sq(a20) < laml::eps<real32>) RH_INFO("ignore plane 7");
+    laml::Vec3 a21 = laml::cross(u2, f1);
+    l = laml::length_sq(a21);
+    if (laml::length_sq(a21) < laml::eps<real32>) RH_INFO("ignore plane 8");
+    laml::Vec3 a22 = laml::cross(u2, f2);
+    l = laml::length_sq(a22);
+    if (laml::length_sq(a22) < laml::eps<real32>) RH_INFO("ignore plane 9");
+    RH_INFO("end");
+
+    //sat_test(v0, v1, v2, a00);
+    //sat_test(v0, v1, v2, a01);
+    //sat_test(v0, v1, v2, a02);
+    //
+    //sat_test(v0, v1, v2, a10);
+    //sat_test(v0, v1, v2, a11);
+    //sat_test(v0, v1, v2, a12);
+    //
+    //sat_test(v0, v1, v2, a20);
+    //sat_test(v0, v1, v2, a21);
+    //sat_test(v0, v1, v2, a22);
+
+    // test axes a00..a22 (category 3)
+    // a00 = (0, -f0z, f0y)
+    p0 = v0.z*v1.y - v0.y*v1.z;
+    p1 = v2.z*(v1.y - v0.y) - v2.y*(v1.z - v0.z);
+    r = e1 * abs(f0.z) + e2 * abs(f0.y);
+    if (max(-max(p0, p1), min(p0, p1)) > r) return 0;
+
+    // a01 = (0, -f1z, f1y)
+    r = e1*abs(f1.z) + e2*abs(f1.y);
+    p0 = v0.z*(v2.y-v1.y) - v0.y*(v2.z-v1.z);
+    p1 = v1.z*v2.y - v1.y*v2.z;
+    if (max(-max(p0, p1), min(p0, p1)) > r) return 0;
+
+    // a02 = (0, -f2z, f2y)
+    r = e1*abs(f2.z) + e2*abs(f2.y);
+    p0 = v0.y*v2.z - v0.z*v2.y;
+    p1 = -v1.y*(v0.z-v2.z) + v1.z*(v0.y-v2.y);
+    if (max(-max(p0, p1), min(p0, p1)) > r) return 0;
+
+    // a10 = (f0z, 0, -f0x)
+    r = e0*abs(f0.z) + e2*abs(f0.x);
+    p0 = v0.x*v1.z - v0.z*v1.x;
+    p1 = v2.x*(v1.z-v0.z) - v2.z*(v1.x-v0.x);
+    if (max(-max(p0, p1), min(p0, p1)) > r) return 0;
+
+    // a11 = (f1z, 0, -f1x)
+    r = e0*abs(f1.z) + e2*abs(f1.x);
+    p0 = v0.x*(v2.z-v1.z) - v0.z*(v2.x-v1.x);
+    p1 = v1.x*v2.z - v1.z*v2.x;
+    if (max(-max(p0, p1), min(p0, p1)) > r) return 0;
+
+    // a12 = (f2z, 0, -f2x)
+    r = e0*abs(f2.z) + e2*abs(f2.x);
+    p0 = v0.z*v2.x - v0.x*v2.z;
+    p1 = v1.x*(v0.z-v2.z) - v1.z*(v0.x-v2.x);
+    if (max(-max(p0, p1), min(p0, p1)) > r) return 0;
+
+    // a20 = (-f0y, f0x, 0)
+    r = e0*abs(f0.y) + e1*abs(f0.x);
+    p0 = -v0.x*v1.y + v0.y*v1.x;
+    p1 = -v2.x*(v1.y-v0.y) + v2.y*(v1.x-v0.x);
+    if (max(-max(p0, p1), min(p0, p1)) > r) return 0;
+
+    // a21 = (-f1y, f1x, 0)
+    r = e0*abs(f1.y) + e1*abs(f1.x);
+    p0 = -v0.x*(v2.y-v1.y) + v0.y*(v2.x-v1.x);
+    p1 = v2.x*v1.y - v2.y*v1.x;
+    if (max(-max(p0, p1), min(p0, p1)) > r) return 0;
+
+    // a22 = (-f2y, f2x, 0)
+    r = e0*abs(f2.y) + e1*abs(f2.x);
+    p0 = v0.x*v2.y - v0.y*v2.x;
+    p1 = -v1.x*(v0.y-v2.y) + v1.y*(v0.x-v2.x);
+    if (max(-max(p0, p1), min(p0, p1)) > r) return 0;
+
+
+    // test three aces corresponding to the face normals of the AABB (category 1)
+    if (max3(v0.x, v1.x, v2.x) < -e0 || min3(v0.x, v1.x, v2.x) > e0) return 0;
+    if (max3(v0.y, v1.y, v2.y) < -e1 || min3(v0.y, v1.y, v2.y) > e1) return 0;
+    if (max3(v0.z, v1.z, v2.z) < -e2 || min3(v0.z, v1.z, v2.z) > e2) return 0;
+
+    // test separating axis corresponding to triangle face normal (category 2)
+    laml::Vec3 plane_normal = laml::cross(f0, f1);
+    real32 plane_dist = laml::dot(plane_normal, v0);
+
+    r = e0*abs(plane_normal.x) + e1*abs(plane_normal.y) + e2*abs(plane_normal.z);
+    real32 s = laml::dot(plane_normal, box_center) - plane_dist;
+    return abs(s) <= r;
+}
+#endif
 #endif
 
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#define min(a,b) (((a) < (b)) ? (a) : (b))
 laml::Vec3 ClosestPointOnLineSegment(laml::Vec3 A, laml::Vec3 B, laml::Vec3 point) {
     laml::Vec3 AB = B - A;
     real32 t = laml::dot(point - A, AB) / laml::dot(AB, AB);
@@ -782,7 +949,7 @@ bool32 segment_intersect_cylinder(laml::Vec3 p, laml::Vec3 q, laml::Vec3 sphere_
     return (t <= segment_length);
 }
 
-bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule capsule) {
+bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule capsule, laml::Vec3& contact_point) {
 #if 1
     // turn capsule into a line segment
     laml::Vec3 A = capsule.A;// + capsule_position;
@@ -813,6 +980,7 @@ bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule
         real32 u, v, w, t;
         if (segment_intersect_triangle(A, B, closest_face.v1, closest_face.v2, closest_face.v3, u, v, w, t)) {
             // intersection!
+            contact_point = A + (B-A)*t;
             return true;
         } // otherwise, continue on...
     }
@@ -821,12 +989,15 @@ bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule
         real32 t;
         if (segment_intersect_cylinder(A, B, triangle.v1, triangle.v2, capsule.radius, t)) {
             // intersection with edge 12!
+            contact_point = A + (B-A)*t;
             return true;
         } else if (segment_intersect_cylinder(A, B, triangle.v2, triangle.v3, capsule.radius, t)) {
             // intersection with edge 23!
+            contact_point = A + (B-A)*t;
             return true;
         } else if (segment_intersect_cylinder(A, B, triangle.v3, triangle.v1, capsule.radius, t)) {
             // intersection with edge 31!
+            contact_point = A + (B-A)*t;
             return true;
         } // otherwise, continue on...
     }
@@ -835,17 +1006,19 @@ bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule
         real32 t;
         if (segment_intersect_cylinder(A, B, triangle.v1, capsule.radius, t)) {
             // intersection with vertex 1!
+            contact_point = A + (B-A)*t;
             return true;
         } else if (segment_intersect_cylinder(A, B, triangle.v2, capsule.radius, t)) {
             // intersection with vertex 2!
+            contact_point = A + (B-A)*t;
             return true;
         } else if (segment_intersect_cylinder(A, B, triangle.v3, capsule.radius, t)) {
             // intersection with vertex 3!
+            contact_point = A + (B-A)*t;
             return true;
         }
     }
     // if no intersection yet, shapes are not touching
-
     return false;
 
 #else
@@ -876,4 +1049,700 @@ bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule
         return triangle_sphere_intersect(triangle.v1, triangle.v2, triangle.v3, sphere_center, capsule.radius);
     }
 #endif
+}
+
+bool32 triangle_sphere_intersect(collision_triangle triangle, collision_sphere sphere, laml::Vec3& contact_point) {
+    if (triangle_sphere_intersect(triangle.v1, triangle.v2, triangle.v3, sphere.C, sphere.radius)) {
+        contact_point = sphere.C;
+        return true;
+    }
+
+    return false;
+}
+
+
+inline real32 squareDistance(const laml::Vec3& p0, const laml::Vec3& dir, real32 t, const laml::Vec3& point) {
+    laml::Vec3 diff = point - p0;
+    real32 fT = laml::dot(diff, dir);
+    fT = max(fT, 0.0f);
+    fT = min(fT, t);
+    diff = diff - fT*dir;
+    return laml::length_sq(diff);
+}
+
+// quick triangle culling for sphere-based sweeps
+inline bool32 coarseCullingTri(const laml::Vec3& center, const laml::Vec3& dir, real32 t, real32 radius, const laml::Vec3* triVerts) {
+    const laml::Vec3 triCenter = (triVerts[0] + triVerts[1] + triVerts[2]) * (1.0f/3.0f);
+
+    // distance between the triangle center and the swept path (an LSS)
+    real32 d = sqrt(squareDistance(center, dir, t, triCenter)) - radius - 0.0001f;
+
+    if (d < 0.0f) // The triangle center lies inside the swept sphere
+        return true;
+
+    d*=d;
+
+    // coarse capsule-vs-triangle overlap test ### distances could be precomputed?
+    if(d <= laml::length_sq(triCenter-triVerts[0]))
+        return true;
+    if(d <= laml::length_sq(triCenter-triVerts[1]))
+        return true;
+    if(d <= laml::length_sq(triCenter-triVerts[2]))
+        return true;
+
+    return false;
+}
+
+// quick triangle rejection for sphere-based sweeps.
+inline bool32 cullTriangle(const laml::Vec3* triVerts, const laml::Vec3& dir, real32 radius, real32 t, const real32 dpc0) {
+    // PT: project triangle on axis
+    const real32 dp0 = laml::dot(triVerts[0], dir);
+    const real32 dp1 = laml::dot(triVerts[1], dir);
+    const real32 dp2 = laml::dot(triVerts[2], dir);
+
+    // PT: keep min value = earliest possible impact distance
+    real32 dp = dp0;
+    dp = min(dp, dp1);
+    dp = min(dp, dp2);
+
+    // PT: make sure we keep triangles that are about as close as best current distance
+    radius += 0.002f;
+
+    // PT: if earliest possible impact distance for this triangle is already larger than
+    // sphere's current best known impact distance, we can skip the triangle
+    if(dp>dpc0 + t + radius)
+    {
+        //PX_ASSERT(resx == 0.0f);
+        return false;
+    }
+
+    // PT: if triangle is fully located before the sphere's initial position, skip it too
+    const real32 dpc1 = dpc0 - radius;
+    if(dp0<dpc1 && dp1<dpc1 && dp2<dpc1)
+    {
+        //PX_ASSERT(resx == 0.0f);
+        return false;
+    }
+
+    //PX_ASSERT(resx != 0.0f);
+    return true;
+}
+
+// combined triangle culling for sphere-based sweeps
+inline bool32 rejectTriangle(const laml::Vec3& center, const laml::Vec3& unitDir, real32 curT, real32 radius, const laml::Vec3* triVerts, const real32 dpc0) {
+    if(!coarseCullingTri(center, unitDir, curT, radius, triVerts))
+        return true;
+    if(!cullTriangle(triVerts, unitDir, radius, curT, dpc0))
+        return true;
+    return false;
+}
+
+inline laml::Vec3 ClosestPointOnTriangle2(const laml::Vec3& p, const laml::Vec3& a, const laml::Vec3& b, const laml::Vec3& c, const laml::Vec3& ab, const laml::Vec3& ac) {
+    // Check if P in vertex region outside A
+    //const laml::Vec3 ab = b - a;
+    //const laml::Vec3 ac = c - a;
+    const laml::Vec3 ap = p - a;
+    const float d1 = laml::dot(ab, ap);
+    const float d2 = laml::dot(ac, ap);
+    if(d1<=0.0f && d2<=0.0f)
+        return a;	// Barycentric coords 1,0,0
+
+    // Check if P in vertex region outside B
+    const laml::Vec3 bp = p - b;
+    const float d3 = laml::dot(ab, bp);
+    const float d4 = laml::dot(ac, bp);
+    if(d3>=0.0f && d4<=d3)
+        return b;	// Barycentric coords 0,1,0
+
+    // Check if P in edge region of AB, if so return projection of P onto AB
+    const float vc = d1*d4 - d3*d2;
+    if(vc<=0.0f && d1>=0.0f && d3<=0.0f) {
+        const float v = d1 / (d1 - d3);
+        return a + v * ab;	// barycentric coords (1-v, v, 0)
+    }
+
+    // Check if P in vertex region outside C
+    const laml::Vec3 cp = p - c;
+    const float d5 = laml::dot(ab, cp);
+    const float d6 = laml::dot(ac, cp);
+    if(d6>=0.0f && d5<=d6)
+        return c;	// Barycentric coords 0,0,1
+
+    // Check if P in edge region of AC, if so return projection of P onto AC
+    const float vb = d5*d2 - d1*d6;
+    if(vb<=0.0f && d2>=0.0f && d6<=0.0f) {
+        const float w = d2 / (d2 - d6);
+        return a + w * ac;	// barycentric coords (1-w, 0, w)
+    }
+
+    // Check if P in edge region of BC, if so return projection of P onto BC
+    const float va = d3*d6 - d5*d4;
+    if(va<=0.0f && (d4-d3)>=0.0f && (d5-d6)>=0.0f) {
+        const float w = (d4-d3) / ((d4 - d3) + (d5-d6));
+        return b + w * (c-b);	// barycentric coords (0, 1-w, w)
+    }
+
+    // P inside face region. Compute Q through its barycentric coords (u,v,w)
+    const float denom = 1.0f / (va + vb + vc);
+    const float v = vb * denom;
+    const float w = vc * denom;
+    return a + ab*v + ac*w;
+}
+
+#define LOCAL_EPSILON 0.00001f
+
+// special version computing (u,v) even when the ray misses the tri. Version working on precomputed edges.
+static inline uint32 rayTriSpecial(const laml::Vec3& orig, const laml::Vec3& dir, 
+                                   const laml::Vec3& vert0, const laml::Vec3& edge1, const laml::Vec3& edge2, 
+                                   real32& t, real32& u, real32& v)
+{
+    // Begin calculating determinant - also used to calculate U parameter
+    const laml::Vec3 pvec = laml::cross(dir, edge2);
+
+    // If determinant is near zero, ray lies in plane of triangle
+    const real32 det = laml::dot(edge1, pvec);
+
+    // the non-culling branch
+    // if(det>-GU_CULLING_EPSILON_RAY_TRIANGLE && det<GU_CULLING_EPSILON_RAY_TRIANGLE)
+    if(det>-LOCAL_EPSILON && det<LOCAL_EPSILON)
+        return 0;
+    const real32 oneOverDet = 1.0f / det;
+
+    // Calculate distance from vert0 to ray origin
+    const laml::Vec3 tvec = orig - vert0;
+
+    // Calculate U parameter
+    u = (laml::dot(tvec,pvec)) * oneOverDet;
+
+    // prepare to test V parameter
+    const laml::Vec3 qvec = laml::cross(tvec, edge1);
+
+    // Calculate V parameter
+    v = laml::dot(dir,qvec) * oneOverDet;
+
+    if(u<0.0f || u>1.0f)
+        return 1;
+    if(v<0.0f || u+v>1.0f)
+        return 1;
+
+    // Calculate t, ray intersects triangle
+    t = laml::dot(edge2, qvec) * oneOverDet;
+
+    return 2;
+}
+
+// dir = p1 - p0
+inline real32 distancePointSegmentSquaredInternal(const laml::Vec3& p0, const laml::Vec3& dir, const laml::Vec3& point, real32* param=NULL)
+{
+    laml::Vec3 diff = point - p0;
+    real32 fT = laml::dot(diff, dir);
+
+    if(fT<=0.0f) {
+        fT = 0.0f;
+    } else {
+        const real32 sqrLen = laml::length_sq(dir);
+        if(fT>=sqrLen) {
+            fT = 1.0f;
+            diff = diff - dir;
+        } else {
+            fT /= sqrLen;
+            diff = diff - fT*dir;
+        }
+    }
+
+    if(param)
+        *param = fT;
+
+    return laml::length_sq(diff);
+}
+
+static bool intersectRaySphere(const laml::Vec3& rayOrigin, const laml::Vec3& rayDir, const laml::Vec3& sphereCenter, float radius2, float& tmin, float& tmax)
+{
+    const laml::Vec3 CO = rayOrigin - sphereCenter;
+
+    const float a = laml::dot(rayDir, rayDir);
+    const float b = 2.0f * laml::dot(CO, rayDir);
+    const float c = laml::dot(CO, CO) - radius2;
+
+    const float discriminant = b * b - 4.0f * a * c;
+    if(discriminant < 0.0f)
+        return false;
+
+    const float OneOver2A = 1.0f / (2.0f * a);
+    const float sqrtDet = sqrtf(discriminant);
+    tmin = (-b - sqrtDet) * OneOver2A;
+    tmax = (-b + sqrtDet) * OneOver2A;
+    if(tmin > tmax) {
+        float tmp = tmin;
+        tmin = tmax;
+        tmax = tmp;
+    }
+
+    return true;
+}
+
+uint32 intersectRayCapsuleInternal(const laml::Vec3& rayOrigin, const laml::Vec3& rayDir, 
+                                   const laml::Vec3& capsuleP0, const laml::Vec3& capsuleP1, 
+                                   float radius, real32 s[2]) {
+    const float radius2 = radius * radius;
+
+    const laml::Vec3 AB = capsuleP1 - capsuleP0;
+    const laml::Vec3 AO = rayOrigin - capsuleP0;
+
+    const float AB_dot_d = laml::dot(AB, rayDir);
+    const float AB_dot_AO = laml::dot(AB, AO);
+    const float AB_dot_AB = laml::dot(AB, AB);
+	
+    const float OneOverABDotAB = AB_dot_AB!=0.0f ? 1.0f / AB_dot_AB : 0.0f;
+    const float m = AB_dot_d * OneOverABDotAB;
+    const float n = AB_dot_AO * OneOverABDotAB;
+
+    const laml::Vec3 Q = rayDir - (AB * m);
+    const laml::Vec3 R = AO - (AB * n);
+
+    const float a = laml::dot(Q,Q);
+    const float b = 2.0f * laml::dot(Q,R);
+    const float c = laml::dot(R,R) - radius2;
+
+    if(a == 0.0f)
+    {
+        float atmin, atmax, btmin, btmax;
+        if(   !intersectRaySphere(rayOrigin, rayDir, capsuleP0, radius2, atmin, atmax)
+           || !intersectRaySphere(rayOrigin, rayDir, capsuleP1, radius2, btmin, btmax))
+            return 0;
+
+        s[0] = atmin < btmin ? atmin : btmin;
+        return 1;
+    }
+
+    const float discriminant = b * b - 4.0f * a * c;
+    if(discriminant < 0.0f)
+        return 0;
+
+    const float OneOver2A = 1.0f / (2.0f * a);
+    const float sqrtDet = sqrtf(discriminant);
+
+    float tmin = (-b - sqrtDet) * OneOver2A;
+    float tmax = (-b + sqrtDet) * OneOver2A;
+    if (tmin > tmax) {
+        float tmp = tmin;
+        tmin = tmax;
+        tmax = tmp;
+    }
+
+    const float t_k1 = tmin * m + n;
+    if(t_k1 < 0.0f)
+    {
+        float stmin, stmax;
+        if(intersectRaySphere(rayOrigin, rayDir, capsuleP0, radius2, stmin, stmax))
+            s[0] = stmin;
+        else 
+            return 0;
+    }
+    else if(t_k1 > 1.0f)
+    {
+        float stmin, stmax;
+        if(intersectRaySphere(rayOrigin, rayDir, capsuleP1, radius2, stmin, stmax))
+            s[0] = stmin;
+        else 
+            return 0;
+    }
+    else
+        s[0] = tmin;
+    return 1;
+}
+
+#define GU_RAY_SURFACE_OFFSET 10.0f
+inline bool intersectRayCapsule(const laml::Vec3& origin, const laml::Vec3& dir, const laml::Vec3& p0, const laml::Vec3& p1, real32 radius, real32& t) {
+    // PT: move ray origin close to capsule, to solve accuracy issues.
+    // We compute the distance D between the ray origin and the capsule's segment.
+    // Then E = D - radius = distance between the ray origin and the capsule.
+    // We can move the origin freely along 'dir' up to E units before touching the capsule.
+    real32 l = distancePointSegmentSquaredInternal(p0, p1 - p0, origin);
+    l = sqrt(l) - radius;
+
+    // PT: if this becomes negative or null, the ray starts inside the capsule and we can early exit
+    if(l<=0.0f) {
+        t = 0.0f;
+        return true;
+    }
+
+    // PT: we remove an arbitrary GU_RAY_SURFACE_OFFSET units to E, to make sure we don't go close to the surface.
+    // If we're moving in the direction of the capsule, the origin is now about GU_RAY_SURFACE_OFFSET units from it.
+    // If we're moving away from the capsule, the ray won't hit the capsule anyway.
+    // If l is smaller than GU_RAY_SURFACE_OFFSET we're close enough, accuracy is good, there is nothing to do.
+    if(l>GU_RAY_SURFACE_OFFSET)
+        l -= GU_RAY_SURFACE_OFFSET;
+    else
+        l = 0.0f;
+
+    // PT: move origin closer to capsule and do the raycast
+    real32 s[2];
+    const uint32 nbHits = intersectRayCapsuleInternal(origin + l*dir, dir, p0, p1, radius, s);
+    if(!nbHits)
+        return false;
+
+    // PT: keep closest hit only
+    if(nbHits == 1)
+        t = s[0];
+    else
+        t = (s[0] < s[1]) ? s[0] : s[1];
+
+    // PT: fix distance (smaller than expected after moving ray close to capsule)
+    t += l;
+    return true;
+}
+
+// sweep sphere against single triangle
+bool32 sweep_sphere_single_triangle(const collision_triangle& tri, const laml::Vec3& normal, 
+                                    const laml::Vec3& center, real32 radius, 
+                                    const laml::Vec3& dir, real32& impactDistance, 
+                                    bool testInitialOverlap) {
+
+    const laml::Vec3 edge10 = tri.v2 - tri.v1;
+    const laml::Vec3 edge20 = tri.v3 - tri.v1;
+
+    if (testInitialOverlap) {
+        const laml::Vec3 cp = ClosestPointOnTriangle2(center, tri.v1, tri.v2, tri.v3, edge10, edge20);
+
+        if (laml::length_sq(cp - center) <= radius*radius) {
+            impactDistance = 0.0f;
+            return true;
+        }
+    }
+
+    real32 u, v;
+    {
+        laml::Vec3 R = normal * radius;
+        if (laml::dot(dir, R) >= 0.0f)
+            R = -R;
+
+        // The first point of the sphere to hit the triangle plane is the point of the sphere nearest to
+        // the triangle plane. Hence, we use center - (normal*radius) below.
+
+        // PT: casting against the extruded triangle in direction R is the same as casting from a ray moved by -R
+        real32 t;
+        const uint32 r = rayTriSpecial(center-R, dir, tri.v1, edge10, edge20, t, u, v);
+
+        if (!r)
+            return false;
+        if (r == 2) {
+            if (t < 0.0f)
+                return false;
+            impactDistance = t;
+            return true;
+        }
+    }
+
+    bool testTwoEdges = false;
+    uint32 e0,e1,e2=0;
+    if(u<0.0f) {
+        if(v<0.0f) {
+            // 0 or 0-1 or 0-2
+            testTwoEdges = true;
+            e0 = 0;
+            e1 = 1;
+            e2 = 2;
+        } else if(u+v>1.0f) {
+            // 2 or 2-0 or 2-1
+            testTwoEdges = true;
+            e0 = 2;
+            e1 = 0;
+            e2 = 1;
+        } else {
+            // 0-2
+            e0 = 0;
+            e1 = 2;
+        }
+    } else {
+        if(v<0.0f) {
+            if(u+v>1.0f) {
+                // 1 or 1-0 or 1-2
+                testTwoEdges = true;
+                e0 = 1;
+                e1 = 0;
+                e2 = 2;
+            } else {
+                // 0-1
+                e0 = 0;
+                e1 = 1;
+            }
+        } else {
+            Assert(u+v>=1.0f); // Else hit triangle
+            // 1-2
+            e0 = 1;
+            e1 = 2;
+        }
+    }
+
+    bool hit = false;
+    real32 t;
+    const laml::Vec3* triVerts = &tri.v1;
+    if(intersectRayCapsule(center, dir, triVerts[e0], triVerts[e1], radius, t) && t>=0.0f) {
+        impactDistance = t;
+        hit = true;
+    }
+    if(testTwoEdges && intersectRayCapsule(center, dir, triVerts[e0], triVerts[e2], radius, t) && t>=0.0f) {
+        if(!hit || t<impactDistance) {
+            impactDistance = t;
+            hit = true;
+        }
+    }
+
+    return hit;
+}
+
+// if the swept geometry is already intersecting
+inline bool32 setInitialOverlapResults(sweep_result& hit, const laml::Vec3& unitDir, uint32 faceIndex) {
+    // PT: please write these fields in the order they are listed in the struct.
+    hit.face_index	= faceIndex;
+    //hit.flags		= PxHitFlag::eNORMAL|PxHitFlag::eFACE_INDEX;
+    hit.normal		= -unitDir;
+    hit.distance	= 0.0f;
+    return true;	// PT: true indicates a hit, saves some lines in calling code
+}
+
+#define GU_EPSILON_SAME_DISTANCE 1e-3f
+inline bool32 keepTriangle(float triImpactDistance, float triAlignmentValue,
+                           float bestImpactDistance, float bestAlignmentValue, float maxDistance) {
+    // Reject triangle if further than the maxDistance
+    if(triImpactDistance > maxDistance)
+        return false;
+
+    // If initial overlap happens, keep the triangle
+    if(triImpactDistance == 0.0f)
+        return true;
+
+    // tris have "similar" impact distances if the difference is smaller than 2*distEpsilon
+    float distEpsilon = GU_EPSILON_SAME_DISTANCE; // pick a farther hit within distEpsilon that is more opposing than the previous closest hit
+
+    // PT: make it a relative epsilon to make sure it still works with large distances
+    distEpsilon *= max(1.0f, max(triImpactDistance, bestImpactDistance));
+
+    // If new distance is more than epsilon closer than old distance
+    if(triImpactDistance < bestImpactDistance - distEpsilon)
+        return true;
+
+    // If new distance is no more than epsilon farther than oldDistance and "face is more opposing than previous"
+    if(triImpactDistance < bestImpactDistance+distEpsilon && triAlignmentValue < bestAlignmentValue)
+        return true;
+
+    // If alignment value is the same, but the new triangle is closer than the best distance
+    if(triAlignmentValue == bestAlignmentValue && triImpactDistance < bestImpactDistance)
+        return true;
+
+    return false;
+}
+
+inline bool32 keepTriangleBasic(float triImpactDistance, float bestImpactDistance, float maxDistance) {
+    // Reject triangle if further than the maxDistance
+    if(triImpactDistance > maxDistance)
+        return false;
+
+    // If initial overlap happens, keep the triangle
+    if(triImpactDistance == 0.0f)
+        return true;
+
+    // If new distance is more than epsilon closer than old distance
+    if(triImpactDistance < bestImpactDistance)
+        return true;
+
+    return false;
+}
+
+const uint32 INVALID_U32 = ~0U;
+
+inline bool32 shouldFlipNormal(const laml::Vec3& normal, 
+                               bool meshBothSides, bool isDoubleSided, 
+                               const laml::Vec3& triangleNormal, const laml::Vec3& dir) {
+    // PT: this function assumes that input normal is opposed to the ray/sweep direction. This is always
+    // what we want except when we hit a single-sided back face with 'meshBothSides' enabled.
+
+    if(!meshBothSides || isDoubleSided)
+        return false;
+
+    Assert(laml::dot(normal, dir) <= 0.0f); // PT: if this fails, the logic below cannot be applied
+    return laml::dot(triangleNormal, dir) > 0.0f; // PT: true for back-facing hits
+}
+
+// Based on Christer Ericson's book
+laml::Vec3 closestPtPointTriangle(const laml::Vec3& p, const laml::Vec3& a, const laml::Vec3& b, const laml::Vec3& c, float& s, float& t) {
+    // Check if P in vertex region outside A
+    const laml::Vec3 ab = b - a;
+    const laml::Vec3 ac = c - a;
+    const laml::Vec3 ap = p - a;
+    const float d1 = laml::dot(ab, ap);
+    const float d2 = laml::dot(ac, ap);
+    if(d1<=0.0f && d2<=0.0f) {
+        s = 0.0f;
+        t = 0.0f;
+        return a; // Barycentric coords 1,0,0
+    }
+
+    // Check if P in vertex region outside B
+    const laml::Vec3 bp = p - b;
+    const float d3 = laml::dot(ab, bp);
+    const float d4 = laml::dot(ac, bp);
+    if(d3>=0.0f && d4<=d3) {
+        s = 1.0f;
+        t = 0.0f;
+        return b;	// Barycentric coords 0,1,0
+    }
+
+    // Check if P in edge region of AB, if so return projection of P onto AB
+    const float vc = d1*d4 - d3*d2;
+    if(vc<=0.0f && d1>=0.0f && d3<=0.0f) {
+        const float v = d1 / (d1 - d3);
+        s = v;
+        t = 0.0f;
+        return a + v * ab;	// barycentric coords (1-v, v, 0)
+    }
+
+    // Check if P in vertex region outside C
+    const laml::Vec3 cp = p - c;
+    const float d5 = laml::dot(ab, cp);
+    const float d6 = laml::dot(ac, cp);
+    if(d6>=0.0f && d5<=d6) {
+        s = 0.0f;
+        t = 1.0f;
+        return c; // Barycentric coords 0,0,1
+    }
+
+    // Check if P in edge region of AC, if so return projection of P onto AC
+    const float vb = d5*d2 - d1*d6;
+    if(vb<=0.0f && d2>=0.0f && d6<=0.0f) {
+        const float w = d2 / (d2 - d6);
+        s = 0.0f;
+        t = w;
+        return a + w * ac;	// barycentric coords (1-w, 0, w)
+    }
+
+    // Check if P in edge region of BC, if so return projection of P onto BC
+    const float va = d3*d6 - d5*d4;
+    if(va<=0.0f && (d4-d3)>=0.0f && (d5-d6)>=0.0f) {
+        const float w = (d4-d3) / ((d4 - d3) + (d5-d6));
+        s = 1.0f-w;
+        t = w;
+        return b + w * (c-b);	// barycentric coords (0, 1-w, w)
+    }
+
+    // P inside face region. Compute Q through its barycentric coords (u,v,w)
+    const float denom = 1.0f / (va + vb + vc);
+    const float v = vb * denom;
+    const float w = vc * denom;
+    s = v;
+    t = w;
+    return a + ab*v + ac*w;
+}
+
+void computeSphereTriImpactData(laml::Vec3& hit, laml::Vec3& normal, const laml::Vec3& center, 
+                                const laml::Vec3& dir, float t, const collision_triangle& tri) {
+    const laml::Vec3 newSphereCenter = center + dir*t;
+
+    // We need the impact point, not computed by the new code
+    real32 u, v;
+    const laml::Vec3 localHit = closestPtPointTriangle(newSphereCenter, tri.v1, tri.v2, tri.v3, u, v);
+
+    // This is responsible for the cap-vs-box stuck while jumping. However it's needed to slide on box corners!
+    // PT: this one is also dubious since the sphere/capsule center can be far away from the hit point when the radius is big!
+    laml::Vec3 localNormal = newSphereCenter - localHit;
+    const real32 m = laml::length(localNormal);
+    localNormal = localNormal / m;
+    if(m<1e-3f) {
+        localNormal = laml::cross(tri.v2-tri.v1, tri.v3-tri.v1);
+    }
+
+    hit = localHit;
+    normal = localNormal;
+}
+
+// PT: computes proper impact data for sphere-sweep-vs-tri, after the closest tri has been found
+inline bool32 computeSphereTriangleImpactData(sweep_result& h, laml::Vec3& triNormalOut, uint32 index, real32 curT, 
+                                                     const laml::Vec3& center, const laml::Vec3& unitDir, const laml::Vec3& bestTriNormal,
+                                                     const collision_triangle* triangles,
+                                                     bool isDoubleSided, bool meshBothSides) {
+    if(index==INVALID_U32)
+        return false; // We didn't touch any triangle
+
+    // Compute impact data only once, using best triangle
+    laml::Vec3 hitPos, normal;
+    computeSphereTriImpactData(hitPos, normal, center, unitDir, curT, triangles[index]);
+
+    // PT: by design, returned normal is opposed to the sweep direction.
+    if(shouldFlipNormal(normal, meshBothSides, isDoubleSided, bestTriNormal, unitDir))
+        normal = -normal;
+
+    h.position	= hitPos;
+    h.normal	= normal;
+    h.distance	= curT;
+    h.face_index	= index;
+    //h.flags		= PxHitFlag::eNORMAL|PxHitFlag::ePOSITION;
+    triNormalOut = bestTriNormal;
+    return true;
+}
+
+// move sphere through a list of triangles, and see how far it can go
+bool32 sweep_sphere_triangles(uint32 num_tris, collision_triangle* triangles, laml::Vec3 sphere_center, real32 sphere_radius,
+                              laml::Vec3 unit_direction, real32 distance,
+                              sweep_result& hit_result, laml::Vec3& tri_normal_out) {
+    if (num_tris == 0)
+        return false;
+
+    // TODO: make these flags?
+    bool32 isDoubleSided = true; 
+    bool32 meshBothSides = true;
+    bool32 doBackfaceCulling = !isDoubleSided && !meshBothSides;
+    bool32 testInitialOverlap = true;
+    bool32 any_hit = false;
+
+    uint32 index = INVALID_U32;
+
+    real32 curr_t = distance;
+    const real32 dpc0 = laml::dot(sphere_center, unit_direction);
+
+    real32 best_align_value = 2.0f;
+    laml::Vec3 best_tri_normal(0.0f);
+
+    for(uint32 i = 0; i < num_tris; i++) {
+        const collision_triangle& current_tri = triangles[i];
+
+        if(rejectTriangle(sphere_center, unit_direction, curr_t, sphere_radius, &current_tri.v1, dpc0))
+            continue;
+
+        laml::Vec3 tri_normal = laml::cross(current_tri.v2 - current_tri.v1, current_tri.v3 - current_tri.v1);
+
+        if (doBackfaceCulling && (laml::dot(tri_normal, unit_direction) > 0.0f))
+            continue;
+
+        const real32 magnitude = laml::length(tri_normal);
+        if (magnitude == 0.0f) // TODO: check if this is valid
+            continue;
+
+        tri_normal = tri_normal / magnitude;
+        
+        real32 curr_dist;
+        if (!sweep_sphere_single_triangle(current_tri, tri_normal, sphere_center, sphere_radius, unit_direction, curr_dist, testInitialOverlap))
+            continue;
+
+        const real32 hit_dot = -abs(laml::dot(tri_normal,unit_direction));
+        if(keepTriangle(curr_dist, hit_dot, curr_t, best_align_value, distance)) {
+            if(curr_dist==0.0f) {
+                tri_normal_out = -unit_direction;
+                return setInitialOverlapResults(hit_result, unit_direction, i);
+            }
+
+            curr_t = min(curr_t, curr_dist); // exact lower bound
+
+            index = i;		
+            best_align_value = hit_dot; 
+            best_tri_normal = tri_normal;
+            if(any_hit)
+                break;
+        } else if(keepTriangleBasic(curr_dist, curr_t, distance)) {
+            curr_t = min(curr_t, curr_dist); // exact lower bound
+        }
+    }
+    return computeSphereTriangleImpactData(hit_result, tri_normal_out, index, curr_t, 
+                                           sphere_center, unit_direction, best_tri_normal, 
+                                           triangles, isDoubleSided, meshBothSides);
 }

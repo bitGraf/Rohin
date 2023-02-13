@@ -376,6 +376,9 @@ mesh_file_result resource_load_mesh_file_for_level(const char* resource_file_nam
     } else {
         RH_TRACE("Reserving level triangles to grid!");
         for (uint32 n = 0; n < num_tris; n++) {
+            if (n == 49 || n == 472) {
+                bool stop = true;
+            }
             //RH_TRACE("  Triangle %d/%d", n, num_tris);
             uint32 I0 = Indices[n*3 + 0];
             uint32 I1 = Indices[n*3 + 1];

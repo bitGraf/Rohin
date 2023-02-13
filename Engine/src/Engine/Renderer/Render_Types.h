@@ -165,8 +165,7 @@ struct render_packet {
 
     // for collision visualization
     collision_grid* col_grid;
-    collision_capsule capsule;
-    render_command capsule_geom;
+    render_command collider_geom;
 
     collision_sector sector;
     uint32 num_tris;
@@ -174,4 +173,6 @@ struct render_packet {
 
     uint32 num_intersecting_tris;
     uint32* intersecting_triangle_indices;
+
+    laml::Vec3 contact_point;
 };

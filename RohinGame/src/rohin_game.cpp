@@ -32,15 +32,12 @@ struct game_state {
     triangle_geometry* level_geom;
     triangle_geometry* player_geom;
 
-    //uint32 num_geometry;
-    //triangle_geometry* geometry;
-
     player_state player;
     player_state debug_camera;
 
     collision_grid grid;
-    collision_capsule capsule;
-    triangle_geometry capsule_geom;
+    collision_sphere collider;
+    triangle_geometry collider_geom;
     collision_sector sector;
 };
 
@@ -49,7 +46,7 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
 
     uint16 key_code = context.u16[0];
     if (key_code == KEY_C) {
-#if 0
+#if 1
         RH_TRACE("Collision sector:\n         "
                  "x: %d->%d\n         "
                  "y: %d->%d\n         "
@@ -57,21 +54,25 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
                  state->sector.x_min, state->sector.x_max,
                  state->sector.y_min, state->sector.y_max,
                  state->sector.z_min, state->sector.z_max);
-        collision_grid_cell cell = state->grid.cells[state->gx][state->gy][state->gz];
+        collision_grid_cell cell = state->grid.cells[state->sector.x_min][state->sector.y_min][state->sector.z_min];
 
-        RH_TRACE("[%d,%d,%d]\n         %d triangles", state->gx, state->gy, state->gz, cell.num_surfaces);
+        RH_TRACE("[%d,%d,%d]\n         %d triangles", state->sector.x_min, state->sector.y_min, state->sector.z_min, cell.num_surfaces);
         for (uint32 n = 0; n < cell.num_surfaces; n++) {
             collision_triangle tri = state->grid.triangles[cell.surfaces[n]];
             RH_TRACE(" #%d [%f,%f,%f]\n        "
                      "     [%f,%f,%f]\n        "
-                     "     [%f,%f,%f]\n", n, 
+                     "     [%f,%f,%f]\n", cell.surfaces[n], 
                      tri.v1.x, tri.v1.y, tri.v1.z,
                      tri.v2.x, tri.v2.y, tri.v2.z,
                      tri.v3.x, tri.v3.y, tri.v3.z);
         }
 #endif
     } else if (key_code == KEY_P) {
-        //state->paused = !state->paused;
+        RH_TRACE("Player Position: [%f,%f,%f]", 
+                 state->player.position.x, state->player.position.y, state->player.position.z);
+    } else if (key_code == KEY_R) {
+        state->player.position = {-5.0f, 1.0f, 0.0f};
+        state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     }
     //RH_TRACE("Game[0x%016llX] recieved event code %d \n         "
     //         "Sender=[0x%016llX] \n         "
@@ -116,42 +117,67 @@ bool32 game_initialize(RohinApp* app) {
     resource_load_mesh_file("Data/Models/dance.mesh", state->player_geom, 0, 0, 0);
 
     // load the level geometry into the collision grid
-    collision_create_grid(&state->trans_arena, &state->grid, {25.0f, -0.0f, -5.0f}, 0.5f, 256, 16, 256);
+    collision_create_grid(&state->trans_arena, &state->grid, {25.0f, -0.1f, -5.0f}, 0.5f, 256, 16, 256);
     resource_load_mesh_file_for_level("Data/Models/level1.mesh", state->level_geom, &state->grid);
     collision_grid_finalize(&state->trans_arena, &state->grid);
 
     state->player.position = {-5.0f, 1.0f, 0.0f};
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     state->player.scale = 0.5f;
-    state->player.height = 2.0f;
+    state->player.height = 1.9f;
     state->player.radius = 0.3f;
     laml::Vec3 world_up(0.0f, 1.0f, 0.0f);
-    collision_create_capsule(&state->capsule, &state->capsule_geom, state->player.height, state->player.radius, world_up);
-    //state->capsule.B = state->capsule.B + laml::Vec3(0.01f);
+    //collision_create_capsule(&state->collider, &state->collider_geom, state->player.height, state->player.radius, world_up);
+    collision_create_sphere(&state->collider, &state->collider_geom, state->player.radius);
+
+    // Player Position: [-0.1f,1.0f, 2.2]
+    // Player Position: [-0.1f,1.0f,-1.8]
+    //[2.118260,1.000000,-0.278601]
+    laml::Vec3 start(-2.0f,1.0f, 0.85f);
+    laml::Vec3   end( 2.0f,1.0f,-0.85f);
+    laml::Vec3 move_dir = laml::normalize(end - start);
+    real32 move_dist = laml::length(end - start);
+    laml::Vec3 new_position = start;
+
+    sweep_result hit_result;
+    laml::Vec3 tri_normal;
+    uint32 max_iters = 8;
+    uint32 num_steps = 0;
+    while(max_iters--) {
+        num_steps++;
+        if (sweep_sphere_triangles(1, state->grid.triangles, new_position, 0.3f, move_dir, move_dist, hit_result, tri_normal)) {
+            // collides with something this frame
+            new_position = new_position + (move_dir*(hit_result.distance - 0.001f));
+
+            RH_TRACE("Step %d: moving %.3f to [%.3f,%.3f,%.3f]. %.3f remaining",
+                     num_steps, hit_result.distance,
+                     new_position.x, new_position.y, new_position.z,
+                     move_dist-hit_result.distance);
+
+            move_dist -= hit_result.distance;
+            if (move_dist <= 1e-5f) break; // done!
+            move_dir = move_dir - laml::dot(move_dir, tri_normal)*tri_normal;
+            if (laml::length(move_dir) <= 0.00001f) break;
+            move_dir = laml::normalize(move_dir);
+
+            //state->player.position = new_position;
+            //RH_TRACE(" #%d [%f,%f,%f]\n", hit_result.face_index, 
+            //         hit_result.position.x, hit_result.position.y, hit_result.position.z);
+        } else {
+            new_position = new_position + (move_dir*move_dist);
+            RH_TRACE("Step %d: moving %.3f to [%.3f,%.3f,%.3f]. unobstructed",
+                     num_steps, move_dist,
+                     new_position.x, new_position.y, new_position.z);
+            break;
+        }
+    }
+    state->player.position = new_position;
 
     return true;
 }
 
 bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta_time) {
     game_state* state = (game_state*)(app->memory.PermanentStorage);
-
-    collision_grid_get_sector(&state->grid, &state->sector, &state->capsule, state->player.position);
-    collision_capsule capsule;
-    capsule.A = state->capsule.A + state->player.position;
-    capsule.B = state->capsule.B + state->player.position;
-    capsule.radius = state->capsule.radius;
-    uint32 num_tris;
-    uint32 num_intersecting_tris = 0;
-    uint32* triangle_indices = collision_get_unique_triangles(&state->grid, &state->sector, packet->arena, &capsule, &num_tris);
-    uint32* intersecting_triangle_indices = PushArray(packet->arena, uint32, num_tris);
-    collision_triangle* triangles = PushArray(packet->arena, collision_triangle, num_tris);
-    for (uint32 n = 0; n < num_tris; n++) {
-        uint32 tri_idx = triangle_indices[n];
-        triangles[n] = state->grid.triangles[tri_idx];
-        if (triangle_capsule_intersect(triangles[n], capsule)) {
-            intersecting_triangle_indices[num_intersecting_tris++] = tri_idx;
-        }
-    }
 
     // simulate game state
     laml::Mat4 eye(1.0f);
@@ -180,24 +206,93 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     laml::Vec3 right = player_rot._cols[0];
     laml::Vec3 up = player_rot._cols[1];
     laml::Vec3 forward = -player_rot._cols[2];
-    laml::Vec3 vel(0.0f);
+    laml::Vec3 move_dir(0.0f);
     real32 speed = input_is_key_down(KEY_LSHIFT) ? 10.0f : 2.5f;
+    bool32 moving = false;
     if (input_is_key_down(KEY_W)) {
-        vel = forward;
+        move_dir = forward;
+        moving = true;
     } else if (input_is_key_down(KEY_S)) {
-        vel = -forward;
+        move_dir = -forward;
+        moving = true;
     }
     if (input_is_key_down(KEY_D)) {
-        vel = vel + right;
+        move_dir = move_dir + right;
+        moving = true;
     } else if (input_is_key_down(KEY_A)) {
-        vel = vel - right;
+        move_dir = move_dir - right;
+        moving = true;
     }
     if (input_is_key_down(KEY_SPACE)) {
-        vel = vel + up;
+        move_dir = move_dir + up;
+        moving = true;
     } else if (input_is_key_down(KEY_LCONTROL)) {
-        vel = vel - up;
+        move_dir = move_dir - up;
+        moving = true;
     }
-    state->player.position = state->player.position + (speed * vel * delta_time);
+    if (moving) move_dir = laml::normalize(move_dir);
+    real32 move_dist = speed * delta_time;
+    laml::Vec3 new_position = state->player.position;
+
+
+    collision_grid_get_sector_capsule(&state->grid, &state->sector, new_position, new_position+(move_dir*move_dist), state->collider.radius);
+    collision_sphere collider;
+    collider.C = state->collider.C + new_position;
+    //collision_capsule collider;
+    //collider.A = state->collider.A + new_position;// + laml::Vec3(0.0f, 1.0f, 0.0f);
+    //collider.B = state->collider.B + new_position;// + laml::Vec3(0.0f, 1.0f, 0.0f);
+    collider.radius = state->collider.radius;
+
+    uint32 num_tris;
+    uint32 num_intersecting_tris = 0;
+    uint32* triangle_indices = collision_get_unique_triangles(&state->grid, &state->sector, packet->arena, &num_tris);
+    uint32* intersecting_triangle_indices = PushArray(packet->arena, uint32, num_tris);
+    collision_triangle* triangles = PushArray(packet->arena, collision_triangle, num_tris);
+
+    //real32 dist = 1e10;
+    //laml::Vec3 move_dir = laml::normalize(vel);
+    laml::Vec3 contact_point;
+    for (uint32 n = 0; n < num_tris; n++) {
+        uint32 tri_idx = triangle_indices[n];
+        triangles[n] = state->grid.triangles[tri_idx];
+        //laml::Vec3 curr_contact_point;
+        //if (triangle_capsule_intersect(triangles[n], collider, curr_contact_point)) {
+        //    intersecting_triangle_indices[num_intersecting_tris++] = tri_idx;
+        //}
+    }
+    sweep_result hit_result;
+    laml::Vec3 tri_normal;
+    if (moving) {
+        uint32 max_iters = 8;
+        uint32 num_steps = 0;
+        while(max_iters--) {
+            if (sweep_sphere_triangles(num_tris, triangles, new_position, collider.radius+0.001f, move_dir, move_dist, hit_result, tri_normal)) {
+                contact_point = hit_result.position;
+                // collides with something this frame
+                new_position = new_position + (move_dir*(hit_result.distance - 0.001f));
+                num_steps++;
+
+                //RH_TRACE("Step %d: moving %.3f to [%.2f,%.2f,%.2f]. %.1f",
+                //         num_steps, hit_result.distance,
+                //         new_position.x, new_position.y, new_position.z);
+
+                move_dist -= hit_result.distance;
+                if (move_dist <= 1e-5f) break; // done!
+                move_dir = move_dir - laml::dot(move_dir, tri_normal)*tri_normal;
+                if (laml::length(move_dir) <= 0.00001f) break;
+                move_dir = laml::normalize(move_dir);
+
+                //state->player.position = new_position;
+                //RH_TRACE(" #%d [%f,%f,%f]\n", hit_result.face_index, 
+                //         hit_result.position.x, hit_result.position.y, hit_result.position.z);
+            } else {
+                new_position = new_position + (move_dir*move_dist);
+                break;
+            }
+        }
+    }
+    state->player.position = new_position;
+
 
     state->debug_camera.position = state->player.position - (forward * 3.0f) + (up * 2.0f);
     laml::Mat3 camera_rot;
@@ -237,10 +332,9 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
 #if 1
     packet->col_grid = &state->grid;
-    packet->capsule = capsule;
-    packet->capsule_geom.model_matrix = capsule_transform;
-    packet->capsule_geom.geom = state->capsule_geom;
-    packet->capsule_geom.material_handle = 0;
+    packet->collider_geom.model_matrix = capsule_transform;
+    packet->collider_geom.geom = state->collider_geom;
+    packet->collider_geom.material_handle = 0;
 
     packet->sector = state->sector;
     packet->num_tris = num_tris;
@@ -248,6 +342,8 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
     packet->num_intersecting_tris = num_intersecting_tris;
     packet->intersecting_triangle_indices = intersecting_triangle_indices;
+
+    packet->contact_point = contact_point;
 #endif
 
     // calculate view-point

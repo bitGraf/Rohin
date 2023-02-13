@@ -213,8 +213,8 @@ bool32 renderer_draw_frame(render_packet* packet) {
         renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
 
         renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
-                                         packet->capsule_geom.model_matrix._data);
-        renderer_draw_geometry(&packet->capsule_geom.geom);
+                                         packet->collider_geom.model_matrix._data);
+        renderer_draw_geometry(&packet->collider_geom.geom);
 
         for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
             renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
@@ -226,8 +226,18 @@ bool32 renderer_draw_frame(render_packet* packet) {
             renderer_draw_geometry_points(&packet->commands[cmd_index].geom);
         }
 
+        // draw sphere at contact point
+        laml::Mat4 transform;
+        laml::Quat rot(0.0f, 0.0f, 0.0f, 1.0f);
+        laml::Vec3 scale(0.2f);
+        laml::transform::create_transform(transform, rot, (packet->contact_point + laml::Vec3(-0.4f)), scale);
+        renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
+                                         transform._data);
+        renderer_draw_geometry(&render_state->cube_geom);
+
         renderer_end_wireframe();
 
+#define DRAW_COLLISION_GRID 0
 #if DRAW_COLLISION_GRID
         if (packet->col_grid && packet->col_grid->num_filled_cells > 0) {
             laml::Mat4 cell_transform(1.0f);
@@ -248,6 +258,7 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
             collision_grid* grid = packet->col_grid;
 
+#define DRAW_SECTOR 1
 #if DRAW_SECTOR
             // render sector of cells
             for (int32 x = packet->sector.x_min; x <= packet->sector.x_max; x++) {

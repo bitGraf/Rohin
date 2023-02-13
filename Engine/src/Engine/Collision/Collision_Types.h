@@ -18,6 +18,11 @@ struct collision_capsule {
     real32 radius;
 };
 
+struct collision_sphere {
+    laml::Vec3 C;
+    real32 radius;
+};
+
 struct collision_sector {
     bool32 inside;
 

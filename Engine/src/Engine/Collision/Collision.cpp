@@ -87,7 +87,7 @@ void collision_grid_add_triangle(memory_arena* arena, collision_grid* grid, coll
 
                 if (triangle_cube_intersect(tri_mod) == INSIDE) {
 #else
-                if (triangle_cube_intersect(triangle, cube_center, laml::Vec3(grid->cell_size, grid->cell_size, grid->cell_size))) {
+                if (triangle_cube_intersect(triangle, cube_center, laml::Vec3(grid->cell_size/2.0f))) {
 #endif
                     collision_grid_cell* cell = &grid->cells[x][y][z];
                     //RH_INFO("Intersects! [%d,%d,%d] => %d", x, y, z, triangle_idx);
@@ -194,18 +194,16 @@ laml::Vec3 collision_cell_to_world(collision_grid* grid, uint32 grid_x, uint32 g
 }
 
 
-void collision_create_capsule(collision_capsule* capsule, triangle_geometry* geom, real32 height, real32 radius, laml::Vec3 N) {
-    capsule->radius = radius;
+void collision_create_capsule(collision_capsule* collider, triangle_geometry* geom, real32 height, real32 radius, laml::Vec3 N) {
+    collider->radius = radius;
     real32 s = height - (2*radius); // distance between A and B
 
     N = laml::normalize(N);
-    capsule->A = radius*N;
-    capsule->B = (s + radius)*N;
+    collider->A = radius*N;
+    collider->B = (s + radius)*N;
 
     if (geom) {
         // generate capsule geometry for debug rendering
-        RH_WARN("Geometry not being generated yet for the capsule!");
-
         debug_geometry sphere_bot;
         resource_load_debug_mesh_data("Data/Models/debug/sphere_bot.stl", &sphere_bot);
         debug_geometry sphere_top;
@@ -226,7 +224,7 @@ void collision_create_capsule(collision_capsule* capsule, triangle_geometry* geo
         uint32 idx_offset = 0;
         for (uint32 n = 0; n < sphere_bot.num_verts; n++) {
             // bottom verts need to be scaled by radius, then have capsule.A added
-            combined.vertices[curr_vert].position = (sphere_bot.vertices[n].position * capsule->radius) + capsule->A;
+            combined.vertices[curr_vert].position = (sphere_bot.vertices[n].position * collider->radius) + collider->A;
             combined.vertices[curr_vert++].normal = sphere_bot.vertices[n].normal;
 
             combined.indices[curr_idx++] = idx_offset + sphere_bot.indices[n];
@@ -234,17 +232,17 @@ void collision_create_capsule(collision_capsule* capsule, triangle_geometry* geo
         idx_offset = curr_idx;
         for (uint32 n = 0; n < sphere_top.num_verts; n++) {
             // top verts need to be scaled by radius, then have capsule.B added
-            combined.vertices[curr_vert].position = (sphere_top.vertices[n].position * capsule->radius) + capsule->B;
+            combined.vertices[curr_vert].position = (sphere_top.vertices[n].position * collider->radius) + collider->B;
             combined.vertices[curr_vert++].normal =  sphere_top.vertices[n].normal;
 
             combined.indices[curr_idx++] = idx_offset + sphere_top.indices[n];
         }
         idx_offset = curr_idx;
-        real32 capsule_inner_height = laml::length(capsule->B - capsule->A);
-        laml::Vec3 cylinder_scale(capsule->radius, capsule_inner_height, capsule->radius);
+        real32 capsule_inner_height = laml::length(collider->B - collider->A);
+        laml::Vec3 cylinder_scale(collider->radius, capsule_inner_height, collider->radius);
         for (uint32 n = 0; n < open_cylinder.num_verts; n++) {
             // cylinder verts need to be scaled (by radius in the x/z plane, and the height in the y direction), then have capsule.A added
-            combined.vertices[curr_vert].position = (open_cylinder.vertices[n].position * cylinder_scale) + capsule->A;
+            combined.vertices[curr_vert].position = (open_cylinder.vertices[n].position * cylinder_scale) + collider->A;
             combined.vertices[curr_vert++].normal =  open_cylinder.vertices[n].normal;
 
             combined.indices[curr_idx++] = idx_offset + open_cylinder.indices[n];
@@ -256,13 +254,58 @@ void collision_create_capsule(collision_capsule* capsule, triangle_geometry* geo
     }
 }
 
-void collision_grid_get_sector(collision_grid* grid, collision_sector* sector, collision_capsule* capsule, laml::Vec3 position) {
+void collision_create_sphere(collision_sphere* collider, triangle_geometry* geom, real32 radius) {
+    collider->radius = radius;
+
+    collider->C = laml::Vec3(0.0f);
+
+    if (geom) {
+        // generate capsule geometry for debug rendering
+        debug_geometry sphere_bot;
+        resource_load_debug_mesh_data("Data/Models/debug/sphere_bot.stl", &sphere_bot);
+        debug_geometry sphere_top;
+        resource_load_debug_mesh_data("Data/Models/debug/sphere_top.stl", &sphere_top);
+
+        debug_geometry combined;
+        combined.num_verts = sphere_bot.num_verts + sphere_top.num_verts;
+        combined.num_inds  = sphere_bot.num_inds  + sphere_top.num_inds;
+        
+        memory_arena* arena = resource_get_arena();
+        combined.vertices = PushArray(arena, debug_geometry::debug_vertex, combined.num_verts);
+        combined.indices  = PushArray(arena, uint32, combined.num_inds);
+
+        uint32 curr_vert = 0;
+        uint32 curr_idx = 0;
+        uint32 idx_offset = 0;
+        for (uint32 n = 0; n < sphere_bot.num_verts; n++) {
+            // bottom verts need to be scaled by radius, then have capsule.A added
+            combined.vertices[curr_vert].position = (sphere_bot.vertices[n].position * collider->radius) + collider->C;
+            combined.vertices[curr_vert++].normal = sphere_bot.vertices[n].normal;
+
+            combined.indices[curr_idx++] = idx_offset + sphere_bot.indices[n];
+        }
+        idx_offset = curr_idx;
+        for (uint32 n = 0; n < sphere_top.num_verts; n++) {
+            // top verts need to be scaled by radius, then have capsule.B added
+            combined.vertices[curr_vert].position = (sphere_top.vertices[n].position * collider->radius) + collider->C;
+            combined.vertices[curr_vert++].normal =  sphere_top.vertices[n].normal;
+
+            combined.indices[curr_idx++] = idx_offset + sphere_top.indices[n];
+        }
+
+        // now create geometry on the gpu for rendering
+        ShaderDataType debug_attr[] = {ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::None};
+        renderer_create_mesh(geom, combined.num_verts, combined.vertices, combined.num_inds, combined.indices, debug_attr);
+    }
+}
+
+void collision_grid_get_sector_capsule(collision_grid* grid, collision_sector* sector, laml::Vec3 P0, laml::Vec3 P1, real32 radius) {
     // find extents of the capsule in world coords
-    laml::Vec3 radius_vec(capsule->radius);
-    laml::Vec3 world_max_a = position + capsule->A + radius_vec;
-    laml::Vec3 world_max_b = position + capsule->B + radius_vec;
-    laml::Vec3 world_min_a = position + capsule->A - radius_vec;
-    laml::Vec3 world_min_b = position + capsule->B - radius_vec;
+    laml::Vec3 radius_vec(radius);
+    laml::Vec3 world_max_a = P0 + radius_vec;
+    laml::Vec3 world_max_b = P1 + radius_vec;
+    laml::Vec3 world_min_a = P0 - radius_vec;
+    laml::Vec3 world_min_b = P1 - radius_vec;
 
     real32 max_x_world = laml::max(laml::Vec2(world_max_a.x, world_max_b.x));
     real32 max_y_world = laml::max(laml::Vec2(world_max_a.y, world_max_b.y));
@@ -298,7 +341,40 @@ void collision_grid_get_sector(collision_grid* grid, collision_sector* sector, c
     sector->inside = true;
 }
 
-uint32* collision_get_unique_triangles(collision_grid* grid, collision_sector* sector, memory_arena* arena, collision_capsule* capsule, uint32* num_tris) {
+void collision_grid_get_sector_sphere(collision_grid* grid, collision_sector* sector, laml::Vec3 C, real32 radius) {
+    // find extents of the capsule in world coords
+    laml::Vec3 radius_vec(radius);
+    laml::Vec3 world_max = C + radius_vec;
+    laml::Vec3 world_min = C - radius_vec;
+
+    // convert to grid cells
+    sector->x_max = (grid->num_x/2) + (int32)(floor((world_max.x - grid->origin.x) / grid->cell_size));
+    sector->y_max = (grid->num_y/2) + (int32)(floor((world_max.y - grid->origin.y) / grid->cell_size));
+    sector->z_max = (grid->num_z/2) + (int32)(floor((world_max.z - grid->origin.z) / grid->cell_size));
+
+    sector->x_min = (grid->num_x/2) + (int32)(floor((world_min.x - grid->origin.x) / grid->cell_size));
+    sector->y_min = (grid->num_y/2) + (int32)(floor((world_min.y - grid->origin.y) / grid->cell_size));
+    sector->z_min = (grid->num_z/2) + (int32)(floor((world_min.z - grid->origin.z) / grid->cell_size));
+
+    // bounds checking
+    if (sector->x_min >= grid->num_x || sector->y_min >= grid->num_y || sector->z_min >= grid->num_z ||
+        sector->x_max < 0 || sector->y_max < 0 || sector->z_max < 0) {
+        // completely outside of the grid!
+        sector->inside = false;
+        return;
+    }
+    // clip the sector to the actual grid
+    sector->x_max = (sector->x_max >= grid->num_x) ? (grid->num_x-1) : sector->x_max;
+    sector->y_max = (sector->y_max >= grid->num_y) ? (grid->num_y-1) : sector->y_max;
+    sector->z_max = (sector->z_max >= grid->num_z) ? (grid->num_z-1) : sector->z_max;
+
+    sector->x_min = (sector->x_min < 0) ? 0 : sector->x_min;
+    sector->y_min = (sector->y_min < 0) ? 0 : sector->y_min;
+    sector->z_min = (sector->z_min < 0) ? 0 : sector->z_min;
+    sector->inside = true;
+}
+
+uint32* collision_get_unique_triangles(collision_grid* grid, collision_sector* sector, memory_arena* arena, uint32* num_tris) {
     //if (sector == nullptr) {
     //    // get everything
     //    *num_tris = grid->num_triangles;
