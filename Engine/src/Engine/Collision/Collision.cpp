@@ -167,12 +167,12 @@ void collision_grid_finalize(memory_arena* arena, collision_grid* grid) {
             for (uint16 z = 0; z < grid->num_z; z++) {
                 real32 cube_z = (real32)z - (real32)grid->num_z / 2.0f;
                 if (grid->cells[x][y][z].num_surfaces > 0) {
-                    for (int n = 0; n < num_inds_per_cube; n++) {
+                    for (uint32 n = 0; n < num_inds_per_cube; n++) {
                         inds[current_ind++] = current_vert + cube_inds[n];
                     }
 
                     laml::Vec3 cube_origin = grid->origin + laml::Vec3(cube_x, cube_y, cube_z)*grid->cell_size;
-                    for (int n = 0; n < num_verts_per_cube; n++) {
+                    for (uint32 n = 0; n < num_verts_per_cube; n++) {
                         verts[current_vert++] = cube_origin + cube_verts[n];
                     }
                 }

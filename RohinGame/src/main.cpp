@@ -2,7 +2,7 @@
 
 #include <Engine/Application.h>
 bool32 create_application(RohinApp* app);
-#include <Engine/entry_point.h>
+#include <Engine/Entry_Point.h>
 
 bool32 create_application(RohinApp* app) {
     app->app_config.application_name = "Rohin Game";

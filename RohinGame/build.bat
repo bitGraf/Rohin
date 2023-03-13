@@ -19,7 +19,7 @@ set LinkerFlags=/incremental:no /opt:ref /SUBSYSTEM:CONSOLE %CommonLinkerFlags% 
 set ObjectFlags=/Fo../build/int/
 
 echo =====================================
-echo Building the entry point...
+echo Building the Windows entry point...
 
 cl %IncludeDirs% %CompilerFlags% %SrcFiles% /Fm../build/%Name%.map /Fe: ../build/%Name%.exe %ObjectFlags% /link %LinkerFlags%
 

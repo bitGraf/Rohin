@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/defines.h"
+#include "Engine/Defines.h"
 
 // Disable assertions by commenting out the below line.
 #define RH_ASSERTIONS_ENABLED
