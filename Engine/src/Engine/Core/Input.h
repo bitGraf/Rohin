@@ -18,6 +18,8 @@ enum mouse_button_codes {
  * https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
  * */
 enum keyboard_keys {
+    KEY_UNKNOWN = 0x00,
+    
     KEY_BACKSPACE = 0x08,
     KEY_TAB = 0x09,
     KEY_RETURN = 0x0D,

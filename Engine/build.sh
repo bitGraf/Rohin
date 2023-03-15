@@ -5,7 +5,7 @@ WarningFlags='-Wall -Werror -Wno-unused' #/wd4189 /wd4201 /wd4100
 Definitions='-D_DEBUG -DROHIN_INTERNAL -DRH_EXPORT'
 CompilerFlags='-c -fPIC -fno-rtti -fno-exceptions -O0 -std=c++14 -g '$WarningFlags' '$Definitions
 IncludeDirs='-I../../Engine/src -I../../Engine/deps/math_lib/include -I../../Engine/deps/stb'
-#LinkerFlags=/incremental:no /opt:ref /SUBSYSTEM:CONSOLE %CommonLinkerFlags% user32.lib Gdi32.lib Winmm.lib opengl32.lib
+LinkerFlags='-lGL -lX11 -lX11-xcb' #user32.lib Gdi32.lib Winmm.lib opengl32.lib
 #ObjectFlags=/Fo../build/int/
 
 build_dir='../build/'$Name'-int'
@@ -44,11 +44,11 @@ if [ $failed -eq 0 ]; then
     ObjFiles=$(find . \( -name "*.o" \))
 
     echo -n 'Linking...'
-    if g++ -shared -o ../lib$Name.so $ObjFiles; then
+    if g++ -shared -o ../lib$Name.so $ObjFiles $LinkerFlags; then
         echo "Success!"
         objdump -x ../lib$Name.so > ../$Name.map
 
-        echo 'install library to ~/lib'
+        echo 'installing library to ~/lib'
         cp ../lib$Name.so ~/lib/
     else
         echo "Failed to link!"
