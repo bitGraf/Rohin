@@ -30,7 +30,7 @@ struct AppConfig {
  * */
 
 bool32 platform_startup(AppConfig* config);
-void platform_shutdown();
+RHAPI void platform_shutdown();
 bool32 platform_process_messages();
 void* platform_alloc(uint64 size, uint64 base_address);
 void platform_free(void* memory);
