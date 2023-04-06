@@ -25,6 +25,7 @@ int main() {
     // begin the game-loop
     if (!start_rohin_engine(&app)) {
         RH_FATAL("Something went wrong! shutting down...");
+        platform_shutdown();
         platform_sleep(2500);
         return -3;
     }

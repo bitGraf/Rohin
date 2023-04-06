@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <cstddef>
 
 #ifndef RH_TYPES
 #define RH_TYPES

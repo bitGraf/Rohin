@@ -13,8 +13,8 @@
 
 #include <cstring>
 
-bool32 CheckTag(uint8* Buffer, char Token[], size_t NumChars) {
-    for (int n = 0; n < NumChars; n++) {
+bool32 CheckTag(uint8* Buffer, const char* Token, size_t NumChars) {
+    for (size_t n = 0; n < NumChars; n++) {
         if (*Buffer++ != Token[n]) {
             return false;
         }

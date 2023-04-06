@@ -90,9 +90,10 @@ RHAPI bool32 resource_load_debug_mesh_data(const char* resource_file_name, debug
         geom->vertices[curr_vert].position = triangle->v3;
         geom->vertices[curr_vert++].normal = triangle->normal;
 
-        geom->indices[curr_index] = curr_index++;
-        geom->indices[curr_index] = curr_index++;
-        geom->indices[curr_index] = curr_index++;
+        // gcc complains about   indices[curr_index] = curr_index++;  >.>
+        geom->indices[curr_index] = curr_index;curr_index++;
+        geom->indices[curr_index] = curr_index;curr_index++;
+        geom->indices[curr_index] = curr_index;curr_index++;
     }
 
     return true;

@@ -53,3 +53,9 @@ struct file_handle {
 size_t platform_get_full_resource_path(char* buffer, size_t buffer_length, const char* resource_path);
 file_handle platform_read_entire_file(const char* full_path);
 void platform_free_file_data(file_handle* handle);
+
+// this is bad and dumb :)
+#if RH_PLATFORM_LINUX
+void* platform_get_raw_handle();
+uint32 platform_get_window_id();
+#endif

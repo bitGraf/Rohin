@@ -24,6 +24,11 @@ internal_func GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType Type) {
         case ShaderDataType::Int4:   return GL_INT;
 
         case ShaderDataType::Bool:   return GL_BOOL;
+
+        case ShaderDataType::None:   {
+            Assert(false);
+            return 0;
+        }
     }
 
     Assert(false);
@@ -44,6 +49,11 @@ internal_func bool IsIntegerType(ShaderDataType Type) {
         case ShaderDataType::Mat3:   return false;
         case ShaderDataType::Mat4:   return false;
         case ShaderDataType::Bool:   return false;
+
+        case ShaderDataType::None:   {
+            Assert(false);
+            return false;
+        }
     }
 
     Assert(false);
@@ -67,6 +77,11 @@ internal_func uint32 GetComponentCount(ShaderDataType Type) {
 
         case ShaderDataType::Mat3:   return 3 * 3;
         case ShaderDataType::Mat4:   return 4 * 4;
+
+        case ShaderDataType::None:   {
+            Assert(false);
+            return 0;
+        }
     }
 
     Assert(false);
@@ -90,6 +105,11 @@ internal_func uint32 ShaderDataTypeSize(ShaderDataType Type) {
 
         case ShaderDataType::Mat3:   return 4 * 3 * 3;
         case ShaderDataType::Mat4:   return 4 * 4 * 4;
+
+        case ShaderDataType::None:   {
+            Assert(false);
+            return 0;
+        }
     }
 
     Assert(false);
@@ -489,10 +509,20 @@ bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo,
             case frame_buffer_texture_format::RGBA8:   { internal_format = GL_RGBA8;   color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA16F: { internal_format = GL_RGBA16F; color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA32F: { internal_format = GL_RGBA32F; color_attachment = true; } break;
+            case frame_buffer_texture_format::None:    { Assert(false); } break;
+
+            case frame_buffer_texture_format::DEPTH24STENCIL8: {} break;
         }
         switch(fbo->attachments[n].texture_format) {
             case frame_buffer_texture_format::DEPTH24STENCIL8: { internal_format = GL_DEPTH24_STENCIL8; attach_type = GL_DEPTH_STENCIL_ATTACHMENT; } break;
             //case frame_buffer_texture_format::DEPTH32F:    { internal_format = GL_R32F;    color_attachment = true; } break;
+
+            case frame_buffer_texture_format::RED8:    {  } break;
+            case frame_buffer_texture_format::R32F:    {  } break;
+            case frame_buffer_texture_format::RGBA8:   {  } break;
+            case frame_buffer_texture_format::RGBA16F: {  } break;
+            case frame_buffer_texture_format::RGBA32F: {  } break;
+            case frame_buffer_texture_format::None:    { Assert(false); } break;
         }
         if (color_attachment) {
             glGenTextures(1, &fbo->attachments[n].handle);
