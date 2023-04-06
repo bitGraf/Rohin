@@ -7,6 +7,7 @@
 #include "Engine/Core/String.h"
 
 #include "Engine/Platform/Platform.h"
+#include "Engine/Renderer/Renderer.h"
 
 global_variable memory_arena* resource_arena;
 
@@ -93,6 +94,19 @@ RHAPI bool32 resource_load_debug_mesh_data(const char* resource_file_name, debug
         geom->indices[curr_index] = curr_index++;
         geom->indices[curr_index] = curr_index++;
     }
+
+    return true;
+}
+
+RHAPI bool32 resource_load_debug_mesh_into_geometry(const char* resource_file_name, triangle_geometry* geom) {
+    debug_geometry data;
+    if (!resource_load_debug_mesh_data(resource_file_name, &data)) {
+        return false;
+    }
+
+    // now create geometry on the gpu for rendering
+    ShaderDataType debug_attr[] = {ShaderDataType::Float3, ShaderDataType::Float3, ShaderDataType::None};
+    renderer_create_mesh(geom, data.num_verts, data.vertices, data.num_inds, data.indices, debug_attr);
 
     return true;
 }
