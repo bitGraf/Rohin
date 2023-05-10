@@ -8,6 +8,7 @@
 #include <Engine/Core/Event.h>
 
 #include <Engine/Collision/Collision.h>
+#include <Engine/Collision/Character_Controller.h>
 
 #include <Engine/Renderer/Renderer.h>
 
@@ -71,7 +72,8 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
         RH_TRACE("Player Position: [%f,%f,%f]", 
                  state->player.position.x, state->player.position.y, state->player.position.z);
     } else if (key_code == KEY_R) {
-        state->player.position = {-5.0f, 1.0f, 0.0f};
+        //state->player.position = {-5.0f, 1.0f, 0.0f};
+        state->player.position = {0.0f, 1.0f, 0.0f};
         state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     }
     //RH_TRACE("Game[0x%016llX] recieved event code %d \n         "
@@ -118,7 +120,7 @@ bool32 game_initialize(RohinApp* app) {
 
     // load the level geometry into the collision grid
     collision_create_grid(&state->trans_arena, &state->grid, {25.0f, -0.1f, -5.0f}, 0.5f, 256, 16, 256);
-    resource_load_mesh_file_for_level("Data/Models/level1.mesh", state->level_geom, &state->grid);
+    resource_load_mesh_file_for_level("Data/Models/garden.mesh", state->level_geom, &state->grid);
     collision_grid_finalize(&state->trans_arena, &state->grid);
 
     state->player.position = {-5.0f, 1.0f, 0.0f};
@@ -203,8 +205,8 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     laml::transform::create_transform_rotation(player_rot, state->player.yaw, 0.0f, 0.0f);
     state->player.orientation = laml::transform::quat_from_mat(player_rot);
 
-    laml::Vec3 right = player_rot._cols[0];
-    laml::Vec3 up = player_rot._cols[1];
+    laml::Vec3 right   =  player_rot._cols[0];
+    laml::Vec3 up      =  player_rot._cols[1];
     laml::Vec3 forward = -player_rot._cols[2];
     laml::Vec3 move_dir(0.0f);
     real32 speed = input_is_key_down(KEY_LSHIFT) ? 10.0f : 2.5f;
@@ -260,6 +262,10 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         //    intersecting_triangle_indices[num_intersecting_tris++] = tri_idx;
         //}
     }
+
+    //state->player.position = collision_move_sphere(state->player.position, new_position+(move_dir*move_dist), state->player.radius, triangles);
+
+#if 1
     sweep_result hit_result;
     laml::Vec3 tri_normal;
     if (moving) {
@@ -271,17 +277,18 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
                 // collides with something this frame
                 new_position = new_position + (move_dir*(hit_result.distance - 0.001f));
                 num_steps++;
-
+    
                 //RH_TRACE("Step %d: moving %.3f to [%.2f,%.2f,%.2f]. %.1f",
                 //         num_steps, hit_result.distance,
                 //         new_position.x, new_position.y, new_position.z);
-
-                move_dist -= hit_result.distance;
+    
+                laml::Vec3 new_dir = move_dir - laml::dot(move_dir, tri_normal)*tri_normal;
+                move_dist = (move_dist - hit_result.distance) * laml::dot(new_dir, move_dir);
                 if (move_dist <= 1e-5f) break; // done!
-                move_dir = move_dir - laml::dot(move_dir, tri_normal)*tri_normal;
+                move_dir = new_dir;
                 if (laml::length(move_dir) <= 0.00001f) break;
                 move_dir = laml::normalize(move_dir);
-
+    
                 //state->player.position = new_position;
                 //RH_TRACE(" #%d [%f,%f,%f]\n", hit_result.face_index, 
                 //         hit_result.position.x, hit_result.position.y, hit_result.position.z);
@@ -291,10 +298,13 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
             }
         }
     }
+#else
+    new_position = new_position + (move_dir*move_dist);
+#endif
     state->player.position = new_position;
 
 
-    state->debug_camera.position = state->player.position - (forward * 3.0f) + (up * 2.0f);
+    state->debug_camera.position = state->player.position - (forward * 2.0f) + (up * 1.0f);
     laml::Mat3 camera_rot;
     laml::transform::create_transform_rotation(camera_rot, state->player.yaw, state->debug_camera.pitch, 0.0f);
     state->debug_camera.orientation = laml::transform::quat_from_mat(camera_rot);
@@ -309,7 +319,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     // ...
 
     // push all the render commands to the render_packet
-    packet->num_commands = 2;
+    packet->num_commands = 1;
     packet->commands = PushArray(packet->arena, render_command, packet->num_commands);
     
     packet->commands[0].model_matrix = eye;
@@ -317,9 +327,9 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     //packet->commands[0].geom = state->tri_geom;
     packet->commands[0].material_handle = 0;
 
-    packet->commands[1].model_matrix = player_transform;
-    packet->commands[1].geom = *state->player_geom;
-    packet->commands[1].material_handle = 1;
+    //packet->commands[1].model_matrix = player_transform;
+    //packet->commands[1].geom = *state->player_geom;
+    //packet->commands[1].material_handle = 1;
 #if 0
     packet->num_commands = state->num_geometry;
     packet->commands = PushArray(packet->arena, render_command, packet->num_commands);

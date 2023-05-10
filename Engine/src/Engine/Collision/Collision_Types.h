@@ -6,6 +6,13 @@
 
 struct triangle_geometry;
 
+struct sweep_result {
+    laml::Vec3 position;
+    laml::Vec3 normal;
+    real32 distance;
+    uint32 face_index;
+};
+
 struct collision_triangle {
     laml::Vec3 v1;
     laml::Vec3 v2;

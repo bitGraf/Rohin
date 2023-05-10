@@ -32,14 +32,6 @@ RHAPI bool32 triangle_cube_intersect(collision_triangle t, laml::Vec3 box_center
 RHAPI bool32 triangle_capsule_intersect(collision_triangle triangle, collision_capsule capsule, laml::Vec3& contact_point);
 RHAPI bool32 triangle_sphere_intersect(collision_triangle triangle, collision_sphere sphere, laml::Vec3& contact_point);
 
-RHAPI real32 collision_move_sphere(collision_sphere collider, collision_triangle* triangles, laml::Vec3 move_vector);
-
-struct sweep_result {
-    laml::Vec3 position;
-    laml::Vec3 normal;
-    real32 distance;
-    uint32 face_index;
-};
 RHAPI bool32 sweep_sphere_triangles(uint32 num_tris, collision_triangle* triangles, laml::Vec3 sphere_center, real32 sphere_radius,
                               laml::Vec3 unit_direction, real32 distance,
                               sweep_result& hit, laml::Vec3& tri_normal_out);
