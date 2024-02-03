@@ -2,6 +2,9 @@
 
 Setlocal EnableDelayedExpansion
 
+if NOT EXIST build mkdir build
+if NOT EXIST build\int mkdir build\int
+
 if EXIST ../ctime %cd%/../ctime/ctime.exe -begin Tools/build_time.ctm
 
 set StopBuild=0
