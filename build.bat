@@ -2,7 +2,7 @@
 
 Setlocal EnableDelayedExpansion
 
-if EXIST ../ctime W:\ctime\ctime.exe -begin Tools/build_time.ctm
+if EXIST ../ctime %cd%/../ctime/ctime.exe -begin Tools/build_time.ctm
 
 set StopBuild=0
 
@@ -43,4 +43,4 @@ if !StopBuild! NEQ 1 (
     echo Everything built succesfully.
 )
 
-if EXIST ../ctime W:\ctime\ctime.exe -end Tools/build_time.ctm !LastError!
+if EXIST ../ctime %cd%/../ctime/ctime.exe -end Tools/build_time.ctm  !LastError!
