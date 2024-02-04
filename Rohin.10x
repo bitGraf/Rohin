@@ -14,9 +14,9 @@
 		<CleanCommand></CleanCommand>
 		<BuildWorkingDirectory></BuildWorkingDirectory>
 		<CancelBuild></CancelBuild>
-		<RunCommand>build\game.exe -r W:\Rohin\Game\run_tree</RunCommand>
+		<RunCommand>build\game.exe -r .\Game\run_tree</RunCommand>
 		<RunCommandWorkingDirectory></RunCommandWorkingDirectory>
-		<DebugCommand></DebugCommand>
+		<DebugCommand>raddbg $(RootWorkspaceDirectory)\build\game.exe -r ..\Game\run_tree</DebugCommand>
 		<ExePathCommand></ExePathCommand>
 		<DebugSln></DebugSln>
 		<UseVisualStudioEnvBat>false</UseVisualStudioEnvBat>

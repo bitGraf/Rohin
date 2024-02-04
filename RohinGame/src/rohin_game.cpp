@@ -257,11 +257,29 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     for (uint32 n = 0; n < num_tris; n++) {
         uint32 tri_idx = triangle_indices[n];
         triangles[n] = state->grid.triangles[tri_idx];
-        //laml::Vec3 curr_contact_point;
-        //if (triangle_capsule_intersect(triangles[n], collider, curr_contact_point)) {
-        //    intersecting_triangle_indices[num_intersecting_tris++] = tri_idx;
-        //}
+        laml::Vec3 curr_contact_point;
+        if (triangle_sphere_intersect(triangles[n], collider, curr_contact_point)) {
+            intersecting_triangle_indices[num_intersecting_tris++] = tri_idx;
+        }
     }
+
+#if 0
+	// This doesn't work rn... BUT, its solving a problem that doesnt exist... :)
+	if (num_intersecting_tris > 0) {
+		// in a bad state!!! (this shouldnt happen?)
+		RH_WARN("Im inside geometry right now... pushing outside");
+
+		for (uint32 n = 0; n < num_intersecting_tris; n++) {
+			collision_triangle *bad_tri = &state->grid.triangles[intersecting_triangle_indices[n]];
+			laml::Vec3 bad_tri_normal = laml::cross(bad_tri->v3 - bad_tri->v1, bad_tri->v2 - bad_tri->v1);
+			bad_tri_normal = laml::normalize(bad_tri_normal);
+			
+			real32 pen_depth = collider.radius - laml::dot(new_position - bad_tri->v1, bad_tri_normal);
+
+			RH_INFO("Triangle %d: %d [depth = %f]", n, intersecting_triangle_indices[n], pen_depth);
+		}
+	}
+#endif
 
     //state->player.position = collision_move_sphere(state->player.position, new_position+(move_dir*move_dist), state->player.radius, triangles);
 
@@ -275,7 +293,8 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
             if (sweep_sphere_triangles(num_tris, triangles, new_position, collider.radius+0.001f, move_dir, move_dist, hit_result, tri_normal)) {
                 contact_point = hit_result.position;
                 // collides with something this frame
-                new_position = new_position + (move_dir*(hit_result.distance - 0.001f));
+				real32 step_move_dist = laml::clamp(hit_result.distance - 0.001f, 0.0f, 1.0f);
+                new_position = new_position + (move_dir*step_move_dist);
                 num_steps++;
     
                 //RH_TRACE("Step %d: moving %.3f to [%.2f,%.2f,%.2f]. %.1f",
