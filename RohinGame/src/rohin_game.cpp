@@ -116,12 +116,13 @@ bool32 game_initialize(RohinApp* app) {
     RH_INFO("Game initialize.");
 
     game_state* state = (game_state*)(app->memory.PermanentStorage);
-    resource_load_mesh_file("Data/Models/dance.mesh", state->player_geom, 0, 0, 0);
+    //resource_load_mesh_file("Data/Models/chao_garden/collision_meshes/Cube.mesh", state->player_geom, 0, 0, 0);
 
     // load the level geometry into the collision grid
-    collision_create_grid(&state->trans_arena, &state->grid, {25.0f, -0.1f, -5.0f}, 0.5f, 256, 16, 256);
-    resource_load_mesh_file_for_level("Data/Models/garden.mesh", state->level_geom, &state->grid);
-    collision_grid_finalize(&state->trans_arena, &state->grid);
+    resource_load_level_file("Data/Models/chao_garden/garden.level", &state->grid, state->level_geom);
+    //collision_create_grid(&state->trans_arena, &state->grid, {25.0f, -0.1f, -5.0f}, 0.5f, 256, 16, 256);
+    //resource_load_mesh_file_for_level("Data/Models/garden.mesh", state->level_geom, &state->grid);
+    //collision_grid_finalize(&state->trans_arena, &state->grid);
 
     state->player.position = {-5.0f, 1.0f, 0.0f};
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};

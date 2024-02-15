@@ -8,7 +8,6 @@ GAME_API GAME_UPDATE_AND_RENDER_FUNC(GameUpdateAndRender) {
     //LogOutput(LOG_LEVEL_INFO, "Hehe\n");
 }
 
-
 #if 0
 
 #include "game.h"

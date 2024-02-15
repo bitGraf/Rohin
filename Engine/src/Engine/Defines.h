@@ -34,6 +34,7 @@ typedef size_t memory_index;
 #define global_variable static
 #define internal_func   static
 
+#define FILE_MAX_STRING_LENGTH 256
 
 // Platform detection
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) 

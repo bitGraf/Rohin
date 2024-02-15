@@ -4,23 +4,20 @@
 
 struct collision_grid;
 
-enum class mesh_file_result : int32 {
-    error = -1,
-    is_static,
-    is_animated
-};
-
 bool32 resource_init(memory_arena* arena);
 void resource_shutdown();
 memory_arena* resource_get_arena();
+
+RHAPI bool32 resource_load_level_file(const char* resource_file_name, collision_grid* grid, triangle_geometry *collider_geom);
 
 RHAPI mesh_file_result resource_load_mesh_file(const char* resource_file_name,
                                          triangle_geometry* mesh,
                                          skeleton* anim_data,
                                          animation** animations, uint32* num_anims);
-RHAPI mesh_file_result resource_load_mesh_file_for_level(const char* resource_file_name,
+RHAPI bool32 resource_load_mesh_file_for_level(const char* resource_file_name,
                                                          triangle_geometry* geom,
-                                                         collision_grid* grid);
+                                                         collision_grid* grid,
+                                                         laml::Mat4 transform);
 RHAPI bool32 resource_load_debug_mesh_into_geometry(const char* resource_file_name, triangle_geometry* geom);
 RHAPI bool32 resource_load_debug_mesh_data(const char* resource_file_name, debug_geometry* geom);
 

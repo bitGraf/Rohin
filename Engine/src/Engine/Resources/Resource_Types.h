@@ -46,3 +46,9 @@ struct debug_geometry {
     debug_vertex* vertices;
     uint32* indices;
 };
+
+enum class mesh_file_result : int32 {
+    error = -1,
+    is_static,
+    is_animated
+};
