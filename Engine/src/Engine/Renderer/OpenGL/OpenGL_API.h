@@ -16,13 +16,13 @@ struct OpenGL_api final : public renderer_api {
     bool32 disable_depth_test() override final;
     bool32 enable_depth_test() override final;
 
-    void create_texture(struct texture_2D* texture, const uint8* data) override final;
-    void destroy_texture(struct texture_2D* texture) override final;
-    void create_mesh(triangle_geometry* mesh, 
+    void create_texture(struct render_texture_2D* texture, const uint8* data) override final;
+    void destroy_texture(struct render_texture_2D* texture) override final;
+    void create_mesh(render_geometry* mesh, 
                      uint32 num_verts, const void* vertices,
                      uint32 num_inds, const uint32* indices,
                      const ShaderDataType* attributes) override final;
-    void destroy_mesh(triangle_geometry* mesh) override final;
+    void destroy_mesh(render_geometry* mesh) override final;
     bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) override final;
     void destroy_shader(shader* shader_prog) override final;
     bool32 create_framebuffer(frame_buffer* fbo, 
@@ -30,10 +30,11 @@ struct OpenGL_api final : public renderer_api {
     void destroy_framebuffer(frame_buffer* fbo) override final;
 
     void use_shader(shader* shader_prog) override final;
-    void draw_geometry(triangle_geometry* geom) override final;
-    void draw_geometry(triangle_geometry* geom, uint32 start_idx, uint32 num_inds) override final;
-    void draw_geometry_lines(triangle_geometry* geom) override final;
-    void draw_geometry_points(triangle_geometry* geom) override final;
+    void draw_geometry(render_geometry* geom) override final;
+    void draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) override final;
+    void draw_geometry(render_geometry* geom, render_material* mat) override final;
+    void draw_geometry_lines(render_geometry* geom) override final;
+    void draw_geometry_points(render_geometry* geom) override final;
 
     void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) override final;
     void clear_viewport(real32 r, real32 g, real32 b, real32 a) override final;

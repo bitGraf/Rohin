@@ -6,7 +6,8 @@
 #include "Engine/Collision/Collision_Types.h"
 
 struct memory_arena;
-struct triangle_geometry;
+struct render_geometry;
+struct render_material;
 struct shader;
 struct frame_buffer;
 struct frame_buffer_attachment;
@@ -47,13 +48,13 @@ struct renderer_api {
 
     virtual bool32 set_highlight_mode(bool32 enabled) = 0;
 
-    virtual void create_texture(struct texture_2D* texture, const uint8* data) = 0;
-    virtual void destroy_texture(struct texture_2D* texture) = 0;
-    virtual void create_mesh(triangle_geometry* mesh, 
+    virtual void create_texture(struct render_texture_2D* texture, const uint8* data) = 0;
+    virtual void destroy_texture(struct render_texture_2D* texture) = 0;
+    virtual void create_mesh(render_geometry* mesh, 
                              uint32 num_verts, const void* vertices,
                              uint32 num_inds, const uint32* indices,
                              const ShaderDataType* attributes) = 0;
-    virtual void destroy_mesh(triangle_geometry* mesh) = 0;
+    virtual void destroy_mesh(render_geometry* mesh) = 0;
     virtual bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) = 0;
     virtual void destroy_shader(shader* shader_prog) = 0;
     virtual bool32 create_framebuffer(frame_buffer* fbo, 
@@ -61,10 +62,11 @@ struct renderer_api {
     virtual void destroy_framebuffer(frame_buffer* fbo) = 0;
 
     virtual void use_shader(shader* shader_prog) = 0;
-    virtual void draw_geometry(triangle_geometry* geom) = 0;
-    virtual void draw_geometry(triangle_geometry* geom, uint32 start_idx, uint32 num_inds) = 0;
-    virtual void draw_geometry_lines(triangle_geometry* geom) = 0;
-    virtual void draw_geometry_points(triangle_geometry* geom) = 0;
+    virtual void draw_geometry(render_geometry* geom) = 0;
+    virtual void draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) = 0;
+    virtual void draw_geometry(render_geometry* geom, render_material* mat) = 0;
+    virtual void draw_geometry_lines(render_geometry* geom) = 0;
+    virtual void draw_geometry_points(render_geometry* geom) = 0;
 
     virtual void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) = 0;
     virtual void clear_viewport(real32 r, real32 g, real32 b, real32 a) = 0;
@@ -84,7 +86,7 @@ struct renderer_api {
 // the actual geometry that the gpu holds onto
 // separately, a 'resource' will exist to 
 // represent an actual mesh.
-struct triangle_geometry {
+struct render_geometry {
     uint32 handle; // handle to the gpu version of this data
 
     uint32 num_verts;
@@ -92,13 +94,28 @@ struct triangle_geometry {
     uint32 flag;
 };
 
-struct texture_2D {
+struct render_texture_2D {
     uint32 handle; // handle to the gpu version of this data
 
     uint16 width;
     uint16 height;
     uint16 num_channels;
     uint16 flag;
+};
+
+struct render_material {
+    laml::Vec3 DiffuseFactor;
+    real32 NormalScale;
+    real32 AmbientStrength;
+    real32 MetallicFactor;
+    real32 RoughnessFactor;
+    laml::Vec3 EmissiveFactor;
+    uint32 flag;
+
+    render_texture_2D DiffuseTexture;
+    render_texture_2D NormalTexture;
+    render_texture_2D AMRTexture;
+    render_texture_2D EmissiveTexture;
 };
 
 struct shader {
@@ -145,8 +162,8 @@ struct frame_buffer {
 
 struct render_command {
     laml::Mat4 model_matrix;
-    triangle_geometry geom;
-    uint32 material_handle;
+    render_geometry geom;
+    render_material material;
 };
 
 struct render_packet {
@@ -164,6 +181,7 @@ struct render_packet {
     render_command* commands;
 
     // for collision visualization
+    uint32 draw_colliders;
     collision_grid* col_grid;
     render_command collider_geom;
 

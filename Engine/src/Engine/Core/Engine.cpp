@@ -125,7 +125,7 @@ bool32 start_rohin_engine(RohinApp* app) {
         return false;
     }
 
-    texture_2D texture;
+    render_texture_2D texture;
     //resource_load_texture_file("Data/Images/Stormtrooper_D.png", &texture);
     //resource_load_texture_file("Data/Images/grid/PNG/Orange/texture_08.png", &texture);
     //resource_load_texture_file("Data/Images/copper/albedo.png", &texture);

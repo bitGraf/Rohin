@@ -26,8 +26,8 @@ struct renderer_state {
 
     // debug wireframe
     shader wireframe_shader;
-    triangle_geometry cube_geom;
-    triangle_geometry axis_geom;
+    render_geometry cube_geom;
+    render_geometry axis_geom;
 };
 
 global_variable renderer_api* backend;
@@ -55,7 +55,7 @@ bool32 renderer_create_pipeline() {
 
     // setup simple shader
     //if (!resource_load_shader_file("Data/Shaders/simple.glsl", &render_state->simple_shader)) {
-    if (!resource_load_shader_file("Data/Shaders/simple_triplanar.glsl", &render_state->simple_shader)) {
+    if (!resource_load_shader_file("Data/Shaders/simple.glsl", &render_state->simple_shader)) {
         RH_FATAL("Could not setup the main shader");
         return false;
     }
@@ -147,7 +147,7 @@ bool32 renderer_begin_Frame(real32 delta_time) {
     }
 
     backend->set_viewport(0, 0, render_state->render_width, render_state->render_height);
-    backend->clear_viewport(0, 0, 0, 0);
+    backend->clear_viewport(0.1f, 0.1f, 0.1f, 0.1f);
 
     return true;
 }
@@ -183,7 +183,8 @@ bool32 renderer_draw_frame(render_packet* packet) {
         for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
             renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
                                              packet->commands[cmd_index].model_matrix._data);
-            renderer_draw_geometry(&packet->commands[cmd_index].geom);
+            //renderer_draw_geometry(&packet->commands[cmd_index].geom);
+            renderer_draw_geometry(&packet->commands[cmd_index].geom, &packet->commands[cmd_index].material);
         }
 #else
         renderer_use_shader(&render_state->pre_pass_shader);
@@ -211,134 +212,136 @@ bool32 renderer_draw_frame(render_packet* packet) {
         }
 #endif
 
-#if 1
-        // Render debug wireframes
-        renderer_begin_wireframe();
-        renderer_use_shader(&render_state->wireframe_shader);
+        #if 1
+        if (packet->draw_colliders) {
+            // Render debug wireframes
+            renderer_begin_wireframe();
+            renderer_use_shader(&render_state->wireframe_shader);
 
-        //laml::Mat4 proj_view = laml::mul(packet->projection_matrix, packet->view_matrix);
-        renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_VP", proj_view._data);
-        laml::Vec4 wire_color(.6f, 0.5f, 0.65f, 1.0f);
-        renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
-
-        renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
-                                         packet->collider_geom.model_matrix._data);
-        renderer_draw_geometry(&packet->collider_geom.geom);
-        //renderer_draw_geometry(&render_state->axis_geom);
-
-        for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
-            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
-                                             packet->commands[cmd_index].model_matrix._data);
-            renderer_draw_geometry(&packet->commands[cmd_index].geom);
-            
-            laml::Vec4 point_color = { .8f, 0.4f, 0.25f, 1.0f };
-            renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", point_color._data);
-            renderer_draw_geometry_points(&packet->commands[cmd_index].geom);
-        }
-
-        // draw sphere at contact point
-        laml::Mat4 transform;
-        laml::Quat rot(0.0f, 0.0f, 0.0f, 1.0f);
-        laml::Vec3 scale(0.2f);
-        laml::transform::create_transform(transform, rot, (packet->contact_point + laml::Vec3(-0.4f)), scale);
-        renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
-                                         transform._data);
-        renderer_draw_geometry(&render_state->cube_geom);
-
-        renderer_end_wireframe();
-
-#define DRAW_COLLISION_GRID 0
-#if DRAW_COLLISION_GRID
-        if (packet->col_grid && packet->col_grid->num_filled_cells > 0) {
-            laml::Mat4 cell_transform(1.0f);
-            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
-                                             cell_transform._data);
-
-            wire_color = { .7f, 0.6f, 0.35f, 1.0f };
+            //laml::Mat4 proj_view = laml::mul(packet->projection_matrix, packet->view_matrix);
+            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_VP", proj_view._data);
+            laml::Vec4 wire_color(.6f, 0.5f, 0.65f, 1.0f);
             renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
-            renderer_draw_geometry_lines(packet->col_grid->geom);
-            //wire_color = { .8f, 0.4f, 0.25f, 1.0f };
-            //renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
-            //renderer_draw_geometry_points(&packet->col_grid->geom);
-        }
-#endif
-        // Draw the highlighted cube/faces
-        if (packet->col_grid && packet->sector.inside) {
-            backend->set_highlight_mode(true);
 
-            collision_grid* grid = packet->col_grid;
+            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
+                                             packet->collider_geom.model_matrix._data);
+            renderer_draw_geometry(&packet->collider_geom.geom);
+            //renderer_draw_geometry(&render_state->axis_geom);
 
-            if (packet->num_tris > 0) {
-                renderer_use_shader(&render_state->simple_shader);
+            for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
+                renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
+                                                 packet->commands[cmd_index].model_matrix._data);
+                renderer_draw_geometry(&packet->commands[cmd_index].geom);
+            
+                laml::Vec4 point_color = { .8f, 0.4f, 0.25f, 1.0f };
+                renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", point_color._data);
+                renderer_draw_geometry_points(&packet->commands[cmd_index].geom);
+            }
 
-                color = laml::Vec4(0.5f, 0.6f, 0.4f, 1.0f);
-                renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
+            // draw sphere at contact point
+            laml::Mat4 transform;
+            laml::Quat rot(0.0f, 0.0f, 0.0f, 1.0f);
+            laml::Vec3 scale(0.2f);
+            laml::transform::create_transform(transform, rot, (packet->contact_point + laml::Vec3(-0.4f)), scale);
+            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
+                                             transform._data);
+            renderer_draw_geometry(&render_state->cube_geom);
 
-                renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
-                                                 packet->commands[0].model_matrix._data);
+            renderer_end_wireframe();
 
-                // draw possible triangles
-                for (uint32 n = 0; n < packet->num_tris; n++) {
-                    uint32 tri_idx = packet->triangle_indices[n];
+            #define DRAW_COLLISION_GRID 0
+            #if DRAW_COLLISION_GRID
+            if (packet->col_grid && packet->col_grid->num_filled_cells > 0) {
+                laml::Mat4 cell_transform(1.0f);
+                renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
+                                                 cell_transform._data);
 
-                    // TODO: dumb
-                    // check that it isn't an intersecting oene
-                    bool32 draw = true;
-                    for (uint32 nn = 0; nn < packet->num_intersecting_tris; nn++) {
-                        if (tri_idx == packet->intersecting_triangle_indices[nn]) {
-                            draw = false;
-                            break;
+                wire_color = { .7f, 0.6f, 0.35f, 1.0f };
+                renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
+                renderer_draw_geometry_lines(packet->col_grid->geom);
+                //wire_color = { .8f, 0.4f, 0.25f, 1.0f };
+                //renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
+                //renderer_draw_geometry_points(&packet->col_grid->geom);
+            }
+            #endif
+            // Draw the highlighted cube/faces
+            if (packet->col_grid && packet->sector.inside) {
+                backend->set_highlight_mode(true);
+
+                collision_grid * grid = packet->col_grid;
+
+                if (packet->num_tris > 0) {
+                    renderer_use_shader(&render_state->simple_shader);
+
+                    color = laml::Vec4(0.5f, 0.6f, 0.4f, 1.0f);
+                    renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
+
+                    renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform",
+                                                     packet->commands[0].model_matrix._data);
+
+                    // draw possible triangles
+                    for (uint32 n = 0; n < packet->num_tris; n++) {
+                        uint32 tri_idx = packet->triangle_indices[n];
+
+                        // TODO: dumb
+                        // check that it isn't an intersecting oene
+                        bool32 draw = true;
+                        for (uint32 nn = 0; nn < packet->num_intersecting_tris; nn++) {
+                            if (tri_idx == packet->intersecting_triangle_indices[nn]) {
+                                draw = false;
+                                break;
+                            }
+                        }
+
+                        if (draw) {
+                            uint32 start_idx = tri_idx * 3;
+                            renderer_draw_geometry(&packet->commands[0].geom, start_idx, 3);
                         }
                     }
 
-                    if (draw) {
+                    // draw intersecting triangles
+                    color = laml::Vec4(0.7f, 0.2f, 0.5f, 1.0f);
+                    renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
+                    for (uint32 n = 0; n < packet->num_intersecting_tris; n++) {
+                        uint32 tri_idx = packet->intersecting_triangle_indices[n];
+
                         uint32 start_idx = tri_idx * 3;
                         renderer_draw_geometry(&packet->commands[0].geom, start_idx, 3);
                     }
                 }
 
-                // draw intersecting triangles
-                color = laml::Vec4(0.7f, 0.2f, 0.5f, 1.0f);
-                renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
-                for (uint32 n = 0; n < packet->num_intersecting_tris; n++) {
-                    uint32 tri_idx = packet->intersecting_triangle_indices[n];
+                #define DRAW_SECTOR 1
+                #if DRAW_SECTOR
+                renderer_use_shader(&render_state->wireframe_shader);
+                // render sector of cells
+                for (int32 x = packet->sector.x_min; x <= packet->sector.x_max; x++) {
+                    for (int32 y = packet->sector.y_min; y <= packet->sector.y_max; y++) {
+                        for (int32 z = packet->sector.z_min; z <= packet->sector.z_max; z++) {
+                            collision_grid_cell * cell = &packet->col_grid->cells[x][y][z];
 
-                    uint32 start_idx = tri_idx * 3;
-                    renderer_draw_geometry(&packet->commands[0].geom, start_idx, 3);
-                }
-            }
+                            laml::Vec3 cell_pos = collision_cell_to_world(packet->col_grid, x, y, z);
+                            laml::Mat4 cell_transform;
+                            laml::transform::create_transform_translate(cell_transform, cell_pos);
+                            laml::Mat4 scale_m;
+                            laml::transform::create_transform_scale(scale_m, laml::Vec3(grid->cell_size));
+                            cell_transform = laml::mul(cell_transform, scale_m);
+                            renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
+                                                             cell_transform._data);
+                            wire_color = { .35f, 0.6f, 0.7f, 0.5f };
+                            renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
 
-#define DRAW_SECTOR 1
-#if DRAW_SECTOR
-            renderer_use_shader(&render_state->wireframe_shader);
-            // render sector of cells
-            for (int32 x = packet->sector.x_min; x <= packet->sector.x_max; x++) {
-                for (int32 y = packet->sector.y_min; y <= packet->sector.y_max; y++) {
-                    for (int32 z = packet->sector.z_min; z <= packet->sector.z_max; z++) {
-                        collision_grid_cell* cell = &packet->col_grid->cells[x][y][z];
-
-                        laml::Vec3 cell_pos = collision_cell_to_world(packet->col_grid, x, y, z);
-                        laml::Mat4 cell_transform;
-                        laml::transform::create_transform_translate(cell_transform, cell_pos);
-                        laml::Mat4 scale_m;
-                        laml::transform::create_transform_scale(scale_m, laml::Vec3(grid->cell_size));
-                        cell_transform = laml::mul(cell_transform, scale_m);
-                        renderer_upload_uniform_float4x4(&render_state->wireframe_shader, "r_Transform",
-                                                         cell_transform._data);
-                        wire_color = { .35f, 0.6f, 0.7f, 0.5f };
-                        renderer_upload_uniform_float4(&render_state->wireframe_shader, "u_color", wire_color._data);
-
-                        backend->disable_depth_test();
-                        renderer_draw_geometry_lines(&render_state->cube_geom);
-                        backend->enable_depth_test();
+                            backend->disable_depth_test();
+                            renderer_draw_geometry_lines(&render_state->cube_geom);
+                            backend->enable_depth_test();
+                        }
                     }
                 }
-            }
-#endif
+                #endif
 
-            backend->set_highlight_mode(false);
+                backend->set_highlight_mode(false);
+            }
+            #endif
         }
-#endif
 
         bool32 result = renderer_end_Frame(packet->delta_time);
 
@@ -372,14 +375,14 @@ bool32 renderer_end_wireframe() {
 
 
 
-void renderer_create_texture(struct texture_2D* texture, const uint8* data) {
+void renderer_create_texture(struct render_texture_2D* texture, const uint8* data) {
     backend->create_texture(texture, data);
 }
-void renderer_destroy_texture(struct texture_2D* texture) {
+void renderer_destroy_texture(struct render_texture_2D* texture) {
     backend->destroy_texture(texture);
 }
 
-void renderer_create_mesh(triangle_geometry* mesh, 
+void renderer_create_mesh(render_geometry* mesh, 
                           uint32 num_verts, const void* vertices,
                           uint32 num_inds, const uint32* indices,
                           const ShaderDataType* attributes) {
@@ -388,7 +391,7 @@ void renderer_create_mesh(triangle_geometry* mesh,
                          num_inds, indices, 
                          attributes);
 }
-void renderer_destroy_mesh(triangle_geometry* mesh) {
+void renderer_destroy_mesh(render_geometry* mesh) {
     backend->destroy_mesh(mesh);
 }
 
@@ -411,16 +414,19 @@ void renderer_destroy_framebuffer(frame_buffer* fbo) {
 void renderer_use_shader(shader* shader_prog) {
     backend->use_shader(shader_prog);
 }
-void renderer_draw_geometry(triangle_geometry* geom) {
+void renderer_draw_geometry(render_geometry* geom) {
     backend->draw_geometry(geom);
 }
-void renderer_draw_geometry(triangle_geometry* geom, uint32 start_idx, uint32 num_inds) {
+void renderer_draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) {
     backend->draw_geometry(geom, start_idx, num_inds);
 }
-void renderer_draw_geometry_lines(triangle_geometry* geom) {
+void renderer_draw_geometry(render_geometry * geom, render_material * mat) {
+    backend->draw_geometry(geom, mat);
+}
+void renderer_draw_geometry_lines(render_geometry* geom) {
     backend->draw_geometry_lines(geom);
 }
-void renderer_draw_geometry_points(triangle_geometry* geom) {
+void renderer_draw_geometry_points(render_geometry* geom) {
     backend->draw_geometry_points(geom);
 }
 

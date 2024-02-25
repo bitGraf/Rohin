@@ -1283,7 +1283,7 @@ uint8* Win32ReadEntireFile(memory_arena* Arena, char* ResourcePath, uint32 *Byte
     return Result;
 }
 
-bool32 Win32LoadTextureFromFile(texture_2D* Texture, char* ResourcePath) {
+bool32 Win32LoadTextureFromFile(render_texture_2D* Texture, char* ResourcePath) {
     // TODO: allocations here are yucky!
 
     char TextureFullPath[WIN32_STATE_FILE_NAME_COUNT];

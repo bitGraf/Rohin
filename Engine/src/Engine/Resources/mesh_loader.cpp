@@ -11,7 +11,7 @@
 
 #include "Engine/Collision/Collision.h"
 
-#include "Engine/Resources/mesh_file_reader.h"
+#include "Engine/Resources/Filetype/mesh_file_reader.h"
 
 struct vertex_static {
     laml::Vec3 Position;
@@ -32,8 +32,69 @@ struct vertex_anim {
     laml::Vec4 BoneWeights;
 };
 
+RHAPI bool32 resource_load_mesh(const char* resource_file_name, resource_mesh *mesh) {
+    memory_arena* arena = resource_get_arena();
+
+    mesh_file *file_data;
+    mesh_file_result res = parse_mesh_file(resource_file_name, &file_data, arena);
+    if (res != mesh_file_result::is_static) {
+        RH_ERROR("Failed to read data from mesh file.");
+        return false;
+    }
+
+    mesh->num_primitives = file_data->Header.NumPrims;
+    mesh->transform = laml::Mat4(1.0f);
+
+    // buffer primitives to gpu
+    mesh->primitives = PushArray(arena, render_geometry, mesh->num_primitives);
+    for (int n = 0; n < file_data->Header.NumPrims; n++) {
+        mesh_file_primitive *prim = &file_data->Primitives[n];
+        renderer_create_mesh(&mesh->primitives[n], prim->Header.NumVerts, prim->Vertices, prim->Header.NumInds, prim->Indices, static_mesh_attribute_list);
+    }
+
+    // buffer textures to gpu
+    mesh->materials = PushArray(arena, render_material, mesh->num_primitives);
+    for (int n = 0; n < file_data->Header.NumPrims; n++) {
+        mesh_file_material *mat = &file_data->Materials[n];
+        
+        mesh->materials[n].flag = mat->Header.Flag;
+
+        mesh->materials[n].DiffuseFactor = laml::Vec3(mat->Header.DiffuseFactor);
+        mesh->materials[n].NormalScale = mat->Header.NormalScale;
+        mesh->materials[n].AmbientStrength = mat->Header.AmbientStrength;
+        mesh->materials[n].MetallicFactor = mat->Header.MetallicFactor;
+        mesh->materials[n].RoughnessFactor = mat->Header.RoughnessFactor;
+        mesh->materials[n].EmissiveFactor = laml::Vec3(mat->Header.EmissiveFactor);
+
+        if (mat->Header.Flag & 0x01) {
+            // is double-sided I think?
+        }
+        char tex_path[256];
+        if (mat->Header.Flag & 0x02) {
+            string_build(tex_path, 256, "Data/textures/%s", mat->DiffuseTexture.str);
+            resource_load_texture_file(tex_path, &mesh->materials[n].DiffuseTexture);
+        } else {
+            resource_load_texture_file("Data/textures/checker.png", &mesh->materials[n].DiffuseTexture);
+        }
+        if (mat->Header.Flag & 0x04) {
+            string_build(tex_path, 256, "Data/textures/%s", mat->NormalTexture.str);
+            resource_load_texture_file(tex_path, &mesh->materials[n].NormalTexture);
+        }
+        if (mat->Header.Flag & 0x08) {
+            string_build(tex_path, 256, "Data/textures/%s", mat->AMRTexture.str);
+            resource_load_texture_file(tex_path, &mesh->materials[n].AMRTexture);
+        }
+        if (mat->Header.Flag & 0x10) {
+            string_build(tex_path, 256, "Data/textures/%s", mat->EmissiveTexture.str);
+            resource_load_texture_file(tex_path, &mesh->materials[n].EmissiveTexture);
+        }
+    }
+
+    return false;
+}
+
 mesh_file_result resource_load_mesh_file(const char* resource_file_name, 
-                                         triangle_geometry* out_mesh,
+                                         render_geometry* out_mesh,
                                          skeleton* out_skeleton,
                                          animation** out_animations, uint32* out_num_anims) {
     Assert(!"Don't use this function!!!");
@@ -180,7 +241,7 @@ mesh_file_result resource_load_mesh_file(const char* resource_file_name,
     Assert(file.data == End);
 
     // Pass onto the renderer to create
-    triangle_geometry* geom = PushStruct(arena, triangle_geometry);
+    render_geometry* geom = PushStruct(arena, render_geometry);
     if (HasSkeleton) {
         renderer_create_mesh(geom, Header->NumVerts, VertexData, Header->NumInds, Indices, dynamic_mesh_attribute_list);
     } else {
@@ -189,7 +250,7 @@ mesh_file_result resource_load_mesh_file(const char* resource_file_name,
 
     // save to output
     if (out_mesh) {
-        memory_copy(out_mesh, geom, sizeof(triangle_geometry));
+        memory_copy(out_mesh, geom, sizeof(render_geometry));
     }
 
     platform_free_file_data(&file);
@@ -203,14 +264,85 @@ bool32 resource_load_anim_file(animation* anim) {
     return false;
 }
 
+bool32 resource_load_mesh(mesh_file * file_data, render_geometry* geom_out) {
+    memory_arena* arena = resource_get_arena();
+
+    // Pass onto the renderer to create
+    render_geometry* geom = PushStruct(arena, render_geometry);
+    renderer_create_mesh(geom, 
+                         file_data->Primitives[0].Header.NumVerts, file_data->Primitives[0].Vertices, 
+                         file_data->Primitives[0].Header.NumInds, file_data->Primitives[0].Indices, 
+                         static_mesh_attribute_list);
+
+    // save to output
+    if (geom_out) {
+        memory_copy(geom_out, geom, sizeof(render_geometry));
+    }
+
+    return true;
+}
 internal_func laml::Vec3 transform_helper(const laml::Mat4& transform, const laml::Vec3 P) {
     laml::Vec4 x(P.x, P.y, P.z, 1.0);
     laml::Vec4 xp = laml::transform::transform_point(transform, x);
 
     return laml::Vec3(xp.x, xp.y, xp.z);
 }
+RHAPI bool32 resource_load_mesh_into_grid(mesh_file * file_data, collision_grid * grid, const laml::Mat4& transform) {
+    memory_arena* arena = resource_get_arena();
+
+    uint32 num_prims = file_data->Header.NumPrims;
+    RH_TRACE("Reserving level triangles to grid!");
+    for (uint32 prim_no = 0; prim_no < num_prims; prim_no++) {
+        RH_TRACE("  Primitive %d/%d", prim_no, num_prims);
+        mesh_file_primitive *prim = &file_data->Primitives[prim_no];
+
+        uint32 num_tris = prim->Header.NumInds / 3;
+        uint32 *Indices = prim->Indices;
+        mesh_file_vertex *Vertices = prim->Vertices;
+        memory_index arena_save = arena->Used;
+        collision_triangle triangle;
+        for (uint32 n = 0; n < num_tris; n++) {
+            RH_TRACE("    Triangle %d/%d", n, num_tris);
+            uint32 I0 = Indices[n*3 + 0];
+            uint32 I1 = Indices[n*3 + 1];
+            uint32 I2 = Indices[n*3 + 2];
+
+            triangle.v1 = transform_helper(transform, Vertices[I0].Position);
+            triangle.v2 = transform_helper(transform, Vertices[I1].Position);
+            triangle.v3 = transform_helper(transform, Vertices[I2].Position);
+
+            collision_grid_add_triangle(arena, grid, triangle, true);
+        }
+    }
+    RH_TRACE("Commiting level triangles to grid!");
+    for (uint32 prim_no = 0; prim_no < num_prims; prim_no++) {
+        RH_TRACE("  Primitive %d/%d", prim_no, num_prims);
+        mesh_file_primitive *prim = &file_data->Primitives[prim_no];
+
+        uint32 num_tris = prim->Header.NumInds / 3;
+        uint32 *Indices = prim->Indices;
+        mesh_file_vertex *Vertices = prim->Vertices;
+
+        collision_triangle triangle;
+        for (uint32 n = 0; n < num_tris; n++) {
+            RH_TRACE("    Triangle %d/%d", n, num_tris);
+            uint32 I0 = Indices[n*3 + 0];
+            uint32 I1 = Indices[n*3 + 1];
+            uint32 I2 = Indices[n*3 + 2];
+
+            triangle.v1 = transform_helper(transform, Vertices[I0].Position);
+            triangle.v2 = transform_helper(transform, Vertices[I1].Position);
+            triangle.v3 = transform_helper(transform, Vertices[I2].Position);
+
+            collision_grid_add_triangle(arena, grid, triangle, false);
+        }
+    }
+    RH_TRACE("Prim Done!");
+
+    return true;
+}
 bool32 resource_load_mesh_file_for_level(const char* resource_file_name,
-                                                   triangle_geometry* out_geom,
+                                                   render_geometry* out_geom,
                                                    collision_grid* grid,
                                                    laml::Mat4 transform) {
 
@@ -273,7 +405,7 @@ bool32 resource_load_mesh_file_for_level(const char* resource_file_name,
     RH_TRACE("Prim Done!");
 
     // Pass onto the renderer to create
-    triangle_geometry* geom = PushStruct(arena, triangle_geometry);
+    render_geometry* geom = PushStruct(arena, render_geometry);
     renderer_create_mesh(geom, 
                          file_data->Primitives[0].Header.NumVerts, file_data->Primitives[0].Vertices, 
                          file_data->Primitives[0].Header.NumInds, file_data->Primitives[0].Indices, 
@@ -281,7 +413,7 @@ bool32 resource_load_mesh_file_for_level(const char* resource_file_name,
 
     // save to output
     if (out_geom) {
-        memory_copy(out_geom, geom, sizeof(triangle_geometry));
+        memory_copy(out_geom, geom, sizeof(render_geometry));
     }
 
     return false;

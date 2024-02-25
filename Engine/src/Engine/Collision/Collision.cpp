@@ -18,7 +18,7 @@ void collision_create_grid(memory_arena* arena, collision_grid* grid, laml::Vec3
     grid->num_y = num_y;
     grid->num_z = num_z;
 
-    grid->geom = PushStruct(arena, triangle_geometry);
+    grid->geom = PushStruct(arena, render_geometry);
 
     grid->cells = PushArray(arena, collision_grid_cell**, num_x);
     for (uint16 x = 0; x < num_x; x++) {
@@ -195,7 +195,7 @@ laml::Vec3 collision_cell_to_world(collision_grid* grid, uint32 grid_x, uint32 g
 }
 
 
-void collision_create_capsule(collision_capsule* collider, triangle_geometry* geom, real32 height, real32 radius, laml::Vec3 N) {
+void collision_create_capsule(collision_capsule* collider, render_geometry* geom, real32 height, real32 radius, laml::Vec3 N) {
     collider->radius = radius;
     real32 s = height - (2*radius); // distance between A and B
 
@@ -255,7 +255,7 @@ void collision_create_capsule(collision_capsule* collider, triangle_geometry* ge
     }
 }
 
-void collision_create_sphere(collision_sphere* collider, triangle_geometry* geom, real32 radius) {
+void collision_create_sphere(collision_sphere* collider, render_geometry* geom, real32 radius) {
     collider->radius = radius;
 
     collider->C = laml::Vec3(0.0f);

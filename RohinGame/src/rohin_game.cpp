@@ -30,63 +30,24 @@ struct game_state {
     memory_arena trans_arena;
     memory_arena mesh_arena;
 
-    triangle_geometry* level_geom;
-    triangle_geometry* player_geom;
+    resource_mesh* level_mesh;
+    resource_mesh* player_mesh;
 
     player_state player;
     player_state debug_camera;
 
-    collision_grid grid;
-    collision_sphere collider;
-    triangle_geometry collider_geom;
-    collision_sector sector;
+    render_material missing_material;
+
+    //collision_grid grid;
+    //collision_sphere collider;
+    //render_geometry collider_geom;
+    //collision_sector sector;
+
+    // level
+    //level_data level;
 };
 
-bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context) {
-    game_state* state = (game_state*)listener;
-
-    uint16 key_code = context.u16[0];
-    if (key_code == KEY_C) {
-#if 1
-        RH_TRACE("Collision sector:\n         "
-                 "x: %d->%d\n         "
-                 "y: %d->%d\n         "
-                 "z: %d->%d\n         ",
-                 state->sector.x_min, state->sector.x_max,
-                 state->sector.y_min, state->sector.y_max,
-                 state->sector.z_min, state->sector.z_max);
-        collision_grid_cell cell = state->grid.cells[state->sector.x_min][state->sector.y_min][state->sector.z_min];
-
-        RH_TRACE("[%d,%d,%d]\n         %d triangles", state->sector.x_min, state->sector.y_min, state->sector.z_min, cell.num_surfaces);
-        for (uint32 n = 0; n < cell.num_surfaces; n++) {
-            collision_triangle tri = state->grid.triangles[cell.surfaces[n]];
-            RH_TRACE(" #%d [%f,%f,%f]\n        "
-                     "     [%f,%f,%f]\n        "
-                     "     [%f,%f,%f]\n", cell.surfaces[n], 
-                     tri.v1.x, tri.v1.y, tri.v1.z,
-                     tri.v2.x, tri.v2.y, tri.v2.z,
-                     tri.v3.x, tri.v3.y, tri.v3.z);
-        }
-#endif
-    } else if (key_code == KEY_P) {
-        RH_TRACE("Player Position: [%f,%f,%f]", 
-                 state->player.position.x, state->player.position.y, state->player.position.z);
-    } else if (key_code == KEY_R) {
-        //state->player.position = {-5.0f, 1.0f, 0.0f};
-        state->player.position = {0.0f, 1.0f, 0.0f};
-        state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
-    }
-    //RH_TRACE("Game[0x%016llX] recieved event code %d \n         "
-    //         "Sender=[0x%016llX] \n         "
-    //         "Listener=[0x%016llX] \n         "
-    //         "Data=[%llu], [%u,%u], [%hu,%hu,%hu,%hu]",
-    //         state, code, (uintptr_t)sender, (uintptr_t)listener,
-    //         context.u64,
-    //         context.u32[0], context.u32[1],
-    //         context.u16[0], context.u16[1], context.u16[2], context.u16[3]);
-
-    return false;
-}
+bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context);
 
 bool32 game_startup(RohinApp* app) {
     RH_INFO("Game startup.");
@@ -99,8 +60,8 @@ bool32 game_startup(RohinApp* app) {
 
     CreateArena(&state->trans_arena, app->memory.TransientStorageSize, (uint8*)app->memory.TransientStorage);
 
-    state->level_geom = PushStruct(&state->mesh_arena, triangle_geometry);
-    state->player_geom = PushStruct(&state->mesh_arena, triangle_geometry);
+    state->level_mesh = PushStruct(&state->mesh_arena, resource_mesh);
+    state->player_mesh = PushStruct(&state->mesh_arena, resource_mesh);
     
     //state->num_geometry = 0;
     //state->geometry = nullptr;
@@ -119,10 +80,21 @@ bool32 game_initialize(RohinApp* app) {
     //resource_load_mesh_file("Data/Models/chao_garden/collision_meshes/Cube.mesh", state->player_geom, 0, 0, 0);
 
     // load the level geometry into the collision grid
-    resource_load_level_file("Data/Models/chao_garden/garden.level", &state->grid, state->level_geom);
+    //resource_load_level_file("Data/Models/chao_garden/garden.level", &state->grid, state->level_geom);
+    //resource_load_level_file("Data/Models/chao_garden/garden.level", &state->level);
     //collision_create_grid(&state->trans_arena, &state->grid, {25.0f, -0.1f, -5.0f}, 0.5f, 256, 16, 256);
     //resource_load_mesh_file_for_level("Data/Models/garden.mesh", state->level_geom, &state->grid);
     //collision_grid_finalize(&state->trans_arena, &state->grid);
+    resource_load_mesh("Data/Models/thingy.mesh", state->player_mesh);
+
+    state->missing_material.DiffuseFactor = laml::Vec3(1.0f);
+    state->missing_material.NormalScale = 1.0f;
+    state->missing_material.AmbientStrength = 1.0f;
+    state->missing_material.MetallicFactor = 0.0f;
+    state->missing_material.RoughnessFactor = 0.0;
+    state->missing_material.EmissiveFactor = laml::Vec3(0.0f);
+    state->missing_material.flag = 3;
+    resource_load_texture_file("Data/textures/checker.png", &state->missing_material.DiffuseTexture);
 
     state->player.position = {-5.0f, 1.0f, 0.0f};
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -131,7 +103,7 @@ bool32 game_initialize(RohinApp* app) {
     state->player.radius = 0.3f;
     laml::Vec3 world_up(0.0f, 1.0f, 0.0f);
     //collision_create_capsule(&state->collider, &state->collider_geom, state->player.height, state->player.radius, world_up);
-    collision_create_sphere(&state->collider, &state->collider_geom, state->player.radius);
+    //collision_create_sphere(&state->collider, &state->collider_geom, state->player.radius);
 
     // Player Position: [-0.1f,1.0f, 2.2]
     // Player Position: [-0.1f,1.0f,-1.8]
@@ -142,6 +114,7 @@ bool32 game_initialize(RohinApp* app) {
     real32 move_dist = laml::length(end - start);
     laml::Vec3 new_position = start;
 
+    #ifdef DO_COLLISION
     sweep_result hit_result;
     laml::Vec3 tri_normal;
     uint32 max_iters = 8;
@@ -175,6 +148,8 @@ bool32 game_initialize(RohinApp* app) {
         }
     }
     state->player.position = new_position;
+
+    #endif
 
     return true;
 }
@@ -238,6 +213,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     laml::Vec3 new_position = state->player.position;
 
 
+    #ifdef DO_COLLISION
     collision_grid_get_sector_capsule(&state->grid, &state->sector, new_position, new_position+(move_dir*move_dist), state->collider.radius);
     collision_sphere collider;
     collider.C = state->collider.C + new_position;
@@ -321,10 +297,13 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 #else
     new_position = new_position + (move_dir*move_dist);
 #endif
+    #else
+        new_position = new_position + (move_dir*move_dist);
+    #endif
     state->player.position = new_position;
 
 
-    state->debug_camera.position = state->player.position - (forward * 2.0f) + (up * 1.0f);
+    state->debug_camera.position = state->player.position - (forward * 2.0f) + (up * 3.0f);
     laml::Mat3 camera_rot;
     laml::transform::create_transform_rotation(camera_rot, state->player.yaw, state->debug_camera.pitch, 0.0f);
     state->debug_camera.orientation = laml::transform::quat_from_mat(camera_rot);
@@ -339,13 +318,23 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     // ...
 
     // push all the render commands to the render_packet
-    packet->num_commands = 1;
+    packet->num_commands = state->player_mesh->num_primitives;
     packet->commands = PushArray(packet->arena, render_command, packet->num_commands);
     
-    packet->commands[0].model_matrix = eye;
-    packet->commands[0].geom = *state->level_geom;
-    //packet->commands[0].geom = state->tri_geom;
-    packet->commands[0].material_handle = 0;
+    int command_idx = 0;
+    for (uint32 n = 0; n < state->player_mesh->num_primitives; n++) {
+        //packet->commands[command_idx].model_matrix = state->player_mesh->transform;
+        packet->commands[command_idx].model_matrix = player_transform;
+        packet->commands[command_idx].geom = state->player_mesh->primitives[n];
+        packet->commands[command_idx].material = state->player_mesh->materials[n];
+
+        command_idx++;
+    }
+
+    //packet->commands[0].model_matrix = eye;
+    //packet->commands[0].geom = *state->level_geom;
+    ////packet->commands[0].geom = state->tri_geom;
+    //packet->commands[0].material_handle = 0;
 
     //packet->commands[1].model_matrix = player_transform;
     //packet->commands[1].geom = *state->player_geom;
@@ -356,15 +345,15 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     for (uint32 n = 0; n < packet->num_commands; n++) {
         packet->commands[n].model_matrix = transform;
         packet->commands[n].geom = state->geometry[n];
-        packet->commands[n].material_handle = 0;
+        packet->commands[n].material = 0;
     }
 #endif
 
-#if 1
+#if 0
     packet->col_grid = &state->grid;
     packet->collider_geom.model_matrix = capsule_transform;
     packet->collider_geom.geom = state->collider_geom;
-    packet->collider_geom.material_handle = 0;
+    packet->collider_geom.material = 0;
 
     packet->sector = state->sector;
     packet->num_tris = num_tris;
@@ -389,4 +378,51 @@ void game_on_resize(RohinApp* app, uint32 new_width, uint32 new_height) {
 
 void game_shutdown(RohinApp* app) {
     RH_INFO("Game shutdown.");
+}
+
+
+bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context) {
+    game_state* state = (game_state*)listener;
+
+    uint16 key_code = context.u16[0];
+    if (key_code == KEY_C) {
+        #if 0
+        RH_TRACE("Collision sector:\n         "
+                 "x: %d->%d\n         "
+                 "y: %d->%d\n         "
+                 "z: %d->%d\n         ",
+                 state->sector.x_min, state->sector.x_max,
+                 state->sector.y_min, state->sector.y_max,
+                 state->sector.z_min, state->sector.z_max);
+        collision_grid_cell cell = state->grid.cells[state->sector.x_min][state->sector.y_min][state->sector.z_min];
+
+        RH_TRACE("[%d,%d,%d]\n         %d triangles", state->sector.x_min, state->sector.y_min, state->sector.z_min, cell.num_surfaces);
+        for (uint32 n = 0; n < cell.num_surfaces; n++) {
+            collision_triangle tri = state->grid.triangles[cell.surfaces[n]];
+            RH_TRACE(" #%d [%f,%f,%f]\n        "
+                     "     [%f,%f,%f]\n        "
+                     "     [%f,%f,%f]\n", cell.surfaces[n], 
+                     tri.v1.x, tri.v1.y, tri.v1.z,
+                     tri.v2.x, tri.v2.y, tri.v2.z,
+                     tri.v3.x, tri.v3.y, tri.v3.z);
+        }
+        #endif
+    } else if (key_code == KEY_P) {
+        RH_TRACE("Player Position: [%f,%f,%f]", 
+                 state->player.position.x, state->player.position.y, state->player.position.z);
+    } else if (key_code == KEY_R) {
+        //state->player.position = {-5.0f, 1.0f, 0.0f};
+        state->player.position = {0.0f, 1.0f, 0.0f};
+        state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
+    }
+    //RH_TRACE("Game[0x%016llX] recieved event code %d \n         "
+    //         "Sender=[0x%016llX] \n         "
+    //         "Listener=[0x%016llX] \n         "
+    //         "Data=[%llu], [%u,%u], [%hu,%hu,%hu,%hu]",
+    //         state, code, (uintptr_t)sender, (uintptr_t)listener,
+    //         context.u64,
+    //         context.u32[0], context.u32[1],
+    //         context.u16[0], context.u16[1], context.u16[2], context.u16[3]);
+
+    return false;
 }

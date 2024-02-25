@@ -195,7 +195,7 @@ bool32 OpenGL_api::enable_depth_test() {
 
 
 
-void OpenGL_api::create_texture(struct texture_2D* texture, const uint8* data) {
+void OpenGL_api::create_texture(struct render_texture_2D* texture, const uint8* data) {
     glGenTextures(1, &texture->handle);
     glBindTexture(GL_TEXTURE_2D, texture->handle);
 
@@ -235,7 +235,7 @@ void OpenGL_api::create_texture(struct texture_2D* texture, const uint8* data) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
-void OpenGL_api::destroy_texture(struct texture_2D* texture) {
+void OpenGL_api::destroy_texture(struct render_texture_2D* texture) {
     glDeleteTextures(1, &texture->handle);
 }
 
@@ -258,7 +258,7 @@ vertex_layout calculate_stride(const ShaderDataType* attributes) {
 }
 
 
-void OpenGL_api::create_mesh(triangle_geometry* mesh, 
+void OpenGL_api::create_mesh(render_geometry* mesh, 
                              uint32 num_verts, const void* vertices,
                              uint32 num_inds, const uint32* indices,
                              const ShaderDataType* attributes) {
@@ -320,7 +320,7 @@ void OpenGL_api::create_mesh(triangle_geometry* mesh,
 
     glBindVertexArray(0);
 }
-void OpenGL_api::destroy_mesh(triangle_geometry* mesh) {
+void OpenGL_api::destroy_mesh(render_geometry* mesh) {
     glDeleteVertexArrays(1, &mesh->handle);
 }
 
@@ -563,20 +563,33 @@ void OpenGL_api::destroy_framebuffer(frame_buffer* fbo) {
 void OpenGL_api::use_shader(shader* shader_prog) {
     glUseProgram(shader_prog->handle);
 }
-void OpenGL_api::draw_geometry(triangle_geometry* geom) {
+void OpenGL_api::draw_geometry(render_geometry* geom) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     glBindVertexArray(geom->handle);
     glDrawElements(GL_TRIANGLES, geom->num_inds, GL_UNSIGNED_INT, 0);
 }
-void OpenGL_api::draw_geometry(triangle_geometry* geom, uint32 start_idx, uint32 num_inds) {
+void OpenGL_api::draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
     glBindVertexArray(geom->handle);
     //glDrawElements(GL_TRIANGLES, num_inds, GL_UNSIGNED_INT, (void*)(&start_idx));
     glDrawElements(GL_TRIANGLES, num_inds, GL_UNSIGNED_INT, (void*)(start_idx * sizeof(GLuint)));
 }
-void OpenGL_api::draw_geometry_lines(triangle_geometry* geom) {
+void OpenGL_api::draw_geometry(render_geometry* geom, render_material* mat) {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, mat->DiffuseTexture.handle);
+
+    glBindVertexArray(geom->handle);
+    glDrawElements(GL_TRIANGLES, geom->num_inds, GL_UNSIGNED_INT, 0);
+}
+void OpenGL_api::draw_geometry_lines(render_geometry* geom) {
     glBindVertexArray(geom->handle);
     glDrawElements(GL_LINES, geom->num_inds, GL_UNSIGNED_INT, 0);
 }
-void OpenGL_api::draw_geometry_points(triangle_geometry* geom) {
+void OpenGL_api::draw_geometry_points(render_geometry* geom) {
     glBindVertexArray(geom->handle);
     glDrawElements(GL_POINTS, geom->num_inds, GL_UNSIGNED_INT, 0);
 }

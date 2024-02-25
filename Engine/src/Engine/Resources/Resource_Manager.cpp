@@ -99,7 +99,7 @@ RHAPI bool32 resource_load_debug_mesh_data(const char* resource_file_name, debug
     return true;
 }
 
-RHAPI bool32 resource_load_debug_mesh_into_geometry(const char* resource_file_name, triangle_geometry* geom) {
+RHAPI bool32 resource_load_debug_mesh_into_geometry(const char* resource_file_name, render_geometry* geom) {
     debug_geometry data;
     if (!resource_load_debug_mesh_data(resource_file_name, &data)) {
         return false;

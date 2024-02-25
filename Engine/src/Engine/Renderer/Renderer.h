@@ -39,14 +39,14 @@ bool32 renderer_end_wireframe();
 // functions to create/destroy render objects
 // things like meshes, shaders, textures, etc.
 
-void renderer_create_texture(struct texture_2D* texture, const uint8* data);
-void renderer_destroy_texture(struct texture_2D* texture);
+void renderer_create_texture(struct render_texture_2D* texture, const uint8* data);
+void renderer_destroy_texture(struct render_texture_2D* texture);
 
-RHAPI void renderer_create_mesh(triangle_geometry* mesh, 
+RHAPI void renderer_create_mesh(render_geometry* mesh, 
                           uint32 num_verts, const void* vertices,
                           uint32 num_inds, const uint32* indices,
                           const ShaderDataType* attributes);
-void renderer_destroy_mesh(triangle_geometry* mesh);
+void renderer_destroy_mesh(render_geometry* mesh);
 
 bool32 renderer_create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes);
 void renderer_destroy_shader(shader* shader_prog);
@@ -55,10 +55,11 @@ bool32 renderer_create_framebuffer(frame_buffer* fbo,
 void renderer_destroy_framebuffer(frame_buffer* fbo);
 
 void renderer_use_shader(shader* shader_prog);
-void renderer_draw_geometry(triangle_geometry* geom);
-void renderer_draw_geometry(triangle_geometry* geom, uint32 start_idx, uint32 num_inds);
-void renderer_draw_geometry_lines(triangle_geometry* geom);
-void renderer_draw_geometry_points(triangle_geometry* geom);
+void renderer_draw_geometry(render_geometry* geom);
+void renderer_draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds);
+void renderer_draw_geometry(render_geometry* geom, render_material* mat);
+void renderer_draw_geometry_lines(render_geometry* geom);
+void renderer_draw_geometry_points(render_geometry* geom);
 
 void renderer_upload_uniform_float( shader* shader_prog, const char* uniform_name, float  value);
 void renderer_upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values);

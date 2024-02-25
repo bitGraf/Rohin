@@ -9,8 +9,8 @@ RHAPI void collision_create_grid(memory_arena* arena, collision_grid* grid, laml
 RHAPI void collision_grid_add_triangle(memory_arena* arena, collision_grid* grid, collision_triangle triangle, bool32 reserve);
 RHAPI void collision_grid_finalize(memory_arena* arena, collision_grid* grid);
 
-RHAPI void collision_create_capsule(collision_capsule* collider, triangle_geometry* geom, real32 height, real32 radius, laml::Vec3 N);
-RHAPI void collision_create_sphere(collision_sphere* collider, triangle_geometry* geom, real32 radius);
+RHAPI void collision_create_capsule(collision_capsule* collider, render_geometry* geom, real32 height, real32 radius, laml::Vec3 N);
+RHAPI void collision_create_sphere(collision_sphere* collider, render_geometry* geom, real32 radius);
 
 RHAPI void collision_grid_get_sector_capsule(collision_grid* grid, collision_sector* sector, laml::Vec3 P0, laml::Vec3 P1, real32 radius);
 RHAPI void collision_grid_get_sector_sphere( collision_grid* grid, collision_sector* sector, laml::Vec3 C, real32 radius);

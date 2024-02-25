@@ -8,7 +8,7 @@
 #include <stb/stb_image.h>
 
 bool32 resource_load_texture_file(const char* resource_file_name,
-                                  texture_2D* texture) {
+                                  render_texture_2D* texture) {
 
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);

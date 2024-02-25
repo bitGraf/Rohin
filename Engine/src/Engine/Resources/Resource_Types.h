@@ -30,9 +30,9 @@ struct animation {
 };
 
 struct material {
-    texture_2D diffuse_map;
-    texture_2D normal_map;
-    texture_2D amr_map;
+    render_texture_2D diffuse_map;
+    render_texture_2D normal_map;
+    render_texture_2D amr_map;
 };
 
 struct debug_geometry {
@@ -51,4 +51,25 @@ enum class mesh_file_result : int32 {
     error = -1,
     is_static,
     is_animated
+};
+
+struct resource_mesh {
+    uint32 num_primitives;
+    render_geometry *primitives;
+    render_material *materials;
+
+    laml::Mat4 transform;
+};
+
+struct level_data {
+    uint32 num_geometry;
+    uint32 num_colliders;
+
+    render_geometry *geometry;
+    laml::Mat4 *geo_transforms;
+
+    render_geometry *colliders;
+    laml::Mat4 *collider_transforms;
+
+    collision_grid grid;
 };

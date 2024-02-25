@@ -11,6 +11,8 @@
 
 #include "Engine/Collision/Collision.h"
 
+#include "Engine/Resources/Filetype/mesh_file_reader.h"
+
 #include <cstring>
 
 static bool32 CheckTag(uint8* Buffer, const char* Token, size_t NumChars) {
@@ -57,7 +59,7 @@ struct level_file {
     */
 };
 
-bool32 resource_load_level_file(const char* resource_file_name, collision_grid* grid, triangle_geometry *collider_geom) {
+bool32 resource_load_level_file(const char* resource_file_name, level_data* data) {
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
 
@@ -140,34 +142,54 @@ bool32 resource_load_level_file(const char* resource_file_name, collision_grid* 
     platform_free_file_data(&file);
 
     // build path to level files
-    char level_path[256] = { 0 };
-    char* s = level_path;
+    char collider_path[256] = { 0 };
+    char* s = collider_path;
     for (const char* p = resource_file_name; *p; p++, s++) {
         *s = *p;
     }
+    char* stop = nullptr;
     while ((*s != '\\') && (*s != '/')) {
         s--;
+        stop = s;
     }
     s++;
+    char render_path[256] = { 0 };
+    char* s2 = render_path;
+    for (const char* p = collider_path; p <= stop; p++, s2++) {
+        *s2 = *p;
+    }
+
     {
         char* collider_folder = "collision_meshes/";
         for (char* p = collider_folder; *p; p++, s++) {
             *s = *p;
         }
     }
+    {
+        char* render_folder = "render_meshes/";
+        for (char* p = render_folder; *p; p++, s2++) {
+            *s2 = *p;
+        }
+    }
+
     char* collider_folder = s;
+    char* render_folder = s2;
 
     // Now that the entries have been read rfom the file, start parsing them into render/collision objects
-    collision_create_grid(arena, grid, {25.0f, -0.1f, -5.0f}, 0.5f, 256, 16, 256);
-    uint32 count_collider = 0;
+    data->num_geometry = num_renders;
+    data->num_colliders = num_colliders;
+    data->geometry = PushArray(arena, render_geometry, num_renders);
+    data->geo_transforms = PushArray(arena, laml::Mat4, num_renders);
+    data->colliders = PushArray(arena, render_geometry, num_colliders);
+    data->collider_transforms = PushArray(arena, laml::Mat4, num_colliders);
+
+    uint32 curr_render = 0, curr_collider = 0;
+
+    collision_create_grid(arena, &data->grid, {25.0f, -0.1f, -5.0f}, 0.5f, 256, 16, 256);
     for (uint32 n = 0; n < level->num_entries; n++) {
         level_file_entry * entry = &level->entries[n];
 
         if (entry->IsCollider) {
-            count_collider++;
-            if (count_collider == 1) { //TMP: only want to load one collider, need to refactor things.
-                continue;
-            }
             s = collider_folder;
             for (char* p = entry->mesh_name; *p; p++, s++) {
                 *s = *p;
@@ -178,11 +200,37 @@ bool32 resource_load_level_file(const char* resource_file_name, collision_grid* 
                     *s = *p;
                 }
             }
+            *(s++) = 0;
 
-            resource_load_mesh_file_for_level(level_path, collider_geom, grid, entry->Transform);
+            RH_INFO("collider path: %s", collider_path);
+
+            //mesh_file *file_data;
+            //mesh_file_result res = parse_mesh_file(collider_path, &file_data, arena);
+            //if (res != mesh_file_result::is_static) {
+            //    RH_ERROR("Failed to read data from mesh file.");
+            //    continue;
+            //}
+            //resource_load_mesh(file_data, &data->colliders[curr_collider]);
+            //resource_load_mesh_into_grid(file_data, &data->grid, entry->Transform);
+
+            //resource_load_mesh_file_for_level(level_path, &data->colliders[curr_collider], &data->grid, entry->Transform, true);
+        } else {
+            s2 = render_folder;
+            for (char* p = entry->mesh_name; *p; p++, s2++) {
+                *s2 = *p;
+            }
+            {
+                char* ext = ".mesh";
+                for (char* p = ext; *p; p++, s2++) {
+                    *s2 = *p;
+                }
+            }
+            *(s2++) = 0;
+
+            RH_INFO("render path: %s", render_path);
         }
     }
-    collision_grid_finalize(arena, grid);
+    collision_grid_finalize(arena, &data->grid);
 
     return true;
 }

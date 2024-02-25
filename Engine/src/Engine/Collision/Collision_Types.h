@@ -4,7 +4,7 @@
 #include <laml/laml.hpp>
 //#include "Engine/Renderer/Render_Types.h"
 
-struct triangle_geometry;
+struct render_geometry;
 
 struct sweep_result {
     laml::Vec3 position;
@@ -66,5 +66,5 @@ struct collision_grid {
     collision_triangle* triangles;
     collision_grid_cell*** cells; // cells[level][row][col]
 
-    triangle_geometry* geom;
+    render_geometry* geom;
 };
