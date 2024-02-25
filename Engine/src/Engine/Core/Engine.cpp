@@ -65,6 +65,8 @@ bool32 engine_on_event(uint16 code, void* sender, void* listener, event_context 
                  context.u16[0], context.u16[1], context.u16[2], context.u16[3]);
     }
 
+    renderer_on_event(code, sender, listener, context);
+
     return false;
 }
 

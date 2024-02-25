@@ -74,7 +74,7 @@ RHAPI bool32 resource_load_mesh(const char* resource_file_name, resource_mesh *m
             string_build(tex_path, 256, "Data/textures/%s", mat->DiffuseTexture.str);
             resource_load_texture_file(tex_path, &mesh->materials[n].DiffuseTexture);
         } else {
-            resource_load_texture_file("Data/textures/checker.png", &mesh->materials[n].DiffuseTexture);
+            //resource_load_texture_file("Data/textures/checker.png", &mesh->materials[n].DiffuseTexture);
         }
         if (mat->Header.Flag & 0x04) {
             string_build(tex_path, 256, "Data/textures/%s", mat->NormalTexture.str);

@@ -50,23 +50,30 @@ struct renderer_api {
 
     virtual void create_texture(struct render_texture_2D* texture, const uint8* data) = 0;
     virtual void destroy_texture(struct render_texture_2D* texture) = 0;
+
     virtual void create_mesh(render_geometry* mesh, 
                              uint32 num_verts, const void* vertices,
                              uint32 num_inds, const uint32* indices,
                              const ShaderDataType* attributes) = 0;
     virtual void destroy_mesh(render_geometry* mesh) = 0;
+
     virtual bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) = 0;
     virtual void destroy_shader(shader* shader_prog) = 0;
+
     virtual bool32 create_framebuffer(frame_buffer* fbo, 
                                       int num_attachments, const frame_buffer_attachment* attachments) = 0;
     virtual void destroy_framebuffer(frame_buffer* fbo) = 0;
 
     virtual void use_shader(shader* shader_prog) = 0;
+    virtual void use_framebuffer(frame_buffer *fbuffer) = 0;
+
     virtual void draw_geometry(render_geometry* geom) = 0;
     virtual void draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) = 0;
     virtual void draw_geometry(render_geometry* geom, render_material* mat) = 0;
     virtual void draw_geometry_lines(render_geometry* geom) = 0;
     virtual void draw_geometry_points(render_geometry* geom) = 0;
+
+    virtual void bind_texture(uint32 tex_handle, uint32 slot) = 0;
 
     virtual void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) = 0;
     virtual void clear_viewport(real32 r, real32 g, real32 b, real32 a) = 0;

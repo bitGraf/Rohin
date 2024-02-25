@@ -497,6 +497,7 @@ bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo,
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->handle);
 
     AssertMsg(num_attachments <= 6, "More color attachments not supported atm");
+    fbo->num_attachments = num_attachments;
     memory_copy(&fbo->attachments, attachments, num_attachments*sizeof(frame_buffer_attachment));
 
     for (int n = 0; n < num_attachments; n++) {
@@ -563,17 +564,19 @@ void OpenGL_api::destroy_framebuffer(frame_buffer* fbo) {
 void OpenGL_api::use_shader(shader* shader_prog) {
     glUseProgram(shader_prog->handle);
 }
-void OpenGL_api::draw_geometry(render_geometry* geom) {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+void OpenGL_api::use_framebuffer(frame_buffer* fbuffer) {
+    if (fbuffer) {
+        glBindFramebuffer(GL_FRAMEBUFFER, fbuffer->handle);
+    } else { // if you pass in a nullptr, it binds the default fbo
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+}
 
+void OpenGL_api::draw_geometry(render_geometry* geom) {
     glBindVertexArray(geom->handle);
     glDrawElements(GL_TRIANGLES, geom->num_inds, GL_UNSIGNED_INT, 0);
 }
 void OpenGL_api::draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
     glBindVertexArray(geom->handle);
     //glDrawElements(GL_TRIANGLES, num_inds, GL_UNSIGNED_INT, (void*)(&start_idx));
     glDrawElements(GL_TRIANGLES, num_inds, GL_UNSIGNED_INT, (void*)(start_idx * sizeof(GLuint)));
@@ -592,6 +595,11 @@ void OpenGL_api::draw_geometry_lines(render_geometry* geom) {
 void OpenGL_api::draw_geometry_points(render_geometry* geom) {
     glBindVertexArray(geom->handle);
     glDrawElements(GL_POINTS, geom->num_inds, GL_UNSIGNED_INT, 0);
+}
+
+void OpenGL_api::bind_texture(uint32 tex_handle, uint32 slot) {
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, tex_handle);
 }
 
 

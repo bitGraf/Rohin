@@ -24,12 +24,14 @@ global_variable ShaderDataType dynamic_mesh_attribute_list[8] = {
 //struct stat_mesh_data;
 struct platform_state;
 struct memory_arena;
+struct event_context;
 
 bool32 renderer_initialize(memory_arena* arena, const char* application_name, platform_state* plat_state);
 bool32 renderer_create_pipeline();
 void renderer_shutdown();
 
 void renderer_resized(uint32 width, uint32 height);
+void renderer_on_event(uint16 code, void* sender, void* listener, event_context context);
 
 bool32 renderer_draw_frame(render_packet* packet);
 

@@ -30,11 +30,15 @@ struct OpenGL_api final : public renderer_api {
     void destroy_framebuffer(frame_buffer* fbo) override final;
 
     void use_shader(shader* shader_prog) override final;
+    void use_framebuffer(frame_buffer *fbuffer) override final;
+
     void draw_geometry(render_geometry* geom) override final;
     void draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) override final;
     void draw_geometry(render_geometry* geom, render_material* mat) override final;
     void draw_geometry_lines(render_geometry* geom) override final;
     void draw_geometry_points(render_geometry* geom) override final;
+
+    void bind_texture(uint32 tex_handle, uint32 slot) override final;
 
     void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) override final;
     void clear_viewport(real32 r, real32 g, real32 b, real32 a) override final;

@@ -4,6 +4,8 @@
 #include "Engine/Core/Logger.h"
 #include "Engine/Memory/Memory_Arena.h"
 #include "Engine/Core/Asserts.h"
+#include "Engine/Core/Event.h"
+#include "Engine/Core/Input.h"
 
 #include "Engine/Resources/Resource_Manager.h"
 
@@ -20,6 +22,10 @@ struct renderer_state {
 
     // deferred pbr render pass
     shader pre_pass_shader;
+    shader screen_present;
+    int32 current_shader_out;
+    int32 gamma_correct;
+    int32 tone_map;
 
     // framebuffer
     frame_buffer gbuffer;
@@ -28,6 +34,7 @@ struct renderer_state {
     shader wireframe_shader;
     render_geometry cube_geom;
     render_geometry axis_geom;
+    render_geometry screen_quad;
 };
 
 global_variable renderer_api* backend;
@@ -46,6 +53,10 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
     render_state = PushStruct(arena, renderer_state);
     render_state->render_height = 0;
     render_state->render_width = 0;
+
+    render_state->current_shader_out = 0;
+    render_state->gamma_correct = false;
+    render_state->tone_map = false;
 
     return true;
 }
@@ -75,6 +86,24 @@ bool32 renderer_create_pipeline() {
     renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_AmbientTexture", 4);
     renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_EmissiveTexture", 5);
 
+    if (!resource_load_shader_file("Data/Shaders/Screen.glsl", &render_state->screen_present)) {
+        RH_FATAL("Could not setup the screen shader");
+        return false;
+    }
+    renderer_use_shader(&render_state->screen_present);
+    renderer_upload_uniform_int(&render_state->screen_present, "u_albedo", 0);
+    renderer_upload_uniform_int(&render_state->screen_present, "u_normal", 1);
+    renderer_upload_uniform_int(&render_state->screen_present, "u_amr", 2);
+    renderer_upload_uniform_int(&render_state->screen_present, "u_depth", 3);
+    renderer_upload_uniform_int(&render_state->screen_present, "u_diffuse", 4);
+    renderer_upload_uniform_int(&render_state->screen_present, "u_specular", 5);
+    renderer_upload_uniform_int(&render_state->screen_present, "u_emissive", 6);
+    renderer_upload_uniform_int(&render_state->screen_present, "u_ssao", 7);
+
+    renderer_upload_uniform_int(&render_state->screen_present, "r_outputSwitch", 0);
+    renderer_upload_uniform_float(&render_state->screen_present, "r_toneMap", render_state->tone_map ? 1.0f : 0.0f);
+    renderer_upload_uniform_float(&render_state->screen_present, "r_gammaCorrect", render_state->gamma_correct ? 1.0f : 0.0f);
+
     // setup wireframe shader
     if (!resource_load_shader_file("Data/Shaders/wireframe.glsl", &render_state->wireframe_shader)) {
         RH_FATAL("Could not setup the wireframe shader");
@@ -86,54 +115,108 @@ bool32 renderer_create_pipeline() {
     laml::Vec4 black;
     laml::Vec4 _dist(100.0f, 100.0f, 100.0f, 1.0f);
     frame_buffer_attachment attachments[] = {
-        {0, frame_buffer_texture_format::RGBA8,   black}, // Albedo
-        {0, frame_buffer_texture_format::RGBA16F, black}, // View-space normal
-        {0, frame_buffer_texture_format::RGBA8,   black}, // Ambient/Metallic/Roughness
-        {0, frame_buffer_texture_format::RGBA16F, _dist},  // Distance
-        {0, frame_buffer_texture_format::RGBA8,   black},  // Emissive
-        {0, frame_buffer_texture_format::Depth,   black}  // Depth-buffer
+        { 0, frame_buffer_texture_format::RGBA8,   black }, // Albedo
+        { 0, frame_buffer_texture_format::RGBA16F, black }, // View-space normal
+        { 0, frame_buffer_texture_format::RGBA8,   black }, // Ambient/Metallic/Roughness
+        { 0, frame_buffer_texture_format::Depth,   black }, // Depth-buffer
+        { 0, frame_buffer_texture_format::RGBA8,   black }  // Emissive
     };
-    renderer_create_framebuffer(&render_state->gbuffer, 6, attachments);
+    render_state->gbuffer.width = render_state->render_width;
+    render_state->gbuffer.height = render_state->render_height;
+    renderer_create_framebuffer(&render_state->gbuffer, 5, attachments);
 
     // create cube mesh for debug purposes
-    real32 s = 1.0f;
-    typedef laml::Vec3 col_grid_vert;
-    col_grid_vert cube_verts[] = {
-                                 {0, 0, 0},// 0
-                                 {s, 0, 0},// 1
-                                 {s, s, 0},// 2
-                                 {0, s, 0},// 3
+    {
+        real32 s = 1.0f;
+        typedef laml::Vec3 col_grid_vert;
+        col_grid_vert cube_verts[] = {
+            { 0, 0, 0 }, // 0
+            { s, 0, 0 }, // 1
+            { s, s, 0 }, // 2
+            { 0, s, 0 }, // 3
 
-                                 {0, 0, s}, // 4
-                                 {s, 0, s}, // 5
-                                 {s, s, s}, // 6
-                                 {0, s, s}, // 7
-    };
-    uint32 cube_inds[] = {
-                         // bottom face
-                         0, 1,
-                         1, 2,
-                         2, 3,
-                         3, 0,
+            { 0, 0, s }, // 4
+            { s, 0, s }, // 5
+            { s, s, s }, // 6
+            { 0, s, s }, // 7
+        };
+        uint32 cube_inds[] = {
+            // bottom face
+            0, 1,
+            1, 2,
+            2, 3,
+            3, 0,
 
-                         // top face
-                         4, 5,
-                         5, 6,
-                         6, 7,
-                         7, 4,
+            // top face
+            4, 5,
+            5, 6,
+            6, 7,
+            7, 4,
 
-                         //verticals
-                         0, 4,
-                         1, 5,
-                         2, 6,
-                         3, 7
-    };
-    const ShaderDataType cube_attrs[] = {ShaderDataType::Float3, ShaderDataType::None};
-    backend->create_mesh(&render_state->cube_geom, 8, cube_verts, 36, cube_inds, cube_attrs);
+            //verticals
+            0, 4,
+            1, 5,
+            2, 6,
+            3, 7
+        };
+        const ShaderDataType cube_attrs[] = { ShaderDataType::Float3, ShaderDataType::None };
+        backend->create_mesh(&render_state->cube_geom, 8, cube_verts, 36, cube_inds, cube_attrs);
+    }
+
+    {
+        real32 s = 1.0f;
+        real32 cube_verts[] = {
+             -s, -s, 0, 0, 0, // 0
+              s, -s, 0, 1, 0, // 1
+              s,  s, 0, 1, 1, // 2
+             -s,  s, 0, 0, 1  // 3
+        };
+        uint32 cube_inds[] = {
+            // bottom tri
+            0, 1, 2,
+            0, 2, 3
+        };
+        const ShaderDataType quad_attrs[] = { ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::None };
+        backend->create_mesh(&render_state->screen_quad, 4, cube_verts, 6, cube_inds, quad_attrs);
+    }
 
     resource_load_debug_mesh_into_geometry("Data/Models/debug/gizmo.stl", &render_state->axis_geom);
 
     return true;
+}
+
+void renderer_on_event(uint16 code, void* sender, void* listener, event_context context) {
+    switch (code) {
+        case EVENT_CODE_KEY_PRESSED:
+            if (context.u16[0] == KEY_O) {
+                if (render_state->current_shader_out >= 11) {
+                    render_state->current_shader_out = 0;
+                } else {
+                    render_state->current_shader_out++;
+                }
+                const char* mode_strings[] = {
+                    "Full Shading",
+                    "Albedo",
+                    "Normals",
+                    "Ambient",
+                    "Metalness",
+                    "Roughness",
+                    "AMR",
+                    "Depth",
+                    "Diffuse Lighting",
+                    "Specular Highlights",
+                    "Emissive",
+                    "SSAO"
+                };
+                RH_INFO("Renderer output mode: %d - %s", render_state->current_shader_out, mode_strings[render_state->current_shader_out]);
+            } else if (context.u16[0] == KEY_G) {
+                render_state->gamma_correct = !render_state->gamma_correct;
+                RH_INFO("Renderer gamma correction: %s", render_state->gamma_correct ? "Enabled" : "Disabled");
+            } else if (context.u16[0] == KEY_T) {
+                render_state->tone_map = !render_state->tone_map;
+                RH_INFO("Renderer tone mapping: %s", render_state->tone_map ? "Enabled" : "Disabled");
+            }
+    }
 }
 
 void renderer_shutdown() {
@@ -157,7 +240,7 @@ bool32 renderer_end_Frame(real32 delta_time) {
     return result;
 }
 
-#define SIMPLE_RENDER_PASS 1
+#define SIMPLE_RENDER_PASS 0
 bool32 renderer_draw_frame(render_packet* packet) {
     if (renderer_begin_Frame(packet->delta_time)) {
         // render all commands in the packet
@@ -192,27 +275,59 @@ bool32 renderer_draw_frame(render_packet* packet) {
         renderer_upload_uniform_float4x4(&render_state->pre_pass_shader, "r_View", packet->view_matrix._data);
         renderer_upload_uniform_float4x4(&render_state->pre_pass_shader, "r_Projection", packet->projection_matrix._data);
         laml::Vec3 color(1.0f, 0.0f, 1.0f);
-        renderer_upload_uniform_float3(&render_state->pre_pass_shader, "u_AlbedoColor", color._data);
-        renderer_upload_uniform_float(&render_state->pre_pass_shader, "u_Metalness", 0.0f);
-        renderer_upload_uniform_float(&render_state->pre_pass_shader, "u_Roughness", 0.5f);
-        renderer_upload_uniform_float(&render_state->pre_pass_shader, "u_TextureScale", 1.0f);
-
-        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_AlbedoTexToggle", 1.0f);
-        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_NormalTexToggle", 0.0f);
-        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_MetalnessTexToggle", 0.0f);
-        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_RoughnessTexToggle", 0.0f);
-        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_AmbientTexToggle", 0.0f);
-        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_EmissiveTexToggle", 0.0f);
         renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_gammaCorrect", 1.0f);
 
+        backend->use_framebuffer(&render_state->gbuffer);
+        backend->clear_viewport(0, 0, 0, 0);
         for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
+            render_material* mat = &packet->commands[cmd_index].material;
+
+            renderer_upload_uniform_float3(&render_state->pre_pass_shader, "u_AlbedoColor", mat->DiffuseFactor._data);
+            renderer_upload_uniform_float( &render_state->pre_pass_shader, "u_Metalness", mat->MetallicFactor);
+            renderer_upload_uniform_float( &render_state->pre_pass_shader, "u_Roughness", mat->RoughnessFactor);
+            renderer_upload_uniform_float( &render_state->pre_pass_shader, "u_TextureScale", 1.0f);
+
+            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_AlbedoTexToggle",    (mat->flag & 0x02) ? 1.0f : 0.0f);
+            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_NormalTexToggle",    (mat->flag & 0x04) ? 1.0f : 0.0f);
+            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_MetalnessTexToggle", (mat->flag & 0x08) ? 1.0f : 0.0f);
+            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_RoughnessTexToggle", (mat->flag & 0x08) ? 1.0f : 0.0f);
+            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_AmbientTexToggle",   (mat->flag & 0x08) ? 1.0f : 0.0f);
+            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_EmissiveTexToggle",  (mat->flag & 0x10) ? 1.0f : 0.0f);
+
+            backend->bind_texture(mat->DiffuseTexture.handle, 0);
+            backend->bind_texture(mat->NormalTexture.handle, 1);
+            backend->bind_texture(mat->AMRTexture.handle, 2);
+            backend->bind_texture(mat->AMRTexture.handle, 3);
+            backend->bind_texture(mat->AMRTexture.handle, 4);
+            backend->bind_texture(mat->EmissiveTexture.handle, 5);
+
             renderer_upload_uniform_float4x4(&render_state->pre_pass_shader, "r_Transform", 
                                              packet->commands[cmd_index].model_matrix._data);
             renderer_draw_geometry(&packet->commands[cmd_index].geom);
         }
+
+        // draw quad to screen
+        backend->use_framebuffer(0);
+        backend->use_shader(&render_state->screen_present);
+
+        renderer_upload_uniform_int(&render_state->screen_present, "r_outputSwitch", render_state->current_shader_out);
+        renderer_upload_uniform_float(&render_state->screen_present, "r_toneMap", render_state->tone_map ? 1.0f : 0.0f);
+        renderer_upload_uniform_float(&render_state->screen_present, "r_gammaCorrect", render_state->gamma_correct ? 1.0f : 0.0f);
+
+        backend->bind_texture(render_state->gbuffer.attachments[0].handle, 0);
+        backend->bind_texture(render_state->gbuffer.attachments[1].handle, 1);
+        backend->bind_texture(render_state->gbuffer.attachments[2].handle, 2);
+        backend->bind_texture(render_state->gbuffer.attachments[3].handle, 3);
+        backend->bind_texture(render_state->gbuffer.attachments[4].handle, 6);
+
+        backend->disable_depth_test();
+        backend->clear_viewport(0.1f, 0.1f, 0.1f, 1.0f);
+        backend->draw_geometry(&render_state->screen_quad);
+        backend->enable_depth_test();
+        
 #endif
 
-        #if 1
+#if 0
         if (packet->draw_colliders) {
             // Render debug wireframes
             renderer_begin_wireframe();
@@ -340,8 +455,8 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
                 backend->set_highlight_mode(false);
             }
-            #endif
         }
+        #endif
 
         bool32 result = renderer_end_Frame(packet->delta_time);
 
