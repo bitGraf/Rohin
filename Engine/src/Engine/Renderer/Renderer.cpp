@@ -19,6 +19,7 @@ struct renderer_state {
 
     // simple render pass
     shader simple_shader;
+    render_texture_2D white_tex;
 
     // deferred pbr render pass
     shader pre_pass_shader;
@@ -63,6 +64,12 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
 
 bool32 renderer_create_pipeline() {
     Assert(render_state);
+
+    // load default textures
+    if (!resource_load_texture_file("Data/Images/white.png", &render_state->white_tex)) {
+        RH_FATAL("Could not load default textures");
+        return false;
+    }
 
     // setup simple shader
     //if (!resource_load_shader_file("Data/Shaders/simple.glsl", &render_state->simple_shader)) {
@@ -240,7 +247,7 @@ bool32 renderer_end_Frame(real32 delta_time) {
     return result;
 }
 
-#define SIMPLE_RENDER_PASS 0
+#define SIMPLE_RENDER_PASS 1
 bool32 renderer_draw_frame(render_packet* packet) {
     if (renderer_begin_Frame(packet->delta_time)) {
         // render all commands in the packet
@@ -255,8 +262,8 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
         laml::Mat4 proj_view = laml::mul(packet->projection_matrix, packet->view_matrix);
         renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_VP", proj_view._data);
-        laml::Vec4 color(1.0f, 1.0f, 1.0f, 1.0f);
-        renderer_upload_uniform_float4(&render_state->simple_shader, "u_color", color._data);
+        laml::Vec3 color(1.0f, 1.0f, 1.0f);
+        renderer_upload_uniform_float3(&render_state->simple_shader, "u_color", color._data);
 
         // draw world axis
         //renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
@@ -267,7 +274,16 @@ bool32 renderer_draw_frame(render_packet* packet) {
             renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
                                              packet->commands[cmd_index].model_matrix._data);
             //renderer_draw_geometry(&packet->commands[cmd_index].geom);
-            renderer_draw_geometry(&packet->commands[cmd_index].geom, &packet->commands[cmd_index].material);
+            render_material* mat = &packet->commands[cmd_index].material;
+
+            renderer_upload_uniform_float3(&render_state->simple_shader, "u_color", mat->DiffuseFactor._data);
+            if (mat->flag & 0x02) {
+                backend->bind_texture(mat->DiffuseTexture.handle, 0);
+            } else {
+                backend->bind_texture(render_state->white_tex.handle, 0);
+            }
+
+            renderer_draw_geometry(&packet->commands[cmd_index].geom);
         }
 #else
         renderer_use_shader(&render_state->pre_pass_shader);

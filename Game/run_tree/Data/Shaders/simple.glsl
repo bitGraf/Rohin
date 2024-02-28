@@ -27,8 +27,8 @@ layout (location = 0) out vec4 FragColor;
 in vec2 tex_coord;
 
 layout (location = 3) uniform sampler2D u_texture;
-layout (location = 4) uniform vec4 u_color;
+layout (location = 4) uniform vec3 u_color;
 
 void main() {
-    FragColor = texture(u_texture, tex_coord) * u_color;
+    FragColor = texture(u_texture, tex_coord) * vec4(u_color, 1.0);
 }

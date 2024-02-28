@@ -86,6 +86,14 @@ bool32 game_initialize(RohinApp* app) {
     //resource_load_mesh_file_for_level("Data/Models/garden.mesh", state->level_geom, &state->grid);
     //collision_grid_finalize(&state->trans_arena, &state->grid);
     resource_load_mesh("Data/Models/thingy.mesh", state->player_mesh);
+    for(uint32 n = 0; n < state->player_mesh->num_primitives; n++) {
+        RH_INFO("mat[%d]: flag = %d\n", n, state->player_mesh->materials[n].flag);
+        RH_INFO("         diffuse = [%.2f %.2f %.2f]\n", 
+            state->player_mesh->materials[n].DiffuseFactor.x,
+            state->player_mesh->materials[n].DiffuseFactor.y,
+            state->player_mesh->materials[n].DiffuseFactor.z);
+        RH_INFO("         tex_handle = %d\n", state->player_mesh->materials[n].DiffuseTexture.handle);
+    }
 
     state->missing_material.DiffuseFactor = laml::Vec3(1.0f);
     state->missing_material.NormalScale = 1.0f;
@@ -303,7 +311,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     state->player.position = new_position;
 
 
-    state->debug_camera.position = state->player.position - (forward * 2.0f) + (up * 3.0f);
+    state->debug_camera.position = state->player.position - (forward * 2.0f) + (up * 2.0f);
     laml::Mat3 camera_rot;
     laml::transform::create_transform_rotation(camera_rot, state->player.yaw, state->debug_camera.pitch, 0.0f);
     state->debug_camera.orientation = laml::transform::quat_from_mat(camera_rot);

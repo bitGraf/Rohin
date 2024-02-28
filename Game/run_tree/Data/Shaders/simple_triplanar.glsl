@@ -55,5 +55,5 @@ void main() {
     blend_weight = blend_weight / (blend_weight.x + blend_weight.y + blend_weight.z);
 
     vec4 triplanar_sample = diff_x*blend_weight.x + diff_y*blend_weight.y + diff_z*blend_weight.z;
-    FragColor = (triplanar_sample) * u_color;
+    FragColor = (triplanar_sample) * vec4(u_color, 1.0);
 }
