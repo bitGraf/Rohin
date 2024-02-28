@@ -85,14 +85,17 @@ bool32 game_initialize(RohinApp* app) {
     //collision_create_grid(&state->trans_arena, &state->grid, {25.0f, -0.1f, -5.0f}, 0.5f, 256, 16, 256);
     //resource_load_mesh_file_for_level("Data/Models/garden.mesh", state->level_geom, &state->grid);
     //collision_grid_finalize(&state->trans_arena, &state->grid);
-    resource_load_mesh("Data/Models/thingy.mesh", state->player_mesh);
+    resource_load_mesh("Data/Models/helmet.mesh", state->player_mesh);
     for(uint32 n = 0; n < state->player_mesh->num_primitives; n++) {
         RH_INFO("mat[%d]: flag = %d\n", n, state->player_mesh->materials[n].flag);
         RH_INFO("         diffuse = [%.2f %.2f %.2f]\n", 
             state->player_mesh->materials[n].DiffuseFactor.x,
             state->player_mesh->materials[n].DiffuseFactor.y,
             state->player_mesh->materials[n].DiffuseFactor.z);
-        RH_INFO("         tex_handle = %d\n", state->player_mesh->materials[n].DiffuseTexture.handle);
+        RH_INFO("         diffuse_tex =  %d\n", state->player_mesh->materials[n].DiffuseTexture.handle);
+        RH_INFO("         normal_tex =   %d\n", state->player_mesh->materials[n].NormalTexture.handle);
+        RH_INFO("         amr_tex =      %d\n", state->player_mesh->materials[n].AMRTexture.handle);
+        RH_INFO("         emissive_tex = %d\n", state->player_mesh->materials[n].EmissiveTexture.handle);
     }
 
     state->missing_material.DiffuseFactor = laml::Vec3(1.0f);
@@ -187,7 +190,8 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     // TODO: this is a silly way to go, why not just ypr->quat
     laml::Mat3 player_rot;
     laml::transform::create_transform_rotation(player_rot, state->player.yaw, 0.0f, 0.0f);
-    state->player.orientation = laml::transform::quat_from_mat(player_rot);
+    //state->player.orientation = laml::transform::quat_from_mat(player_rot);
+    state->player.orientation = laml::Quat(1.0f, 0.0f, 0.0f, 0.0f);
 
     laml::Vec3 right   =  player_rot._cols[0];
     laml::Vec3 up      =  player_rot._cols[1];
@@ -311,7 +315,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     state->player.position = new_position;
 
 
-    state->debug_camera.position = state->player.position - (forward * 2.0f) + (up * 2.0f);
+    state->debug_camera.position = state->player.position - (forward * 0.75f) + (up * 0.0f);
     laml::Mat3 camera_rot;
     laml::transform::create_transform_rotation(camera_rot, state->player.yaw, state->debug_camera.pitch, 0.0f);
     state->debug_camera.orientation = laml::transform::quat_from_mat(camera_rot);
