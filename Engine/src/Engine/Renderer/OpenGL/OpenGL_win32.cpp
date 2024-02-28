@@ -5,6 +5,17 @@
 
 #if RH_PLATFORM_WINDOWS
 
+#if defined(RH_COMPILE_OPENGL_4_4)
+    #define __DESIRED_GL_VERSION_MAJOR 4
+    #define __DESIRED_GL_VERSION_MINOR 4
+#elif defined(RH_COMPILE_OPENGL_4_3)
+    #define __DESIRED_GL_VERSION_MAJOR 4
+    #define __DESIRED_GL_VERSION_MINOR 3
+#else
+    #define __DESIRED_GL_VERSION_MAJOR 4
+    #define __DESIRED_GL_VERSION_MINOR 0
+#endif
+
 /******************************************************************************
     * WGL_ARB_extensions_string 
     * https://registry.khronos.org/OpenGL/extensions/ARB/WGL_ARB_extensions_string.txt
@@ -202,8 +213,8 @@ bool32 OpenGL_create_context() {
 
     // now create a higher-version context
     const int ARBContexAttrivbs[] = {
-        WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
-        WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+        WGL_CONTEXT_MAJOR_VERSION_ARB, __DESIRED_GL_VERSION_MAJOR,
+        WGL_CONTEXT_MINOR_VERSION_ARB, __DESIRED_GL_VERSION_MINOR,
         WGL_CONTEXT_FLAGS_ARB,         WGL_CONTEXT_DEBUG_BIT_ARB | WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
         WGL_CONTEXT_PROFILE_MASK_ARB,  WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
         0 // End

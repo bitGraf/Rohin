@@ -19,6 +19,7 @@
         https://glad.dav1d.de/#profile=core&language=c&specification=gl&loader=on&api=gl%3D4.3
 */
 
+#ifdef RH_COMPILE_OPENGL_4_3
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1543,3 +1544,8 @@ int gladLoadGLLoader(GLADloadproc load) {
 	return GLVersion.major != 0 || GLVersion.minor != 0;
 }
 
+#else
+	static void __dummy_func() {
+		// just so this tlu counts as having something in it
+	}
+#endif

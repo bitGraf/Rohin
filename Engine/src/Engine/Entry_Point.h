@@ -26,7 +26,7 @@ int main() {
     if (!start_rohin_engine(&app)) {
         RH_FATAL("Something went wrong! shutting down...");
         platform_shutdown();
-        platform_sleep(2500);
+        //platform_sleep(2500);
         return -3;
     }
 

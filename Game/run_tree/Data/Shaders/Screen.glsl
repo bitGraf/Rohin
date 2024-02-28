@@ -93,8 +93,14 @@ void main() {
         FragColor.rgb = pow(FragColor.rgb, vec3(1.0/gamma));
 }
 
+float linearize_depth(float d,float zNear,float zFar)
+{
+    float z_n = 2.0 * d - 1.0;
+    return 2.0 * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
+}
+
 float makeDepthPretty(float d) {
-    return d/15;
+    return linearize_depth(d, 0.1, 100.0);
 }
 
 // from http://www.adriancourreges.com/blog/2017/12/15/mgs-v-graphics-study/

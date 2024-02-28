@@ -4,16 +4,12 @@ layout (location = 0) in vec3 a_Position;
 layout (location = 1) in vec2 a_TexCoord;
 
 out vec2 texcoord;
-out vec3 viewRay;
-
-layout (location = 1) uniform mat4 r_Projection;
 
 void main() {
     vec4 position = vec4(a_Position.xy, 1.0, 1.0);
 	gl_Position = position;
 
 	texcoord = a_TexCoord;
-    viewRay = vec3(inverse(r_Projection) * position);
 }
 
 #type fragment
@@ -22,7 +18,6 @@ layout (location = 0) out vec4 out_Diffuse;
 layout (location = 1) out vec4 out_Specular;
 
 in vec2 texcoord;
-in vec3 viewRay;
 
 // Light => 6 uniform slots each
 struct Light {
@@ -34,6 +29,8 @@ struct Light {
 	float Outer;
 };
 
+layout (location = 1) uniform mat4 r_Projection;
+
 const int MAX_LIGHTS = 32;
 layout (location = 2) uniform Light r_pointLights[MAX_LIGHTS]; // 192 slots
 layout (location = 194) uniform Light r_spotLights[MAX_LIGHTS]; // 192 slots
@@ -42,7 +39,7 @@ layout (location = 386) uniform Light r_sun; // 6 slots
 layout (location = 392) uniform mat4 r_View;
 
 layout (location = 393) uniform sampler2D u_normal;
-layout (location = 394) uniform sampler2D u_distance;
+layout (location = 394) uniform sampler2D u_depth;
 layout (location = 395) uniform sampler2D u_amr;
 
 const vec3 FD = vec3(0.04);
@@ -65,16 +62,16 @@ PBRParameters m_Params;
 
 void Lighting(vec3 F0);
 void IBL(vec3 F0, vec3 R);
+vec3 FragPosFromDepth(float depth);
 
 void main() {
     vec4 amr_ = texture(u_amr, texcoord);
     m_Params.Metalness = amr_.g;
     m_Params.Roughness = max(amr_.b, 0.05);
     m_Params.Normal = normalize(texture(u_normal, texcoord).rgb);
-    float viewDistance = texture(u_distance, texcoord).r;
-    vec3 FragPos = normalize(viewRay) * viewDistance;
+    float depth = texture(u_depth, texcoord).r;
+	vec3 FragPos = FragPosFromDepth(depth);
     m_Params.View = normalize(-FragPos);
-    //m_Params.View = normalize(-viewRay);
     m_Params.NdotV = max(dot(m_Params.Normal, m_Params.View), 0.0);
     
     // Specular reflection vector
@@ -91,6 +88,19 @@ void main() {
 
     //vec3 worldPos = vec3(inverse(r_View) * vec4(FragPos, 1));
     //out_Diffuse = vec4(worldPos, 1);
+}
+
+// reconstruct view-space frag position from depth buffer
+vec3 FragPosFromDepth(float depth) {
+    float z = depth * 2.0 - 1.0;
+
+    vec4 clipSpacePosition = vec4(texcoord * 2.0 - 1.0, z, 1.0);
+    vec4 viewSpacePosition = inverse(r_Projection) * clipSpacePosition;
+
+    // Perspective division
+    viewSpacePosition /= viewSpacePosition.w;
+
+    return viewSpacePosition.xyz;
 }
 
 // GGX/Towbridge-Reitz normal distribution function.

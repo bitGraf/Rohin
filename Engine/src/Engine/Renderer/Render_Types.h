@@ -77,6 +77,7 @@ struct renderer_api {
 
     virtual void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) = 0;
     virtual void clear_viewport(real32 r, real32 g, real32 b, real32 a) = 0;
+    virtual void clear_framebuffer_attachment(frame_buffer_attachment* attach, real32 r, real32 g, real32 b, real32 a) = 0;
 
     // uniforms
     virtual void upload_uniform_float( shader* shader_prog, const char* uniform_name, float  value) = 0;

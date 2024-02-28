@@ -611,6 +611,14 @@ void OpenGL_api::clear_viewport(real32 r, real32 g, real32 b, real32 a) {
     glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
+void OpenGL_api::clear_framebuffer_attachment(frame_buffer_attachment *attach, real32 r, real32 b, real32 g, real32 a) {
+    #if defined(RH_COMPILE_OPENGL_4_4)
+        float color[] = {r, g, b, a};
+        glClearTexImage(attach->handle, 0, GL_RGBA, GL_FLOAT, color);
+    #else
+        // not defined...
+    #endif
+}
 
 
 void OpenGL_api::upload_uniform_float(shader* shader_prog, const char* uniform_name, float  value) {

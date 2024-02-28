@@ -34,11 +34,11 @@ void main() {
 #type fragment
 #version 430 core
 
-layout (location = 0) out vec4 out_Albedo; //RGBA8
-layout (location = 1) out vec4 out_Normal; //RGBA16F
-layout (location = 2) out vec4 out_AMR;    //RGBA8
-layout (location = 3) out vec4 out_Depth;  //R32F
-layout (location = 4) out vec4 out_Emissive;  //RGBA8
+layout (location = 0) out vec4 out_Albedo;   //RGBA8
+layout (location = 1) out vec4 out_Normal;   //RGBA16F
+layout (location = 2) out vec4 out_AMR;      //RGBA8
+layout (location = 3) out vec4 out_Emissive; //RGBA8
+layout (location = 4) out vec4 out_Depth;    //RGBA32F
 
 // from vertex shader
 in VertexOutput {
@@ -110,6 +110,7 @@ void main()
     out_Albedo = vec4(Albedo, 1);
 	out_Normal = vec4(Normal, 1);
     out_AMR = vec4(Ambient, Metalness, Roughness, 1);
-    out_Depth = vec4(length(vs_Input.Position.xyz), 0, 0, 1);
+    //out_Depth = vec4(length(vs_Input.Position.xyz), 0, 0, 1);
+    out_Depth = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);
     out_Emissive = vec4(Emissive, 1);
 }
