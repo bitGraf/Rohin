@@ -9,13 +9,30 @@ if EXIST ../ctime %cd%/../ctime/ctime.exe -begin Tools/build_time.ctm
 
 set StopBuild=0
 
-rem build the dynamic game-code dll
-rem not doing this feature yet!
-rem pushd GameCode
-rem call build.bat
-rem popd
-rem set LastError=%ERRORLEVEL%
-rem IF %ERRORLEVEL% NEQ 0 (echo Error:%ERRORLEVEL% && set StopBuild=1)
+pushd Tools\shader_tool
+call build.bat
+popd
+set LastError=!ERRORLEVEL!
+if !ERRORLEVEL! NEQ 0 (
+    echo Error:!ERRORLEVEL!
+    set StopBuild=1
+    echo Stopping build!
+) else (
+    echo Shader tool built succesfully! Generating Engine ShaderSrc
+    Tools\shader_tool\bin\shader_tool.exe Game\run_tree\Data\Shaders\ Engine\src\Engine\Renderer\ShaderSrc\shaders_generated -quiet
+)
+
+rem if !StopBuild! NEQ 1 (
+rem     pushd GameCode
+rem     call build.bat
+rem     popd
+rem     set LastError=!ERRORLEVEL!
+rem     if !ERRORLEVEL! NEQ 0 (
+rem         echo Error:!ERRORLEVEL!
+rem         set StopBuild=1
+rem         echo Stopping build!
+rem     )
+rem )
 
 if !StopBuild! NEQ 1 (
     pushd Engine

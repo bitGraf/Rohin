@@ -155,7 +155,7 @@ static int CountUniforms(char* Line) {
 
 static int GetCustomSize(char* Type, size_t Length, bool* Success) {
     if (StringContainsStringWithinLength(Type, "Light",   Length)) { 
-        printf("  Detected struct uniform: %s [assuming size=%d]\n", Type, 6);
+        //printf("  Detected struct uniform: %s [assuming size=%d]\n", Type, 6);
         //printf("    You should verify this to be sure\n");
         return 6; 
     }
@@ -192,7 +192,7 @@ static size_t FindNameLength(char* Name) {
 }
 
 static std::vector<shader_definition> ShaderList;
-static bool ProcessShaderFile(char* Buffer, int BytesRead, char* ShaderName) {
+static bool ProcessShaderFile(char* Buffer, int BytesRead, char* ShaderName, bool verbose) {
     shader_definition Shader = {};
     strcpy(Shader.Name, ShaderName);
 
@@ -266,8 +266,8 @@ static void AddToErrorList(char* cFileName) {
     CurrentFileIndex++;
 }
 
-static void OpenShaderFile(char* FullPath, char* cFileName) {
-    printf("Processing Shader: %-20s [%s]\n", cFileName, FullPath);
+static void OpenShaderFile(char* FullPath, char* cFileName, bool verbose) {
+    printf("   Processing Shader: %-24s [%s]\n", cFileName, FullPath);
 
     HANDLE FileHandle = CreateFileA(FullPath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (FileHandle != INVALID_HANDLE_VALUE) {
@@ -284,7 +284,7 @@ static void OpenShaderFile(char* FullPath, char* cFileName) {
                 if (ReadFile(FileHandle, Buffer, (DWORD)FileSizeBytes.QuadPart, &BytesRead, NULL)) {
                     ((char*)Buffer)[BytesRead] = 0;
                     // read the entire file into a buffer
-                    if (!ProcessShaderFile((char*)Buffer, BytesRead, cFileName)) {
+                    if (!ProcessShaderFile((char*)Buffer, BytesRead, cFileName, verbose)) {
                         printf("Error processing file\n");
                         AddToErrorList(cFileName);
                     }
@@ -309,16 +309,29 @@ static void OpenShaderFile(char* FullPath, char* cFileName) {
 }
 
 static void 
-ProcessCommandLine(int argc, char** argv, char* PathToShaderDir, char* OutputCodePath) {
+ProcessCommandLine(int argc, char** argv, char* PathToShaderDir, char* OutputCodePath, bool* verbose) {
+    *verbose = true;
     if (argc == 1) {
         // run with no args
-        char DefaultPathToShaders[] = "Game/run_tree/Data/Shaders/*";
-        char DefaultPathToOutputCode[] = "Tools/shader_tool/out/shaders_generated.cpp";
+        char DefaultPathToShaders[] = "../../../Game/run_tree/Data/Shaders/*";
+        char DefaultPathToOutputCode[] = "shaders_generated";
         strcpy(PathToShaderDir, DefaultPathToShaders);
         strcpy(OutputCodePath, DefaultPathToOutputCode);
     } else if (argc == 3) {
         // Tools/shader_tool/unity_build/shader_tool.exe Game/run_tree/Data/Shaders/ Game/src/ShaderSrc/shaders_generated.cpp
         // Tools/shader_tool/unity_build/shader_tool.exe Game/run_tree/Data/Shaders/ Game/src/ShaderSrc/shaders_generated.cpp
+        strcpy(PathToShaderDir, argv[1]);
+        strcpy(OutputCodePath, argv[2]);
+
+        size_t path_length = StringLength(PathToShaderDir);
+        if (PathToShaderDir[path_length] != '*') {
+            PathToShaderDir[path_length+1] = '*';
+        }
+    } else if (argc == 4) {
+        if (strcmp(argv[3], "-quiet")==0) {
+            *verbose = false;
+        }
+
         strcpy(PathToShaderDir, argv[1]);
         strcpy(OutputCodePath, argv[2]);
 
@@ -334,18 +347,25 @@ ProcessCommandLine(int argc, char** argv, char* PathToShaderDir, char* OutputCod
     }
 }
 
+DWORD WriteShaderHeaderFile(shader_definition Shader, char* ShaderStructBuffer, int bufsize, bool verbose);
+DWORD WriteShaderSourceFile(shader_definition Shader, char* ShaderStructBuffer, int bufsize, bool verbose);
+
+void WriteHeaderFile(char* Filename, bool verbose);
+void WriteSourceFile(char* Filename, bool verbose);
+
 int main(int argc, char** argv) {
-    system("cd");
+    //system("cd");
     //HINSTANCE Instance = GetModuleHandleA(NULL);
     //LPSTR CommandLine = GetCommandLineA();
     //printf("Run with command line: [%s]\n", CommandLine);
-    printf("Command line args:\n");
-    for (int n = 0; n < argc; n++) {
-        printf(" argv[%d] = %s\n", n, argv[n]);
-    }
+    //printf("Command line args:\n");
+    //for (int n = 0; n < argc; n++) {
+    //    printf(" argv[%d] = %s\n", n, argv[n]);
+    //}
     char PathToShaders[256] = { 0 };
     char OutputCodePath[256] = { 0 };
-    ProcessCommandLine(argc, argv, PathToShaders, OutputCodePath);
+    bool verbose;
+    ProcessCommandLine(argc, argv, PathToShaders, OutputCodePath, &verbose);
     if ((!PathToShaders[0]) || (!OutputCodePath[0])) {
         return -1;
     }
@@ -377,9 +397,11 @@ int main(int argc, char** argv) {
                     FullPath[n++] = ffd.cFileName[i];
                 }
 
-                OpenShaderFile(FullPath, ffd.cFileName);
-                printf("================================================\n");
-                printf("\n");
+                OpenShaderFile(FullPath, ffd.cFileName, verbose);
+                if (verbose) {
+                    printf("================================================\n");
+                    printf("\n");
+                }
             }
         }
     } while (FindNextFileA(hFind, &ffd) != 0);
@@ -393,109 +415,212 @@ int main(int argc, char** argv) {
             printf("Failed file: %s\n", FailedFiles[n]);
         }
     } else {
-        printf("\n Success! 0 files failed. \n");
+        printf("Success! 0 files failed. \n");
 
-        HANDLE FileHandle = CreateFileA(OutputCodePath, 
+        // Write header
+        char Headerpath[256] = {0};
+        snprintf(Headerpath, 256, "%s.h", OutputCodePath);
+        WriteHeaderFile(Headerpath, verbose);
+
+        // Write source
+        char Sourcepath[256] = {0};
+        snprintf(Sourcepath, 256, "%s.cpp", OutputCodePath);
+        WriteSourceFile(Sourcepath, verbose);
+    }
+
+    //system("pause");
+    return 0;
+}
+
+// Header File ///////////////////////////////////////////////////
+void WriteHeaderFile(char* headerpath, bool verbose) {
+    HANDLE FileHandle = CreateFileA(headerpath, 
                                         GENERIC_WRITE, FILE_SHARE_READ, NULL, 
                                         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (FileHandle) {
+    if (FileHandle) {
 
-            printf("Generating c++ code into %s\n\n", OutputCodePath);
+        printf("Generating c++ code into %s\n", headerpath);
 
-            char DateString[256] = { 0 };
-            GetDateFormatA(LOCALE_USER_DEFAULT, DATE_LONGDATE, NULL, NULL, DateString, sizeof(DateString));
+        char DateString[256] = { 0 };
+        GetDateFormatA(LOCALE_USER_DEFAULT, DATE_LONGDATE, NULL, NULL, DateString, sizeof(DateString));
 
-            char EXEFilename[256] = { 0 };
-            GetModuleFileNameA(NULL, EXEFilename, sizeof(EXEFilename));
+        char EXEFilename[256] = { 0 };
+        GetModuleFileNameA(NULL, EXEFilename, sizeof(EXEFilename));
 
-            char HeaderBuffer[1024] = {0};
-            DWORD HeaderBytesWritten = 0;
-            DWORD ActBytesWritten;
+        char HeaderBuffer[1024] = {0};
+        DWORD HeaderBytesWritten = 0;
+        DWORD ActBytesWritten;
 
-            HeaderBytesWritten += wsprintfA(HeaderBuffer, "// Code generated by %s on %s\n", EXEFilename, DateString);
-            WriteFile(FileHandle, HeaderBuffer, HeaderBytesWritten, &ActBytesWritten, NULL);
+        //HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "// Code generated by %s on %s\n", EXEFilename, DateString);
+        HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "// Code generated by %s\n", EXEFilename);
+        HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "#ifndef __SHADERS_GENERATED_H__\n");
+        HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "#define __SHADERS_GENERATED_H__\n");
+        HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "\n#include \"Engine/Defines.h\"\n");
+        HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "\n#include \"Engine/Renderer/ShaderSrc/ShaderSrc.h\"\n");
+        //HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "\nstruct ShaderUniform {\n");
+        //HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "    uint32 Location;\n");
+        //HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "};\n\n");
+        HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "\n");
+        WriteFile(FileHandle, HeaderBuffer, HeaderBytesWritten, &ActBytesWritten, NULL);
 
-            for (int n = 0; n < ShaderList.size(); n++) {
-                shader_definition Shader = ShaderList[n];
+        for (int n = 0; n < ShaderList.size(); n++) {
+            shader_definition Shader = ShaderList[n];
 
-                printf("%s...", Shader.Name);
-                char* period = FindFirstOf(Shader.Name, '.');
-                *period = 0;
+            char ShaderStructBuffer[4096] = { 0 };
+            DWORD bytesWritten = WriteShaderHeaderFile(ShaderList[n], ShaderStructBuffer, 4096, verbose);
 
-                char ShaderStructBuffer[4096] = { 0 };
-                DWORD bytesWritten = 0;
-                bytesWritten += wsprintfA(ShaderStructBuffer, "struct shader_%s {\n    uint32 Handle;\n\n", Shader.Name);
-                for (int u = 0; u < Shader.Uniforms.size(); u++) {
-                    uniform_definition Uniform = Shader.Uniforms[u];
-
-                    if (Uniform.Count > 1) {
-                        bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    ShaderUniform_%s %s[%d];\n", Uniform.Type, Uniform.Name, Uniform.Count);
-                        //printf("    ShaderUniform_%s %s[%d];\n", Uniform.Type, Uniform.Name, Uniform.Count);
-                    } else {
-                        bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    ShaderUniform_%s %s;\n", Uniform.Type, Uniform.Name);
-                        //printf("      ShaderUniform_%s %s;\n", Uniform.Type, Uniform.Name);
-                    }
-                }
-
-                // write init function
-                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "\n    void InitShaderLocs() {\n");
-                for (int u = 0; u < Shader.Uniforms.size(); u++) {
-                    uniform_definition Uniform = Shader.Uniforms[u];
-
-                    if (Uniform.Count > 1) {
-                        bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        for (int n = 0; n < %d; n++) {\n", Uniform.Count);
-                        if (Uniform.SimpleType) {
-                            bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "            %s[n].Location = %d+n;\n", Uniform.Name, Uniform.Location);
-                        } else {
-                            if (StringMatch(Uniform.Type, "Light")) {
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "            %s[n].Position.Location = %d+(n*%d);\n",  Uniform.Name, Uniform.Location+0, Uniform.Size);
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "            %s[n].Direction.Location = %d+(n*%d);\n", Uniform.Name, Uniform.Location+1, Uniform.Size);
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "            %s[n].Color.Location = %d+(n*%d);\n",     Uniform.Name, Uniform.Location+2, Uniform.Size);
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "            %s[n].Strength.Location = %d+(n*%d);\n",  Uniform.Name, Uniform.Location+3, Uniform.Size);
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "            %s[n].Inner.Location = %d+(n*%d);\n",     Uniform.Name, Uniform.Location+4, Uniform.Size);
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "            %s[n].Outer.Location = %d+(n*%d);\n",     Uniform.Name, Uniform.Location+5, Uniform.Size);
-                            } else {
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "            %s[n].{}.Location = %d+n;\n", Uniform.Name, Uniform.Location);
-                            }
-                        }
-                        bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        }\n", Uniform.Count);
-                        //bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    ShaderUniform_%s %s[%d];\n", Uniform.Type, Uniform.Name, Uniform.Count);
-                    } else {
-                        if (Uniform.SimpleType) {
-                            bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s.Location = %d;\n", Uniform.Name, Uniform.Location);
-                        } else {
-                            if (StringMatch(Uniform.Type, "Light")) {
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s.Position.Location = %d;\n",  Uniform.Name, Uniform.Location+0);
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s.Direction.Location = %d;\n", Uniform.Name, Uniform.Location+1);
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s.Color.Location = %d;\n",     Uniform.Name, Uniform.Location+2);
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s.Strength.Location = %d;\n",  Uniform.Name, Uniform.Location+3);
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s.Inner.Location = %d;\n",     Uniform.Name, Uniform.Location+4);
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s.Outer.Location = %d;\n",     Uniform.Name, Uniform.Location+5);
-                            } else {
-                                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s.{}.Location = %d;\n", Uniform.Name, Uniform.Location);
-                            }
-                        }
-                    }
-                }
-                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    }\n");
-
-                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "};\n");
-                //printf("};\n");
-
-                WriteFile(FileHandle, ShaderStructBuffer, bytesWritten, &ActBytesWritten, NULL);
-                if (ActBytesWritten != bytesWritten) {
-                    printf("whyyyy\n");
-                }
-
-                printf("Done.\n");
+            WriteFile(FileHandle, ShaderStructBuffer, bytesWritten, &ActBytesWritten, NULL);
+            if (ActBytesWritten != bytesWritten) {
+                printf("whyyyy\n");
             }
+        }
 
-            CloseHandle(FileHandle);
+        char FooterBuffer[1024] = {0};
+        DWORD FooterBytesWritten = 0;
+        DWORD FooterActBytesWritten = 0;
+        FooterBytesWritten += wsprintfA(FooterBuffer+FooterBytesWritten, "#endif // __SHADERS_GENERATED_H__\n");
+        FooterBytesWritten += wsprintfA(FooterBuffer+FooterBytesWritten, "// End of codegen\n");
+        WriteFile(FileHandle, FooterBuffer, FooterBytesWritten, &FooterActBytesWritten, NULL);
+
+        CloseHandle(FileHandle);
+    } else {
+        printf("!!!!! Failed to open output file!\n !!!!!");
+    }
+}
+
+DWORD WriteShaderHeaderFile(shader_definition Shader, char* ShaderStructBuffer, int bufsize, bool verbose) {
+    if (verbose)
+        printf("%s...", Shader.Name);
+    char* period = FindFirstOf(Shader.Name, '.');
+    *period = 0;
+
+    DWORD bytesWritten = 0;
+    bytesWritten += wsprintfA(ShaderStructBuffer, "struct shader_%s {\n    uint32 Handle;\n\n", Shader.Name);
+    for (int u = 0; u < Shader.Uniforms.size(); u++) {
+        uniform_definition Uniform = Shader.Uniforms[u];
+
+        if (Uniform.Count > 1) {
+            bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    ShaderUniform_%s %s[%d];\n", Uniform.Type, Uniform.Name, Uniform.Count);
+            //bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    ShaderUniform %s[%d];\n", Uniform.Name, Uniform.Count);
         } else {
-            printf("!!!!! Failed to open output file!\n !!!!!");
+            bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    ShaderUniform_%s %s;\n", Uniform.Type, Uniform.Name);
+            //bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    ShaderUniform %s;\n", Uniform.Name);
         }
     }
 
-    system("pause");
-    return 0;
+    // write init function
+    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "\n    void InitShaderLocs();\n");
+
+    // End struct
+    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "};\n");
+
+    if (verbose)
+        printf("Done.\n");
+
+    return bytesWritten;
+}
+
+
+// Source File ///////////////////////////////////////////////////
+void WriteSourceFile(char* Sourcepath, bool verbose) {
+    HANDLE FileHandle = CreateFileA(Sourcepath, 
+                                        GENERIC_WRITE, FILE_SHARE_READ, NULL, 
+                                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (FileHandle) {
+
+        printf("Generating c++ code into %s\n", Sourcepath);
+
+        char DateString[256] = { 0 };
+        GetDateFormatA(LOCALE_USER_DEFAULT, DATE_LONGDATE, NULL, NULL, DateString, sizeof(DateString));
+
+        char EXEFilename[256] = { 0 };
+        GetModuleFileNameA(NULL, EXEFilename, sizeof(EXEFilename));
+
+        char HeaderBuffer[1024] = {0};
+        DWORD HeaderBytesWritten = 0;
+        DWORD ActBytesWritten;
+
+        //HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "// Code generated by %s on %s\n", EXEFilename, DateString);
+        HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "// Code generated by %s\n", EXEFilename);
+        HeaderBytesWritten += wsprintfA(HeaderBuffer+HeaderBytesWritten, "#include \"./shaders_generated.h\"\n\n");
+        WriteFile(FileHandle, HeaderBuffer, HeaderBytesWritten, &ActBytesWritten, NULL);
+
+        for (int n = 0; n < ShaderList.size(); n++) {
+            shader_definition Shader = ShaderList[n];
+
+            char ShaderStructBuffer[4096] = { 0 };
+            DWORD bytesWritten = WriteShaderSourceFile(ShaderList[n], ShaderStructBuffer, 4096, verbose);
+
+            WriteFile(FileHandle, ShaderStructBuffer, bytesWritten, &ActBytesWritten, NULL);
+            if (ActBytesWritten != bytesWritten) {
+                printf("whyyyy\n");
+            }
+        }
+
+        char FooterBuffer[1024] = {0};
+        DWORD FooterBytesWritten = 0;
+        DWORD FooterActBytesWritten = 0;
+        FooterBytesWritten += wsprintfA(FooterBuffer+FooterBytesWritten, "// End of codegen\n");
+        WriteFile(FileHandle, FooterBuffer, FooterBytesWritten, &FooterActBytesWritten, NULL);
+
+        CloseHandle(FileHandle);
+    } else {
+        printf("!!!!! Failed to open output file!\n !!!!!");
+    }
+}
+
+DWORD WriteShaderSourceFile(shader_definition Shader, char* ShaderStructBuffer, int bufsize, bool verbose) {
+    if (verbose)
+        printf("%s...", Shader.Name);
+    char* period = FindFirstOf(Shader.Name, '.');
+    *period = 0;
+
+    DWORD bytesWritten = 0;
+
+    // write init function
+    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "void shader_%s::InitShaderLocs() {\n", Shader.Name);
+    for (int u = 0; u < Shader.Uniforms.size(); u++) {
+        uniform_definition Uniform = Shader.Uniforms[u];
+
+        if (Uniform.Count > 1) {
+            bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    for (int n = 0; n < %d; n++) {\n", Uniform.Count);
+            if (Uniform.SimpleType) {
+                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s[n].Location = %d+n;\n", Uniform.Name, Uniform.Location);
+            } else {
+                if (StringMatch(Uniform.Type, "Light")) {
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s[n].Position.Location = %d+(n*%d);\n",  Uniform.Name, Uniform.Location+0, Uniform.Size);
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s[n].Direction.Location = %d+(n*%d);\n", Uniform.Name, Uniform.Location+1, Uniform.Size);
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s[n].Color.Location = %d+(n*%d);\n",     Uniform.Name, Uniform.Location+2, Uniform.Size);
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s[n].Strength.Location = %d+(n*%d);\n",  Uniform.Name, Uniform.Location+3, Uniform.Size);
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s[n].Inner.Location = %d+(n*%d);\n",     Uniform.Name, Uniform.Location+4, Uniform.Size);
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s[n].Outer.Location = %d+(n*%d);\n",     Uniform.Name, Uniform.Location+5, Uniform.Size);
+                } else {
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s[n].{}.Location = %d+n;\n", Uniform.Name, Uniform.Location);
+                }
+            }
+            bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    }\n", Uniform.Count);
+            //bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    ShaderUniform_%s %s[%d];\n", Uniform.Type, Uniform.Name, Uniform.Count);
+        } else {
+            if (Uniform.SimpleType) {
+                bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    %s.Location = %d;\n", Uniform.Name, Uniform.Location);
+            } else {
+                if (StringMatch(Uniform.Type, "Light")) {
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    %s.Position.Location = %d;\n",  Uniform.Name, Uniform.Location+0);
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    %s.Direction.Location = %d;\n", Uniform.Name, Uniform.Location+1);
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    %s.Color.Location = %d;\n",     Uniform.Name, Uniform.Location+2);
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    %s.Strength.Location = %d;\n",  Uniform.Name, Uniform.Location+3);
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    %s.Inner.Location = %d;\n",     Uniform.Name, Uniform.Location+4);
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    %s.Outer.Location = %d;\n",     Uniform.Name, Uniform.Location+5);
+                } else {
+                    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    %s.{}.Location = %d;\n", Uniform.Name, Uniform.Location);
+                }
+            }
+        }
+    }
+    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "}\n");
+
+    if (verbose)
+        printf("Done.\n");
+
+    return bytesWritten;
 }
