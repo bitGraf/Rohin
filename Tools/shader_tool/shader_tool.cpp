@@ -7,11 +7,7 @@ static int CurrentFileIndex;
 static char FailedFiles[256][64];
 
 static size_t StringLength(char* String) {
-    size_t length = 0;
-    for (char* Scan = String; *Scan; Scan++) {
-        length = (Scan - String);
-    }
-    return length;
+    return strlen(String);
 }
 
 static char* FindLastOf(char* String, char Token) {
@@ -172,12 +168,20 @@ struct uniform_definition {
     int Count;
     int Location;
     bool SimpleType;
+
+    int SamplerID;
+};
+
+struct shader_output {
+    int Location;
+    char Name[64];
 };
 
 struct shader_definition {
     char Name[256];
 
     std::vector<uniform_definition> Uniforms;
+    std::vector<shader_output> Outputs;
 };
 
 static size_t FindNameLength(char* Name) {
@@ -201,6 +205,7 @@ static bool ProcessShaderFile(char* Buffer, int BytesRead, char* ShaderName, boo
     int CurrLocation = 1;
     char* Line = Buffer;
     char* NextLine = 0;
+    int next_sampler_ID = 0;
     do {
         NextLine = GetLine(Line, &BytesRead);
 
@@ -230,6 +235,14 @@ static bool ProcessShaderFile(char* Buffer, int BytesRead, char* ShaderName, boo
             }
             int LocationAdvance = LocationSize * LocationCount;
 
+            // if its a sampler, note its ID
+            int samplerID = 0;
+            if (StringContainsStringWithinLength(UniformTypeString, "sampler2D",   UniformTypeStringLength) || 
+                StringContainsStringWithinLength(UniformTypeString, "samplerCube", UniformTypeStringLength)) { 
+                samplerID = next_sampler_ID;
+                next_sampler_ID++;
+            }
+
             char* UniformName = UniformTypeString + UniformTypeStringLength;
             UniformName = FindFirstWhitespace(UniformName)+1;
             size_t UniformNameLength = FindNameLength(UniformName);
@@ -240,6 +253,7 @@ static bool ProcessShaderFile(char* Buffer, int BytesRead, char* ShaderName, boo
             Uniform.Count = LocationCount;
             Uniform.Location = LocationID;
             Uniform.Size = LocationSize;
+            Uniform.SamplerID = samplerID;
             if (LocationSize == 1) {
                 Uniform.SimpleType = true;
             } else {
@@ -249,6 +263,32 @@ static bool ProcessShaderFile(char* Buffer, int BytesRead, char* ShaderName, boo
             Shader.Uniforms.push_back(Uniform);
 
             CurrLocation += LocationAdvance;
+        }
+
+        if (StringContainsString(Line, "layout") && 
+            StringContainsString(Line, "location") && 
+            StringContainsString(Line, " out ")) {
+            shader_output out = {};
+
+            char* LocationIDString = EatWhiteSpace(FindFirstOf(Line, '=')+1);
+            size_t LocationIDStringLength = (FindFirstOf(LocationIDString, ')') - LocationIDString);
+            int LocationID = ReadIntFromString(LocationIDString, LocationIDStringLength);
+
+            out.Location = LocationID;
+
+            //printf("line: [%s]\n", Line);
+            char* eol = FindLastOf(Line, ';');
+            //printf("last ;: [%s]\n", eol);
+            *eol = 0;
+            //printf("line: %s\n", Line);
+            char* out_name = FindLastOf(Line, ' ')+1;
+
+            strcpy(out.Name, out_name);
+
+            if (verbose)
+                printf("Output [%s: %d]\n", out.Name, out.Location);
+
+            Shader.Outputs.push_back(out);
         }
 
         // advance
@@ -324,8 +364,8 @@ ProcessCommandLine(int argc, char** argv, char* PathToShaderDir, char* OutputCod
         strcpy(OutputCodePath, argv[2]);
 
         size_t path_length = StringLength(PathToShaderDir);
-        if (PathToShaderDir[path_length] != '*') {
-            PathToShaderDir[path_length+1] = '*';
+        if (PathToShaderDir[path_length-1] != '*') {
+            PathToShaderDir[path_length] = '*';
         }
     } else if (argc == 4) {
         if (strcmp(argv[3], "-quiet")==0) {
@@ -336,8 +376,8 @@ ProcessCommandLine(int argc, char** argv, char* PathToShaderDir, char* OutputCod
         strcpy(OutputCodePath, argv[2]);
 
         size_t path_length = StringLength(PathToShaderDir);
-        if (PathToShaderDir[path_length] != '*') {
-            PathToShaderDir[path_length+1] = '*';
+        if (PathToShaderDir[path_length-1] != '*') {
+            PathToShaderDir[path_length] = '*';
         }
     } else {
         // idk man
@@ -388,11 +428,11 @@ int main(int argc, char** argv) {
             if (StringMatch(Extension, ".glsl")) {
                 char FullPath[MAX_PATH] = { 0 };
                 int n = 0;
-                size_t path_length = StringLength(PathToShaders);
+                size_t path_length = StringLength(PathToShaders)-1;
                 for (n = 0; n < path_length; n++) {
                     FullPath[n] = PathToShaders[n];
                 }
-                size_t name_len = StringLength(ffd.cFileName)+1;
+                size_t name_len = StringLength(ffd.cFileName);
                 for (int i = 0; i < name_len; i++) {
                     FullPath[n++] = ffd.cFileName[i];
                 }
@@ -495,6 +535,7 @@ DWORD WriteShaderHeaderFile(shader_definition Shader, char* ShaderStructBuffer, 
     *period = 0;
 
     DWORD bytesWritten = 0;
+    // write shdaer struct
     bytesWritten += wsprintfA(ShaderStructBuffer, "struct shader_%s {\n    uint32 Handle;\n\n", Shader.Name);
     for (int u = 0; u < Shader.Uniforms.size(); u++) {
         uniform_definition Uniform = Shader.Uniforms[u];
@@ -507,6 +548,14 @@ DWORD WriteShaderHeaderFile(shader_definition Shader, char* ShaderStructBuffer, 
             //bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    ShaderUniform %s;\n", Uniform.Name);
         }
     }
+    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "\n    struct {\n");
+    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        uint32 num_outputs;\n", Shader.Outputs.size());     
+    for (int o = 0; o < Shader.Outputs.size(); o++) {
+        shader_output Output = Shader.Outputs[o];
+
+        bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        uint32 %s;\n", Output.Name);        
+    }
+    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    } outputs;\n");
 
     // write init function
     bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "\n    void InitShaderLocs();\n");
@@ -579,6 +628,14 @@ DWORD WriteShaderSourceFile(shader_definition Shader, char* ShaderStructBuffer, 
 
     // write init function
     bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "void shader_%s::InitShaderLocs() {\n", Shader.Name);
+    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    outputs.num_outputs = %d;\n", Shader.Outputs.size());
+    for (int o = 0; o < Shader.Outputs.size(); o++) {
+        shader_output Output = Shader.Outputs[o];
+
+        bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    outputs.%s = %d;\n", Output.Name, Output.Location);
+    }
+    bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "\n");
+
     for (int u = 0; u < Shader.Uniforms.size(); u++) {
         uniform_definition Uniform = Shader.Uniforms[u];
 
@@ -615,6 +672,9 @@ DWORD WriteShaderSourceFile(shader_definition Shader, char* ShaderStructBuffer, 
                     bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    %s.{}.Location = %d;\n", Uniform.Name, Uniform.Location);
                 }
             }
+        }
+        if (StringMatch(Uniform.Type, "sampler2D") || StringMatch(Uniform.Type, "samplerCube")) {
+            bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    %s.SamplerID = %d;\n",     Uniform.Name, Uniform.SamplerID);
         }
     }
     bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "}\n");

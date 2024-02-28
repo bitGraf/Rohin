@@ -2,6 +2,10 @@
 #include "./shaders_generated.h"
 
 void shader_Lighting::InitShaderLocs() {
+    outputs.num_outputs = 2;
+    outputs.out_Diffuse = 0;
+    outputs.out_Specular = 1;
+
     r_Projection.Location = 1;
     for (int n = 0; n < 32; n++) {
         r_pointLights[n].Position.Location = 2+(n*6);
@@ -27,10 +31,16 @@ void shader_Lighting::InitShaderLocs() {
     r_sun.Outer.Location = 391;
     r_View.Location = 392;
     u_normal.Location = 393;
+    u_normal.SamplerID = 0;
     u_depth.Location = 394;
+    u_depth.SamplerID = 1;
     u_amr.Location = 395;
+    u_amr.SamplerID = 2;
 }
 void shader_Line::InitShaderLocs() {
+    outputs.num_outputs = 1;
+    outputs.FragColor = 0;
+
     r_VP.Location = 1;
     r_Transform.Location = 2;
     r_CamPos.Location = 3;
@@ -41,6 +51,8 @@ void shader_Line::InitShaderLocs() {
     r_LineFadeMinimum.Location = 8;
 }
 void shader_Line2D::InitShaderLocs() {
+    outputs.num_outputs = 0;
+
     for (int n = 0; n < 2; n++) {
         r_verts[n].Location = 1+n;
     }
@@ -48,6 +60,8 @@ void shader_Line2D::InitShaderLocs() {
     r_Color.Location = 4;
 }
 void shader_Line3D::InitShaderLocs() {
+    outputs.num_outputs = 0;
+
     for (int n = 0; n < 2; n++) {
         r_verts[n].Location = 1+n;
     }
@@ -56,15 +70,25 @@ void shader_Line3D::InitShaderLocs() {
     r_Color.Location = 5;
 }
 void shader_Mix::InitShaderLocs() {
+    outputs.num_outputs = 0;
+
     r_tex1.Location = 1;
+    r_tex1.SamplerID = 0;
     r_tex2.Location = 2;
+    r_tex2.SamplerID = 1;
     r_mixValue.Location = 3;
 }
 void shader_Normals::InitShaderLocs() {
+    outputs.num_outputs = 1;
+    outputs.FragColor = 0;
+
     r_Transform.Location = 1;
     r_VP.Location = 2;
 }
 void shader_PBR_static::InitShaderLocs() {
+    outputs.num_outputs = 1;
+    outputs.FragColor = 0;
+
     r_VP.Location = 1;
     r_Transform.Location = 2;
     for (int n = 0; n < 32; n++) {
@@ -91,9 +115,13 @@ void shader_PBR_static::InitShaderLocs() {
     r_sun.Outer.Location = 392;
     r_CamPos.Location = 393;
     u_AlbedoTexture.Location = 394;
+    u_AlbedoTexture.SamplerID = 0;
     u_NormalTexture.Location = 395;
+    u_NormalTexture.SamplerID = 1;
     u_MetalnessTexture.Location = 396;
+    u_MetalnessTexture.SamplerID = 2;
     u_RoughnessTexture.Location = 397;
+    u_RoughnessTexture.SamplerID = 3;
     u_AlbedoColor.Location = 398;
     u_Metalness.Location = 399;
     u_Roughness.Location = 400;
@@ -103,15 +131,28 @@ void shader_PBR_static::InitShaderLocs() {
     r_RoughnessTexToggle.Location = 404;
 }
 void shader_PrePass::InitShaderLocs() {
+    outputs.num_outputs = 5;
+    outputs.out_Albedo = 0;
+    outputs.out_Normal = 1;
+    outputs.out_AMR = 2;
+    outputs.out_Emissive = 3;
+    outputs.out_Depth = 4;
+
     r_Transform.Location = 1;
     r_View.Location = 2;
     r_Projection.Location = 3;
     u_AlbedoTexture.Location = 4;
+    u_AlbedoTexture.SamplerID = 0;
     u_NormalTexture.Location = 5;
+    u_NormalTexture.SamplerID = 1;
     u_MetalnessTexture.Location = 6;
+    u_MetalnessTexture.SamplerID = 2;
     u_RoughnessTexture.Location = 7;
+    u_RoughnessTexture.SamplerID = 3;
     u_AmbientTexture.Location = 8;
+    u_AmbientTexture.SamplerID = 4;
     u_EmissiveTexture.Location = 9;
+    u_EmissiveTexture.SamplerID = 5;
     u_AlbedoColor.Location = 10;
     u_Metalness.Location = 11;
     u_Roughness.Location = 12;
@@ -125,6 +166,13 @@ void shader_PrePass::InitShaderLocs() {
     r_gammaCorrect.Location = 20;
 }
 void shader_PrePass_Anim::InitShaderLocs() {
+    outputs.num_outputs = 5;
+    outputs.out_Albedo = 0;
+    outputs.out_Normal = 1;
+    outputs.out_AMR = 2;
+    outputs.out_Depth = 3;
+    outputs.out_Emissive = 4;
+
     for (int n = 0; n < 128; n++) {
         r_Bones[n].Location = 1+n;
     }
@@ -132,11 +180,17 @@ void shader_PrePass_Anim::InitShaderLocs() {
     r_View.Location = 130;
     r_Projection.Location = 131;
     u_AlbedoTexture.Location = 132;
+    u_AlbedoTexture.SamplerID = 0;
     u_NormalTexture.Location = 133;
+    u_NormalTexture.SamplerID = 1;
     u_MetalnessTexture.Location = 134;
+    u_MetalnessTexture.SamplerID = 2;
     u_RoughnessTexture.Location = 135;
+    u_RoughnessTexture.SamplerID = 3;
     u_AmbientTexture.Location = 136;
+    u_AmbientTexture.SamplerID = 4;
     u_EmissiveTexture.Location = 137;
+    u_EmissiveTexture.SamplerID = 5;
     u_AlbedoColor.Location = 138;
     u_Metalness.Location = 139;
     u_Roughness.Location = 140;
@@ -150,57 +204,96 @@ void shader_PrePass_Anim::InitShaderLocs() {
     r_gammaCorrect.Location = 148;
 }
 void shader_Screen::InitShaderLocs() {
+    outputs.num_outputs = 0;
+
     u_albedo.Location = 1;
+    u_albedo.SamplerID = 0;
     u_normal.Location = 2;
+    u_normal.SamplerID = 1;
     u_amr.Location = 3;
+    u_amr.SamplerID = 2;
     u_depth.Location = 4;
+    u_depth.SamplerID = 3;
     u_diffuse.Location = 5;
+    u_diffuse.SamplerID = 4;
     u_specular.Location = 6;
+    u_specular.SamplerID = 5;
     u_emissive.Location = 7;
+    u_emissive.SamplerID = 6;
     u_ssao.Location = 8;
+    u_ssao.SamplerID = 7;
     r_outputSwitch.Location = 9;
     r_toneMap.Location = 10;
     r_gammaCorrect.Location = 11;
 }
 void shader_simple::InitShaderLocs() {
+    outputs.num_outputs = 1;
+    outputs.FragColor = 0;
+
     r_VP.Location = 1;
     r_Transform.Location = 2;
     u_texture.Location = 3;
+    u_texture.SamplerID = 0;
     u_color.Location = 4;
 }
 void shader_Simple_static::InitShaderLocs() {
+    outputs.num_outputs = 1;
+    outputs.FragColor = 0;
+
     r_VP.Location = 1;
     r_Transform.Location = 2;
     u_texture.Location = 3;
+    u_texture.SamplerID = 0;
     u_color.Location = 4;
 }
 void shader_simple_triplanar::InitShaderLocs() {
+    outputs.num_outputs = 1;
+    outputs.FragColor = 0;
+
     r_VP.Location = 1;
     r_Transform.Location = 2;
     u_texture.Location = 3;
+    u_texture.SamplerID = 0;
     u_color.Location = 4;
 }
 void shader_Skybox::InitShaderLocs() {
+    outputs.num_outputs = 0;
+
     r_inverseVP.Location = 1;
     r_skybox.Location = 2;
+    r_skybox.SamplerID = 0;
 }
 void shader_Sobel::InitShaderLocs() {
+    outputs.num_outputs = 0;
+
     r_texture.Location = 1;
+    r_texture.SamplerID = 0;
 }
 void shader_Sprite::InitShaderLocs() {
+    outputs.num_outputs = 0;
+
     r_transform.Location = 1;
     r_transformUV.Location = 2;
     r_orthoProjection.Location = 3;
     r_spriteTex.Location = 4;
+    r_spriteTex.SamplerID = 0;
     r_textColor.Location = 5;
 }
 void shader_SSAO::InitShaderLocs() {
+    outputs.num_outputs = 1;
+    outputs.out_SSAO = 0;
+
     u_amr.Location = 1;
+    u_amr.SamplerID = 0;
 }
 void shader_wireframe::InitShaderLocs() {
+    outputs.num_outputs = 1;
+    outputs.FragColor = 0;
+
     r_VP.Location = 1;
     r_Transform.Location = 2;
     u_texture.Location = 3;
+    u_texture.SamplerID = 0;
     u_color.Location = 4;
 }
 // End of codegen

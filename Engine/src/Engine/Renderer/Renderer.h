@@ -62,13 +62,3 @@ void renderer_draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_
 void renderer_draw_geometry(render_geometry* geom, render_material* mat);
 void renderer_draw_geometry_lines(render_geometry* geom);
 void renderer_draw_geometry_points(render_geometry* geom);
-
-void renderer_upload_uniform_float( shader* shader_prog, const char* uniform_name, float  value);
-void renderer_upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values);
-void renderer_upload_uniform_float3(shader* shader_prog, const char* uniform_name, float* values);
-void renderer_upload_uniform_float4(shader* shader_prog, const char* uniform_name, float* values);
-void renderer_upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values);
-void renderer_upload_uniform_int( shader* shader_prog, const char* uniform_name, int  value);
-void renderer_upload_uniform_int2(shader* shader_prog, const char* uniform_name, int* values);
-void renderer_upload_uniform_int3(shader* shader_prog, const char* uniform_name, int* values);
-void renderer_upload_uniform_int4(shader* shader_prog, const char* uniform_name, int* values);

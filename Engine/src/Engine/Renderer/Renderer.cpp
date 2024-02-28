@@ -11,48 +11,12 @@
 
 #include "Engine/Collision/Collision.h"
 
+// include auto-generated shader source headers
+#include "Engine/Renderer/ShaderSrc/ShaderSrc.h"
+
 #include <stdarg.h>
 
-#define SIMPLE_RENDER_PASS 0
-
-// TODO: update shadertool to auto-generate these definitions
-#if SIMPLE_RENDER_PASS
-    #define SIMPLE_IN_ALBEDO     0
-#else
-// Prepass sampler IDs
-    #define PREPASS_IN_ALBEDO     0
-    #define PREPASS_IN_NORMAL     1
-    #define PREPASS_IN_METALNESS  2
-    #define PREPASS_IN_ROUGHNESS  3
-    #define PREPASS_IN_AMBIENT    4
-    #define PREPASS_IN_EMISSIVE   5
-
-    #define PREPASS_OUT_ALBEDO    0
-    #define PREPASS_OUT_NORMAL    1
-    #define PREPASS_OUT_AMR       2
-    #define PREPASS_OUT_EMISSIVE  3
-    #define PREPASS_OUT_DEPTH     4
-    #define PREPASS_NUM_OUTPUTS   5
-
-// Lighting sampler IDs
-    #define LIGHTING_IN_NORMAL    0
-    #define LIGHTING_IN_DISTANCE  1
-    #define LIGHTING_IN_AMR       2
-
-    #define LIGHTING_OUT_DIFFUSE  0
-    #define LIGHTING_OUT_SPECULAR 1
-    #define LIGHTING_NUM_OUTPUTS  2
-
-// ScreenPresent sampler IDs
-    #define SCREEN_IN_ALBEDO      0
-    #define SCREEN_IN_NORMAL      1
-    #define SCREEN_IN_AMR         2
-    #define SCREEN_IN_DEPTH       3
-    #define SCREEN_IN_DIFFUSE     4
-    #define SCREEN_IN_SPECULAR    5
-    #define SCREEN_IN_EMISSIVE    6
-    #define SCREEN_IN_SSAO        7
-#endif
+#define SIMPLE_RENDER_PASS 1
 
 struct renderer_state {
     uint32 render_width;
@@ -62,16 +26,17 @@ struct renderer_state {
     render_texture_2D black_tex;
 #if SIMPLE_RENDER_PASS
     // simple render pass
-    shader simple_shader;
+    //shader simple_shader;
+    shader_simple simple_shader;
 #else
     // deferred pbr render pass
-    shader pre_pass_shader;
+    shader_PrePass pre_pass_shader;
     frame_buffer gbuffer;
 
-    shader lighting_shader;
+    shader_Lighting lighting_shader;
     frame_buffer lbuffer;
 
-    shader screen_present;
+    shader_Screen screen_shader;
 #endif
 
     int32 current_shader_out;
@@ -124,32 +89,38 @@ bool32 renderer_create_pipeline() {
 
 #if SIMPLE_RENDER_PASS
     // setup simple shader
-    //if (!resource_load_shader_file("Data/Shaders/simple.glsl", &render_state->simple_shader)) {
-    if (!resource_load_shader_file("Data/Shaders/simple.glsl", &render_state->simple_shader)) {
+    shader* pSimple = (shader*)(&render_state->simple_shader);
+    shader_simple& simple = render_state->simple_shader;
+    if (!resource_load_shader_file("Data/Shaders/simple.glsl", pSimple)) {
         RH_FATAL("Could not setup the main shader");
         return false;
     }
-    renderer_use_shader(&render_state->simple_shader);
-    renderer_upload_uniform_int(&render_state->simple_shader, "u_texture", 0);
+    renderer_use_shader(pSimple);
+
+    simple.InitShaderLocs();
+    backend->upload_uniform_int(simple.u_texture, simple.u_texture.SamplerID);
 #else
     // setup prepass shader
-    if (!resource_load_shader_file("Data/Shaders/PrePass.glsl", &render_state->pre_pass_shader)) {
+    shader* pPrepass = (shader*)(&render_state->pre_pass_shader);
+    shader_PrePass& prepass = render_state->pre_pass_shader;
+    if (!resource_load_shader_file("Data/Shaders/PrePass.glsl", pPrepass)) {
         RH_FATAL("Could not setup the pre-pass shader");
         return false;
     }
-    renderer_use_shader(&render_state->pre_pass_shader);
-    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_AlbedoTexture",    PREPASS_IN_ALBEDO);
-    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_NormalTexture",    PREPASS_IN_NORMAL);
-    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_MetalnessTexture", PREPASS_IN_METALNESS);
-    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_RoughnessTexture", PREPASS_IN_ROUGHNESS);
-    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_AmbientTexture",   PREPASS_IN_AMBIENT);
-    renderer_upload_uniform_int(&render_state->pre_pass_shader, "u_EmissiveTexture",  PREPASS_IN_EMISSIVE);
+    renderer_use_shader(pPrepass);
+    prepass.InitShaderLocs();
+    backend->upload_uniform_int(prepass.u_AlbedoTexture,    prepass.u_AlbedoTexture.SamplerID);
+    backend->upload_uniform_int(prepass.u_NormalTexture,    prepass.u_NormalTexture.SamplerID);
+    backend->upload_uniform_int(prepass.u_MetalnessTexture, prepass.u_MetalnessTexture.SamplerID);
+    backend->upload_uniform_int(prepass.u_RoughnessTexture, prepass.u_RoughnessTexture.SamplerID);
+    backend->upload_uniform_int(prepass.u_AmbientTexture,   prepass.u_AmbientTexture.SamplerID);
+    backend->upload_uniform_int(prepass.u_EmissiveTexture,  prepass.u_EmissiveTexture.SamplerID);
     // create g-buffer
     laml::Vec4 black;
     laml::Vec4 white(1.0f);
     laml::Vec4 _dist(100.0f, 100.0f, 100.0f, 1.0f);
     {
-        frame_buffer_attachment attachments[PREPASS_NUM_OUTPUTS+1] = {
+        frame_buffer_attachment attachments[] = {
             { 0, frame_buffer_texture_format::RGBA8,   black }, // Albedo
             { 0, frame_buffer_texture_format::RGBA16F, black }, // View-space normal
             { 0, frame_buffer_texture_format::RGBA8,   black }, // Ambient/Metallic/Roughness
@@ -159,48 +130,54 @@ bool32 renderer_create_pipeline() {
         };
         render_state->gbuffer.width = render_state->render_width;
         render_state->gbuffer.height = render_state->render_height;
-        renderer_create_framebuffer(&render_state->gbuffer, PREPASS_NUM_OUTPUTS+1, attachments);
+        renderer_create_framebuffer(&render_state->gbuffer, prepass.outputs.num_outputs+1, attachments);
     }
 
     // Lighting pass
-    if (!resource_load_shader_file("Data/Shaders/Lighting.glsl", &render_state->lighting_shader)) {
+    shader* pLighting = (shader*)(&render_state->lighting_shader);
+    shader_Lighting& lighting = render_state->lighting_shader;
+    if (!resource_load_shader_file("Data/Shaders/Lighting.glsl", pLighting)) {
         RH_FATAL("Could not setup the PBR lighting pass shader");
         return false;
     }
-    renderer_use_shader(&render_state->lighting_shader);
-    renderer_upload_uniform_int(&render_state->lighting_shader, "u_normal",   LIGHTING_IN_NORMAL);
-    renderer_upload_uniform_int(&render_state->lighting_shader, "u_depth", LIGHTING_IN_DISTANCE);
-    renderer_upload_uniform_int(&render_state->lighting_shader, "u_amr",      LIGHTING_IN_AMR);
+    renderer_use_shader(pLighting);
+    lighting.InitShaderLocs();
+    backend->upload_uniform_int(lighting.u_normal, lighting.u_normal.SamplerID);
+    backend->upload_uniform_int(lighting.u_depth,  lighting.u_depth.SamplerID);
+    backend->upload_uniform_int(lighting.u_amr,    lighting.u_amr.SamplerID);
     // create l-buffer
     {
-        frame_buffer_attachment attachments[LIGHTING_NUM_OUTPUTS+1] = {
+        frame_buffer_attachment attachments[] = {
             { 0, frame_buffer_texture_format::RGBA8, black }, // Diffuse
             { 0, frame_buffer_texture_format::RGBA8, black }, // Specular
             { 0, frame_buffer_texture_format::Depth, black }, // depth/stencil
         };
         render_state->lbuffer.width = render_state->render_width;
         render_state->lbuffer.height = render_state->render_height;
-        renderer_create_framebuffer(&render_state->lbuffer, LIGHTING_NUM_OUTPUTS+1, attachments);
+        renderer_create_framebuffer(&render_state->lbuffer, lighting.outputs.num_outputs+1, attachments);
     }
 
     // Screen shader
-    if (!resource_load_shader_file("Data/Shaders/Screen.glsl", &render_state->screen_present)) {
+    shader* pScreen = (shader*)(&render_state->screen_shader);
+    shader_Screen& screen = render_state->screen_shader;
+    if (!resource_load_shader_file("Data/Shaders/Screen.glsl", pScreen)) {
         RH_FATAL("Could not setup the screen shader");
         return false;
     }
-    renderer_use_shader(&render_state->screen_present);
-    renderer_upload_uniform_int(&render_state->screen_present, "u_albedo",   SCREEN_IN_ALBEDO);
-    renderer_upload_uniform_int(&render_state->screen_present, "u_normal",   SCREEN_IN_NORMAL);
-    renderer_upload_uniform_int(&render_state->screen_present, "u_amr",      SCREEN_IN_AMR);
-    renderer_upload_uniform_int(&render_state->screen_present, "u_depth",    SCREEN_IN_DEPTH);
-    renderer_upload_uniform_int(&render_state->screen_present, "u_diffuse",  SCREEN_IN_DIFFUSE);
-    renderer_upload_uniform_int(&render_state->screen_present, "u_specular", SCREEN_IN_SPECULAR);
-    renderer_upload_uniform_int(&render_state->screen_present, "u_emissive", SCREEN_IN_EMISSIVE);
-    renderer_upload_uniform_int(&render_state->screen_present, "u_ssao",     SCREEN_IN_SSAO);
+    renderer_use_shader(pScreen);
+    screen.InitShaderLocs();
+    backend->upload_uniform_int(screen.u_albedo,   screen.u_albedo.SamplerID);
+    backend->upload_uniform_int(screen.u_normal,   screen.u_normal.SamplerID);
+    backend->upload_uniform_int(screen.u_amr,      screen.u_amr.SamplerID);
+    backend->upload_uniform_int(screen.u_depth,    screen.u_depth.SamplerID);
+    backend->upload_uniform_int(screen.u_diffuse,  screen.u_diffuse.SamplerID);
+    backend->upload_uniform_int(screen.u_specular, screen.u_specular.SamplerID);
+    backend->upload_uniform_int(screen.u_emissive, screen.u_emissive.SamplerID);
+    backend->upload_uniform_int(screen.u_ssao,     screen.u_ssao.SamplerID);
 
-    renderer_upload_uniform_int(  &render_state->screen_present, "r_outputSwitch", 0);
-    renderer_upload_uniform_float(&render_state->screen_present, "r_toneMap", render_state->tone_map ? 1.0f : 0.0f);
-    renderer_upload_uniform_float(&render_state->screen_present, "r_gammaCorrect", render_state->gamma_correct ? 1.0f : 0.0f);
+    backend->upload_uniform_int(screen.r_outputSwitch, 0);
+    backend->upload_uniform_float(screen.r_toneMap, render_state->tone_map ? 1.0f : 0.0f);
+    backend->upload_uniform_float(screen.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
 #endif
 
     // setup wireframe shader
@@ -335,12 +312,15 @@ bool32 renderer_draw_frame(render_packet* packet) {
         laml::transform::create_view_matrix_from_transform(packet->view_matrix, cam_transform);
 
 #if SIMPLE_RENDER_PASS
-        renderer_use_shader(&render_state->simple_shader);
+        shader* pSimple = (shader*)(&render_state->simple_shader);
+        renderer_use_shader(pSimple);
+
+        shader_simple& simple = render_state->simple_shader;
 
         laml::Mat4 proj_view = laml::mul(packet->projection_matrix, packet->view_matrix);
-        renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_VP", proj_view._data);
+        backend->upload_uniform_float4x4(simple.r_VP, proj_view._data);
         laml::Vec3 color(1.0f, 1.0f, 1.0f);
-        renderer_upload_uniform_float3(&render_state->simple_shader, "u_color", color._data);
+        backend->upload_uniform_float3(simple.u_color, color._data);
 
         // draw world axis
         //renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
@@ -348,98 +328,104 @@ bool32 renderer_draw_frame(render_packet* packet) {
         //renderer_draw_geometry(&render_state->axis_geom);
 
         for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
-            renderer_upload_uniform_float4x4(&render_state->simple_shader, "r_Transform", 
-                                             packet->commands[cmd_index].model_matrix._data);
-            //renderer_draw_geometry(&packet->commands[cmd_index].geom);
-            render_material* mat = &packet->commands[cmd_index].material;
+            render_command& cmd = packet->commands[cmd_index];
+            render_material& mat = cmd.material;
 
-            renderer_upload_uniform_float3(&render_state->simple_shader, "u_color", mat->DiffuseFactor._data);
-            if (mat->flag & 0x02) {
-                backend->bind_texture(mat->DiffuseTexture.handle, 0);
+            backend->upload_uniform_float4x4(simple.r_Transform, cmd.model_matrix._data);
+
+            backend->upload_uniform_float3(simple.u_color, mat.DiffuseFactor._data);
+            if (mat.flag & 0x02) {
+                backend->bind_texture(mat.DiffuseTexture.handle, 0);
             } else {
                 backend->bind_texture(render_state->white_tex.handle, 0);
             }
 
-            renderer_draw_geometry(&packet->commands[cmd_index].geom);
+            renderer_draw_geometry(&cmd.geom);
         }
 #else
         // PREPASS STAGE
-        renderer_use_shader(&render_state->pre_pass_shader);
+        shader* pPrepass = (shader*)(&render_state->pre_pass_shader);
+        shader_PrePass& prepass = render_state->pre_pass_shader;
+        renderer_use_shader(pPrepass);
 
-        renderer_upload_uniform_float4x4(&render_state->pre_pass_shader, "r_View", packet->view_matrix._data);
-        renderer_upload_uniform_float4x4(&render_state->pre_pass_shader, "r_Projection", packet->projection_matrix._data);
+        backend->upload_uniform_float4x4(prepass.r_View, packet->view_matrix._data);
+        backend->upload_uniform_float4x4(prepass.r_Projection, packet->projection_matrix._data);
         laml::Vec3 color(1.0f, 0.0f, 1.0f);
-        renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_gammaCorrect", 1.0f);
+        backend->upload_uniform_float(prepass.r_gammaCorrect, 1.0f);
 
         backend->use_framebuffer(&render_state->gbuffer);
         backend->clear_viewport(0, 0, 0, 0);
-        backend->clear_framebuffer_attachment(&render_state->gbuffer.attachments[PREPASS_OUT_DEPTH], 1, 1, 1, 1);
+        backend->clear_framebuffer_attachment(&render_state->gbuffer.attachments[prepass.outputs.out_Depth], 1, 1, 1, 1);
 
         for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
             render_material* mat = &packet->commands[cmd_index].material;
 
-            renderer_upload_uniform_float3(&render_state->pre_pass_shader, "u_AlbedoColor", mat->DiffuseFactor._data);
-            renderer_upload_uniform_float( &render_state->pre_pass_shader, "u_Metalness", mat->MetallicFactor);
-            renderer_upload_uniform_float( &render_state->pre_pass_shader, "u_Roughness", mat->RoughnessFactor);
-            renderer_upload_uniform_float( &render_state->pre_pass_shader, "u_TextureScale", 1.0f);
+            backend->upload_uniform_float3(prepass.u_AlbedoColor, mat->DiffuseFactor._data);
+            backend->upload_uniform_float(prepass.u_Metalness, mat->MetallicFactor);
+            backend->upload_uniform_float(prepass.u_Roughness, mat->RoughnessFactor);
+            backend->upload_uniform_float(prepass.u_TextureScale, 1.0f);
 
-            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_AlbedoTexToggle",    (mat->flag & 0x02) ? 1.0f : 0.0f);
-            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_NormalTexToggle",    (mat->flag & 0x04) ? 1.0f : 0.0f);
-            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_MetalnessTexToggle", (mat->flag & 0x08) ? 1.0f : 0.0f);
-            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_RoughnessTexToggle", (mat->flag & 0x08) ? 1.0f : 0.0f);
-            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_AmbientTexToggle",   (mat->flag & 0x08) ? 1.0f : 0.0f);
-            renderer_upload_uniform_float(&render_state->pre_pass_shader, "r_EmissiveTexToggle",  (mat->flag & 0x10) ? 1.0f : 0.0f);
+            backend->upload_uniform_float(prepass.r_AlbedoTexToggle,    (mat->flag & 0x02) ? 1.0f : 0.0f);
+            backend->upload_uniform_float(prepass.r_NormalTexToggle,    (mat->flag & 0x04) ? 1.0f : 0.0f);
+            backend->upload_uniform_float(prepass.r_MetalnessTexToggle, (mat->flag & 0x08) ? 1.0f : 0.0f);
+            backend->upload_uniform_float(prepass.r_RoughnessTexToggle, (mat->flag & 0x08) ? 1.0f : 0.0f);
+            backend->upload_uniform_float(prepass.r_AmbientTexToggle,   (mat->flag & 0x08) ? 1.0f : 0.0f);
+            backend->upload_uniform_float(prepass.r_EmissiveTexToggle,  (mat->flag & 0x10) ? 1.0f : 0.0f);
 
-            backend->bind_texture(mat->DiffuseTexture.handle,  PREPASS_IN_ALBEDO);
-            backend->bind_texture(mat->NormalTexture.handle,   PREPASS_IN_NORMAL);
-            backend->bind_texture(mat->AMRTexture.handle,      PREPASS_IN_METALNESS);
-            backend->bind_texture(mat->AMRTexture.handle,      PREPASS_IN_ROUGHNESS);
-            backend->bind_texture(mat->AMRTexture.handle,      PREPASS_IN_AMBIENT);
-            backend->bind_texture(mat->EmissiveTexture.handle, PREPASS_IN_EMISSIVE);
+            backend->bind_texture(mat->DiffuseTexture.handle,  prepass.u_AlbedoTexture.SamplerID);
+            backend->bind_texture(mat->NormalTexture.handle,   prepass.u_NormalTexture.SamplerID);
+            backend->bind_texture(mat->AMRTexture.handle,      prepass.u_AmbientTexture.SamplerID);
+            backend->bind_texture(mat->AMRTexture.handle,      prepass.u_MetalnessTexture.SamplerID);
+            backend->bind_texture(mat->AMRTexture.handle,      prepass.u_RoughnessTexture.SamplerID);
+            backend->bind_texture(mat->EmissiveTexture.handle, prepass.u_EmissiveTexture.SamplerID);
 
-            renderer_upload_uniform_float4x4(&render_state->pre_pass_shader, "r_Transform", 
+            backend->upload_uniform_float4x4(prepass.r_Transform, 
                                              packet->commands[cmd_index].model_matrix._data);
             renderer_draw_geometry(&packet->commands[cmd_index].geom);
         }
 
         // LIGHTING STAGE
+        shader* pLighting = (shader*)(&render_state->lighting_shader);
+        shader_Lighting& lighting = render_state->lighting_shader;
         backend->use_framebuffer(&render_state->lbuffer);
-        backend->use_shader(&render_state->lighting_shader);
+        backend->use_shader(pLighting);
 
         // TODO: let the scene define these (and more lights)
         float sun_dir[] = {0.0f, -0.7071f, 0.7071f};
         float sun_color[] = {1.0f, 0.0f, 1.0f};
         float sun_strength = 1.0f;
 
-        renderer_upload_uniform_float4x4(&render_state->lighting_shader, "r_Projection", packet->projection_matrix._data);
-        renderer_upload_uniform_float3(&render_state->lighting_shader, "r_sun.Direction", sun_dir);
-        renderer_upload_uniform_float3(&render_state->lighting_shader, "r_sun.Color", sun_color);
-        renderer_upload_uniform_float(&render_state->lighting_shader, "r_sun.Strength", sun_strength);
+        backend->upload_uniform_float4x4(lighting.r_Projection, packet->projection_matrix._data);
+        backend->upload_uniform_float3(lighting.r_sun.Direction, sun_dir);
+        backend->upload_uniform_float3(lighting.r_sun.Color, sun_color);
+        backend->upload_uniform_float(lighting.r_sun.Strength, sun_strength);
 
-        backend->bind_texture(render_state->gbuffer.attachments[PREPASS_OUT_NORMAL].handle, LIGHTING_IN_NORMAL);
-        backend->bind_texture(render_state->gbuffer.attachments[PREPASS_OUT_DEPTH].handle,  LIGHTING_IN_DISTANCE);
-        backend->bind_texture(render_state->gbuffer.attachments[PREPASS_OUT_AMR].handle,    LIGHTING_IN_AMR);
+        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Normal].handle, lighting.u_normal.SamplerID);
+        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Depth].handle,  lighting.u_depth.SamplerID);
+        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_AMR].handle,    lighting.u_amr.SamplerID);
 
         backend->disable_depth_test();
         backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
         backend->draw_geometry(&render_state->screen_quad);
 
         // SCREEN STAGE
+        shader* pScreen = (shader*)(&render_state->screen_shader);
+        shader_Screen& screen = render_state->screen_shader;
         backend->use_framebuffer(0);
-        backend->use_shader(&render_state->screen_present);
+        backend->use_shader(pScreen);
 
-        renderer_upload_uniform_int(&render_state->screen_present, "r_outputSwitch", render_state->current_shader_out);
-        renderer_upload_uniform_float(&render_state->screen_present, "r_toneMap", render_state->tone_map ? 1.0f : 0.0f);
-        renderer_upload_uniform_float(&render_state->screen_present, "r_gammaCorrect", render_state->gamma_correct ? 1.0f : 0.0f);
+        backend->upload_uniform_int(screen.r_outputSwitch, render_state->current_shader_out);
+        backend->upload_uniform_float(screen.r_toneMap, render_state->tone_map ? 1.0f : 0.0f);
+        backend->upload_uniform_float(screen.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
 
-        backend->bind_texture(render_state->gbuffer.attachments[PREPASS_OUT_ALBEDO].handle,    SCREEN_IN_ALBEDO);
-        backend->bind_texture(render_state->gbuffer.attachments[PREPASS_OUT_NORMAL].handle,    SCREEN_IN_NORMAL);
-        backend->bind_texture(render_state->gbuffer.attachments[PREPASS_OUT_AMR].handle,       SCREEN_IN_AMR);
-        backend->bind_texture(render_state->gbuffer.attachments[PREPASS_OUT_DEPTH].handle,     SCREEN_IN_DEPTH);
-        backend->bind_texture(render_state->gbuffer.attachments[PREPASS_OUT_EMISSIVE].handle,  SCREEN_IN_EMISSIVE);
-        backend->bind_texture(render_state->lbuffer.attachments[LIGHTING_OUT_DIFFUSE].handle,  SCREEN_IN_DIFFUSE);
-        backend->bind_texture(render_state->lbuffer.attachments[LIGHTING_OUT_SPECULAR].handle, SCREEN_IN_SPECULAR);
-        backend->bind_texture(render_state->black_tex.handle,                                  SCREEN_IN_SSAO);
+        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Albedo].handle,    screen.u_albedo.SamplerID);
+        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Normal].handle,    screen.u_normal.SamplerID);
+        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_AMR].handle,       screen.u_amr.SamplerID);
+        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Depth].handle,     screen.u_depth.SamplerID);
+        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Emissive].handle,  screen.u_emissive.SamplerID);
+        backend->bind_texture(render_state->lbuffer.attachments[lighting.outputs.out_Diffuse].handle,  screen.u_diffuse.SamplerID);
+        backend->bind_texture(render_state->lbuffer.attachments[lighting.outputs.out_Specular].handle, screen.u_specular.SamplerID);
+        backend->bind_texture(render_state->black_tex.handle,                                          screen.u_ssao.SamplerID);
 
         backend->disable_depth_test();
         backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
@@ -664,32 +650,4 @@ void renderer_draw_geometry_lines(render_geometry* geom) {
 }
 void renderer_draw_geometry_points(render_geometry* geom) {
     backend->draw_geometry_points(geom);
-}
-
-void renderer_upload_uniform_float(shader* shader_prog, const char* uniform_name, float value) {
-    backend->upload_uniform_float(shader_prog, uniform_name, value);
-}
-void renderer_upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values) {
-    backend->upload_uniform_float2(shader_prog, uniform_name, values);
-}
-void renderer_upload_uniform_float3(shader* shader_prog, const char* uniform_name, float* values) {
-    backend->upload_uniform_float3(shader_prog, uniform_name, values);
-}
-void renderer_upload_uniform_float4(shader* shader_prog, const char* uniform_name, float* values) {
-    backend->upload_uniform_float4(shader_prog, uniform_name, values);
-}
-void renderer_upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) {
-    backend->upload_uniform_float4x4(shader_prog, uniform_name, values);
-}
-void renderer_upload_uniform_int(shader* shader_prog, const char* uniform_name, int  value) {
-    backend->upload_uniform_int(shader_prog, uniform_name, value);
-}
-void renderer_upload_uniform_int2(shader* shader_prog, const char* uniform_name, int* values) {
-    backend->upload_uniform_int2(shader_prog, uniform_name, values);
-}
-void renderer_upload_uniform_int3(shader* shader_prog, const char* uniform_name, int* values) {
-    backend->upload_uniform_int3(shader_prog, uniform_name, values);
-}
-void renderer_upload_uniform_int4(shader* shader_prog, const char* uniform_name, int* values) {
-    backend->upload_uniform_int4(shader_prog, uniform_name, values);
 }

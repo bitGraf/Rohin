@@ -18,6 +18,12 @@ struct shader_Lighting {
     ShaderUniform_sampler2D u_depth;
     ShaderUniform_sampler2D u_amr;
 
+    struct {
+        uint32 num_outputs;
+        uint32 out_Diffuse;
+        uint32 out_Specular;
+    } outputs;
+
     void InitShaderLocs();
 };
 struct shader_Line {
@@ -32,6 +38,11 @@ struct shader_Line {
     ShaderUniform_float r_LineFadeMaximum;
     ShaderUniform_float r_LineFadeMinimum;
 
+    struct {
+        uint32 num_outputs;
+        uint32 FragColor;
+    } outputs;
+
     void InitShaderLocs();
 };
 struct shader_Line2D {
@@ -40,6 +51,10 @@ struct shader_Line2D {
     ShaderUniform_vec2 r_verts[2];
     ShaderUniform_mat4 r_orthoProjection;
     ShaderUniform_vec4 r_Color;
+
+    struct {
+        uint32 num_outputs;
+    } outputs;
 
     void InitShaderLocs();
 };
@@ -51,6 +66,10 @@ struct shader_Line3D {
     ShaderUniform_mat4 r_Projection;
     ShaderUniform_vec4 r_Color;
 
+    struct {
+        uint32 num_outputs;
+    } outputs;
+
     void InitShaderLocs();
 };
 struct shader_Mix {
@@ -60,6 +79,10 @@ struct shader_Mix {
     ShaderUniform_sampler2D r_tex2;
     ShaderUniform_float r_mixValue;
 
+    struct {
+        uint32 num_outputs;
+    } outputs;
+
     void InitShaderLocs();
 };
 struct shader_Normals {
@@ -67,6 +90,11 @@ struct shader_Normals {
 
     ShaderUniform_mat4 r_Transform;
     ShaderUniform_mat4 r_VP;
+
+    struct {
+        uint32 num_outputs;
+        uint32 FragColor;
+    } outputs;
 
     void InitShaderLocs();
 };
@@ -90,6 +118,11 @@ struct shader_PBR_static {
     ShaderUniform_float r_NormalTexToggle;
     ShaderUniform_float r_MetalnessTexToggle;
     ShaderUniform_float r_RoughnessTexToggle;
+
+    struct {
+        uint32 num_outputs;
+        uint32 FragColor;
+    } outputs;
 
     void InitShaderLocs();
 };
@@ -116,6 +149,15 @@ struct shader_PrePass {
     ShaderUniform_float r_AmbientTexToggle;
     ShaderUniform_float r_EmissiveTexToggle;
     ShaderUniform_float r_gammaCorrect;
+
+    struct {
+        uint32 num_outputs;
+        uint32 out_Albedo;
+        uint32 out_Normal;
+        uint32 out_AMR;
+        uint32 out_Emissive;
+        uint32 out_Depth;
+    } outputs;
 
     void InitShaderLocs();
 };
@@ -144,6 +186,15 @@ struct shader_PrePass_Anim {
     ShaderUniform_float r_EmissiveTexToggle;
     ShaderUniform_float r_gammaCorrect;
 
+    struct {
+        uint32 num_outputs;
+        uint32 out_Albedo;
+        uint32 out_Normal;
+        uint32 out_AMR;
+        uint32 out_Depth;
+        uint32 out_Emissive;
+    } outputs;
+
     void InitShaderLocs();
 };
 struct shader_Screen {
@@ -161,6 +212,10 @@ struct shader_Screen {
     ShaderUniform_float r_toneMap;
     ShaderUniform_float r_gammaCorrect;
 
+    struct {
+        uint32 num_outputs;
+    } outputs;
+
     void InitShaderLocs();
 };
 struct shader_simple {
@@ -170,6 +225,11 @@ struct shader_simple {
     ShaderUniform_mat4 r_Transform;
     ShaderUniform_sampler2D u_texture;
     ShaderUniform_vec3 u_color;
+
+    struct {
+        uint32 num_outputs;
+        uint32 FragColor;
+    } outputs;
 
     void InitShaderLocs();
 };
@@ -181,6 +241,11 @@ struct shader_Simple_static {
     ShaderUniform_sampler2D u_texture;
     ShaderUniform_vec4 u_color;
 
+    struct {
+        uint32 num_outputs;
+        uint32 FragColor;
+    } outputs;
+
     void InitShaderLocs();
 };
 struct shader_simple_triplanar {
@@ -191,6 +256,11 @@ struct shader_simple_triplanar {
     ShaderUniform_sampler2D u_texture;
     ShaderUniform_vec4 u_color;
 
+    struct {
+        uint32 num_outputs;
+        uint32 FragColor;
+    } outputs;
+
     void InitShaderLocs();
 };
 struct shader_Skybox {
@@ -199,12 +269,20 @@ struct shader_Skybox {
     ShaderUniform_mat4 r_inverseVP;
     ShaderUniform_samplerCube r_skybox;
 
+    struct {
+        uint32 num_outputs;
+    } outputs;
+
     void InitShaderLocs();
 };
 struct shader_Sobel {
     uint32 Handle;
 
     ShaderUniform_sampler2D r_texture;
+
+    struct {
+        uint32 num_outputs;
+    } outputs;
 
     void InitShaderLocs();
 };
@@ -217,12 +295,21 @@ struct shader_Sprite {
     ShaderUniform_sampler2D r_spriteTex;
     ShaderUniform_vec3 r_textColor;
 
+    struct {
+        uint32 num_outputs;
+    } outputs;
+
     void InitShaderLocs();
 };
 struct shader_SSAO {
     uint32 Handle;
 
     ShaderUniform_sampler2D u_amr;
+
+    struct {
+        uint32 num_outputs;
+        uint32 out_SSAO;
+    } outputs;
 
     void InitShaderLocs();
 };
@@ -233,6 +320,11 @@ struct shader_wireframe {
     ShaderUniform_mat4 r_Transform;
     ShaderUniform_sampler2D u_texture;
     ShaderUniform_vec4 u_color;
+
+    struct {
+        uint32 num_outputs;
+        uint32 FragColor;
+    } outputs;
 
     void InitShaderLocs();
 };

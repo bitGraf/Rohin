@@ -15,7 +15,8 @@ layout (location = 1) uniform mat4 r_VP; // actually proj*view
 layout (location = 2) uniform mat4 r_Transform;
 
 void main() {
-    tex_coord = vertTexCoord;
+    //tex_coord = vertTexCoord;
+    tex_coord = vec2(vertTexCoord.x, 1.0 - vertTexCoord.y);
     gl_Position = r_VP * r_Transform * vec4(vertPos, 1.0);
 }
 

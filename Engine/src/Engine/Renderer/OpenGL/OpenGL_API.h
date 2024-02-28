@@ -45,13 +45,23 @@ struct OpenGL_api final : public renderer_api {
     void clear_framebuffer_attachment(frame_buffer_attachment* attach, real32 r, real32 b, real32 g, real32 a) override final;
 
     // uniforms
-    void upload_uniform_float( shader* shader_prog, const char* uniform_name, float  value) override final;
-    void upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values) override final;
-    void upload_uniform_float3(shader* shader_prog, const char* uniform_name, float* values) override final;
-    void upload_uniform_float4(shader* shader_prog, const char* uniform_name, float* values) override final;
-    void upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) override final;
-    void upload_uniform_int( shader* shader_prog, const char* uniform_name, int  value) override final;
-    void upload_uniform_int2(shader* shader_prog, const char* uniform_name, int* values) override final;
-    void upload_uniform_int3(shader* shader_prog, const char* uniform_name, int* values) override final;
-    void upload_uniform_int4(shader* shader_prog, const char* uniform_name, int* values) override final;
+    //void upload_uniform_float(   shader* shader_prog, const char* uniform_name, float  value) override final;
+    //void upload_uniform_float2(  shader* shader_prog, const char* uniform_name, float* values) override final;
+    //void upload_uniform_float3(  shader* shader_prog, const char* uniform_name, float* values) override final;
+    //void upload_uniform_float4(  shader* shader_prog, const char* uniform_name, float* values) override final;
+    //void upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) override final;
+    //void upload_uniform_int(     shader* shader_prog, const char* uniform_name, int  value) override final;
+    //void upload_uniform_int2(    shader* shader_prog, const char* uniform_name, int* values) override final;
+    //void upload_uniform_int3(    shader* shader_prog, const char* uniform_name, int* values) override final;
+    //void upload_uniform_int4(    shader* shader_prog, const char* uniform_name, int* values) override final;
+
+    void upload_uniform_float(   ShaderUniform uniform, float  value) override final;
+    void upload_uniform_float2(  ShaderUniform uniform, float* values) override final;
+    void upload_uniform_float3(  ShaderUniform uniform, float* values) override final;
+    void upload_uniform_float4(  ShaderUniform uniform, float* values) override final;
+    void upload_uniform_float4x4(ShaderUniform uniform, float* values) override final;
+    void upload_uniform_int(     ShaderUniform uniform, int  value) override final;
+    void upload_uniform_int2(    ShaderUniform uniform, int* values) override final;
+    void upload_uniform_int3(    ShaderUniform uniform, int* values) override final;
+    void upload_uniform_int4(    ShaderUniform uniform, int* values) override final;
 };

@@ -9,6 +9,7 @@ struct memory_arena;
 struct render_geometry;
 struct render_material;
 struct shader;
+struct ShaderUniform;
 struct frame_buffer;
 struct frame_buffer_attachment;
 struct collision_grid;
@@ -80,15 +81,25 @@ struct renderer_api {
     virtual void clear_framebuffer_attachment(frame_buffer_attachment* attach, real32 r, real32 g, real32 b, real32 a) = 0;
 
     // uniforms
-    virtual void upload_uniform_float( shader* shader_prog, const char* uniform_name, float  value) = 0;
-    virtual void upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values) = 0;
-    virtual void upload_uniform_float3(shader* shader_prog, const char* uniform_name, float* values) = 0;
-    virtual void upload_uniform_float4(shader* shader_prog, const char* uniform_name, float* values) = 0;
-    virtual void upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) = 0;
-    virtual void upload_uniform_int( shader* shader_prog, const char* uniform_name, int  value) = 0;
-    virtual void upload_uniform_int2(shader* shader_prog, const char* uniform_name, int* values) = 0;
-    virtual void upload_uniform_int3(shader* shader_prog, const char* uniform_name, int* values) = 0;
-    virtual void upload_uniform_int4(shader* shader_prog, const char* uniform_name, int* values) = 0;
+    //virtual void upload_uniform_float(   shader* shader_prog, const char* uniform_name, float  value) = 0;
+    //virtual void upload_uniform_float2(  shader* shader_prog, const char* uniform_name, float* values) = 0;
+    //virtual void upload_uniform_float3(  shader* shader_prog, const char* uniform_name, float* values) = 0;
+    //virtual void upload_uniform_float4(  shader* shader_prog, const char* uniform_name, float* values) = 0;
+    //virtual void upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) = 0;
+    //virtual void upload_uniform_int(     shader* shader_prog, const char* uniform_name, int  value) = 0;
+    //virtual void upload_uniform_int2(    shader* shader_prog, const char* uniform_name, int* values) = 0;
+    //virtual void upload_uniform_int3(    shader* shader_prog, const char* uniform_name, int* values) = 0;
+    //virtual void upload_uniform_int4(    shader* shader_prog, const char* uniform_name, int* values) = 0;
+
+    virtual void upload_uniform_float(   ShaderUniform uniform, float  value) = 0;
+    virtual void upload_uniform_float2(  ShaderUniform uniform, float* values) = 0;
+    virtual void upload_uniform_float3(  ShaderUniform uniform, float* values) = 0;
+    virtual void upload_uniform_float4(  ShaderUniform uniform, float* values) = 0;
+    virtual void upload_uniform_float4x4(ShaderUniform uniform, float* values) = 0;
+    virtual void upload_uniform_int(     ShaderUniform uniform, int  value) = 0;
+    virtual void upload_uniform_int2(    ShaderUniform uniform, int* values) = 0;
+    virtual void upload_uniform_int3(    ShaderUniform uniform, int* values) = 0;
+    virtual void upload_uniform_int4(    ShaderUniform uniform, int* values) = 0;
 };
 
 // the actual geometry that the gpu holds onto
@@ -128,6 +139,33 @@ struct render_material {
 
 struct shader {
     uint32 handle; // handle to the gpu version of this data
+};
+
+struct ShaderUniform {
+    uint32 Location;
+    uint32 SamplerID; // only for samplers
+};
+
+typedef ShaderUniform ShaderUniform_int;
+
+typedef ShaderUniform ShaderUniform_float;
+typedef ShaderUniform ShaderUniform_vec2;
+typedef ShaderUniform ShaderUniform_vec3;
+typedef ShaderUniform ShaderUniform_vec4;
+typedef ShaderUniform ShaderUniform_mat3;
+typedef ShaderUniform ShaderUniform_mat4;
+typedef ShaderUniform ShaderUniform_sampler2D;
+typedef ShaderUniform ShaderUniform_samplerCube;
+
+struct ShaderUniform_Light {
+    uint32 Location;
+
+    ShaderUniform_vec3 Position;
+    ShaderUniform_vec3 Direction;
+    ShaderUniform_vec3 Color;
+    ShaderUniform_float Strength;
+    ShaderUniform_float Inner;
+    ShaderUniform_float Outer;
 };
 
 enum class frame_buffer_texture_format {

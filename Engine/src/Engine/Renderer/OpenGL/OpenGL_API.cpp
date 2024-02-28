@@ -621,6 +621,7 @@ void OpenGL_api::clear_framebuffer_attachment(frame_buffer_attachment *attach, r
 }
 
 
+/*
 void OpenGL_api::upload_uniform_float(shader* shader_prog, const char* uniform_name, float  value) {
     int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
 
@@ -665,4 +666,33 @@ void OpenGL_api::upload_uniform_int4(shader* shader_prog, const char* uniform_na
     int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
 
     glUniform4iv(uniform_location, 1, values);
+}
+*/
+
+void OpenGL_api::upload_uniform_float(   ShaderUniform uniform, float  value) {
+    glUniform1f(uniform.Location, value);
+}
+void OpenGL_api::upload_uniform_float2(  ShaderUniform uniform, float* values) {
+    glUniform2fv(uniform.Location, 1, values);
+}
+void OpenGL_api::upload_uniform_float3(  ShaderUniform uniform, float* values) {
+    glUniform3fv(uniform.Location, 1, values);
+}
+void OpenGL_api::upload_uniform_float4(  ShaderUniform uniform, float* values) {
+    glUniform4fv(uniform.Location, 1, values);
+}
+void OpenGL_api::upload_uniform_float4x4(ShaderUniform uniform, float* values) {
+    glUniformMatrix4fv(uniform.Location, 1, GL_FALSE, values);
+}
+void OpenGL_api::upload_uniform_int(     ShaderUniform uniform, int  value) {
+    glUniform1i(uniform.Location, value);
+}
+void OpenGL_api::upload_uniform_int2(    ShaderUniform uniform, int* values) {
+    glUniform2iv(uniform.Location, 1, values);
+}
+void OpenGL_api::upload_uniform_int3(    ShaderUniform uniform, int* values) {
+    glUniform3iv(uniform.Location, 1, values);
+}
+void OpenGL_api::upload_uniform_int4(    ShaderUniform uniform, int* values) {
+    glUniform4iv(uniform.Location, 1, values);
 }
