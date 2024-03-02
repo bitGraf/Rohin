@@ -1,8 +1,9 @@
 #include "Engine/Defines.h"
 
-#include "imgui_widgets.cpp"
+// Note: redefine this to export ImGui symbols in rohin.dll
+#define IMGUI_API RHAPI
 #include "imgui.cpp"
-#include "imgui_demo.cpp"
+#include "imgui_widgets.cpp"
 #include "imgui_draw.cpp"
 #include "imgui_tables.cpp"
 

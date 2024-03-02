@@ -506,8 +506,6 @@ bool32 renderer_begin_Frame(real32 delta_time) {
     backend->set_viewport(0, 0, render_state->render_width, render_state->render_height);
     backend->clear_viewport(0.8f, 0.1f, 0.8f, 0.1f);
 
-    renderer_debug_UI_begin_frame();
-
     return true;
 }
 bool32 renderer_end_Frame(real32 delta_time) {
@@ -908,7 +906,16 @@ void renderer_shutdown_debug_UI() {
 void renderer_debug_UI_begin_frame() {
     backend->ImGui_begin_frame();
     ImGui::NewFrame();
-    ImGui::ShowDemoWindow(); // Show demo window! :)
+
+    if (false) {
+        static char buf[256];
+        static float f = 0;
+        ImGui::Text("Hello, world %d", 123);
+        if (ImGui::Button("Save"))
+            RH_INFO("Save Button");
+        ImGui::InputText("string", buf, IM_ARRAYSIZE(buf));
+        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+    }
 }
 
 void renderer_debug_UI_end_frame() {

@@ -184,6 +184,12 @@ bool32 start_rohin_engine(RohinApp* app) {
                 packet->projection_matrix = engine.projection_matrix;
                 packet->col_grid = nullptr;
 
+                // Start capturing ImGui commands here, so update_and_render can add to the UI
+                // TODO: possible idea: call ImGui_Begin_Frame() immediatly after drawing the frame, 
+                //       so that -everywhere- else can freely add to the UI. First need to make sure 
+                //       that nothing causes any issues with that method.
+                renderer_debug_UI_begin_frame();
+
                 engine.app->update_and_render(engine.app, packet, engine.last_frame_time);
 
                 renderer_draw_frame(packet);

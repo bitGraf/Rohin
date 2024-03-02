@@ -12,6 +12,8 @@
 
 #include <Engine/Renderer/Renderer.h>
 
+#include <imgui/imgui.h>
+
 struct player_state {
     laml::Vec3 position;
     laml::Quat orientation;
@@ -167,6 +169,13 @@ bool32 game_initialize(RohinApp* app) {
 
 bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta_time) {
     game_state* state = (game_state*)(app->memory.PermanentStorage);
+
+    // Create ImGui window
+    ImGui::Begin("RohinGame");
+    ImGui::Text("Window made by %s", __FILE__);
+    ImGui::Text("  DeltaTime: %.3f ms",  delta_time*1000.0f);
+    ImGui::Text("  Framerate: %.3f fps", 1.0f / delta_time);
+    ImGui::End();
 
     // simulate game state
     laml::Mat4 eye(1.0f);
