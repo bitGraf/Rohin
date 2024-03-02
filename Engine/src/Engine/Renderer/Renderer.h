@@ -41,7 +41,7 @@ bool32 renderer_end_wireframe();
 // functions to create/destroy render objects
 // things like meshes, shaders, textures, etc.
 
-void renderer_create_texture(struct render_texture_2D* texture, const uint8* data);
+void renderer_create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr);
 void renderer_destroy_texture(struct render_texture_2D* texture);
 
 RHAPI void renderer_create_mesh(render_geometry* mesh, 
@@ -53,7 +53,12 @@ void renderer_destroy_mesh(render_geometry* mesh);
 bool32 renderer_create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes);
 void renderer_destroy_shader(shader* shader_prog);
 bool32 renderer_create_framebuffer(frame_buffer* fbo, 
-                                   int num_attachments, const frame_buffer_attachment* attachments);
+                                   int num_attachments, 
+                                   const frame_buffer_attachment* attachments);
+bool32 renderer_create_framebuffer_cube(frame_buffer* fbo, 
+                                        int num_attachments, 
+                                        const frame_buffer_attachment* attachments,
+                                        bool32 gen_mipmaps);
 void renderer_destroy_framebuffer(frame_buffer* fbo);
 
 void renderer_use_shader(shader* shader_prog);

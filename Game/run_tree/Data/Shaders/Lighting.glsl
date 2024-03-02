@@ -38,9 +38,15 @@ layout (location = 386) uniform Light r_sun; // 6 slots
 
 layout (location = 392) uniform mat4 r_View;
 
-layout (location = 393) uniform sampler2D u_normal;
-layout (location = 394) uniform sampler2D u_depth;
-layout (location = 395) uniform sampler2D u_amr;
+layout (location = 393) uniform sampler2D u_albedo;
+layout (location = 394) uniform sampler2D u_normal;
+layout (location = 395) uniform sampler2D u_depth;
+layout (location = 396) uniform sampler2D u_amr;
+
+// PBR IBL cubemaps
+layout (location = 397) uniform samplerCube u_irradiance;
+layout (location = 398) uniform samplerCube u_prefilter;
+layout (location = 399) uniform sampler2D   u_brdf_LUT;
 
 const vec3 FD = vec3(0.04);
 const float PI = 3.141592;
@@ -48,10 +54,14 @@ const float Epsilon = 0.00001;
 
 // For use inside the shader
 struct PBRParameters {
+	vec3 Albedo;
+
     float Roughness;
     float Metalness;
+	float AO;
 
     vec3 Normal;
+	vec3 NormalWorld;
     vec3 View;
     float NdotV;
 
@@ -65,10 +75,13 @@ void IBL(vec3 F0, vec3 R);
 vec3 FragPosFromDepth(float depth);
 
 void main() {
+	m_Params.Albedo = texture(u_albedo, texcoord).rgb;
     vec4 amr_ = texture(u_amr, texcoord);
     m_Params.Metalness = amr_.g;
     m_Params.Roughness = max(amr_.b, 0.05);
+	m_Params.AO = amr_.r;
     m_Params.Normal = normalize(texture(u_normal, texcoord).rgb);
+	m_Params.NormalWorld = normalize((inverse(r_View)*vec4(m_Params.Normal, 0)).xyz);
     float depth = texture(u_depth, texcoord).r;
 	vec3 FragPos = FragPosFromDepth(depth);
     m_Params.View = normalize(-FragPos);
@@ -76,9 +89,10 @@ void main() {
     
     // Specular reflection vector
 	vec3 R = 2.0 * m_Params.NdotV * m_Params.Normal - m_Params.View;
+	vec3 RWorld = normalize((inverse(r_View)*vec4(R, 0)).xyz);
 
     // Fresnel reflectance, metals use albedo
-	vec3 F0 = mix(FD, vec3(1,1,1), m_Params.Metalness);
+	vec3 F0 = mix(FD, m_Params.Albedo, m_Params.Metalness);
 
     Lighting(F0);
     IBL(F0, R);
@@ -160,7 +174,7 @@ vec3 fresnelSchlickRoughness(vec3 F0, float cosTheta, float roughness)
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 } 
 
-void CalcSunDiffuse(vec3 F0) {
+void CalcSunDirect(vec3 F0) {
 	vec3 L = normalize(-r_sun.Direction);
 	vec3 H = normalize(L + m_Params.View);
 
@@ -175,7 +189,7 @@ void CalcSunDiffuse(vec3 F0) {
 	vec3 F = fresnelSchlickRoughness(F0, max(0.0, dot(H, m_Params.View)), m_Params.Roughness);
 
 	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-	vec3 diffuseBRDF = kd * vec3(1,1,1) / PI;
+	vec3 diffuseBRDF = kd * m_Params.Albedo / PI;
 
     // Cook-Torrance
 	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdotL * m_Params.NdotV);
@@ -184,7 +198,7 @@ void CalcSunDiffuse(vec3 F0) {
     m_Params.Specular += specularBRDF * Lradiance * NdotL;
 }
 
-void CalcPointLightDiffuse(vec3 F0, Light pl) {
+void CalcPointLightDirect(vec3 F0, Light pl) {
 	vec3 L = normalize(pl.Position);
 	vec3 H = normalize(L + m_Params.View);
 
@@ -201,7 +215,7 @@ void CalcPointLightDiffuse(vec3 F0, Light pl) {
 	vec3 F = fresnelSchlickRoughness(F0, max(0.0, dot(H, m_Params.View)), m_Params.Roughness);
 
 	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-	vec3 diffuseBRDF = kd * vec3(1) / PI;
+	vec3 diffuseBRDF = kd * m_Params.Albedo / PI;
 
     // Cook-Torrance
 	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdotL * m_Params.NdotV);
@@ -210,7 +224,7 @@ void CalcPointLightDiffuse(vec3 F0, Light pl) {
     m_Params.Specular += specularBRDF * Lradiance * NdotL;
 }
 
-void CalcSpotLightDiffuse(vec3 F0, Light sl) {
+void CalcSpotLightDirect(vec3 F0, Light sl) {
 	vec3 L = normalize(sl.Position);
 	vec3 H = normalize(L + m_Params.View);
 
@@ -232,7 +246,7 @@ void CalcSpotLightDiffuse(vec3 F0, Light sl) {
 	vec3 F = fresnelSchlickRoughness(F0, max(0.0, dot(H, m_Params.View)), m_Params.Roughness);
 
 	vec3 kd = (1.0 - F) * (1.0 - m_Params.Metalness);
-	vec3 diffuseBRDF = kd * vec3(1) / PI;
+	vec3 diffuseBRDF = kd * m_Params.Albedo / PI;
 
     // Cook-Torrance
 	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdotL * m_Params.NdotV);
@@ -242,23 +256,40 @@ void CalcSpotLightDiffuse(vec3 F0, Light sl) {
 }
 
 void Lighting(vec3 F0) {
-	m_Params.Diffuse = vec3(0.1); // ambient lighting for now
+	m_Params.Diffuse  = vec3(0.03) * m_Params.AO * m_Params.Albedo;
     m_Params.Specular = vec3(0.0);
 
 	// add directional light
-	CalcSunDiffuse(F0);
+	CalcSunDirect(F0);
 
 	// add up all point lights
 	for(int i = 0; i < MAX_LIGHTS; i++) {
-		CalcPointLightDiffuse(F0, r_pointLights[i]);
+		CalcPointLightDirect(F0, r_pointLights[i]);
 	}
 	
 	// add up all spot lights
 	for(int i = 0; i < MAX_LIGHTS; i++) {
-		CalcSpotLightDiffuse(F0, r_spotLights[i]);
+		CalcSpotLightDirect(F0, r_spotLights[i]);
 	}
 }
 
 void IBL(vec3 F0, vec3 R) {
+	// Diffuse Irradiance
+	vec3 kS = fresnelSchlick(F0, max(m_Params.NdotV, 0.0));
+	vec3 kD = 1.0 - kS;
+	vec3 irradiance = texture(u_irradiance, m_Params.NormalWorld).rgb;
+	vec3 diffuse    = irradiance * m_Params.Albedo;
+	vec3 ambient    = (kD * diffuse); 
 
+	// Specular IBL
+	const float MAX_REFLECTION_LOD = 5.0; // since we generate mipmaps 0-5 (6 total)
+    vec3 prefilteredColor = textureLod(u_prefilter, R,  m_Params.Roughness * MAX_REFLECTION_LOD).rgb;
+
+	vec3 F        = fresnelSchlickRoughness(F0, max(m_Params.NdotV, 0.0), m_Params.Roughness);
+	vec2 envBRDF  = texture(u_brdf_LUT, vec2(max(m_Params.NdotV, 0.0), m_Params.Roughness)).rg;
+	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
+    
+	// Indiriect LIghting
+	m_Params.Diffuse  = ambient * m_Params.AO;
+	m_Params.Specular = specular * m_Params.AO;
 }

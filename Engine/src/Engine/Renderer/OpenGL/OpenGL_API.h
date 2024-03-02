@@ -16,7 +16,7 @@ struct OpenGL_api final : public renderer_api {
     bool32 disable_depth_test() override final;
     bool32 enable_depth_test() override final;
 
-    void create_texture(struct render_texture_2D* texture, const uint8* data) override final;
+    void create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) override final;
     void destroy_texture(struct render_texture_2D* texture) override final;
     void create_mesh(render_geometry* mesh, 
                      uint32 num_verts, const void* vertices,
@@ -26,8 +26,15 @@ struct OpenGL_api final : public renderer_api {
     bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) override final;
     void destroy_shader(shader* shader_prog) override final;
     bool32 create_framebuffer(frame_buffer* fbo, 
-                              int num_attachments, const frame_buffer_attachment* attachments) override final;
+                              int num_attachments, 
+                              const frame_buffer_attachment* attachments) override final;
+    bool32 create_framebuffer_cube(frame_buffer* fbo, 
+                                   int num_attachments, 
+                                   const frame_buffer_attachment* attachments,
+                                   bool32 generate_mipmaps) override final;
     void destroy_framebuffer(frame_buffer* fbo) override final;
+    void set_framebuffer_cube_face(frame_buffer* fbuffer, uint32 attach_idx, uint32 slot, uint32 mip_level) override final;
+    void resize_framebuffer_renderbuffer(frame_buffer* fbuffer, uint32 new_width, uint32 new_height) override final;
 
     void use_shader(shader* shader_prog) override final;
     void use_framebuffer(frame_buffer *fbuffer) override final;
@@ -39,6 +46,7 @@ struct OpenGL_api final : public renderer_api {
     void draw_geometry_points(render_geometry* geom) override final;
 
     void bind_texture(uint32 tex_handle, uint32 slot) override final;
+    void bind_texture_cube(uint32 tex_handle, uint32 slot) override final;
 
     void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) override final;
     void clear_viewport(real32 r, real32 g, real32 b, real32 a) override final;

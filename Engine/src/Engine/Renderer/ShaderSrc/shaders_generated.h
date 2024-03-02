@@ -6,6 +6,59 @@
 
 #include "Engine/Renderer/ShaderSrc/ShaderSrc.h"
 
+struct shader_BRDF_Integrate {
+    uint32 Handle;
+
+
+    struct {
+        uint32 num_outputs;
+    } outputs;
+
+    void InitShaderLocs();
+};
+struct shader_HDRI_to_cubemap {
+    uint32 Handle;
+
+    ShaderUniform_mat4 r_Projection;
+    ShaderUniform_mat4 r_View;
+    ShaderUniform_sampler2D u_hdri;
+
+    struct {
+        uint32 num_outputs;
+        uint32 FragColor;
+    } outputs;
+
+    void InitShaderLocs();
+};
+struct shader_IBL_Prefilter {
+    uint32 Handle;
+
+    ShaderUniform_mat4 r_Projection;
+    ShaderUniform_mat4 r_View;
+    ShaderUniform_samplerCube u_env_cubemap;
+    ShaderUniform_float r_roughness;
+
+    struct {
+        uint32 num_outputs;
+        uint32 FragColor;
+    } outputs;
+
+    void InitShaderLocs();
+};
+struct shader_Irradiance_Convolve {
+    uint32 Handle;
+
+    ShaderUniform_mat4 r_Projection;
+    ShaderUniform_mat4 r_View;
+    ShaderUniform_samplerCube u_env_cubemap;
+
+    struct {
+        uint32 num_outputs;
+        uint32 FragColor;
+    } outputs;
+
+    void InitShaderLocs();
+};
 struct shader_Lighting {
     uint32 Handle;
 
@@ -14,9 +67,13 @@ struct shader_Lighting {
     ShaderUniform_Light r_spotLights[32];
     ShaderUniform_Light r_sun;
     ShaderUniform_mat4 r_View;
+    ShaderUniform_sampler2D u_albedo;
     ShaderUniform_sampler2D u_normal;
     ShaderUniform_sampler2D u_depth;
     ShaderUniform_sampler2D u_amr;
+    ShaderUniform_samplerCube u_irradiance;
+    ShaderUniform_samplerCube u_prefilter;
+    ShaderUniform_sampler2D   u_brdf_LUT;
 
     struct {
         uint32 num_outputs;

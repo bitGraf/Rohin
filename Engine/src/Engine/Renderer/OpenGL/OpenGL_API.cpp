@@ -124,6 +124,8 @@ bool32 OpenGL_api::initialize(const char* application_name, platform_state* plat
 
     OpenGL_set_swap_interval(1);
 
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
     return true;
 }
 void OpenGL_api::shutdown() {
@@ -195,35 +197,35 @@ bool32 OpenGL_api::enable_depth_test() {
 
 
 
-void OpenGL_api::create_texture(struct render_texture_2D* texture, const uint8* data) {
+void OpenGL_api::create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) {
     glGenTextures(1, &texture->handle);
     glBindTexture(GL_TEXTURE_2D, texture->handle);
 
     GLenum InternalFormat = 0;
     GLenum Format = 0;
+    GLenum Type = is_hdr ? GL_FLOAT : GL_UNSIGNED_BYTE;
     switch (texture->num_channels) {
         case 1: {
-            InternalFormat = GL_R8;
+            InternalFormat = is_hdr ? GL_R16F : GL_R8;
             Format = GL_RED;
         } break;
         case 2: {
-            InternalFormat = GL_RG8;
+            InternalFormat = is_hdr ? GL_RG16F : GL_RG8;
             Format = GL_RG;
         } break;
         case 3: {
-            InternalFormat = GL_RGB8;
+            InternalFormat = is_hdr ? GL_RGB16F : GL_RGB8;
             Format = GL_RGB;
         } break;
         case 4: {
-            InternalFormat = GL_RGBA8;
+            InternalFormat = is_hdr ? GL_RGBA16F : GL_RGBA8;
             Format = GL_RGBA;
         } break;
         default:
             Assert(false);
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat, texture->width, texture->height, 0, Format, GL_UNSIGNED_BYTE, data);
-    //glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, ResolutionX, ResolutionY, 0, GL_RED, GL_UNSIGNED_BYTE, Bitmap);
+    glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat, texture->width, texture->height, 0, Format, Type, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // This for font texture
@@ -316,6 +318,7 @@ void OpenGL_api::create_mesh(render_geometry* mesh,
     }
 
     // assign index buffer
+    RH_INFO("VAO: %d   VBO: %d  EBO: %d", mesh->handle, vbo, ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
     glBindVertexArray(0);
@@ -478,6 +481,7 @@ static GLenum DataFormat(GLenum format) {
     switch (format) {
         case GL_R32F:
         case GL_R8: return GL_RED;
+        case GL_RG16F: return GL_RG;
         case GL_RGB8: return GL_RGB;
         case GL_RGBA:
         case GL_RGBA8: return GL_RGBA;
@@ -492,6 +496,76 @@ static GLenum DataFormat(GLenum format) {
 
 bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo, 
                                       int num_attachments, const frame_buffer_attachment* attachments) {
+
+    glGenFramebuffers(1, &fbo->handle);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo->handle);
+
+    AssertMsg(num_attachments <= 6, "More color attachments not supported atm");
+    fbo->num_attachments = num_attachments;
+    memory_copy(&fbo->attachments, attachments, num_attachments*sizeof(frame_buffer_attachment));
+
+    for (int n = 0; n < num_attachments; n++) {
+        GLenum internal_format = 0;
+        GLenum attach_type = 0;
+        bool32 color_attachment = false;
+        switch(fbo->attachments[n].texture_format) {
+            case frame_buffer_texture_format::RED8:    { internal_format = GL_R8;      color_attachment = true; } break;
+            case frame_buffer_texture_format::R32F:    { internal_format = GL_R32F;    color_attachment = true; } break;
+            case frame_buffer_texture_format::RGBA8:   { internal_format = GL_RGBA8;   color_attachment = true; } break;
+            case frame_buffer_texture_format::RGBA16F: { internal_format = GL_RGBA16F; color_attachment = true; } break;
+            case frame_buffer_texture_format::RG16F:   { internal_format = GL_RG16F;   color_attachment = true; } break;
+            case frame_buffer_texture_format::RGBA32F: { internal_format = GL_RGBA32F; color_attachment = true; } break;
+            case frame_buffer_texture_format::None:    { Assert(false); } break;
+
+            case frame_buffer_texture_format::DEPTH24STENCIL8: {} break;
+        }
+        switch(fbo->attachments[n].texture_format) {
+            case frame_buffer_texture_format::DEPTH24STENCIL8: { internal_format = GL_DEPTH24_STENCIL8; attach_type = GL_DEPTH_STENCIL_ATTACHMENT; } break;
+            //case frame_buffer_texture_format::DEPTH32F:    { internal_format = GL_R32F;    color_attachment = true; } break;
+
+            case frame_buffer_texture_format::RED8:    {  } break;
+            case frame_buffer_texture_format::R32F:    {  } break;
+            case frame_buffer_texture_format::RGBA8:   {  } break;
+            case frame_buffer_texture_format::RGBA16F: {  } break;
+            case frame_buffer_texture_format::RG16F:   {  } break;
+            case frame_buffer_texture_format::RGBA32F: {  } break;
+            case frame_buffer_texture_format::None:    { Assert(false); } break;
+        }
+        if (color_attachment) {
+            glGenTextures(1, &fbo->attachments[n].handle);
+            glBindTexture(GL_TEXTURE_2D, fbo->attachments[n].handle);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, internal_format, 
+                         fbo->width, fbo->height, 0, 
+                         DataFormat(internal_format), DataType(internal_format), nullptr);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + n, 
+                                   GL_TEXTURE_2D, fbo->attachments[n].handle, 0);
+        } else {
+            glGenRenderbuffers(1, &fbo->attachments[n].handle);
+            glBindRenderbuffer(GL_RENDERBUFFER, fbo->attachments[n].handle);
+
+            glRenderbufferStorage(GL_RENDERBUFFER, internal_format, fbo->width, fbo->height);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, attach_type, GL_RENDERBUFFER, fbo->attachments[n].handle);
+        }
+    }
+
+    GLenum buffers[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
+    glDrawBuffers(num_attachments-1, buffers);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return true;
+}
+bool32 OpenGL_api::create_framebuffer_cube(frame_buffer* fbo, 
+                                           int num_attachments, 
+                                           const frame_buffer_attachment* attachments,
+                                           bool32 generate_mipmaps) {
 
     glGenFramebuffers(1, &fbo->handle);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->handle);
@@ -527,19 +601,27 @@ bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo,
         }
         if (color_attachment) {
             glGenTextures(1, &fbo->attachments[n].handle);
-            glBindTexture(GL_TEXTURE_2D, fbo->attachments[n].handle);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, fbo->attachments[n].handle);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, internal_format, 
-                         fbo->width, fbo->height, 0, 
-                         DataFormat(internal_format), DataType(internal_format), nullptr);
+            for (int i = 0; i < 6; i++) {
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, 
+                            fbo->width, fbo->height, 0, 
+                            DataFormat(internal_format), DataType(internal_format), nullptr);
+                // todo: do we need this?
+                //glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + n, 
+                //                       GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, fbo->attachments[n].handle, 0);    
+            }
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + n, 
-                                   GL_TEXTURE_2D, fbo->attachments[n].handle, 0);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            if (generate_mipmaps) {
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+                glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+            } else {
+                glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            }
         } else {
             glGenRenderbuffers(1, &fbo->attachments[n].handle);
             glBindRenderbuffer(GL_RENDERBUFFER, fbo->attachments[n].handle);
@@ -559,6 +641,15 @@ bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo,
 void OpenGL_api::destroy_framebuffer(frame_buffer* fbo) {
 
 }
+void OpenGL_api::set_framebuffer_cube_face(frame_buffer* fbuffer, uint32 attach_idx, uint32 slot, uint32 mip_level) {
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+attach_idx, 
+                           GL_TEXTURE_CUBE_MAP_POSITIVE_X+slot, fbuffer->attachments[attach_idx].handle, mip_level);    
+}
+void OpenGL_api::resize_framebuffer_renderbuffer(frame_buffer* fbuffer, uint32 new_width, uint32 new_height) {
+    // TODO: read actual FBO data and find its render target
+    glBindRenderbuffer(GL_RENDERBUFFER, fbuffer->attachments[1].handle);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, new_width, new_height);
+}
 
 
 void OpenGL_api::use_shader(shader* shader_prog) {
@@ -575,6 +666,7 @@ void OpenGL_api::use_framebuffer(frame_buffer* fbuffer) {
 void OpenGL_api::draw_geometry(render_geometry* geom) {
     glBindVertexArray(geom->handle);
     glDrawElements(GL_TRIANGLES, geom->num_inds, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }
 void OpenGL_api::draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) {
     glBindVertexArray(geom->handle);
@@ -600,6 +692,10 @@ void OpenGL_api::draw_geometry_points(render_geometry* geom) {
 void OpenGL_api::bind_texture(uint32 tex_handle, uint32 slot) {
     glActiveTexture(GL_TEXTURE0 + slot);
     glBindTexture(GL_TEXTURE_2D, tex_handle);
+}
+void OpenGL_api::bind_texture_cube(uint32 tex_handle, uint32 slot) {
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, tex_handle);
 }
 
 

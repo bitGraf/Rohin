@@ -49,7 +49,7 @@ struct renderer_api {
 
     virtual bool32 set_highlight_mode(bool32 enabled) = 0;
 
-    virtual void create_texture(struct render_texture_2D* texture, const uint8* data) = 0;
+    virtual void create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) = 0;
     virtual void destroy_texture(struct render_texture_2D* texture) = 0;
 
     virtual void create_mesh(render_geometry* mesh, 
@@ -62,11 +62,18 @@ struct renderer_api {
     virtual void destroy_shader(shader* shader_prog) = 0;
 
     virtual bool32 create_framebuffer(frame_buffer* fbo, 
-                                      int num_attachments, const frame_buffer_attachment* attachments) = 0;
+                                      int num_attachments, 
+                                      const frame_buffer_attachment* attachments) = 0;
+    virtual bool32 create_framebuffer_cube(frame_buffer* fbo, 
+                                           int num_attachments, 
+                                           const frame_buffer_attachment* attachments,
+                                           bool32 generate_mipmaps) = 0;  
     virtual void destroy_framebuffer(frame_buffer* fbo) = 0;
 
     virtual void use_shader(shader* shader_prog) = 0;
     virtual void use_framebuffer(frame_buffer *fbuffer) = 0;
+    virtual void set_framebuffer_cube_face(frame_buffer* fbuffer, uint32 attach_idx, uint32 slot, uint32 mip_level) = 0;
+    virtual void resize_framebuffer_renderbuffer(frame_buffer* fbuffer, uint32 new_width, uint32 new_height) = 0;
 
     virtual void draw_geometry(render_geometry* geom) = 0;
     virtual void draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) = 0;
@@ -75,6 +82,7 @@ struct renderer_api {
     virtual void draw_geometry_points(render_geometry* geom) = 0;
 
     virtual void bind_texture(uint32 tex_handle, uint32 slot) = 0;
+    virtual void bind_texture_cube(uint32 tex_handle, uint32 slot) = 0;
 
     virtual void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) = 0;
     virtual void clear_viewport(real32 r, real32 g, real32 b, real32 a) = 0;
@@ -176,6 +184,7 @@ enum class frame_buffer_texture_format {
     //RGB8,
     RGBA8,
     RGBA16F,
+    RG16F,
     RGBA32F,
     R32F,
     //RGB32F,

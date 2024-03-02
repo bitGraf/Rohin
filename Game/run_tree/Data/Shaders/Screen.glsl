@@ -61,7 +61,7 @@ void main() {
     //value = min(max(value, 0), 1) * 0.000001;
 
     if (r_outputSwitch == 0)
-        FragColor = vec4(ToneMap((Albedo*Diffuse + Specular)*Ambient) + Emission, 1);
+        FragColor = vec4(ToneMap(Diffuse + Specular) + Emission, 1);
     else if (r_outputSwitch == 1)
         FragColor = vec4(Albedo, 1);
     else if (r_outputSwitch == 2)
