@@ -76,6 +76,8 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
         return false;
     }
 
+    renderer_create_debug_UI();
+
     render_state = PushStruct(arena, renderer_state);
     render_state->render_height = 0;
     render_state->render_width = 0;
@@ -490,6 +492,8 @@ void renderer_on_event(uint16 code, void* sender, void* listener, event_context 
 }
 
 void renderer_shutdown() {
+    renderer_shutdown_debug_UI();
+
     renderer_api_destroy(backend);
     backend = 0;
 }
@@ -502,9 +506,13 @@ bool32 renderer_begin_Frame(real32 delta_time) {
     backend->set_viewport(0, 0, render_state->render_width, render_state->render_height);
     backend->clear_viewport(0.8f, 0.1f, 0.8f, 0.1f);
 
+    renderer_debug_UI_begin_frame();
+
     return true;
 }
 bool32 renderer_end_Frame(real32 delta_time) {
+    renderer_debug_UI_end_frame();
+
     bool32 result = backend->end_frame(delta_time);
     backend->frame_number++;
     return result;
@@ -870,4 +878,40 @@ void renderer_draw_geometry_lines(render_geometry* geom) {
 }
 void renderer_draw_geometry_points(render_geometry* geom) {
     backend->draw_geometry_points(geom);
+}
+
+
+// debug_ui
+#include "imgui.h"
+
+void renderer_create_debug_UI() {
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+
+    RH_INFO("ImGui Context created.");
+
+    // Setup Platform/Renderer backends
+    backend->ImGui_Init();
+}
+
+void renderer_shutdown_debug_UI() {
+    backend->ImGui_Shutdown();
+    ImGui::DestroyContext();
+    RH_INFO("ImGui Context destroyed.");
+}
+
+void renderer_debug_UI_begin_frame() {
+    backend->ImGui_begin_frame();
+    ImGui::NewFrame();
+    ImGui::ShowDemoWindow(); // Show demo window! :)
+}
+
+void renderer_debug_UI_end_frame() {
+    ImGui::Render();
+    backend->ImGui_end_frame();
 }

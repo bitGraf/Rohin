@@ -129,7 +129,7 @@ bool32 OpenGL_api::initialize(const char* application_name, platform_state* plat
     return true;
 }
 void OpenGL_api::shutdown() {
-
+    OpenGL_ImGui_Shutdown();
 }
 
 void OpenGL_api::resized(uint16 width, uint16 height) {
@@ -145,6 +145,30 @@ bool32 OpenGL_api::begin_frame(real32 delta_time) {
     return true;
 }
 bool32 OpenGL_api::end_frame(real32 delta_time) {
+    return true;
+}
+
+bool32 OpenGL_api::ImGui_Init() {
+    if (!OpenGL_ImGui_Init()) {
+        RH_FATAL("Could not create Init OpenGL ImGui Context!");
+        return false;
+    }
+
+    return true;
+}
+bool32 OpenGL_api::ImGui_begin_frame() {
+    OpenGL_ImGui_Begin_Frame();
+
+    return true;
+}
+bool32 OpenGL_api::ImGui_end_frame() {
+    OpenGL_ImGui_End_Frame();
+
+    return true;
+}
+bool32 OpenGL_api::ImGui_Shutdown() {
+    OpenGL_ImGui_Shutdown();
+
     return true;
 }
 

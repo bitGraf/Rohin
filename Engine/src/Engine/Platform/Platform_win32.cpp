@@ -15,6 +15,9 @@
 #include <stdio.h>
 //#include "Engine/Platform/WGL/win32_opengl.h"
 
+#include "backends/imgui_impl_win32.h"
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 // https://learn.microsoft.com/en-us/windows/win32/dxtecharts/taking-advantage-of-high-dpi-mouse-movement?redirectedfrom=MSDN#wm_input
 // you can #include <hidusage.h> for these defines
 #ifndef HID_USAGE_PAGE_GENERIC
@@ -346,6 +349,9 @@ void win32_update_mouse_rect(HWND window, long new_width, long new_height, RECT*
 }
 
 LRESULT CALLBACK win32_window_callback(HWND window, uint32 message, WPARAM w_param, LPARAM l_param) {
+    if (ImGui_ImplWin32_WndProcHandler(window, message, w_param, l_param))
+        return true;
+
     event_context no_data = {};
     switch (message) {
         case WM_ERASEBKGND:

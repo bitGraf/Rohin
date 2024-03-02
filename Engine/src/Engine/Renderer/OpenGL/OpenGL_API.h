@@ -10,6 +10,11 @@ struct OpenGL_api final : public renderer_api {
 
     bool32 begin_frame(real32 delta_time) override final;
     bool32 end_frame(real32 delta_time) override final;
+    
+    bool32 ImGui_Init() override final;
+    bool32 ImGui_begin_frame() override final;
+    bool32 ImGui_end_frame() override final;
+    bool32 ImGui_Shutdown() override final;
 
     bool32 set_draw_mode(render_draw_mode mode) override final;
     bool32 set_highlight_mode(bool32 enabled) override final;

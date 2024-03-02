@@ -43,6 +43,11 @@ struct renderer_api {
     virtual bool32 begin_frame(real32 delta_time) = 0;
     virtual bool32 end_frame(real32 delta_time) = 0;
 
+    virtual bool32 ImGui_Init() = 0;
+    virtual bool32 ImGui_begin_frame() = 0;
+    virtual bool32 ImGui_end_frame() = 0;
+    virtual bool32 ImGui_Shutdown() = 0;
+
     virtual bool32 set_draw_mode(render_draw_mode mode) = 0;
     virtual bool32 disable_depth_test() = 0;
     virtual bool32 enable_depth_test() = 0;

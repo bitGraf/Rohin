@@ -2,6 +2,7 @@
 
 #include "Engine/Core/Logger.h"
 #include "Engine/Core/Asserts.h"
+#include "Engine/Debug_UI/Debug_UI.h"
 
 #if RH_PLATFORM_WINDOWS
 
@@ -15,6 +16,10 @@
     #define __DESIRED_GL_VERSION_MAJOR 4
     #define __DESIRED_GL_VERSION_MINOR 0
 #endif
+
+#include "imgui.h"
+#include "backends/imgui_impl_win32.h"
+#include "backends/imgui_impl_opengl3.h"
 
 /******************************************************************************
     * WGL_ARB_extensions_string 
@@ -293,6 +298,45 @@ bool32 OpenGL_create_context() {
 
     return true;
 }
+
+bool32 OpenGL_destroy_context() {
+    // TODO: see if anything else needs to be destroyed here
+    return true;
+}
+
+bool32 OpenGL_ImGui_Init() {
+    HWND window = GetActiveWindow();
+    if (!window) {
+        return false;
+    }
+
+    // setup imgui
+    ImGui_ImplWin32_Init(window);
+    ImGui_ImplOpenGL3_Init();
+
+    return true;
+}
+
+bool32 OpenGL_ImGui_Shutdown() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+
+    return true;
+}
+
+bool32 OpenGL_ImGui_Begin_Frame() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+
+    return true;
+}
+
+bool32 OpenGL_ImGui_End_Frame() {
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    
+    return true;
+}
+
 
 //void OpenGL_swap_buffers() {
 //    SwapBuffers(global_win32_state.device_context);

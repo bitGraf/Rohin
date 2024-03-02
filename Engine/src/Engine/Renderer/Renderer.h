@@ -67,3 +67,9 @@ void renderer_draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_
 void renderer_draw_geometry(render_geometry* geom, render_material* mat);
 void renderer_draw_geometry_lines(render_geometry* geom);
 void renderer_draw_geometry_points(render_geometry* geom);
+
+// debug_ui
+void renderer_create_debug_UI();
+void renderer_shutdown_debug_UI();
+void renderer_debug_UI_begin_frame();
+void renderer_debug_UI_end_frame();
