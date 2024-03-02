@@ -13,8 +13,8 @@ bool32 create_application(RohinApp* app) {
     //app->app_config.start_height = 720;
     app->app_config.start_x = 10;
     app->app_config.start_y = 50;
-    app->app_config.start_width = 960;
-    app->app_config.start_height = 720;
+    app->app_config.start_width = 800;
+    app->app_config.start_height = 600;
 
     app->app_config.requested_permanant_memory = Megabytes(32);
     app->app_config.requested_transient_memory = Megabytes(256);

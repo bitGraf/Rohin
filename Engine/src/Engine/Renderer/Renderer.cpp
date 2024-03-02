@@ -82,9 +82,9 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
     render_state->render_height = 0;
     render_state->render_width = 0;
 
-    render_state->current_shader_out = 1;
-    render_state->gamma_correct = false;
-    render_state->tone_map = false;
+    render_state->current_shader_out = 0;
+    render_state->gamma_correct = true;
+    render_state->tone_map = true;
 
     return true;
 }
