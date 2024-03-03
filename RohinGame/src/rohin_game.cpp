@@ -12,6 +12,8 @@
 
 #include <Engine/Renderer/Renderer.h>
 
+#include <Engine/Core/Timing.h>
+
 #include <imgui/imgui.h>
 
 struct player_state {
@@ -168,6 +170,7 @@ bool32 game_initialize(RohinApp* app) {
 }
 
 bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta_time) {
+    time_point update_start = start_timer();
     game_state* state = (game_state*)(app->memory.PermanentStorage);
 
     // Create ImGui window
@@ -175,7 +178,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     ImGui::Text("Window made by %s", __FILE__);
     ImGui::Text("  DeltaTime: %.3f ms",  delta_time*1000.0f);
     ImGui::Text("  Framerate: %.3f fps", 1.0f / delta_time);
-    ImGui::End();
+
 
     // simulate game state
     laml::Mat4 eye(1.0f);
@@ -389,6 +392,10 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     // calculate view-point
     packet->camera_pos = state->debug_camera.position;
     packet->camera_orientation = state->debug_camera.orientation;
+
+    // timing
+    ImGui::Text("Game: Update and Render - %.3f ms", measure_elapsed_time(update_start)*1000.0f);
+    ImGui::End();
 
     return true;
 }

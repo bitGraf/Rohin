@@ -11,6 +11,10 @@
 
 #include "Engine/Collision/Collision.h"
 
+#include "Engine/Core/Timing.h"
+
+#include "imgui.h"
+
 // include auto-generated shader source headers
 #include "Engine/Renderer/ShaderSrc/ShaderSrc.h"
 
@@ -92,6 +96,10 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
 bool32 renderer_create_pipeline() {
     Assert(render_state);
 
+    RH_DEBUG("Creating Render Pipeline");
+    time_point pipeline_start = start_timer();
+    time_point last_time = pipeline_start;
+
     // load default textures
     if (!resource_load_texture_file("Data/Images/white.png", &render_state->white_tex)) {
         RH_FATAL("Could not load default textures");
@@ -101,6 +109,8 @@ bool32 renderer_create_pipeline() {
         RH_FATAL("Could not load default textures");
         return false;
     }
+
+    RH_TRACE("%.3lf ms to load default textures", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
     // create cube mesh for debug purposes
     {
@@ -163,7 +173,10 @@ bool32 renderer_create_pipeline() {
         backend->create_mesh(&render_state->screen_quad, 4, quad_verts, 6, quad_inds, quad_attrs);
     }
 
+    RH_TRACE("%.3lf ms to create internal meshes", measure_elapsed_time(last_time, &last_time)*1000.0f);
+
 #if SIMPLE_RENDER_PASS
+    time_point simple_pipeline_start = start_timer();
     // setup simple shader
     shader* pSimple = (shader*)(&render_state->simple_shader);
     shader_simple& simple = render_state->simple_shader;
@@ -175,7 +188,12 @@ bool32 renderer_create_pipeline() {
 
     simple.InitShaderLocs();
     backend->upload_uniform_int(simple.u_texture, simple.u_texture.SamplerID);
+
+    RH_TRACE("%.3lf ms to create Simple Render Pipeline", measure_elapsed_time(simple_pipeline_start)*1000.0f);
 #else
+    time_point pbr_pipeline_start = start_timer();
+    last_time = pbr_pipeline_start;
+
     // setup prepass shader
     shader* pPrepass = (shader*)(&render_state->pre_pass_shader);
     shader_PrePass& prepass = render_state->pre_pass_shader;
@@ -209,6 +227,8 @@ bool32 renderer_create_pipeline() {
         renderer_create_framebuffer(&render_state->gbuffer, prepass.outputs.num_outputs+1, attachments);
     }
 
+    RH_TRACE("%.3lf ms to create Prepass shader and framebuffer", measure_elapsed_time(last_time, &last_time)*1000.0f);
+
     // Lighting pass
     shader* pLighting = (shader*)(&render_state->lighting_shader);
     shader_Lighting& lighting = render_state->lighting_shader;
@@ -238,6 +258,8 @@ bool32 renderer_create_pipeline() {
         renderer_create_framebuffer(&render_state->lbuffer, lighting.outputs.num_outputs+1, attachments);
     }
 
+    RH_TRACE("%.3lf ms to create Lighting shader and framebuffer", measure_elapsed_time(last_time, &last_time)*1000.0f);
+
     // Screen shader
     shader* pScreen = (shader*)(&render_state->screen_shader);
     shader_Screen& screen = render_state->screen_shader;
@@ -259,6 +281,8 @@ bool32 renderer_create_pipeline() {
     backend->upload_uniform_int(screen.r_outputSwitch, 0);
     backend->upload_uniform_float(screen.r_toneMap, render_state->tone_map ? 1.0f : 0.0f);
     backend->upload_uniform_float(screen.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
+
+    RH_TRACE("%.3lf ms to create Screen shader", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
     // load hdr for IBL
     //if (!resource_load_texture_file_hdr("Data/textures/newport_loft.hdr", &render_state->hdr_image)) {
@@ -323,6 +347,7 @@ bool32 renderer_create_pipeline() {
         }
         backend->use_framebuffer(0);
     }
+    RH_TRACE("%.3lf ms to Convert hdri to cubemap", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
     {
         // convolution shader
@@ -361,6 +386,7 @@ bool32 renderer_create_pipeline() {
         }
         backend->use_framebuffer(0);
     }
+    RH_TRACE("%.3lf ms to convolute env map into irradiance", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
     {
         // IBL Prefilter shader
@@ -412,6 +438,7 @@ bool32 renderer_create_pipeline() {
         backend->resize_framebuffer_renderbuffer(&render_state->ibl_prefilter, 128, 128);
         backend->use_framebuffer(0);
     }
+    RH_TRACE("%.3lf ms to prefilter env map", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
     {
         // setup BRDF Integration
@@ -443,6 +470,9 @@ bool32 renderer_create_pipeline() {
         backend->use_framebuffer(0);
     }
 
+    RH_TRACE("%.3lf ms to generate BRDF integration LUT", measure_elapsed_time(last_time, &last_time)*1000.0f);
+    RH_TRACE("%.3lf ms to Create PBR Pipeline", measure_elapsed_time(pbr_pipeline_start)*1000.0f);
+
 #endif
 
     // setup wireframe shader
@@ -453,6 +483,8 @@ bool32 renderer_create_pipeline() {
     renderer_use_shader(&render_state->wireframe_shader);
 
     resource_load_debug_mesh_into_geometry("Data/Models/debug/gizmo.stl", &render_state->axis_geom);
+
+    RH_TRACE("%.3lf ms to create render pipeline", measure_elapsed_time(pipeline_start)*1000.0f);
 
     return true;
 }
@@ -499,6 +531,10 @@ void renderer_shutdown() {
 }
 
 bool32 renderer_begin_Frame(real32 delta_time) {
+    ImGui::Begin("Renderer");
+    ImGui::Text("delta_time: %.2f ms", delta_time*1000.0f);
+    ImGui::Text("frame_number: %d", backend->frame_number);
+
     if (!backend->begin_frame(delta_time)) {
         return false;
     }
@@ -509,6 +545,7 @@ bool32 renderer_begin_Frame(real32 delta_time) {
     return true;
 }
 bool32 renderer_end_Frame(real32 delta_time) {
+    ImGui::End(); // ImGui::Begin("Renderer");
     renderer_debug_UI_end_frame();
 
     bool32 result = backend->end_frame(delta_time);
@@ -521,11 +558,16 @@ bool32 renderer_draw_frame(render_packet* packet) {
         // render all commands in the packet
         laml::Mat4 eye(1.0f);
 
+        ImGui::Text("%d render commands", packet->num_commands);
+        ImGui::SeparatorText("Frame Timing");
+
         laml::Mat4 cam_transform;
         laml::transform::create_transform(cam_transform, packet->camera_orientation, packet->camera_pos);
         laml::transform::create_view_matrix_from_transform(packet->view_matrix, cam_transform);
 
 #if SIMPLE_RENDER_PASS
+        time_point simple_pass_start = start_timer();
+
         shader* pSimple = (shader*)(&render_state->simple_shader);
         renderer_use_shader(pSimple);
 
@@ -556,7 +598,13 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
             renderer_draw_geometry(&cmd.geom);
         }
+
+        ImGui::Text("Simple Render Pass: %.2f ms", measure_elapsed_time(simple_pass_start)*1000.0f);
+        
 #else
+        time_point pbr_pass_start = start_timer();
+        time_point last_time = pbr_pass_start;
+
         // PREPASS STAGE
         shader* pPrepass = (shader*)(&render_state->pre_pass_shader);
         shader_PrePass& prepass = render_state->pre_pass_shader;
@@ -598,6 +646,8 @@ bool32 renderer_draw_frame(render_packet* packet) {
             renderer_draw_geometry(&packet->commands[cmd_index].geom);
         }
 
+        ImGui::Text(" Prepass: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
+
         // LIGHTING STAGE
         shader* pLighting = (shader*)(&render_state->lighting_shader);
         shader_Lighting& lighting = render_state->lighting_shader;
@@ -627,6 +677,8 @@ bool32 renderer_draw_frame(render_packet* packet) {
         backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
         backend->draw_geometry(&render_state->screen_quad);
 
+        ImGui::Text(" Lighting: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
+
         // SCREEN STAGE
         shader* pScreen = (shader*)(&render_state->screen_shader);
         shader_Screen& screen = render_state->screen_shader;
@@ -650,6 +702,9 @@ bool32 renderer_draw_frame(render_packet* packet) {
         backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
         backend->draw_geometry(&render_state->screen_quad);
         backend->enable_depth_test();
+
+        ImGui::Text(" Present: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
+        ImGui::Text("Total: %.2f ms", measure_elapsed_time(pbr_pass_start)*1000.0f);
         
 #endif
 
@@ -880,8 +935,6 @@ void renderer_draw_geometry_points(render_geometry* geom) {
 
 
 // debug_ui
-#include "imgui.h"
-
 void renderer_create_debug_UI() {
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -906,16 +959,6 @@ void renderer_shutdown_debug_UI() {
 void renderer_debug_UI_begin_frame() {
     backend->ImGui_begin_frame();
     ImGui::NewFrame();
-
-    if (false) {
-        static char buf[256];
-        static float f = 0;
-        ImGui::Text("Hello, world %d", 123);
-        if (ImGui::Button("Save"))
-            RH_INFO("Save Button");
-        ImGui::InputText("string", buf, IM_ARRAYSIZE(buf));
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-    }
 }
 
 void renderer_debug_UI_end_frame() {

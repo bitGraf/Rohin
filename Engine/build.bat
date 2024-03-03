@@ -23,4 +23,10 @@ echo Building the Engine...
 
 cl %IncludeDirs% %CompilerFlags% %SrcFiles% /Fm../build/%Name%.map /Fe: ../build/%Name%.dll %ObjectFlags% /link %LinkerFlags%
 
+if %ERRORLEVEL% NEQ 0 (
+    echo ERRORLEVEL:%ERRORLEVEL%
+) else (
+    echo Succesfully built Rohin.dll!
+)
+
 EXIT /B %ERRORLEVEL%
