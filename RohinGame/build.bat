@@ -11,7 +11,7 @@ FOR /R %%f in (*.cpp) do (
 popd
 
 set Name=game
-set WarningFlags=/W4 /WX /wd4189 /wd4201 /wd4100
+set WarningFlags=/W4 /WX /wd4189 /wd4201 /wd4100 /wd4723
 set Definitions=/D_DEBUG /D_CRT_SECURE_NO_WARNINGS /DRH_INTERNAL
 set CompilerFlags=/MTd /nologo /Gm- /GR- /EHa- /Odi /std:c++14 %WarningFlags% /FC /Z7 %Definitions%
 set IncludeDirs=/Isrc /I../Engine/src /I../Game/src /I../Engine/deps/math_lib/include /I../Engine/deps/imgui

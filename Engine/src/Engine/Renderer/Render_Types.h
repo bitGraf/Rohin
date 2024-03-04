@@ -55,6 +55,7 @@ struct renderer_api {
     virtual bool32 set_highlight_mode(bool32 enabled) = 0;
 
     virtual void create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) = 0;
+    virtual void create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr) = 0;
     virtual void destroy_texture(struct render_texture_2D* texture) = 0;
 
     virtual void create_mesh(render_geometry* mesh, 

@@ -22,7 +22,9 @@ struct OpenGL_api final : public renderer_api {
     bool32 enable_depth_test() override final;
 
     void create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) override final;
+    void create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr) override final;
     void destroy_texture(struct render_texture_2D* texture) override final;
+
     void create_mesh(render_geometry* mesh, 
                      uint32 num_verts, const void* vertices,
                      uint32 num_inds, const uint32* indices,

@@ -212,7 +212,7 @@ bool32 start_rohin_engine(RohinApp* app) {
                         }
                     } else {
                         // TODO: Missed Frame Rate!
-                        RH_ERROR("Frame rate missed!");
+                        //RH_ERROR("Frame rate missed!");
                     }
                 }
 

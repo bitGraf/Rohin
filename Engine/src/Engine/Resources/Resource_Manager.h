@@ -20,6 +20,7 @@ bool32 resource_load_shader_file(const char* resource_file_name,
 
 RHAPI bool32 resource_load_texture_file(const char* resource_file_name,
                                         render_texture_2D* texture);
+RHAPI bool32 resource_load_texture_debug_cube_map(render_texture_2D* texture);
 RHAPI bool32 resource_load_texture_file_hdr(const char* resource_file_name,
                                             render_texture_2D* texture);
 

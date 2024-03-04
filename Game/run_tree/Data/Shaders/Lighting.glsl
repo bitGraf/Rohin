@@ -95,13 +95,10 @@ void main() {
 	vec3 F0 = mix(FD, m_Params.Albedo, m_Params.Metalness);
 
     Lighting(F0);
-    IBL(F0, R);
+    IBL(F0, RWorld);
 
     out_Diffuse = vec4(m_Params.Diffuse, 1);
     out_Specular = vec4(m_Params.Specular, 1);
-
-    //vec3 worldPos = vec3(inverse(r_View) * vec4(FragPos, 1));
-    //out_Diffuse = vec4(worldPos, 1);
 }
 
 // reconstruct view-space frag position from depth buffer
@@ -256,7 +253,7 @@ void CalcSpotLightDirect(vec3 F0, Light sl) {
 }
 
 void Lighting(vec3 F0) {
-	m_Params.Diffuse  = vec3(0.03) * m_Params.AO * m_Params.Albedo;
+	m_Params.Diffuse  = vec3(0.0);
     m_Params.Specular = vec3(0.0);
 
 	// add directional light

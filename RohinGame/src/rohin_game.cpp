@@ -6,6 +6,7 @@
 #include <Engine/Resources/Resource_Manager.h>
 #include <Engine/Core/Input.h>
 #include <Engine/Core/Event.h>
+#include <Engine/Memory/MemoryUtils.h>
 
 #include <Engine/Collision/Collision.h>
 #include <Engine/Collision/Character_Controller.h>
@@ -15,6 +16,9 @@
 #include <Engine/Core/Timing.h>
 
 #include <imgui/imgui.h>
+
+int32 NUM_X = 1;
+int32 NUM_Y = 1;
 
 struct player_state {
     laml::Vec3 position;
@@ -36,6 +40,9 @@ struct game_state {
 
     resource_mesh* level_mesh;
     resource_mesh* player_mesh;
+
+    uint32 num_scene_meshes;
+    resource_mesh* scene_meshes;
 
     player_state player;
     player_state debug_camera;
@@ -67,8 +74,8 @@ bool32 game_startup(RohinApp* app) {
     state->level_mesh = PushStruct(&state->mesh_arena, resource_mesh);
     state->player_mesh = PushStruct(&state->mesh_arena, resource_mesh);
     
-    //state->num_geometry = 0;
-    //state->geometry = nullptr;
+    state->num_scene_meshes = NUM_X * NUM_Y;
+    state->scene_meshes = PushArray(&state->mesh_arena, resource_mesh, state->num_scene_meshes);
 
     app->memory.IsInitialized = true;
 
@@ -91,15 +98,15 @@ bool32 game_initialize(RohinApp* app) {
     //collision_grid_finalize(&state->trans_arena, &state->grid);
     resource_load_mesh("Data/Models/helmet.mesh", state->player_mesh);
     for(uint32 n = 0; n < state->player_mesh->num_primitives; n++) {
-        RH_INFO("mat[%d]: flag = %d\n", n, state->player_mesh->materials[n].flag);
-        RH_INFO("         diffuse = [%.2f %.2f %.2f]\n", 
+        RH_INFO("mat[%d]: flag = %d", n, state->player_mesh->materials[n].flag);
+        RH_INFO("         diffuse = [%.2f %.2f %.2f]", 
             state->player_mesh->materials[n].DiffuseFactor.x,
             state->player_mesh->materials[n].DiffuseFactor.y,
             state->player_mesh->materials[n].DiffuseFactor.z);
-        RH_INFO("         diffuse_tex =  %d\n", state->player_mesh->materials[n].DiffuseTexture.handle);
-        RH_INFO("         normal_tex =   %d\n", state->player_mesh->materials[n].NormalTexture.handle);
-        RH_INFO("         amr_tex =      %d\n", state->player_mesh->materials[n].AMRTexture.handle);
-        RH_INFO("         emissive_tex = %d\n", state->player_mesh->materials[n].EmissiveTexture.handle);
+        RH_INFO("         diffuse_tex =  %d", state->player_mesh->materials[n].DiffuseTexture.handle);
+        RH_INFO("         normal_tex =   %d", state->player_mesh->materials[n].NormalTexture.handle);
+        RH_INFO("         amr_tex =      %d", state->player_mesh->materials[n].AMRTexture.handle);
+        RH_INFO("         emissive_tex = %d", state->player_mesh->materials[n].EmissiveTexture.handle);
     }
 
     state->missing_material.DiffuseFactor = laml::Vec3(1.0f);
@@ -111,7 +118,14 @@ bool32 game_initialize(RohinApp* app) {
     state->missing_material.flag = 3;
     resource_load_texture_file("Data/textures/checker.png", &state->missing_material.DiffuseTexture);
 
-    state->player.position = {-5.0f, 1.0f, 0.0f};
+    // load spheres
+    resource_load_mesh("Data/Models/sphere.mesh", &state->scene_meshes[0]);
+    for (uint32 n = 1; n < state->num_scene_meshes; n++) {
+        memory_copy(&state->scene_meshes[n], &state->scene_meshes[0], sizeof(resource_mesh));
+    }
+
+    //state->player.position = {-5.0f, 1.0f, 0.0f};
+    state->player.position = {0.0f, 1.0f, 0.0f};
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     state->player.scale = 0.5f;
     state->player.height = 1.9f;
@@ -327,7 +341,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     state->player.position = new_position;
 
 
-    state->debug_camera.position = state->player.position - (forward * 0.75f) + (up * 0.0f);
+    state->debug_camera.position = state->player.position - (forward * 5.75f) + (up * 0.0f);
     laml::Mat3 camera_rot;
     laml::transform::create_transform_rotation(camera_rot, state->player.yaw, state->debug_camera.pitch, 0.0f);
     state->debug_camera.orientation = laml::transform::quat_from_mat(camera_rot);
@@ -342,17 +356,46 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     // ...
 
     // push all the render commands to the render_packet
-    packet->num_commands = state->player_mesh->num_primitives;
+    //packet->num_commands = state->player_mesh->num_primitives + 25*state->scene_meshes[0].num_primitives;
+    packet->num_commands = state->num_scene_meshes*state->scene_meshes[0].num_primitives;
     packet->commands = PushArray(packet->arena, render_command, packet->num_commands);
     
     int command_idx = 0;
-    for (uint32 n = 0; n < state->player_mesh->num_primitives; n++) {
-        //packet->commands[command_idx].model_matrix = state->player_mesh->transform;
-        packet->commands[command_idx].model_matrix = player_transform;
-        packet->commands[command_idx].geom = state->player_mesh->primitives[n];
-        packet->commands[command_idx].material = state->player_mesh->materials[n];
+    //for (uint32 n = 0; n < state->player_mesh->num_primitives; n++) {
+    //    //packet->commands[command_idx].model_matrix = state->player_mesh->transform;
+    //    packet->commands[command_idx].model_matrix = player_transform;
+    //    packet->commands[command_idx].geom = state->player_mesh->primitives[n];
+    //    packet->commands[command_idx].material = state->player_mesh->materials[n];
+//
+    //    command_idx++;
+    //}
+    for (int32 m1 = 0; m1 < NUM_X; m1++) {
+        real32 xpos = (m1-((NUM_X-1)/2)) * 3.0f;
+        real32 roughness = 0.0f;
+        if (NUM_X > 1)
+            roughness = (m1 * 1.0f/(NUM_X-1));
+        for (int32 m2 = 0; m2 < NUM_Y; m2++) {
+            real32 ypos = (m2-((NUM_Y-1)/2)) * 3.0f;
+            real32 metalness = 0.0f;
+            if (NUM_Y > 1)
+                metalness = m2 * 1.0f/(NUM_Y-1);
 
-        command_idx++;
+            int32 m = m1*NUM_X + m2;
+
+            laml::Vec3 pos(xpos, ypos, 0.0f);
+            laml::Mat4 model(1.0f);
+            laml::transform::create_transform_translate(model, pos);
+            for (uint32 n = 0; n < state->scene_meshes[m].num_primitives; n++) {
+                packet->commands[command_idx].model_matrix = model;
+                packet->commands[command_idx].geom = state->scene_meshes[m].primitives[n];
+                packet->commands[command_idx].material = state->scene_meshes[m].materials[n];
+
+                packet->commands[command_idx].material.MetallicFactor = metalness;
+                packet->commands[command_idx].material.RoughnessFactor = roughness;
+
+                command_idx++;
+            }
+        }
     }
 
     //packet->commands[0].model_matrix = eye;

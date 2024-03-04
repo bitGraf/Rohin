@@ -27,6 +27,19 @@
             }
         },
         {
+            "label": "build Game.exe",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}/RohinGame/"
+            },
+            "command": "build.bat",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
             "label": "run_game",
             "type": "shell",
             "options": {

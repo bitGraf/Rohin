@@ -28,6 +28,7 @@ struct renderer_state {
 
     render_texture_2D white_tex;
     render_texture_2D black_tex;
+    render_texture_2D cube_tex;
 #if SIMPLE_RENDER_PASS
     // simple render pass
     //shader simple_shader;
@@ -107,6 +108,10 @@ bool32 renderer_create_pipeline() {
     }
     if (!resource_load_texture_file("Data/Images/black.png", &render_state->black_tex)) {
         RH_FATAL("Could not load default textures");
+        return false;
+    }
+    if (!resource_load_texture_debug_cube_map(&render_state->cube_tex)) {
+        RH_FATAL("Could not load default cubemap");
         return false;
     }
 
@@ -285,8 +290,8 @@ bool32 renderer_create_pipeline() {
     RH_TRACE("%.3lf ms to create Screen shader", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
     // load hdr for IBL
-    //if (!resource_load_texture_file_hdr("Data/textures/newport_loft.hdr", &render_state->hdr_image)) {
-    if (!resource_load_texture_file_hdr("Data/textures/metro_noord_1k.hdr", &render_state->hdr_image)) {
+    if (!resource_load_texture_file_hdr("Data/textures/newport_loft.hdr", &render_state->hdr_image)) {
+    //if (!resource_load_texture_file_hdr("Data/textures/metro_noord_1k.hdr", &render_state->hdr_image)) {
         RH_FATAL("Could not load environment HDR");
         return false;
     }
@@ -305,10 +310,15 @@ bool32 renderer_create_pipeline() {
 
     laml::transform::lookAt(captureViews[0], eye, pos_x, neg_y);
     laml::transform::lookAt(captureViews[1], eye, neg_x, neg_y);
-    laml::transform::lookAt(captureViews[2], eye, pos_y, pos_x);
-    laml::transform::lookAt(captureViews[3], eye, neg_y, neg_x);
+    laml::transform::lookAt(captureViews[2], eye, pos_y, neg_z);
+    laml::transform::lookAt(captureViews[3], eye, neg_y, pos_z);
     laml::transform::lookAt(captureViews[4], eye, pos_z, neg_y);
     laml::transform::lookAt(captureViews[5], eye, neg_z, neg_y);
+
+    const uint32 ENV_CUBE_MAP_SIZE = 512;
+    const uint32 IRRADIANCE_CUBE_MAP_SIZE = 32;
+    const uint32 PREFILTER_CUBE_MAP_SIZE = 128;
+    const uint32 BRDF_LUT_SIZE = 512;
 
     shader_HDRI_to_cubemap& convert = render_state->convert_shader;
     {
@@ -327,15 +337,15 @@ bool32 renderer_create_pipeline() {
             { 0, frame_buffer_texture_format::RGBA16F, black }, // Albedo
             { 0, frame_buffer_texture_format::Depth,   black }, // Depth-buffer
         };
-        render_state->cubemap.width = 512;
-        render_state->cubemap.height = 512;
+        render_state->cubemap.width = ENV_CUBE_MAP_SIZE;
+        render_state->cubemap.height = ENV_CUBE_MAP_SIZE;
         renderer_create_framebuffer_cube(&render_state->cubemap, convert.outputs.num_outputs+1, attachments, false);
 
         backend->use_shader(pConvert);
         backend->upload_uniform_float4x4(convert.r_Projection, cap_projection._data);
         backend->bind_texture(render_state->hdr_image.handle, convert.u_hdri.SamplerID);
 
-        backend->set_viewport(0, 0, 512, 512);
+        backend->set_viewport(0, 0, ENV_CUBE_MAP_SIZE, ENV_CUBE_MAP_SIZE);
         backend->use_framebuffer(&render_state->cubemap);
         for(int n = 0; n < 6; n++) {
             backend->upload_uniform_float4x4(convert.r_View, captureViews[n]._data);
@@ -366,15 +376,16 @@ bool32 renderer_create_pipeline() {
             { 0, frame_buffer_texture_format::RGBA16F, black }, // Albedo
             { 0, frame_buffer_texture_format::Depth,   black }, // Depth-buffer
         };
-        render_state->irradiance.width  = 32;
-        render_state->irradiance.height = 32;
+        render_state->irradiance.width  = IRRADIANCE_CUBE_MAP_SIZE;
+        render_state->irradiance.height = IRRADIANCE_CUBE_MAP_SIZE;
         renderer_create_framebuffer_cube(&render_state->irradiance, convolute.outputs.num_outputs+1, attachments, false);
 
         backend->use_shader(pConvolute);
         backend->upload_uniform_float4x4(convolute.r_Projection, cap_projection._data);
-        backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor].handle, convolute.u_env_cubemap.SamplerID);
+        //backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor].handle, convolute.u_env_cubemap.SamplerID);
+        backend->bind_texture_cube(render_state->cube_tex.handle, convolute.u_env_cubemap.SamplerID);
 
-        backend->set_viewport(0, 0, 32, 32);
+        backend->set_viewport(0, 0, IRRADIANCE_CUBE_MAP_SIZE, IRRADIANCE_CUBE_MAP_SIZE);
         backend->use_framebuffer(&render_state->irradiance);
         for(int n = 0; n < 6; n++) {
             backend->upload_uniform_float4x4(convolute.r_View, captureViews[n]._data);
@@ -405,20 +416,21 @@ bool32 renderer_create_pipeline() {
             { 0, frame_buffer_texture_format::RGBA16F, black }, // Albedo
             { 0, frame_buffer_texture_format::Depth,   black }, // Depth-buffer
         };
-        render_state->ibl_prefilter.width  = 128;
-        render_state->ibl_prefilter.height = 128;
+        render_state->ibl_prefilter.width  = PREFILTER_CUBE_MAP_SIZE;
+        render_state->ibl_prefilter.height = PREFILTER_CUBE_MAP_SIZE;
         renderer_create_framebuffer_cube(&render_state->ibl_prefilter, prefilter.outputs.num_outputs+1, attachments, true);
 
         backend->use_shader(pPreFilter);
         backend->upload_uniform_float4x4(prefilter.r_Projection, cap_projection._data);
-        backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor].handle, prefilter.u_env_cubemap.SamplerID);
+        //backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor].handle, prefilter.u_env_cubemap.SamplerID);
+        backend->bind_texture_cube(render_state->cube_tex.handle, prefilter.u_env_cubemap.SamplerID);
 
         RH_DEBUG("Pre-Filtering Environment Map");
         backend->use_framebuffer(&render_state->ibl_prefilter);
         const int maxMipLevels = 6;
         for (int mip = 0; mip < maxMipLevels; mip++) {
-            uint32 mip_width  = (uint32)(128.0 * std::pow(0.5, mip));
-            uint32 mip_height = (uint32)(128.0 * std::pow(0.5, mip));
+            uint32 mip_width  = (uint32)((real32)(PREFILTER_CUBE_MAP_SIZE) * std::pow(0.5, mip));
+            uint32 mip_height = (uint32)((real32)(PREFILTER_CUBE_MAP_SIZE) * std::pow(0.5, mip));
             backend->resize_framebuffer_renderbuffer(&render_state->ibl_prefilter, mip_width, mip_height);
             backend->set_viewport(0, 0, mip_width, mip_height);
             
@@ -435,7 +447,7 @@ bool32 renderer_create_pipeline() {
                 backend->draw_geometry(&render_state->cube_geom);
             }
         }
-        backend->resize_framebuffer_renderbuffer(&render_state->ibl_prefilter, 128, 128);
+        backend->resize_framebuffer_renderbuffer(&render_state->ibl_prefilter, PREFILTER_CUBE_MAP_SIZE, PREFILTER_CUBE_MAP_SIZE);
         backend->use_framebuffer(0);
     }
     RH_TRACE("%.3lf ms to prefilter env map", measure_elapsed_time(last_time, &last_time)*1000.0f);
@@ -456,13 +468,13 @@ bool32 renderer_create_pipeline() {
             { 0, frame_buffer_texture_format::RGBA16F,  black }, // FragColor
             { 0, frame_buffer_texture_format::Depth,  black }, // Depth-buffer
         };
-        render_state->BRDF_LUT.width  = 512;
-        render_state->BRDF_LUT.height = 512;
+        render_state->BRDF_LUT.width  = BRDF_LUT_SIZE;
+        render_state->BRDF_LUT.height = BRDF_LUT_SIZE;
         renderer_create_framebuffer(&render_state->BRDF_LUT,2, attachments);
 
         backend->use_shader(pIntegrate);
 
-        backend->set_viewport(0, 0, 512, 512);
+        backend->set_viewport(0, 0, BRDF_LUT_SIZE, BRDF_LUT_SIZE);
         backend->use_framebuffer(&render_state->BRDF_LUT);
         backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
         backend->draw_geometry(&render_state->screen_quad);
@@ -664,13 +676,32 @@ bool32 renderer_draw_frame(render_packet* packet) {
         backend->upload_uniform_float3(lighting.r_sun.Color, sun_color);
         backend->upload_uniform_float(lighting.r_sun.Strength, sun_strength);
 
+        backend->upload_uniform_float4x4(lighting.r_View, packet->view_matrix._data);
+
+        // point lights
+        const uint32 num_lights = 4;
+        laml::Vec3 light_pos[num_lights] = {
+            {-4.5f, -4.5f, 5.0f},
+            { 4.5f, -4.5f, 5.0f},
+            { 4.5f,  4.5f, 5.0f},
+            {-4.5f,  4.5f, 5.0f},
+        };
+        laml::Vec3 light_color(1.0f, 0.6f, 1.0f);
+        for (uint32 n = 0; n < num_lights; n++) {
+            backend->upload_uniform_float3(lighting.r_pointLights[n].Position, light_pos[n]._data);
+            backend->upload_uniform_float3(lighting.r_pointLights[n].Color, light_color._data);
+            backend->upload_uniform_float(lighting.r_pointLights[n].Strength, 0.0f);
+        }
+
         backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Albedo].handle, lighting.u_albedo.SamplerID);
         backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Normal].handle, lighting.u_normal.SamplerID);
         backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Depth].handle,  lighting.u_depth.SamplerID);
         backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_AMR].handle,    lighting.u_amr.SamplerID);
 
         backend->bind_texture_cube(render_state->irradiance.attachments[0].handle,       lighting.u_irradiance.SamplerID);
+        //backend->bind_texture_cube(render_state->cube_tex.handle,       lighting.u_irradiance.SamplerID);
         backend->bind_texture_cube(render_state->ibl_prefilter.attachments[0].handle,    lighting.u_prefilter.SamplerID);
+        //backend->bind_texture_cube(render_state->cube_tex.handle,       lighting.u_prefilter.SamplerID);
         backend->bind_texture(render_state->BRDF_LUT.attachments[0].handle,         lighting.u_brdf_LUT.SamplerID);
 
         backend->disable_depth_test();
@@ -873,6 +904,9 @@ bool32 renderer_end_wireframe() {
 
 void renderer_create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) {
     backend->create_texture(texture, data, is_hdr);
+}
+void renderer_create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr) {
+    backend->create_texture_cube(texture, data, is_hdr);
 }
 void renderer_destroy_texture(struct render_texture_2D* texture) {
     backend->destroy_texture(texture);

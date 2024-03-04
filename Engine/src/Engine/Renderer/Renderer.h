@@ -42,6 +42,7 @@ bool32 renderer_end_wireframe();
 // things like meshes, shaders, textures, etc.
 
 void renderer_create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr);
+void renderer_create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr);
 void renderer_destroy_texture(struct render_texture_2D* texture);
 
 RHAPI void renderer_create_mesh(render_geometry* mesh, 

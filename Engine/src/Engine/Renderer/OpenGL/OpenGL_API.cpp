@@ -261,6 +261,49 @@ void OpenGL_api::create_texture(struct render_texture_2D* texture, const void* d
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
+void OpenGL_api::create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr) {
+    glGenTextures(1, &texture->handle);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture->handle);
+
+    GLenum InternalFormat = 0;
+    GLenum Format = 0;
+    GLenum Type = is_hdr ? GL_FLOAT : GL_UNSIGNED_BYTE;
+    switch (texture->num_channels) {
+        case 1: {
+            InternalFormat = is_hdr ? GL_R16F : GL_R8;
+            Format = GL_RED;
+        } break;
+        case 2: {
+            InternalFormat = is_hdr ? GL_RG16F : GL_RG8;
+            Format = GL_RG;
+        } break;
+        case 3: {
+            InternalFormat = is_hdr ? GL_RGB16F : GL_RGB8;
+            Format = GL_RGB;
+        } break;
+        case 4: {
+            InternalFormat = is_hdr ? GL_RGBA16F : GL_RGBA8;
+            Format = GL_RGBA;
+        } break;
+        default:
+            Assert(false);
+    }
+
+    for (uint32 i = 0; i < 6; i++) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, InternalFormat, texture->width, texture->height, 0, Format, Type, data[i]);
+    }
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+    // This for font texture
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    
+    // This for everything else
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
 void OpenGL_api::destroy_texture(struct render_texture_2D* texture) {
     glDeleteTextures(1, &texture->handle);
 }
