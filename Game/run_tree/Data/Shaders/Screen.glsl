@@ -6,7 +6,7 @@ layout (location = 1) in vec2 a_TexCoord;
 out vec2 texcoord;
 
 void main() {
-    vec4 position = vec4(a_Position.xy, 1.0, 1.0);
+    vec4 position = vec4(a_Position.xy, 0.0, 1.0);
 	gl_Position = position;
 
 	texcoord = a_TexCoord;
@@ -83,7 +83,7 @@ void main() {
     else if (r_outputSwitch == 10)
         FragColor = vec4(Emission, 1);
     else if (r_outputSwitch == 11)
-        FragColor = vec4(vec3(SSAO), 1);
+        FragColor = vec4(vec3(1,0,0), 1);
     else
         FragColor = vec4(1, 0, 0, 1);
 

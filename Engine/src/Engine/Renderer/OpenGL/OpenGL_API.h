@@ -10,16 +10,27 @@ struct OpenGL_api final : public renderer_api {
 
     bool32 begin_frame(real32 delta_time) override final;
     bool32 end_frame(real32 delta_time) override final;
+
+    void push_debug_group(const char* label) override final;
+    void pop_debug_group() override final;
     
     bool32 ImGui_Init() override final;
     bool32 ImGui_begin_frame() override final;
     bool32 ImGui_end_frame() override final;
     bool32 ImGui_Shutdown() override final;
 
-    bool32 set_draw_mode(render_draw_mode mode) override final;
-    bool32 set_highlight_mode(bool32 enabled) override final;
-    bool32 disable_depth_test() override final;
-    bool32 enable_depth_test() override final;
+    void set_draw_mode(render_draw_mode mode) override final;
+    void set_highlight_mode(bool32 enabled) override final;
+    void disable_depth_test() override final;
+    void enable_depth_test() override final;
+    void disable_depth_mask() override final;
+    void enable_depth_mask() override final;
+
+    void disable_stencil_test() override final;
+    void enable_stencil_test() override final;
+    void set_stencil_mask(uint32 mask) override final;
+    void set_stencil_func(render_stencil_func func, uint32 ref, uint32 mask) override final;
+    void set_stencil_op(render_stencil_op sfail, render_stencil_op dpfail, render_stencil_op dppass) override final;
 
     void create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) override final;
     void create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr) override final;
@@ -42,6 +53,8 @@ struct OpenGL_api final : public renderer_api {
     void destroy_framebuffer(frame_buffer* fbo) override final;
     void set_framebuffer_cube_face(frame_buffer* fbuffer, uint32 attach_idx, uint32 slot, uint32 mip_level) override final;
     void resize_framebuffer_renderbuffer(frame_buffer* fbuffer, uint32 new_width, uint32 new_height) override final;
+    void copy_framebuffer_depthbuffer(frame_buffer * src, frame_buffer * dst) override final;
+    void copy_framebuffer_stencilbuffer(frame_buffer * src, frame_buffer * dst) override final;
 
     void use_shader(shader* shader_prog) override final;
     void use_framebuffer(frame_buffer *fbuffer) override final;
@@ -57,6 +70,7 @@ struct OpenGL_api final : public renderer_api {
 
     void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) override final;
     void clear_viewport(real32 r, real32 g, real32 b, real32 a) override final;
+    void clear_viewport_only_color(real32 r, real32 g, real32 b, real32 a) override final;
     void clear_framebuffer_attachment(frame_buffer_attachment* attach, real32 r, real32 b, real32 g, real32 a) override final;
 
     // uniforms

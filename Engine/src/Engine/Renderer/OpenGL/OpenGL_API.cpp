@@ -124,7 +124,16 @@ bool32 OpenGL_api::initialize(const char* application_name, platform_state* plat
 
     OpenGL_set_swap_interval(1);
 
+    //glEnable(GL_LINE_SMOOTH);
+    //glLineWidth(2.0f);
+    glPointSize(4.0f);
+
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     return true;
 }
@@ -137,10 +146,8 @@ void OpenGL_api::resized(uint16 width, uint16 height) {
 }
 
 bool32 OpenGL_api::begin_frame(real32 delta_time) {
-    //glViewport(0, 0, 1280, 720);
-
-    glClearColor(.24f, .24f, .24f, .24f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
 
     return true;
 }
@@ -172,7 +179,7 @@ bool32 OpenGL_api::ImGui_Shutdown() {
     return true;
 }
 
-bool32 OpenGL_api::set_draw_mode(render_draw_mode mode) {
+void OpenGL_api::set_draw_mode(render_draw_mode mode) {
     switch (mode) {
         case render_draw_mode::Normal: {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -189,11 +196,9 @@ bool32 OpenGL_api::set_draw_mode(render_draw_mode mode) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
         }; break;
     }
-
-    return true;
 }
 
-bool32 OpenGL_api::set_highlight_mode(bool32 enabled) {
+void OpenGL_api::set_highlight_mode(bool32 enabled) {
     if (enabled) {
         glPolygonOffset(0, -1);
         glEnable(GL_POLYGON_OFFSET_FILL);
@@ -204,22 +209,89 @@ bool32 OpenGL_api::set_highlight_mode(bool32 enabled) {
         glDisable(GL_POLYGON_OFFSET_LINE);
         glEnable(GL_CULL_FACE);
     }
-
-    return true;
 }
 
-bool32 OpenGL_api::disable_depth_test() {
+void OpenGL_api::disable_depth_test() {
     glDisable(GL_DEPTH_TEST);
-
-    return true;
 }
-bool32 OpenGL_api::enable_depth_test() {
+void OpenGL_api::enable_depth_test() {
     glEnable(GL_DEPTH_TEST);
-
-    return true;
 }
 
+void OpenGL_api::disable_depth_mask() {
+    glDepthMask(GL_FALSE);
+}
+void OpenGL_api::enable_depth_mask() {
+    glDepthMask(GL_TRUE);
+}
 
+/* Stencil Testing */
+void OpenGL_api::enable_stencil_test() {
+    glEnable(GL_STENCIL_TEST);
+}
+void OpenGL_api::disable_stencil_test() {
+    glDisable(GL_STENCIL_TEST);
+}
+void OpenGL_api::set_stencil_mask(uint32 mask) {
+    glStencilMask(mask); // each bit is written to the stencil buffer as is
+}
+void OpenGL_api::set_stencil_func(render_stencil_func func, uint32 ref, uint32 mask) {
+    GLenum gl_func = 0;
+    switch (func) {
+        case render_stencil_func::Never:          { gl_func = GL_NEVER; }    break;
+        case render_stencil_func::Less:           { gl_func = GL_LESS; }     break;
+        case render_stencil_func::LessOrEqual:    { gl_func = GL_LEQUAL; }   break;
+        case render_stencil_func::Greater:        { gl_func = GL_GREATER; }  break;
+        case render_stencil_func::GreaterOrEqual: { gl_func = GL_GEQUAL; }   break;
+        case render_stencil_func::Equal:          { gl_func = GL_EQUAL; }    break;
+        case render_stencil_func::NotEqual:       { gl_func = GL_NOTEQUAL; } break;
+        case render_stencil_func::Always:         { gl_func = GL_ALWAYS;  }  break;
+    }
+
+    glStencilFunc(gl_func, ref, mask);
+}
+void OpenGL_api::set_stencil_op(render_stencil_op sfail, render_stencil_op dpfail, render_stencil_op dppass) {
+    GLenum gl_op1 = 0, gl_op2 = 0, gl_op3 = 0;
+    switch (sfail) {
+        case render_stencil_op::Keep:           { gl_op1 = GL_KEEP;      } break;
+        case render_stencil_op::Zero:           { gl_op1 = GL_ZERO;      } break;
+        case render_stencil_op::Replace:        { gl_op1 = GL_REPLACE;   } break;
+        case render_stencil_op::Increment:      { gl_op1 = GL_INCR;      } break;
+        case render_stencil_op::Increment_wrap: { gl_op1 = GL_INCR_WRAP; } break;
+        case render_stencil_op::Decrement:      { gl_op1 = GL_DECR;      } break;
+        case render_stencil_op::Decrement_wrap: { gl_op1 = GL_DECR_WRAP; } break;
+        case render_stencil_op::Invert:         { gl_op1 = GL_INVERT;    } break;
+    }
+    switch (dpfail) {
+        case render_stencil_op::Keep:           { gl_op2 = GL_KEEP;      } break;
+        case render_stencil_op::Zero:           { gl_op2 = GL_ZERO;      } break;
+        case render_stencil_op::Replace:        { gl_op2 = GL_REPLACE;   } break;
+        case render_stencil_op::Increment:      { gl_op2 = GL_INCR;      } break;
+        case render_stencil_op::Increment_wrap: { gl_op2 = GL_INCR_WRAP; } break;
+        case render_stencil_op::Decrement:      { gl_op2 = GL_DECR;      } break;
+        case render_stencil_op::Decrement_wrap: { gl_op2 = GL_DECR_WRAP; } break;
+        case render_stencil_op::Invert:         { gl_op2 = GL_INVERT;    } break;
+    }
+    switch (dppass) {
+        case render_stencil_op::Keep:           { gl_op3 = GL_KEEP;      } break;
+        case render_stencil_op::Zero:           { gl_op3 = GL_ZERO;      } break;
+        case render_stencil_op::Replace:        { gl_op3 = GL_REPLACE;   } break;
+        case render_stencil_op::Increment:      { gl_op3 = GL_INCR;      } break;
+        case render_stencil_op::Increment_wrap: { gl_op3 = GL_INCR_WRAP; } break;
+        case render_stencil_op::Decrement:      { gl_op3 = GL_DECR;      } break;
+        case render_stencil_op::Decrement_wrap: { gl_op3 = GL_DECR_WRAP; } break;
+        case render_stencil_op::Invert:         { gl_op3 = GL_INVERT;    } break;
+    }
+
+    glStencilOp(gl_op1, gl_op2, gl_op3);
+}
+
+void OpenGL_api::push_debug_group(const char* label) {
+    glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, label);
+}
+void OpenGL_api::pop_debug_group() {
+    glPopDebugGroup();
+}
 
 void OpenGL_api::create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) {
     glGenTextures(1, &texture->handle);
@@ -717,6 +789,32 @@ void OpenGL_api::resize_framebuffer_renderbuffer(frame_buffer* fbuffer, uint32 n
     glBindRenderbuffer(GL_RENDERBUFFER, fbuffer->attachments[1].handle);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, new_width, new_height);
 }
+void OpenGL_api::copy_framebuffer_depthbuffer(frame_buffer * src, frame_buffer * dst) {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, src->handle);
+    if (dst == nullptr) {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        // TODO: using src dimmensions for dst (default FBO)
+        glBlitFramebuffer(0, 0, src->width, src->height, 0, 0, src->width, src->height, 
+                          GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    } else {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst->handle);
+        glBlitFramebuffer(0, 0, src->width, src->height, 0, 0, dst->width, dst->height, 
+                          GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+    }
+}
+void OpenGL_api::copy_framebuffer_stencilbuffer(frame_buffer * src, frame_buffer * dst) {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, src->handle);
+    if (dst == nullptr) {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        // TODO: using src dimmensions for dst (default FBO)
+        glBlitFramebuffer(0, 0, src->width, src->height, 0, 0, src->width, src->height, 
+                          GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    } else {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dst->handle);
+        glBlitFramebuffer(0, 0, src->width, src->height, 0, 0, dst->width, dst->height, 
+                          GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+    }
+}
 
 
 void OpenGL_api::use_shader(shader* shader_prog) {
@@ -771,6 +869,10 @@ void OpenGL_api::set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) {
     glViewport(x, y, width, height);
 }
 void OpenGL_api::clear_viewport(real32 r, real32 g, real32 b, real32 a) {
+    glClearColor(r, g, b, a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
+void OpenGL_api::clear_viewport_only_color(real32 r, real32 g, real32 b, real32 a) {
     glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

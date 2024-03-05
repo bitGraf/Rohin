@@ -32,6 +32,28 @@ enum class render_draw_mode : uint8 {
     Points
 };
 
+enum class render_stencil_func : uint8 {
+    Never = 0,
+    Less,
+    LessOrEqual,
+    Greater,
+    GreaterOrEqual,
+    Equal,
+    NotEqual,
+    Always
+};
+
+enum class render_stencil_op : uint8 {
+    Keep = 0,
+    Zero,
+    Replace,
+    Increment,
+    Increment_wrap,
+    Decrement,
+    Decrement_wrap,
+    Invert
+};
+
 struct renderer_api {
     //struct platform_state* plat_state; // platform-specific state
     uint64 frame_number;
@@ -48,11 +70,21 @@ struct renderer_api {
     virtual bool32 ImGui_end_frame() = 0;
     virtual bool32 ImGui_Shutdown() = 0;
 
-    virtual bool32 set_draw_mode(render_draw_mode mode) = 0;
-    virtual bool32 disable_depth_test() = 0;
-    virtual bool32 enable_depth_test() = 0;
+    virtual void set_draw_mode(render_draw_mode mode) = 0;
+    virtual void set_highlight_mode(bool32 enabled) = 0;
+    virtual void enable_depth_test() = 0;
+    virtual void disable_depth_test() = 0;
+    virtual void enable_depth_mask() = 0;
+    virtual void disable_depth_mask() = 0;
 
-    virtual bool32 set_highlight_mode(bool32 enabled) = 0;
+    virtual void enable_stencil_test() = 0;
+    virtual void disable_stencil_test() = 0;
+    virtual void set_stencil_mask(uint32 mask) = 0;
+    virtual void set_stencil_func(render_stencil_func func, uint32 ref, uint32 mask) = 0;
+    virtual void set_stencil_op(render_stencil_op sfail, render_stencil_op dpfail, render_stencil_op dppass) = 0;
+
+    virtual void push_debug_group(const char* label) = 0;
+    virtual void pop_debug_group() = 0;
 
     virtual void create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) = 0;
     virtual void create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr) = 0;
@@ -74,6 +106,8 @@ struct renderer_api {
                                            int num_attachments, 
                                            const frame_buffer_attachment* attachments,
                                            bool32 generate_mipmaps) = 0;  
+    virtual void copy_framebuffer_depthbuffer(frame_buffer * src, frame_buffer * dst) = 0;
+    virtual void copy_framebuffer_stencilbuffer(frame_buffer * src, frame_buffer * dst) = 0;
     virtual void destroy_framebuffer(frame_buffer* fbo) = 0;
 
     virtual void use_shader(shader* shader_prog) = 0;
@@ -92,6 +126,7 @@ struct renderer_api {
 
     virtual void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) = 0;
     virtual void clear_viewport(real32 r, real32 g, real32 b, real32 a) = 0;
+    virtual void clear_viewport_only_color(real32 r, real32 g, real32 b, real32 a) = 0;
     virtual void clear_framebuffer_attachment(frame_buffer_attachment* attach, real32 r, real32 g, real32 b, real32 a) = 0;
 
     // uniforms

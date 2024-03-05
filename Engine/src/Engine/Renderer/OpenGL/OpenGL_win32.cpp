@@ -284,18 +284,6 @@ bool32 OpenGL_create_context() {
     win32_update_vsync(MonitorRefreshHz, GameRefreshHz);
 #endif
 
-    //glEnable(GL_LINE_SMOOTH);
-    //glLineWidth(2.0f);
-    glPointSize(4.0f);
-
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-    glFrontFace(GL_CCW);
-
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     return true;
 }
 
@@ -455,6 +443,8 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
             _level = LOG_LEVEL_FATAL;
             break;
     }
+
+    if (_level == LOG_LEVEL_INFO) return;
 
     LogOutput(_level, "%d: %s of %s severity, raised from %s: %s", id, _type, _severity, _source, msg);
 }

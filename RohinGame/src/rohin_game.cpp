@@ -17,8 +17,9 @@
 
 #include <imgui/imgui.h>
 
-int32 NUM_X = 1;
-int32 NUM_Y = 1;
+int32 NUM_X = 7;
+int32 NUM_Y = 7;
+real32 spacing = 2.5f;
 
 struct player_state {
     laml::Vec3 position;
@@ -370,19 +371,20 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     //    command_idx++;
     //}
     for (int32 m1 = 0; m1 < NUM_X; m1++) {
-        real32 xpos = (m1-((NUM_X-1)/2)) * 3.0f;
+        real32 xpos = (m1-((NUM_X-1)/2)) * spacing;
         real32 roughness = 0.0f;
         if (NUM_X > 1)
             roughness = (m1 * 1.0f/(NUM_X-1));
+        if (roughness < 0.05f) roughness = 0.05f;
         for (int32 m2 = 0; m2 < NUM_Y; m2++) {
-            real32 ypos = (m2-((NUM_Y-1)/2)) * 3.0f;
-            real32 metalness = 0.0f;
+            real32 ypos = (m2-((NUM_Y-1)/2)) * spacing;
+            real32 metalness = 1.0f;
             if (NUM_Y > 1)
                 metalness = m2 * 1.0f/(NUM_Y-1);
 
-            int32 m = m1*NUM_X + m2;
+            int32 m = m1*NUM_Y + m2;
 
-            laml::Vec3 pos(xpos, ypos, 0.0f);
+            laml::Vec3 pos(xpos, ypos, -2.0f);
             laml::Mat4 model(1.0f);
             laml::transform::create_transform_translate(model, pos);
             for (uint32 n = 0; n < state->scene_meshes[m].num_primitives; n++) {
@@ -392,6 +394,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
                 packet->commands[command_idx].material.MetallicFactor = metalness;
                 packet->commands[command_idx].material.RoughnessFactor = roughness;
+                packet->commands[command_idx].material.DiffuseFactor = laml::Vec3(1.0f, 0.1f, 0.1f);
 
                 command_idx++;
             }

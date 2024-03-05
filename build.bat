@@ -7,6 +7,14 @@ if NOT EXIST build\int mkdir build\int
 
 if EXIST ../ctime %cd%/../ctime/ctime.exe -begin Tools/build_time.ctm
 
+where /q cl.exe
+if ERRORLEVEL 1 (
+    echo Setting up MSBuildTools!
+    rem call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+    call "C:\BuildTools\devcmd.bat"
+    echo ==========================================
+)
+
 set StopBuild=0
 
 pushd Tools\shader_tool

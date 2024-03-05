@@ -51,9 +51,6 @@ void main()
         }
     }
     irradiance = PI * irradiance * (1.0 / float(nrSamples));
-
-    // OVERRIDE
-    irradiance = texture(u_env_cubemap, normal).rgb;
   
     FragColor = vec4(irradiance, 1.0);
 }

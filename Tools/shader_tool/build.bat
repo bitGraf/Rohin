@@ -1,14 +1,8 @@
 @echo off
 SetLocal EnableDelayedExpansion
 
-rem WUN WITH: Tools/shader_tool/unity_build/shader_tool.exe Game/run_tree/Data/Shaders/ Game/src/ShaderSrc/shaders_generated.cpp
+rem RUN WITH: Tools/shader_tool/unity_build/shader_tool.exe Game/run_tree/Data/Shaders/ Game/src/ShaderSrc/shaders_generated.cpp
 rem echo Building!
-
-if not defined DevEnvDir (
-    echo Not set up!
-    call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
-    echo ==========================================
-)
 
 IF NOT EXIST bin mkdir bin
 pushd bin

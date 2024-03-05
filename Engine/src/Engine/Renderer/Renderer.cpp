@@ -6,6 +6,7 @@
 #include "Engine/Core/Asserts.h"
 #include "Engine/Core/Event.h"
 #include "Engine/Core/Input.h"
+#include "Engine/Memory/MemoryUtils.h"
 
 #include "Engine/Resources/Resource_Manager.h"
 
@@ -57,6 +58,8 @@ struct renderer_state {
     shader_BRDF_Integrate brdf_integrate_shader;
 #endif
 
+    shader_Skybox skybox_shader;
+
     int32 current_shader_out;
     int32 gamma_correct;
     int32 tone_map;
@@ -66,6 +69,7 @@ struct renderer_state {
     render_geometry cube_geom;
     render_geometry axis_geom;
     render_geometry screen_quad;
+    render_geometry small_quad;
 };
 
 global_variable renderer_api* backend;
@@ -176,6 +180,22 @@ bool32 renderer_create_pipeline() {
         };
         const ShaderDataType quad_attrs[] = { ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::None };
         backend->create_mesh(&render_state->screen_quad, 4, quad_verts, 6, quad_inds, quad_attrs);
+    }
+    {
+        real32 s = 0.4f;
+        real32 quad_verts[] = {
+             0, -s, 0, 0, 0, // 0
+             s, -s, 0, 1, 0, // 1
+             s,  s, 0, 1, 1, // 2
+             0,  s, 0, 0, 1  // 3
+        };
+        uint32 quad_inds[] = {
+            // bottom tri
+            0, 1, 2,
+            0, 2, 3
+        };
+        const ShaderDataType quad_attrs[] = { ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::None };
+        backend->create_mesh(&render_state->small_quad, 4, quad_verts, 6, quad_inds, quad_attrs);
     }
 
     RH_TRACE("%.3lf ms to create internal meshes", measure_elapsed_time(last_time, &last_time)*1000.0f);
@@ -290,8 +310,8 @@ bool32 renderer_create_pipeline() {
     RH_TRACE("%.3lf ms to create Screen shader", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
     // load hdr for IBL
-    if (!resource_load_texture_file_hdr("Data/textures/newport_loft.hdr", &render_state->hdr_image)) {
-    //if (!resource_load_texture_file_hdr("Data/textures/metro_noord_1k.hdr", &render_state->hdr_image)) {
+    //if (!resource_load_texture_file_hdr("Data/textures/newport_loft.hdr", &render_state->hdr_image)) {
+    if (!resource_load_texture_file_hdr("Data/textures/metro_noord_1k.hdr", &render_state->hdr_image)) {
         RH_FATAL("Could not load environment HDR");
         return false;
     }
@@ -310,8 +330,8 @@ bool32 renderer_create_pipeline() {
 
     laml::transform::lookAt(captureViews[0], eye, pos_x, neg_y);
     laml::transform::lookAt(captureViews[1], eye, neg_x, neg_y);
-    laml::transform::lookAt(captureViews[2], eye, pos_y, neg_z);
-    laml::transform::lookAt(captureViews[3], eye, neg_y, pos_z);
+    laml::transform::lookAt(captureViews[2], eye, neg_y, neg_z);
+    laml::transform::lookAt(captureViews[3], eye, pos_y, pos_z);
     laml::transform::lookAt(captureViews[4], eye, pos_z, neg_y);
     laml::transform::lookAt(captureViews[5], eye, neg_z, neg_y);
 
@@ -382,8 +402,7 @@ bool32 renderer_create_pipeline() {
 
         backend->use_shader(pConvolute);
         backend->upload_uniform_float4x4(convolute.r_Projection, cap_projection._data);
-        //backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor].handle, convolute.u_env_cubemap.SamplerID);
-        backend->bind_texture_cube(render_state->cube_tex.handle, convolute.u_env_cubemap.SamplerID);
+        backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor].handle, convolute.u_env_cubemap.SamplerID);
 
         backend->set_viewport(0, 0, IRRADIANCE_CUBE_MAP_SIZE, IRRADIANCE_CUBE_MAP_SIZE);
         backend->use_framebuffer(&render_state->irradiance);
@@ -422,8 +441,7 @@ bool32 renderer_create_pipeline() {
 
         backend->use_shader(pPreFilter);
         backend->upload_uniform_float4x4(prefilter.r_Projection, cap_projection._data);
-        //backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor].handle, prefilter.u_env_cubemap.SamplerID);
-        backend->bind_texture_cube(render_state->cube_tex.handle, prefilter.u_env_cubemap.SamplerID);
+        backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor].handle, prefilter.u_env_cubemap.SamplerID);
 
         RH_DEBUG("Pre-Filtering Environment Map");
         backend->use_framebuffer(&render_state->ibl_prefilter);
@@ -486,6 +504,15 @@ bool32 renderer_create_pipeline() {
     RH_TRACE("%.3lf ms to Create PBR Pipeline", measure_elapsed_time(pbr_pipeline_start)*1000.0f);
 
 #endif
+    // setup skybox shader
+    shader *pSkybox = (shader*)(&render_state->skybox_shader);
+    if (!resource_load_shader_file("Data/Shaders/Skybox.glsl", pSkybox)) {
+        RH_FATAL("Could not setup the skybox shader");
+        return false;
+    }
+    renderer_use_shader(pSkybox);
+    render_state->skybox_shader.InitShaderLocs();
+    backend->upload_uniform_int(render_state->skybox_shader.u_skybox, render_state->skybox_shader.u_skybox.SamplerID);
 
     // setup wireframe shader
     if (!resource_load_shader_file("Data/Shaders/wireframe.glsl", &render_state->wireframe_shader)) {
@@ -595,6 +622,10 @@ bool32 renderer_draw_frame(render_packet* packet) {
         //                                 eye._data);
         //renderer_draw_geometry(&render_state->axis_geom);
 
+        backend->enable_stencil_test();
+        backend->set_stencil_mask(0xFF);
+        backend->set_stencil_func(render_stencil_func::Always, 100, 0xFF);
+        backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Replace);
         for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
             render_command& cmd = packet->commands[cmd_index];
             render_material& mat = cmd.material;
@@ -610,6 +641,25 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
             renderer_draw_geometry(&cmd.geom);
         }
+        backend->set_stencil_mask(0xFF);
+        backend->set_stencil_func(render_stencil_func::NotEqual, 100, 0xFF);
+        backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Keep);
+
+        //backend->clear_viewport_only_color(0, 0, 0, 0);
+
+        // Draw Skybox
+        shader* pSkybox = (shader*)(&render_state->skybox_shader);
+        backend->use_shader(pSkybox);
+        laml::Mat4 skybox_view;
+        memory_copy(&skybox_view, &packet->view_matrix, sizeof(laml::Mat4));
+        skybox_view.c_14 = 0;
+        skybox_view.c_24 = 0;
+        skybox_view.c_34 = 0;
+        backend->upload_uniform_float4x4(render_state->skybox_shader.r_View, skybox_view._data);
+        backend->upload_uniform_float4x4(render_state->skybox_shader.r_Projection, packet->projection_matrix._data);
+        backend->bind_texture_cube(render_state->cube_tex.handle, 0);
+
+        backend->draw_geometry(&render_state->cube_geom);
 
         ImGui::Text("Simple Render Pass: %.2f ms", measure_elapsed_time(simple_pass_start)*1000.0f);
         
@@ -617,6 +667,8 @@ bool32 renderer_draw_frame(render_packet* packet) {
         time_point pbr_pass_start = start_timer();
         time_point last_time = pbr_pass_start;
 
+        backend->push_debug_group("PBR Rendering Pipeline");
+        backend->push_debug_group("G-Buffer Generation");
         // PREPASS STAGE
         shader* pPrepass = (shader*)(&render_state->pre_pass_shader);
         shader_PrePass& prepass = render_state->pre_pass_shader;
@@ -630,6 +682,11 @@ bool32 renderer_draw_frame(render_packet* packet) {
         backend->use_framebuffer(&render_state->gbuffer);
         backend->clear_viewport(0, 0, 0, 0);
         backend->clear_framebuffer_attachment(&render_state->gbuffer.attachments[prepass.outputs.out_Depth], 1, 1, 1, 1);
+
+        backend->enable_stencil_test();
+        backend->set_stencil_mask(0xFF);
+        backend->set_stencil_func(render_stencil_func::Always, 100, 0xFF);
+        backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Replace);
 
         for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
             render_material* mat = &packet->commands[cmd_index].material;
@@ -658,9 +715,11 @@ bool32 renderer_draw_frame(render_packet* packet) {
             renderer_draw_geometry(&packet->commands[cmd_index].geom);
         }
 
+        backend->pop_debug_group(); // G-Buffer Generation
         ImGui::Text(" Prepass: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
         // LIGHTING STAGE
+        backend->push_debug_group("Lighting");
         shader* pLighting = (shader*)(&render_state->lighting_shader);
         shader_Lighting& lighting = render_state->lighting_shader;
         backend->use_framebuffer(&render_state->lbuffer);
@@ -680,17 +739,17 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
         // point lights
         const uint32 num_lights = 4;
-        laml::Vec3 light_pos[num_lights] = {
-            {-4.5f, -4.5f, 5.0f},
-            { 4.5f, -4.5f, 5.0f},
-            { 4.5f,  4.5f, 5.0f},
-            {-4.5f,  4.5f, 5.0f},
+        laml::Vec3 light_pos[] = {
+            laml::Vec3(-10.0f,  10.0f, 10.0f),
+            laml::Vec3( 10.0f,  10.0f, 10.0f),
+            laml::Vec3(-10.0f, -10.0f, 10.0f),
+            laml::Vec3( 10.0f, -10.0f, 10.0f),
         };
         laml::Vec3 light_color(1.0f, 0.6f, 1.0f);
         for (uint32 n = 0; n < num_lights; n++) {
             backend->upload_uniform_float3(lighting.r_pointLights[n].Position, light_pos[n]._data);
             backend->upload_uniform_float3(lighting.r_pointLights[n].Color, light_color._data);
-            backend->upload_uniform_float(lighting.r_pointLights[n].Strength, 0.0f);
+            backend->upload_uniform_float(lighting.r_pointLights[n].Strength, 300.0f);
         }
 
         backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Albedo].handle, lighting.u_albedo.SamplerID);
@@ -699,21 +758,53 @@ bool32 renderer_draw_frame(render_packet* packet) {
         backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_AMR].handle,    lighting.u_amr.SamplerID);
 
         backend->bind_texture_cube(render_state->irradiance.attachments[0].handle,       lighting.u_irradiance.SamplerID);
-        //backend->bind_texture_cube(render_state->cube_tex.handle,       lighting.u_irradiance.SamplerID);
         backend->bind_texture_cube(render_state->ibl_prefilter.attachments[0].handle,    lighting.u_prefilter.SamplerID);
-        //backend->bind_texture_cube(render_state->cube_tex.handle,       lighting.u_prefilter.SamplerID);
         backend->bind_texture(render_state->BRDF_LUT.attachments[0].handle,         lighting.u_brdf_LUT.SamplerID);
 
         backend->disable_depth_test();
         backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
+        backend->copy_framebuffer_stencilbuffer(&render_state->gbuffer, &render_state->lbuffer);
+        backend->set_stencil_mask(0xFF);
+        backend->set_stencil_func(render_stencil_func::Equal, 100, 0xFF);
+        backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Keep);
         backend->draw_geometry(&render_state->screen_quad);
+        backend->enable_depth_test();
 
+        backend->pop_debug_group(); // Lighting
         ImGui::Text(" Lighting: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
+        // Draw Skybox
+        backend->push_debug_group("Skybox");
+
+        backend->use_framebuffer(0);
+        backend->copy_framebuffer_stencilbuffer(&render_state->gbuffer, 0);
+
+        shader* pSkybox = (shader*)(&render_state->skybox_shader);
+        shader_Skybox& skybox = render_state->skybox_shader;
+        backend->use_shader(pSkybox);
+        laml::Mat4 skybox_view;
+        memory_copy(&skybox_view, &packet->view_matrix, sizeof(laml::Mat4));
+        skybox_view.c_14 = 0;
+        skybox_view.c_24 = 0;
+        skybox_view.c_34 = 0;
+        backend->upload_uniform_float4x4(render_state->skybox_shader.r_View, skybox_view._data);
+        backend->upload_uniform_float4x4(render_state->skybox_shader.r_Projection, packet->projection_matrix._data);
+        backend->upload_uniform_float(skybox.r_toneMap, render_state->tone_map ? 1.0f : 0.0f);
+        backend->upload_uniform_float(skybox.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
+
+        backend->bind_texture_cube(render_state->cubemap.attachments[0].handle, 0);
+
+        backend->set_stencil_mask(0xFF);
+        backend->set_stencil_func(render_stencil_func::NotEqual, 100, 0xFF);
+        backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Keep);
+        backend->draw_geometry(&render_state->cube_geom);
+
+        backend->pop_debug_group();  //Skybox
+
         // SCREEN STAGE
+        backend->push_debug_group("Screen Composite");
         shader* pScreen = (shader*)(&render_state->screen_shader);
         shader_Screen& screen = render_state->screen_shader;
-        backend->use_framebuffer(0);
         backend->use_shader(pScreen);
 
         backend->upload_uniform_int(screen.r_outputSwitch, render_state->current_shader_out);
@@ -730,11 +821,16 @@ bool32 renderer_draw_frame(render_packet* packet) {
         backend->bind_texture(render_state->black_tex.handle,                                          screen.u_ssao.SamplerID);
 
         backend->disable_depth_test();
-        backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
+        backend->set_stencil_mask(0xFF);
+        backend->set_stencil_func(render_stencil_func::Equal, 100, 0xFF);
+        backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Keep);
         backend->draw_geometry(&render_state->screen_quad);
         backend->enable_depth_test();
 
+        backend->pop_debug_group();  //Screen Composite
         ImGui::Text(" Present: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
+
+        backend->pop_debug_group(); // PBR Pipeline
         ImGui::Text("Total: %.2f ms", measure_elapsed_time(pbr_pass_start)*1000.0f);
         
 #endif
@@ -997,5 +1093,7 @@ void renderer_debug_UI_begin_frame() {
 
 void renderer_debug_UI_end_frame() {
     ImGui::Render();
+    backend->push_debug_group("ImGui");
     backend->ImGui_end_frame();
+    backend->pop_debug_group(); // ImGui
 }
