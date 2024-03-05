@@ -619,8 +619,8 @@ file_handle platform_read_entire_file(const char* full_path) {
 
                     CloseHandle(FileHandle);
 
-                    RH_TRACE("File: %s\n"
-                             "               %llu Bytes", full_path, file.num_bytes);
+                    //RH_TRACE("File: %s\n"
+                    //         "               %llu Bytes", full_path, file.num_bytes);
 
                     return file;
                 }

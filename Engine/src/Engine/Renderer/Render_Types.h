@@ -102,10 +102,11 @@ struct renderer_api {
     virtual bool32 create_framebuffer(frame_buffer* fbo, 
                                       int num_attachments, 
                                       const frame_buffer_attachment* attachments) = 0;
+    virtual bool32 recreate_framebuffer(frame_buffer* fbo) = 0;
     virtual bool32 create_framebuffer_cube(frame_buffer* fbo, 
                                            int num_attachments, 
                                            const frame_buffer_attachment* attachments,
-                                           bool32 generate_mipmaps) = 0;  
+                                           bool32 generate_mipmaps) = 0;
     virtual void copy_framebuffer_depthbuffer(frame_buffer * src, frame_buffer * dst) = 0;
     virtual void copy_framebuffer_stencilbuffer(frame_buffer * src, frame_buffer * dst) = 0;
     virtual void destroy_framebuffer(frame_buffer* fbo) = 0;

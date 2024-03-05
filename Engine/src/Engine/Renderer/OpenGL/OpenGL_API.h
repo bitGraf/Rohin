@@ -46,6 +46,7 @@ struct OpenGL_api final : public renderer_api {
     bool32 create_framebuffer(frame_buffer* fbo, 
                               int num_attachments, 
                               const frame_buffer_attachment* attachments) override final;
+    bool32 recreate_framebuffer(frame_buffer* fbo) override final;
     bool32 create_framebuffer_cube(frame_buffer* fbo, 
                                    int num_attachments, 
                                    const frame_buffer_attachment* attachments,

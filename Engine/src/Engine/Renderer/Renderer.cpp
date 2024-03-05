@@ -105,7 +105,10 @@ bool32 renderer_create_pipeline() {
     time_point pipeline_start = start_timer();
     time_point last_time = pipeline_start;
 
+    backend->push_debug_group("Create Pipeline");
+
     // load default textures
+    backend->push_debug_group("Load Resources");
     if (!resource_load_texture_file("Data/Images/white.png", &render_state->white_tex)) {
         RH_FATAL("Could not load default textures");
         return false;
@@ -198,10 +201,14 @@ bool32 renderer_create_pipeline() {
         backend->create_mesh(&render_state->small_quad, 4, quad_verts, 6, quad_inds, quad_attrs);
     }
 
+    backend->pop_debug_group(); // load resources
+
     RH_TRACE("%.3lf ms to create internal meshes", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
 #if SIMPLE_RENDER_PASS
     time_point simple_pipeline_start = start_timer();
+    backend->push_debug_group("Create Simple Pipeline");
+
     // setup simple shader
     shader* pSimple = (shader*)(&render_state->simple_shader);
     shader_simple& simple = render_state->simple_shader;
@@ -214,12 +221,15 @@ bool32 renderer_create_pipeline() {
     simple.InitShaderLocs();
     backend->upload_uniform_int(simple.u_texture, simple.u_texture.SamplerID);
 
+    backend->pop_debug_group(); // Create simple pipeline
     RH_TRACE("%.3lf ms to create Simple Render Pipeline", measure_elapsed_time(simple_pipeline_start)*1000.0f);
 #else
     time_point pbr_pipeline_start = start_timer();
     last_time = pbr_pipeline_start;
+    backend->push_debug_group("Create PBR Pipeline");
 
     // setup prepass shader
+    backend->push_debug_group("Prepass Shader");
     shader* pPrepass = (shader*)(&render_state->pre_pass_shader);
     shader_PrePass& prepass = render_state->pre_pass_shader;
     if (!resource_load_shader_file("Data/Shaders/PrePass.glsl", pPrepass)) {
@@ -252,11 +262,13 @@ bool32 renderer_create_pipeline() {
         renderer_create_framebuffer(&render_state->gbuffer, prepass.outputs.num_outputs+1, attachments);
     }
 
+    backend->pop_debug_group(); // create prepass
     RH_TRACE("%.3lf ms to create Prepass shader and framebuffer", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
     // Lighting pass
     shader* pLighting = (shader*)(&render_state->lighting_shader);
     shader_Lighting& lighting = render_state->lighting_shader;
+    backend->push_debug_group("Lighting Pass");
     if (!resource_load_shader_file("Data/Shaders/Lighting.glsl", pLighting)) {
         RH_FATAL("Could not setup the PBR lighting pass shader");
         return false;
@@ -283,11 +295,13 @@ bool32 renderer_create_pipeline() {
         renderer_create_framebuffer(&render_state->lbuffer, lighting.outputs.num_outputs+1, attachments);
     }
 
+    backend->pop_debug_group(); // lighing pass
     RH_TRACE("%.3lf ms to create Lighting shader and framebuffer", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
     // Screen shader
     shader* pScreen = (shader*)(&render_state->screen_shader);
     shader_Screen& screen = render_state->screen_shader;
+    backend->push_debug_group("Screen Shader");
     if (!resource_load_shader_file("Data/Shaders/Screen.glsl", pScreen)) {
         RH_FATAL("Could not setup the screen shader");
         return false;
@@ -307,11 +321,13 @@ bool32 renderer_create_pipeline() {
     backend->upload_uniform_float(screen.r_toneMap, render_state->tone_map ? 1.0f : 0.0f);
     backend->upload_uniform_float(screen.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
 
+    backend->pop_debug_group(); // screen shader
     RH_TRACE("%.3lf ms to create Screen shader", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
     // load hdr for IBL
-    //if (!resource_load_texture_file_hdr("Data/textures/newport_loft.hdr", &render_state->hdr_image)) {
-    if (!resource_load_texture_file_hdr("Data/textures/metro_noord_1k.hdr", &render_state->hdr_image)) {
+    backend->push_debug_group("Load Env. Map");
+    if (!resource_load_texture_file_hdr("Data/textures/newport_loft.hdr", &render_state->hdr_image)) {
+    //if (!resource_load_texture_file_hdr("Data/textures/metro_noord_1k.hdr", &render_state->hdr_image)) {
         RH_FATAL("Could not load environment HDR");
         return false;
     }
@@ -335,7 +351,7 @@ bool32 renderer_create_pipeline() {
     laml::transform::lookAt(captureViews[4], eye, pos_z, neg_y);
     laml::transform::lookAt(captureViews[5], eye, neg_z, neg_y);
 
-    const uint32 ENV_CUBE_MAP_SIZE = 512;
+    const uint32 ENV_CUBE_MAP_SIZE = 1024;
     const uint32 IRRADIANCE_CUBE_MAP_SIZE = 32;
     const uint32 PREFILTER_CUBE_MAP_SIZE = 128;
     const uint32 BRDF_LUT_SIZE = 512;
@@ -377,8 +393,10 @@ bool32 renderer_create_pipeline() {
         }
         backend->use_framebuffer(0);
     }
+    backend->pop_debug_group(); // load HDRi
     RH_TRACE("%.3lf ms to Convert hdri to cubemap", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
+    backend->push_debug_group("Irradiance Convolution");
     {
         // convolution shader
         shader* pConvolute = (shader*)(&render_state->irradiance_convolve_shader);
@@ -416,8 +434,10 @@ bool32 renderer_create_pipeline() {
         }
         backend->use_framebuffer(0);
     }
+    backend->pop_debug_group(); // irradiance convolve
     RH_TRACE("%.3lf ms to convolute env map into irradiance", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
+    backend->push_debug_group("Prefilter");
     {
         // IBL Prefilter shader
         shader* pPreFilter = (shader*)(&render_state->ibl_prefilter_shader);
@@ -468,8 +488,10 @@ bool32 renderer_create_pipeline() {
         backend->resize_framebuffer_renderbuffer(&render_state->ibl_prefilter, PREFILTER_CUBE_MAP_SIZE, PREFILTER_CUBE_MAP_SIZE);
         backend->use_framebuffer(0);
     }
+    backend->pop_debug_group(); // Prefilter
     RH_TRACE("%.3lf ms to prefilter env map", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
+    backend->push_debug_group("BRDF lut generation");
     {
         // setup BRDF Integration
         shader* pIntegrate = (shader*)(&render_state->brdf_integrate_shader);
@@ -499,8 +521,10 @@ bool32 renderer_create_pipeline() {
 
         backend->use_framebuffer(0);
     }
-
+    backend->pop_debug_group(); // brdf lut
     RH_TRACE("%.3lf ms to generate BRDF integration LUT", measure_elapsed_time(last_time, &last_time)*1000.0f);
+
+    backend->pop_debug_group(); // PBR pipeline
     RH_TRACE("%.3lf ms to Create PBR Pipeline", measure_elapsed_time(pbr_pipeline_start)*1000.0f);
 
 #endif
@@ -523,6 +547,7 @@ bool32 renderer_create_pipeline() {
 
     resource_load_debug_mesh_into_geometry("Data/Models/debug/gizmo.stl", &render_state->axis_geom);
 
+    backend->pop_debug_group(); // Create Pipeline
     RH_TRACE("%.3lf ms to create render pipeline", measure_elapsed_time(pipeline_start)*1000.0f);
 
     return true;
@@ -800,6 +825,7 @@ bool32 renderer_draw_frame(render_packet* packet) {
         backend->draw_geometry(&render_state->cube_geom);
 
         backend->pop_debug_group();  //Skybox
+        ImGui::Text(" Skybox: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
         // SCREEN STAGE
         backend->push_debug_group("Screen Composite");
@@ -979,9 +1005,29 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
 void renderer_resized(uint32 width, uint32 height) {
     if (width != render_state->render_width || height != render_state->render_height) {
+
         // resize framebuffers
         render_state->render_width = width;
         render_state->render_height = height;
+
+        #if SIMPLE_RENDER_PASS
+        // simple pass has no FBOs that need updating
+
+        #else
+        // deferred pbr render pass
+        if (render_state->gbuffer.handle != 0) {
+            render_state->gbuffer.width  = width;
+            render_state->gbuffer.height = height;
+            backend->recreate_framebuffer(&render_state->gbuffer);
+        }
+
+        if (render_state->lbuffer.handle != 0) {
+            render_state->lbuffer.width  = width;
+            render_state->lbuffer.height = height;
+            backend->recreate_framebuffer(&render_state->lbuffer);
+        }
+
+        #endif
     }
 }
 

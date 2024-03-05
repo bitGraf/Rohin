@@ -49,7 +49,7 @@ RHAPI bool32 resource_load_debug_mesh_data(const char* resource_file_name, debug
     uint8* header = AdvanceBufferArray(&file.data, uint8, 80, End);
 
     uint32 num_tris = *AdvanceBuffer(&file.data, uint32, End);
-    RH_DEBUG("%d triangles", num_tris);
+    //RH_DEBUG("%d triangles", num_tris);
     geom->num_verts = num_tris * 3;
     geom->num_inds = num_tris * 3;
     geom->vertices = PushArray(arena, debug_geometry::debug_vertex, geom->num_verts);

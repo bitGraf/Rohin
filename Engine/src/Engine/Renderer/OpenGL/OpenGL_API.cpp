@@ -457,7 +457,7 @@ void OpenGL_api::create_mesh(render_geometry* mesh,
     }
 
     // assign index buffer
-    RH_INFO("VAO: %d   VBO: %d  EBO: %d", mesh->handle, vbo, ebo);
+    //RH_INFO("VAO: %d   VBO: %d  EBO: %d", mesh->handle, vbo, ebo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
     glBindVertexArray(0);
@@ -696,6 +696,85 @@ bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo,
 
     GLenum buffers[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
     glDrawBuffers(num_attachments-1, buffers);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return true;
+}
+bool32 OpenGL_api::recreate_framebuffer(frame_buffer* fbo) {
+    // Assumes fbo is already created... might cause issues!
+
+    // destroy the current fbo
+    for (uint32 n = 0; n < fbo->num_attachments; n++) {
+        if (fbo->attachments[n].texture_format == frame_buffer_texture_format::DEPTH24STENCIL8) {
+            glDeleteRenderbuffers(1, &fbo->attachments[n].handle);
+        } else {
+            glDeleteTextures(1, &fbo->attachments[n].handle);
+        }
+
+        fbo->attachments[n].handle = 0;
+    }
+
+    glDeleteFramebuffers(1, &fbo->handle);
+    fbo->handle = 0;
+
+    // recreate the fbo using the same settings.
+    glGenFramebuffers(1, &fbo->handle);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo->handle);
+
+    for (uint32 n = 0; n < fbo->num_attachments; n++) {
+        GLenum internal_format = 0;
+        GLenum attach_type = 0;
+        bool32 color_attachment = false;
+        switch(fbo->attachments[n].texture_format) {
+            case frame_buffer_texture_format::RED8:    { internal_format = GL_R8;      color_attachment = true; } break;
+            case frame_buffer_texture_format::R32F:    { internal_format = GL_R32F;    color_attachment = true; } break;
+            case frame_buffer_texture_format::RGBA8:   { internal_format = GL_RGBA8;   color_attachment = true; } break;
+            case frame_buffer_texture_format::RGBA16F: { internal_format = GL_RGBA16F; color_attachment = true; } break;
+            case frame_buffer_texture_format::RG16F:   { internal_format = GL_RG16F;   color_attachment = true; } break;
+            case frame_buffer_texture_format::RGBA32F: { internal_format = GL_RGBA32F; color_attachment = true; } break;
+            case frame_buffer_texture_format::None:    { Assert(false); } break;
+
+            case frame_buffer_texture_format::DEPTH24STENCIL8: {} break;
+        }
+        switch(fbo->attachments[n].texture_format) {
+            case frame_buffer_texture_format::DEPTH24STENCIL8: { internal_format = GL_DEPTH24_STENCIL8; attach_type = GL_DEPTH_STENCIL_ATTACHMENT; } break;
+                //case frame_buffer_texture_format::DEPTH32F:    { internal_format = GL_R32F;    color_attachment = true; } break;
+
+            case frame_buffer_texture_format::RED8:    {  } break;
+            case frame_buffer_texture_format::R32F:    {  } break;
+            case frame_buffer_texture_format::RGBA8:   {  } break;
+            case frame_buffer_texture_format::RGBA16F: {  } break;
+            case frame_buffer_texture_format::RG16F:   {  } break;
+            case frame_buffer_texture_format::RGBA32F: {  } break;
+            case frame_buffer_texture_format::None:    { Assert(false); } break;
+        }
+        if (color_attachment) {
+            glGenTextures(1, &fbo->attachments[n].handle);
+            glBindTexture(GL_TEXTURE_2D, fbo->attachments[n].handle);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, internal_format, 
+                         fbo->width, fbo->height, 0, 
+                         DataFormat(internal_format), DataType(internal_format), nullptr);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + n, 
+                                   GL_TEXTURE_2D, fbo->attachments[n].handle, 0);
+        } else {
+            glGenRenderbuffers(1, &fbo->attachments[n].handle);
+            glBindRenderbuffer(GL_RENDERBUFFER, fbo->attachments[n].handle);
+
+            glRenderbufferStorage(GL_RENDERBUFFER, internal_format, fbo->width, fbo->height);
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, attach_type, GL_RENDERBUFFER, fbo->attachments[n].handle);
+        }
+    }
+
+    GLenum buffers[5] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3, GL_COLOR_ATTACHMENT4 };
+    glDrawBuffers(fbo->num_attachments-1, buffers);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

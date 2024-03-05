@@ -17,8 +17,8 @@
 
 #include <imgui/imgui.h>
 
-int32 NUM_X = 7;
-int32 NUM_Y = 7;
+int32 NUM_X = 11;
+int32 NUM_Y = 11;
 real32 spacing = 2.5f;
 
 struct player_state {
@@ -98,17 +98,6 @@ bool32 game_initialize(RohinApp* app) {
     //resource_load_mesh_file_for_level("Data/Models/garden.mesh", state->level_geom, &state->grid);
     //collision_grid_finalize(&state->trans_arena, &state->grid);
     resource_load_mesh("Data/Models/helmet.mesh", state->player_mesh);
-    for(uint32 n = 0; n < state->player_mesh->num_primitives; n++) {
-        RH_INFO("mat[%d]: flag = %d", n, state->player_mesh->materials[n].flag);
-        RH_INFO("         diffuse = [%.2f %.2f %.2f]", 
-            state->player_mesh->materials[n].DiffuseFactor.x,
-            state->player_mesh->materials[n].DiffuseFactor.y,
-            state->player_mesh->materials[n].DiffuseFactor.z);
-        RH_INFO("         diffuse_tex =  %d", state->player_mesh->materials[n].DiffuseTexture.handle);
-        RH_INFO("         normal_tex =   %d", state->player_mesh->materials[n].NormalTexture.handle);
-        RH_INFO("         amr_tex =      %d", state->player_mesh->materials[n].AMRTexture.handle);
-        RH_INFO("         emissive_tex = %d", state->player_mesh->materials[n].EmissiveTexture.handle);
-    }
 
     state->missing_material.DiffuseFactor = laml::Vec3(1.0f);
     state->missing_material.NormalScale = 1.0f;
