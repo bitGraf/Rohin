@@ -17,9 +17,14 @@
 
 #include <imgui/imgui.h>
 
+#define ONE_OBJECT 1
+
+#if ONE_OBJECT
+#else
 int32 NUM_X = 11;
 int32 NUM_Y = 11;
 real32 spacing = 2.5f;
+#endif
 
 struct player_state {
     laml::Vec3 position;
@@ -75,7 +80,11 @@ bool32 game_startup(RohinApp* app) {
     state->level_mesh = PushStruct(&state->mesh_arena, resource_mesh);
     state->player_mesh = PushStruct(&state->mesh_arena, resource_mesh);
     
+    #if ONE_OBJECT
+    state->num_scene_meshes = 1;
+    #else
     state->num_scene_meshes = NUM_X * NUM_Y;
+    #endif
     state->scene_meshes = PushArray(&state->mesh_arena, resource_mesh, state->num_scene_meshes);
 
     app->memory.IsInitialized = true;
@@ -109,15 +118,24 @@ bool32 game_initialize(RohinApp* app) {
     resource_load_texture_file("Data/textures/checker.png", &state->missing_material.DiffuseTexture);
 
     // load spheres
+    #if ONE_OBJECT
+    resource_load_mesh("Data/Models/body_mesh.mesh", &state->scene_meshes[0]);
+    for (uint32 n = 0; n < state->scene_meshes[0].num_primitives; n++) {
+        //state->scene_meshes[0].materials[n].RoughnessFactor = 0.7f;
+        //state->scene_meshes[0].materials[n].MetallicFactor = 0.0f;
+        //state->scene_meshes[0].materials[n].EmissiveFactor = laml::Vec3(0.0f, 0.0f, 0.0f);
+    }
+    #else
     resource_load_mesh("Data/Models/sphere.mesh", &state->scene_meshes[0]);
     for (uint32 n = 1; n < state->num_scene_meshes; n++) {
         memory_copy(&state->scene_meshes[n], &state->scene_meshes[0], sizeof(resource_mesh));
     }
+    #endif
 
     //state->player.position = {-5.0f, 1.0f, 0.0f};
-    state->player.position = {0.0f, 1.0f, 0.0f};
+    state->player.position = {0.0f, 1.0f, 3.0f};
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
-    state->player.scale = 0.5f;
+    state->player.scale = 1.0f;
     state->player.height = 1.9f;
     state->player.radius = 0.3f;
     laml::Vec3 world_up(0.0f, 1.0f, 0.0f);
@@ -331,7 +349,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     state->player.position = new_position;
 
 
-    state->debug_camera.position = state->player.position - (forward * 5.75f) + (up * 0.0f);
+    state->debug_camera.position = state->player.position - (forward * 0.0f) + (up * 0.0f);
     laml::Mat3 camera_rot;
     laml::transform::create_transform_rotation(camera_rot, state->player.yaw, state->debug_camera.pitch, 0.0f);
     state->debug_camera.orientation = laml::transform::quat_from_mat(camera_rot);
@@ -359,6 +377,18 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 //
     //    command_idx++;
     //}
+
+    #if ONE_OBJECT
+    laml::Mat4 shark_trans;
+    laml::transform::create_transform_scale(shark_trans, laml::Vec3(1.0f));
+    for (uint32 n = 0; n < state->scene_meshes[0].num_primitives; n++) {
+        packet->commands[command_idx].model_matrix = shark_trans;
+        packet->commands[command_idx].geom = state->scene_meshes[0].primitives[n];
+        packet->commands[command_idx].material = state->scene_meshes[0].materials[n];
+
+        command_idx++;
+    }
+    #else
     for (int32 m1 = 0; m1 < NUM_X; m1++) {
         real32 xpos = (m1-((NUM_X-1)/2)) * spacing;
         real32 roughness = 0.0f;
@@ -389,6 +419,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
             }
         }
     }
+    #endif
 
     //packet->commands[0].model_matrix = eye;
     //packet->commands[0].geom = *state->level_geom;

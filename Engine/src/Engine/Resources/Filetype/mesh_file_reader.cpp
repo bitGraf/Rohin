@@ -21,7 +21,7 @@ internal_func bool32 CheckHeader(mesh_file_header* Header, uint64 Size) {
     if (!CheckTag(Header->Magic, "MESH", 4)) return false;
 
     // check version number
-    if (Header->Version != 2) return false;
+    if (Header->Version != 3) return false;
 
     return true;
 }
@@ -52,6 +52,8 @@ mesh_file_result parse_mesh_file(const char* resource_file_name, mesh_file **mes
     // allocate memory
     mesh_file *tmp = PushStruct(arena, mesh_file);
     memory_copy(&tmp->Header, Header, sizeof(mesh_file_header));
+
+    bool32 is_skinned = Header->Flag & 0x01;
 
     // Read materials
     tmp->Materials = PushArray(arena, mesh_file_material, Header->NumPrims);
@@ -112,9 +114,57 @@ mesh_file_result parse_mesh_file(const char* resource_file_name, mesh_file **mes
         tmp->Primitives[n].Indices = PushArray(arena, uint32, PrimHeader->NumInds);
         memory_copy(tmp->Primitives[n].Indices, Indices, PrimHeader->NumInds * sizeof(uint32));
 
-        mesh_file_vertex* Vertices = AdvanceBufferArray(&file.data, mesh_file_vertex, PrimHeader->NumVerts, End);
-        tmp->Primitives[n].Vertices = PushArray(arena, mesh_file_vertex, PrimHeader->NumVerts);
-        memory_copy(tmp->Primitives[n].Vertices, Vertices, PrimHeader->NumVerts * sizeof(mesh_file_vertex));
+        if (is_skinned) {
+            mesh_file_vertex_skinned* Vertices = AdvanceBufferArray(&file.data, mesh_file_vertex_skinned, PrimHeader->NumVerts, End);
+            tmp->Primitives[n].SkinnedVertices = PushArray(arena, mesh_file_vertex_skinned, PrimHeader->NumVerts);
+            memory_copy(tmp->Primitives[n].SkinnedVertices, Vertices, PrimHeader->NumVerts * sizeof(mesh_file_vertex_skinned));
+        } else {
+            mesh_file_vertex_static* Vertices = AdvanceBufferArray(&file.data, mesh_file_vertex_static, PrimHeader->NumVerts, End);
+            tmp->Primitives[n].StaticVertices = PushArray(arena, mesh_file_vertex_static, PrimHeader->NumVerts);
+            memory_copy(tmp->Primitives[n].StaticVertices, Vertices, PrimHeader->NumVerts * sizeof(mesh_file_vertex_static));
+        }
+    }
+
+    // read skeleton if skinned
+    if (is_skinned) {
+        mesh_file_skeleton_header* SkeletonHeader = AdvanceBuffer(&file.data, mesh_file_skeleton_header, End);
+        memory_copy(&tmp->Skeleton.Header, SkeletonHeader, sizeof(mesh_file_skeleton_header));
+
+        tmp->Skeleton.Bones = PushArray(arena, mesh_file_bone, SkeletonHeader->NumBones);
+        for (uint32 b = 0; b < SkeletonHeader->NumBones; b++) {
+            /*
+            fwrite(&bone.bone_idx, sizeof(uint32), 1, fid) * sizeof(uint32);
+            fwrite(&bone.parent_idx, sizeof(int32), 1, fid) * sizeof(int32);
+            fwrite(&debug_length, sizeof(real32), 1, fid) * sizeof(real32);
+            fwrite(&bone.local_matrix.c_11, sizeof(real32), 16, fid) * sizeof(real32);
+            fwrite(&bone.inv_model_matrix.c_11, sizeof(real32), 16, fid) * sizeof(real32);
+            write_string(fid, bone.name);
+            */
+
+            uint32* bone_idx = AdvanceBuffer(&file.data, uint32, End);
+            tmp->Skeleton.Bones[b].bone_idx = *bone_idx;
+
+            int32* parent_idx = AdvanceBuffer(&file.data, int32, End);
+            tmp->Skeleton.Bones[b].parent_idx = *parent_idx;
+
+            real32* debug_length = AdvanceBuffer(&file.data, real32, End);
+            tmp->Skeleton.Bones[b].debug_length = *debug_length;
+
+            laml::Mat4* local_matrix = AdvanceBuffer(&file.data, laml::Mat4, End);
+            tmp->Skeleton.Bones[b].local_matrix = *local_matrix;
+
+            laml::Mat4* inv_model_matrix = AdvanceBuffer(&file.data, laml::Mat4, End);
+            tmp->Skeleton.Bones[b].inv_model_matrix = *inv_model_matrix;
+
+
+            // bone name
+            uint8 NameLen = *AdvanceBuffer(&file.data, uint8, End);
+            unsigned char *Name = AdvanceBufferArray(&file.data, unsigned char, NameLen, End);
+
+            tmp->Skeleton.Bones[b].name.len = NameLen;
+            memory_copy(tmp->Skeleton.Bones[b].name.str, Name, NameLen);
+            tmp->Skeleton.Bones[b].name.str[NameLen] = 0;
+        }
     }
 
     uint8* EndTag = AdvanceBufferArray(&file.data, uint8, 4, End); // VERT
@@ -127,5 +177,5 @@ mesh_file_result parse_mesh_file(const char* resource_file_name, mesh_file **mes
 
     *mesh_file_data = tmp;
 
-    return mesh_file_result::is_static;
+    return is_skinned ? mesh_file_result::is_animated : mesh_file_result::is_static;
 }

@@ -61,15 +61,16 @@ layout (location = 10) uniform vec3 u_AlbedoColor;
 layout (location = 11) uniform float u_Metalness;
 layout (location = 12) uniform float u_Roughness;
 layout (location = 13) uniform float u_TextureScale;
+layout (location = 14) uniform vec3 u_EmissiveColor;
 
 // Toggles
-layout (location = 14) uniform float r_AlbedoTexToggle;
-layout (location = 15) uniform float r_NormalTexToggle;
-layout (location = 16) uniform float r_MetalnessTexToggle;
-layout (location = 17) uniform float r_RoughnessTexToggle;
-layout (location = 18) uniform float r_AmbientTexToggle;
-layout (location = 19) uniform float r_EmissiveTexToggle;
-layout (location = 20) uniform float r_gammaCorrect;
+layout (location = 15) uniform float r_AlbedoTexToggle;
+layout (location = 16) uniform float r_NormalTexToggle;
+layout (location = 17) uniform float r_MetalnessTexToggle;
+layout (location = 18) uniform float r_RoughnessTexToggle;
+layout (location = 19) uniform float r_AmbientTexToggle;
+layout (location = 20) uniform float r_EmissiveTexToggle;
+layout (location = 21) uniform float r_gammaCorrect;
 
 float linearize_depth(float d,float zNear,float zFar)
 {
@@ -90,7 +91,7 @@ void main()
 	// Standard PBR inputs
 	//vec3 Albedo = gammaCorrect(r_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord * u_TextureScale).rgb : u_AlbedoColor);
     vec3 Albedo = gammaCorrect(r_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord * u_TextureScale).rgb*u_AlbedoColor : u_AlbedoColor);
-    vec3 Emissive = gammaCorrect(r_EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, vs_Input.TexCoord).rgb : vec3(0));
+    vec3 Emissive = gammaCorrect(r_EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, vs_Input.TexCoord).rgb : u_EmissiveColor);
 	float Metalness = r_MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, vs_Input.TexCoord).g : u_Metalness;
 	float Roughness = r_RoughnessTexToggle > 0.5 ?  texture(u_RoughnessTexture, vs_Input.TexCoord).b : u_Roughness;
     float Ambient = r_AmbientTexToggle > 0.5 ? texture(u_AmbientTexture, vs_Input.TexCoord).r : 1;

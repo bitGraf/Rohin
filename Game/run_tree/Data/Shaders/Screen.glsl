@@ -83,7 +83,7 @@ void main() {
     else if (r_outputSwitch == 10)
         FragColor = vec4(Emission, 1);
     else if (r_outputSwitch == 11)
-        FragColor = vec4(vec3(1,0,0), 1);
+        FragColor = vec4(vec3(SSAO), 1);
     else
         FragColor = vec4(1, 0, 0, 1);
 

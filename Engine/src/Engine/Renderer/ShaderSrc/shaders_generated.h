@@ -199,6 +199,7 @@ struct shader_PrePass {
     ShaderUniform_float u_Metalness;
     ShaderUniform_float u_Roughness;
     ShaderUniform_float u_TextureScale;
+    ShaderUniform_vec3 u_EmissiveColor;
     ShaderUniform_float r_AlbedoTexToggle;
     ShaderUniform_float r_NormalTexToggle;
     ShaderUniform_float r_MetalnessTexToggle;

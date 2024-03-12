@@ -41,18 +41,46 @@ struct mesh_file_primitive_header {
     uint32 NumInds;
     uint32 MatIdx;
 };
-struct mesh_file_vertex {
+struct mesh_file_vertex_static {
     laml::Vec3 Position;
     laml::Vec3 Normal;
     laml::Vec3 Tangent;
     laml::Vec3 Bitangent;
     laml::Vec2 UV;
 };
+struct mesh_file_vertex_skinned {
+    laml::Vec3 Position;
+    laml::Vec3 Normal;
+    laml::Vec3 Tangent;
+    laml::Vec3 Bitangent;
+    laml::Vec2 UV;
+    laml::Vector<int32, 4>  BoneIndices;
+    laml::Vector<real32, 4> BoneWeights;
+};
+struct mesh_file_skeleton_header {
+    unsigned char Magic[4];
+    uint32 NumBones;
+};
 struct mesh_file_primitive {
     mesh_file_primitive_header Header;
 
     uint32 *Indices;
-    mesh_file_vertex *Vertices;
+    mesh_file_vertex_static  *StaticVertices;
+    mesh_file_vertex_skinned *SkinnedVertices;
+};
+struct mesh_file_bone {
+    uint32 bone_idx;
+    int32 parent_idx;
+    real32 debug_length;
+    laml::Mat4 local_matrix;
+    laml::Mat4 inv_model_matrix;
+
+    mesh_file_string name;
+};
+struct mesh_file_skeleton {
+    mesh_file_skeleton_header Header;
+
+    mesh_file_bone* Bones;
 };
 
 struct mesh_file {
@@ -60,6 +88,7 @@ struct mesh_file {
 
     mesh_file_material *Materials;
     mesh_file_primitive *Primitives;
+    mesh_file_skeleton Skeleton;
 };
 
 mesh_file_result parse_mesh_file(const char* resource_file_name, mesh_file **file_data, memory_arena * arena);

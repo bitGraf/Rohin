@@ -37,7 +37,7 @@ RHAPI bool32 resource_load_mesh(const char* resource_file_name, resource_mesh *m
 
     mesh_file *file_data;
     mesh_file_result res = parse_mesh_file(resource_file_name, &file_data, arena);
-    if (res != mesh_file_result::is_static) {
+    if (res == mesh_file_result::error) {
         RH_ERROR("Failed to read data from mesh file.");
         return false;
     }
@@ -49,7 +49,10 @@ RHAPI bool32 resource_load_mesh(const char* resource_file_name, resource_mesh *m
     mesh->primitives = PushArray(arena, render_geometry, mesh->num_primitives);
     for (int n = 0; n < file_data->Header.NumPrims; n++) {
         mesh_file_primitive *prim = &file_data->Primitives[n];
-        renderer_create_mesh(&mesh->primitives[n], prim->Header.NumVerts, prim->Vertices, prim->Header.NumInds, prim->Indices, static_mesh_attribute_list);
+        renderer_create_mesh(&mesh->primitives[n], prim->Header.NumVerts, 
+                             res==mesh_file_result::is_static ? (void*)prim->StaticVertices : (void*)prim->SkinnedVertices, 
+                             prim->Header.NumInds, prim->Indices, 
+                             res==mesh_file_result::is_static ? static_mesh_attribute_list : dynamic_mesh_attribute_list);
     }
 
     // buffer textures to gpu
@@ -270,7 +273,7 @@ bool32 resource_load_mesh(mesh_file * file_data, render_geometry* geom_out) {
     // Pass onto the renderer to create
     render_geometry* geom = PushStruct(arena, render_geometry);
     renderer_create_mesh(geom, 
-                         file_data->Primitives[0].Header.NumVerts, file_data->Primitives[0].Vertices, 
+                         file_data->Primitives[0].Header.NumVerts, file_data->Primitives[0].StaticVertices, 
                          file_data->Primitives[0].Header.NumInds, file_data->Primitives[0].Indices, 
                          static_mesh_attribute_list);
 
@@ -298,7 +301,7 @@ RHAPI bool32 resource_load_mesh_into_grid(mesh_file * file_data, collision_grid 
 
         uint32 num_tris = prim->Header.NumInds / 3;
         uint32 *Indices = prim->Indices;
-        mesh_file_vertex *Vertices = prim->Vertices;
+        mesh_file_vertex_static *Vertices = prim->StaticVertices;
         memory_index arena_save = arena->Used;
         collision_triangle triangle;
         for (uint32 n = 0; n < num_tris; n++) {
@@ -321,7 +324,7 @@ RHAPI bool32 resource_load_mesh_into_grid(mesh_file * file_data, collision_grid 
 
         uint32 num_tris = prim->Header.NumInds / 3;
         uint32 *Indices = prim->Indices;
-        mesh_file_vertex *Vertices = prim->Vertices;
+        mesh_file_vertex_static *Vertices = prim->StaticVertices;
 
         collision_triangle triangle;
         for (uint32 n = 0; n < num_tris; n++) {
@@ -363,7 +366,7 @@ bool32 resource_load_mesh_file_for_level(const char* resource_file_name,
 
         uint32 num_tris = prim->Header.NumInds / 3;
         uint32 *Indices = prim->Indices;
-        mesh_file_vertex *Vertices = prim->Vertices;
+        mesh_file_vertex_static *Vertices = prim->StaticVertices;
         memory_index arena_save = arena->Used;
         collision_triangle triangle;
         for (uint32 n = 0; n < num_tris; n++) {
@@ -386,7 +389,7 @@ bool32 resource_load_mesh_file_for_level(const char* resource_file_name,
 
         uint32 num_tris = prim->Header.NumInds / 3;
         uint32 *Indices = prim->Indices;
-        mesh_file_vertex *Vertices = prim->Vertices;
+        mesh_file_vertex_static *Vertices = prim->StaticVertices;
 
         collision_triangle triangle;
         for (uint32 n = 0; n < num_tris; n++) {
@@ -407,7 +410,7 @@ bool32 resource_load_mesh_file_for_level(const char* resource_file_name,
     // Pass onto the renderer to create
     render_geometry* geom = PushStruct(arena, render_geometry);
     renderer_create_mesh(geom, 
-                         file_data->Primitives[0].Header.NumVerts, file_data->Primitives[0].Vertices, 
+                         file_data->Primitives[0].Header.NumVerts, file_data->Primitives[0].StaticVertices, 
                          file_data->Primitives[0].Header.NumInds, file_data->Primitives[0].Indices, 
                          static_mesh_attribute_list);
 

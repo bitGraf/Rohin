@@ -197,13 +197,14 @@ void shader_PrePass::InitShaderLocs() {
     u_Metalness.Location = 11;
     u_Roughness.Location = 12;
     u_TextureScale.Location = 13;
-    r_AlbedoTexToggle.Location = 14;
-    r_NormalTexToggle.Location = 15;
-    r_MetalnessTexToggle.Location = 16;
-    r_RoughnessTexToggle.Location = 17;
-    r_AmbientTexToggle.Location = 18;
-    r_EmissiveTexToggle.Location = 19;
-    r_gammaCorrect.Location = 20;
+    u_EmissiveColor.Location = 14;
+    r_AlbedoTexToggle.Location = 15;
+    r_NormalTexToggle.Location = 16;
+    r_MetalnessTexToggle.Location = 17;
+    r_RoughnessTexToggle.Location = 18;
+    r_AmbientTexToggle.Location = 19;
+    r_EmissiveTexToggle.Location = 20;
+    r_gammaCorrect.Location = 21;
 }
 void shader_PrePass_Anim::InitShaderLocs() {
     outputs.num_outputs = 5;

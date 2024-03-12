@@ -720,6 +720,7 @@ bool32 renderer_draw_frame(render_packet* packet) {
             backend->upload_uniform_float(prepass.u_Metalness, mat->MetallicFactor);
             backend->upload_uniform_float(prepass.u_Roughness, mat->RoughnessFactor);
             backend->upload_uniform_float(prepass.u_TextureScale, 1.0f);
+            backend->upload_uniform_float3(prepass.u_EmissiveColor, mat->EmissiveFactor._data);
 
             backend->upload_uniform_float(prepass.r_AlbedoTexToggle,    (mat->flag & 0x02) ? 1.0f : 0.0f);
             backend->upload_uniform_float(prepass.r_NormalTexToggle,    (mat->flag & 0x04) ? 1.0f : 0.0f);
