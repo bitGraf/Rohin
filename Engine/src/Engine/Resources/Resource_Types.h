@@ -50,13 +50,34 @@ struct debug_geometry {
 enum class mesh_file_result : int32 {
     error = -1,
     is_static,
-    is_animated
+    is_skinned
 };
 
-struct resource_mesh {
+struct resource_static_mesh {
     uint32 num_primitives;
     render_geometry *primitives;
     render_material *materials;
+
+    laml::Mat4 transform;
+};
+struct resource_bone {
+    uint32 bone_idx;
+    int32  parent_idx;
+    laml::Mat4 local_matrix;
+    laml::Mat4 inv_model_matrix;
+
+    real32 debug_length;
+    char* debug_name;
+};
+struct resource_skeleton {
+    uint32 num_bones;
+    resource_bone* bones;
+};
+struct resource_skinned_mesh {
+    uint32 num_primitives;
+    render_geometry *primitives;
+    render_material *materials;
+    resource_skeleton skeleton;
 
     laml::Mat4 transform;
 };

@@ -36,7 +36,8 @@ struct renderer_state {
     shader_simple simple_shader;
 #else
     // deferred pbr render pass
-    shader_PrePass pre_pass_shader;
+    shader_PrePass      static_pre_pass_shader;
+    shader_PrePass_Anim skinned_pre_pass_shader;
     frame_buffer gbuffer;
 
     shader_Lighting lighting_shader;
@@ -63,6 +64,7 @@ struct renderer_state {
     int32 current_shader_out;
     int32 gamma_correct;
     int32 tone_map;
+    int32 use_skins;
 
     // debug wireframe
     shader wireframe_shader;
@@ -94,6 +96,7 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
     render_state->current_shader_out = 0;
     render_state->gamma_correct = true;
     render_state->tone_map = true;
+    render_state->use_skins = false;
 
     return true;
 }
@@ -229,21 +232,37 @@ bool32 renderer_create_pipeline() {
     backend->push_debug_group("Create PBR Pipeline");
 
     // setup prepass shader
-    backend->push_debug_group("Prepass Shader");
-    shader* pPrepass = (shader*)(&render_state->pre_pass_shader);
-    shader_PrePass& prepass = render_state->pre_pass_shader;
-    if (!resource_load_shader_file("Data/Shaders/PrePass.glsl", pPrepass)) {
-        RH_FATAL("Could not setup the pre-pass shader");
+    backend->push_debug_group("Prepass Shaders");
+    shader* pPrepassStatic = (shader*)(&render_state->static_pre_pass_shader);
+    shader_PrePass& prepass_static = render_state->static_pre_pass_shader;
+    if (!resource_load_shader_file("Data/Shaders/PrePass.glsl", pPrepassStatic)) {
+        RH_FATAL("Could not setup the static pre-pass shader");
         return false;
     }
-    renderer_use_shader(pPrepass);
-    prepass.InitShaderLocs();
-    backend->upload_uniform_int(prepass.u_AlbedoTexture,    prepass.u_AlbedoTexture.SamplerID);
-    backend->upload_uniform_int(prepass.u_NormalTexture,    prepass.u_NormalTexture.SamplerID);
-    backend->upload_uniform_int(prepass.u_MetalnessTexture, prepass.u_MetalnessTexture.SamplerID);
-    backend->upload_uniform_int(prepass.u_RoughnessTexture, prepass.u_RoughnessTexture.SamplerID);
-    backend->upload_uniform_int(prepass.u_AmbientTexture,   prepass.u_AmbientTexture.SamplerID);
-    backend->upload_uniform_int(prepass.u_EmissiveTexture,  prepass.u_EmissiveTexture.SamplerID);
+    renderer_use_shader(pPrepassStatic);
+    prepass_static.InitShaderLocs();
+    backend->upload_uniform_int(prepass_static.u_AlbedoTexture,    prepass_static.u_AlbedoTexture.SamplerID);
+    backend->upload_uniform_int(prepass_static.u_NormalTexture,    prepass_static.u_NormalTexture.SamplerID);
+    backend->upload_uniform_int(prepass_static.u_MetalnessTexture, prepass_static.u_MetalnessTexture.SamplerID);
+    backend->upload_uniform_int(prepass_static.u_RoughnessTexture, prepass_static.u_RoughnessTexture.SamplerID);
+    backend->upload_uniform_int(prepass_static.u_AmbientTexture,   prepass_static.u_AmbientTexture.SamplerID);
+    backend->upload_uniform_int(prepass_static.u_EmissiveTexture,  prepass_static.u_EmissiveTexture.SamplerID);
+
+    shader* pPrepassSkinned = (shader*)(&render_state->skinned_pre_pass_shader);
+    shader_PrePass_Anim& prepass_skinned = render_state->skinned_pre_pass_shader;
+    if (!resource_load_shader_file("Data/Shaders/PrePass_Anim.glsl", pPrepassSkinned)) {
+        RH_FATAL("Could not setup the skinned pre-pass shader");
+        return false;
+    }
+    renderer_use_shader(pPrepassSkinned);
+    prepass_skinned.InitShaderLocs();
+    backend->upload_uniform_int(prepass_skinned.u_AlbedoTexture,    prepass_skinned.u_AlbedoTexture.SamplerID);
+    backend->upload_uniform_int(prepass_skinned.u_NormalTexture,    prepass_skinned.u_NormalTexture.SamplerID);
+    backend->upload_uniform_int(prepass_skinned.u_MetalnessTexture, prepass_skinned.u_MetalnessTexture.SamplerID);
+    backend->upload_uniform_int(prepass_skinned.u_RoughnessTexture, prepass_skinned.u_RoughnessTexture.SamplerID);
+    backend->upload_uniform_int(prepass_skinned.u_AmbientTexture,   prepass_skinned.u_AmbientTexture.SamplerID);
+    backend->upload_uniform_int(prepass_skinned.u_EmissiveTexture,  prepass_skinned.u_EmissiveTexture.SamplerID);
+
     // create g-buffer
     laml::Vec4 black;
     laml::Vec4 white(1.0f);
@@ -259,7 +278,7 @@ bool32 renderer_create_pipeline() {
         };
         render_state->gbuffer.width = render_state->render_width;
         render_state->gbuffer.height = render_state->render_height;
-        renderer_create_framebuffer(&render_state->gbuffer, prepass.outputs.num_outputs+1, attachments);
+        renderer_create_framebuffer(&render_state->gbuffer, prepass_static.outputs.num_outputs+1, attachments);
     }
 
     backend->pop_debug_group(); // create prepass
@@ -583,6 +602,9 @@ void renderer_on_event(uint16 code, void* sender, void* listener, event_context 
             } else if (context.u16[0] == KEY_T) {
                 render_state->tone_map = !render_state->tone_map;
                 RH_INFO("Renderer tone mapping: %s", render_state->tone_map ? "Enabled" : "Disabled");
+            } else if (context.u16[0] == KEY_B) {
+                render_state->use_skins = !render_state->use_skins;
+                RH_INFO("Skinnging: %s", render_state->use_skins ? "Enabled" : "Disabled");
             }
     }
 }
@@ -694,53 +716,107 @@ bool32 renderer_draw_frame(render_packet* packet) {
 
         backend->push_debug_group("PBR Rendering Pipeline");
         backend->push_debug_group("G-Buffer Generation");
+        shader_PrePass& prepass = render_state->static_pre_pass_shader;
         // PREPASS STAGE
-        shader* pPrepass = (shader*)(&render_state->pre_pass_shader);
-        shader_PrePass& prepass = render_state->pre_pass_shader;
-        renderer_use_shader(pPrepass);
+        {
+            backend->use_framebuffer(&render_state->gbuffer);
+            backend->clear_viewport(0, 0, 0, 0);
+            backend->clear_framebuffer_attachment(&render_state->gbuffer.attachments[prepass.outputs.out_Depth], 1, 1, 1, 1);
 
-        backend->upload_uniform_float4x4(prepass.r_View, packet->view_matrix._data);
-        backend->upload_uniform_float4x4(prepass.r_Projection, packet->projection_matrix._data);
-        laml::Vec3 color(1.0f, 0.0f, 1.0f);
-        backend->upload_uniform_float(prepass.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
+            backend->enable_stencil_test();
+            backend->set_stencil_mask(0xFF);
+            backend->set_stencil_func(render_stencil_func::Always, 100, 0xFF);
+            backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Replace);
 
-        backend->use_framebuffer(&render_state->gbuffer);
-        backend->clear_viewport(0, 0, 0, 0);
-        backend->clear_framebuffer_attachment(&render_state->gbuffer.attachments[prepass.outputs.out_Depth], 1, 1, 1, 1);
+            backend->push_debug_group("Static Meshes");
+            { // Static Meshes
+                shader_PrePass& prepass_static = render_state->static_pre_pass_shader;
+                shader * pPrepassStatic = (shader*)(&render_state->static_pre_pass_shader);
+                renderer_use_shader(pPrepassStatic);
 
-        backend->enable_stencil_test();
-        backend->set_stencil_mask(0xFF);
-        backend->set_stencil_func(render_stencil_func::Always, 100, 0xFF);
-        backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Replace);
+                backend->upload_uniform_float4x4(prepass_static.r_View, packet->view_matrix._data);
+                backend->upload_uniform_float4x4(prepass_static.r_Projection, packet->projection_matrix._data);
+                backend->upload_uniform_float(prepass_static.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
 
-        for (uint32 cmd_index = 0; cmd_index < packet->num_commands; cmd_index++) {
-            render_material* mat = &packet->commands[cmd_index].material;
+                for (uint32 cmd_index = 0; cmd_index < packet->_num_static; cmd_index++) {
+                    render_command& cmd = packet->_static_cmds[cmd_index];
+                    render_material& mat = cmd.material;
 
-            backend->upload_uniform_float3(prepass.u_AlbedoColor, mat->DiffuseFactor._data);
-            backend->upload_uniform_float(prepass.u_Metalness, mat->MetallicFactor);
-            backend->upload_uniform_float(prepass.u_Roughness, mat->RoughnessFactor);
-            backend->upload_uniform_float(prepass.u_TextureScale, 1.0f);
-            backend->upload_uniform_float3(prepass.u_EmissiveColor, mat->EmissiveFactor._data);
+                    backend->upload_uniform_float3(prepass_static.u_AlbedoColor,   mat.DiffuseFactor._data);
+                    backend->upload_uniform_float(prepass_static.u_Metalness,      mat.MetallicFactor);
+                    backend->upload_uniform_float(prepass_static.u_Roughness,      mat.RoughnessFactor);
+                    backend->upload_uniform_float(prepass_static.u_TextureScale,   1.0f);
+                    backend->upload_uniform_float3(prepass_static.u_EmissiveColor, mat.EmissiveFactor._data);
 
-            backend->upload_uniform_float(prepass.r_AlbedoTexToggle,    (mat->flag & 0x02) ? 1.0f : 0.0f);
-            backend->upload_uniform_float(prepass.r_NormalTexToggle,    (mat->flag & 0x04) ? 1.0f : 0.0f);
-            backend->upload_uniform_float(prepass.r_MetalnessTexToggle, (mat->flag & 0x08) ? 1.0f : 0.0f);
-            backend->upload_uniform_float(prepass.r_RoughnessTexToggle, (mat->flag & 0x08) ? 1.0f : 0.0f);
-            backend->upload_uniform_float(prepass.r_AmbientTexToggle,   (mat->flag & 0x08) ? 1.0f : 0.0f);
-            backend->upload_uniform_float(prepass.r_EmissiveTexToggle,  (mat->flag & 0x10) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_static.r_AlbedoTexToggle,    (mat.flag & 0x02) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_static.r_NormalTexToggle,    (mat.flag & 0x04) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_static.r_MetalnessTexToggle, (mat.flag & 0x08) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_static.r_RoughnessTexToggle, (mat.flag & 0x08) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_static.r_AmbientTexToggle,   (mat.flag & 0x08) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_static.r_EmissiveTexToggle,  (mat.flag & 0x10) ? 1.0f : 0.0f);
 
-            backend->bind_texture(mat->DiffuseTexture.handle,  prepass.u_AlbedoTexture.SamplerID);
-            backend->bind_texture(mat->NormalTexture.handle,   prepass.u_NormalTexture.SamplerID);
-            backend->bind_texture(mat->AMRTexture.handle,      prepass.u_AmbientTexture.SamplerID);
-            backend->bind_texture(mat->AMRTexture.handle,      prepass.u_MetalnessTexture.SamplerID);
-            backend->bind_texture(mat->AMRTexture.handle,      prepass.u_RoughnessTexture.SamplerID);
-            backend->bind_texture(mat->EmissiveTexture.handle, prepass.u_EmissiveTexture.SamplerID);
+                    backend->bind_texture(mat.DiffuseTexture.handle,  prepass_static.u_AlbedoTexture.SamplerID);
+                    backend->bind_texture(mat.NormalTexture.handle,   prepass_static.u_NormalTexture.SamplerID);
+                    backend->bind_texture(mat.AMRTexture.handle,      prepass_static.u_AmbientTexture.SamplerID);
+                    backend->bind_texture(mat.AMRTexture.handle,      prepass_static.u_MetalnessTexture.SamplerID);
+                    backend->bind_texture(mat.AMRTexture.handle,      prepass_static.u_RoughnessTexture.SamplerID);
+                    backend->bind_texture(mat.EmissiveTexture.handle, prepass_static.u_EmissiveTexture.SamplerID);
 
-            backend->upload_uniform_float4x4(prepass.r_Transform, 
-                                             packet->commands[cmd_index].model_matrix._data);
-            renderer_draw_geometry(&packet->commands[cmd_index].geom);
+                    backend->upload_uniform_float4x4(prepass_static.r_Transform,
+                                                     cmd.model_matrix._data);
+                    renderer_draw_geometry(&cmd.geom);
+                }
+            }
+            backend->pop_debug_group();
+            backend->push_debug_group("Skinned Meshes");
+            { // Skinned
+                shader_PrePass_Anim& prepass_skinned = render_state->skinned_pre_pass_shader;
+                shader * pPrepassStatic = (shader*)(&render_state->skinned_pre_pass_shader);
+                renderer_use_shader(pPrepassStatic);
+
+                backend->upload_uniform_float4x4(prepass_skinned.r_View, packet->view_matrix._data);
+                backend->upload_uniform_float4x4(prepass_skinned.r_Projection, packet->projection_matrix._data);
+                backend->upload_uniform_float(prepass_skinned.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
+
+                for (uint32 cmd_index = 0; cmd_index < packet->_num_skinned; cmd_index++) {
+                    render_command& cmd = packet->_skinned_cmds[cmd_index];
+                    render_material& mat = cmd.material;
+
+                    backend->upload_uniform_float3(prepass_skinned.u_AlbedoColor,   mat.DiffuseFactor._data);
+                    backend->upload_uniform_float(prepass_skinned.u_Metalness,      mat.MetallicFactor);
+                    backend->upload_uniform_float(prepass_skinned.u_Roughness,      mat.RoughnessFactor);
+                    backend->upload_uniform_float(prepass_skinned.u_TextureScale,   1.0f);
+                    backend->upload_uniform_float3(prepass_skinned.u_EmissiveColor, mat.EmissiveFactor._data);
+
+                    backend->upload_uniform_float(prepass_skinned.r_AlbedoTexToggle,    (mat.flag & 0x02) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_skinned.r_NormalTexToggle,    (mat.flag & 0x04) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_skinned.r_MetalnessTexToggle, (mat.flag & 0x08) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_skinned.r_RoughnessTexToggle, (mat.flag & 0x08) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_skinned.r_AmbientTexToggle,   (mat.flag & 0x08) ? 1.0f : 0.0f);
+                    backend->upload_uniform_float(prepass_skinned.r_EmissiveTexToggle,  (mat.flag & 0x10) ? 1.0f : 0.0f);
+
+                    backend->bind_texture(mat.DiffuseTexture.handle,  prepass_skinned.u_AlbedoTexture.SamplerID);
+                    backend->bind_texture(mat.NormalTexture.handle,   prepass_skinned.u_NormalTexture.SamplerID);
+                    backend->bind_texture(mat.AMRTexture.handle,      prepass_skinned.u_AmbientTexture.SamplerID);
+                    backend->bind_texture(mat.AMRTexture.handle,      prepass_skinned.u_MetalnessTexture.SamplerID);
+                    backend->bind_texture(mat.AMRTexture.handle,      prepass_skinned.u_RoughnessTexture.SamplerID);
+                    backend->bind_texture(mat.EmissiveTexture.handle, prepass_skinned.u_EmissiveTexture.SamplerID);
+
+                    // upload skeleton data
+                    Assert(cmd.skeleton_idx);
+                    const render_skeleton& skeleton = packet->skeletons[cmd.skeleton_idx];
+                    backend->upload_uniform_int(prepass_skinned.r_UseSkin, render_state->use_skins);
+                    for (uint32 b = 0; b < skeleton.num_bones; b++) {
+                        backend->upload_uniform_float4x4(prepass_skinned.r_Bones[b], skeleton.bones[b]._data);
+                    }
+
+                    backend->upload_uniform_float4x4(prepass_skinned.r_Transform,
+                                                     cmd.model_matrix._data);
+                    renderer_draw_geometry(&cmd.geom);
+                }
+            }
+            backend->pop_debug_group();
         }
-
         backend->pop_debug_group(); // G-Buffer Generation
         ImGui::Text(" Prepass: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
 

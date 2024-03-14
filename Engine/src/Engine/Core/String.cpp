@@ -6,7 +6,7 @@
 #include <stdio.h>
 //#include <string.h>
 
-uint8* AdvanceBufferSize_(uint8** Buffer, uint32 Size, uint8* End) {
+uint8* AdvanceBufferSize_(uint8** Buffer, uint64 Size, uint8* End) {
     Assert((*Buffer + Size) <= End);
     uint8* Result = *Buffer;
     *Buffer += Size;

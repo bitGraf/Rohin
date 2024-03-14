@@ -89,7 +89,6 @@ vec3 gammaCorrect(vec3 srgb) {
 void main()
 {
 	// Standard PBR inputs
-	//vec3 Albedo = gammaCorrect(r_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord * u_TextureScale).rgb : u_AlbedoColor);
     vec3 Albedo = gammaCorrect(r_AlbedoTexToggle > 0.5 ? texture(u_AlbedoTexture, vs_Input.TexCoord * u_TextureScale).rgb*u_AlbedoColor : u_AlbedoColor);
     vec3 Emissive = gammaCorrect(r_EmissiveTexToggle > 0.5 ? texture(u_EmissiveTexture, vs_Input.TexCoord).rgb : u_EmissiveColor);
 	float Metalness = r_MetalnessTexToggle > 0.5 ? texture(u_MetalnessTexture, vs_Input.TexCoord).g : u_Metalness;

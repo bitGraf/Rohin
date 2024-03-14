@@ -17,14 +17,9 @@
 
 #include <imgui/imgui.h>
 
-#define ONE_OBJECT 1
-
-#if ONE_OBJECT
-#else
-int32 NUM_X = 11;
-int32 NUM_Y = 11;
+int32  NUM_X   = 11;
+int32  NUM_Y   = 11;
 real32 spacing = 2.5f;
-#endif
 
 struct player_state {
     laml::Vec3 position;
@@ -44,11 +39,13 @@ struct game_state {
     memory_arena trans_arena;
     memory_arena mesh_arena;
 
-    resource_mesh* level_mesh;
-    resource_mesh* player_mesh;
+    resource_static_mesh* level_mesh;
+    resource_static_mesh* player_mesh;
 
-    uint32 num_scene_meshes;
-    resource_mesh* scene_meshes;
+    uint32 num_static_meshes;
+    resource_static_mesh* static_meshes;
+    uint32 num_skinned_meshes;
+    resource_skinned_mesh* skinned_meshes;
 
     player_state player;
     player_state debug_camera;
@@ -77,15 +74,13 @@ bool32 game_startup(RohinApp* app) {
 
     CreateArena(&state->trans_arena, app->memory.TransientStorageSize, (uint8*)app->memory.TransientStorage);
 
-    state->level_mesh = PushStruct(&state->mesh_arena, resource_mesh);
-    state->player_mesh = PushStruct(&state->mesh_arena, resource_mesh);
+    state->level_mesh  = PushStruct(&state->mesh_arena, resource_static_mesh);
+    state->player_mesh = PushStruct(&state->mesh_arena, resource_static_mesh);
     
-    #if ONE_OBJECT
-    state->num_scene_meshes = 1;
-    #else
-    state->num_scene_meshes = NUM_X * NUM_Y;
-    #endif
-    state->scene_meshes = PushArray(&state->mesh_arena, resource_mesh, state->num_scene_meshes);
+    state->num_static_meshes = NUM_X * NUM_Y;
+    state->static_meshes  = PushArray(&state->mesh_arena, resource_static_mesh,  state->num_static_meshes);
+    state->num_skinned_meshes = 1;
+    state->skinned_meshes = PushArray(&state->mesh_arena, resource_skinned_mesh, state->num_static_meshes);
 
     app->memory.IsInitialized = true;
 
@@ -106,7 +101,7 @@ bool32 game_initialize(RohinApp* app) {
     //collision_create_grid(&state->trans_arena, &state->grid, {25.0f, -0.1f, -5.0f}, 0.5f, 256, 16, 256);
     //resource_load_mesh_file_for_level("Data/Models/garden.mesh", state->level_geom, &state->grid);
     //collision_grid_finalize(&state->trans_arena, &state->grid);
-    resource_load_mesh("Data/Models/helmet.mesh", state->player_mesh);
+    resource_load_static_mesh("Data/Models/helmet.mesh", state->player_mesh);
 
     state->missing_material.DiffuseFactor = laml::Vec3(1.0f);
     state->missing_material.NormalScale = 1.0f;
@@ -117,20 +112,14 @@ bool32 game_initialize(RohinApp* app) {
     state->missing_material.flag = 3;
     resource_load_texture_file("Data/textures/checker.png", &state->missing_material.DiffuseTexture);
 
+    // load skinned character
+    resource_load_skinned_mesh("Data/Models/body_mesh.mesh", &state->skinned_meshes[0]);
+
     // load spheres
-    #if ONE_OBJECT
-    resource_load_mesh("Data/Models/body_mesh.mesh", &state->scene_meshes[0]);
-    for (uint32 n = 0; n < state->scene_meshes[0].num_primitives; n++) {
-        //state->scene_meshes[0].materials[n].RoughnessFactor = 0.7f;
-        //state->scene_meshes[0].materials[n].MetallicFactor = 0.0f;
-        //state->scene_meshes[0].materials[n].EmissiveFactor = laml::Vec3(0.0f, 0.0f, 0.0f);
+    resource_load_static_mesh("Data/Models/sphere.mesh", &state->static_meshes[0]);
+    for (uint32 n = 1; n < state->num_static_meshes; n++) {
+        memory_copy(&state->static_meshes[n], &state->static_meshes[0], sizeof(resource_static_mesh));
     }
-    #else
-    resource_load_mesh("Data/Models/sphere.mesh", &state->scene_meshes[0]);
-    for (uint32 n = 1; n < state->num_scene_meshes; n++) {
-        memory_copy(&state->scene_meshes[n], &state->scene_meshes[0], sizeof(resource_mesh));
-    }
-    #endif
 
     //state->player.position = {-5.0f, 1.0f, 0.0f};
     state->player.position = {0.0f, 1.0f, 3.0f};
@@ -363,32 +352,50 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
     // ...
 
-    // push all the render commands to the render_packet
-    //packet->num_commands = state->player_mesh->num_primitives + 25*state->scene_meshes[0].num_primitives;
-    packet->num_commands = state->num_scene_meshes*state->scene_meshes[0].num_primitives;
-    packet->commands = PushArray(packet->arena, render_command, packet->num_commands);
-    
-    int command_idx = 0;
-    //for (uint32 n = 0; n < state->player_mesh->num_primitives; n++) {
-    //    //packet->commands[command_idx].model_matrix = state->player_mesh->transform;
-    //    packet->commands[command_idx].model_matrix = player_transform;
-    //    packet->commands[command_idx].geom = state->player_mesh->primitives[n];
-    //    packet->commands[command_idx].material = state->player_mesh->materials[n];
-//
-    //    command_idx++;
-    //}
+    // Generate render packet for this frame
 
-    #if ONE_OBJECT
-    laml::Mat4 shark_trans;
-    laml::transform::create_transform_scale(shark_trans, laml::Vec3(1.0f));
-    for (uint32 n = 0; n < state->scene_meshes[0].num_primitives; n++) {
-        packet->commands[command_idx].model_matrix = shark_trans;
-        packet->commands[command_idx].geom = state->scene_meshes[0].primitives[n];
-        packet->commands[command_idx].material = state->scene_meshes[0].materials[n];
-
-        command_idx++;
+    // 1. find the total number of render commands -> this is where some sort of culling/filtering would happen
+    packet->num_commands = 0;
+    for (uint32 n = 0; n < state->num_static_meshes; n++) {
+        packet->num_commands += state->static_meshes[n].num_primitives;
     }
-    #else
+    for (uint32 n = 0; n < state->num_skinned_meshes; n++) {
+        packet->num_commands += state->skinned_meshes[n].num_primitives;
+    }
+    // 1.5 find total number of skeletons
+    packet->num_skeletons = state->num_skinned_meshes; // 1 skeleton per mesh
+
+    // 2. allocate memory on the frame-arena to hold commands
+    packet->commands  = PushArray(packet->arena, render_command,  packet->num_commands);
+    packet->skeletons = PushArray(packet->arena, render_skeleton, packet->num_skeletons+1); // +1 so 0 is reserved as no skeleton
+    
+    uint32 command_idx  = 0;
+    uint32 skeleton_idx = 1;
+
+    // skinned character
+    for (uint32 m = 0; m < state->num_skinned_meshes; m++) {
+        const resource_skinned_mesh* mesh = &state->skinned_meshes[m];
+        laml::Mat4 mesh_transform(1.0f);
+        for (uint32 p = 0; p < mesh->num_primitives; p++) {
+            render_command& cmd = packet->commands[command_idx];
+
+            cmd.model_matrix = mesh_transform;
+            cmd.geom         = mesh->primitives[p];
+            cmd.material     = mesh->materials[p];
+            cmd.skeleton_idx = skeleton_idx;
+
+            command_idx++;
+        }
+
+        render_skeleton& skeleton = packet->skeletons[skeleton_idx];
+        skeleton.num_bones = mesh->skeleton.num_bones;
+        skeleton.bones = PushArray(packet->arena, laml::Mat4, skeleton.num_bones);
+        for (uint32 b = 0; b < skeleton.num_bones; b++) {
+            skeleton.bones[b] = eye;
+        }
+    }
+
+    // spheres
     for (int32 m1 = 0; m1 < NUM_X; m1++) {
         real32 xpos = (m1-((NUM_X-1)/2)) * spacing;
         real32 roughness = 0.0f;
@@ -406,20 +413,23 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
             laml::Vec3 pos(xpos, ypos, -2.0f);
             laml::Mat4 model(1.0f);
             laml::transform::create_transform_translate(model, pos);
-            for (uint32 n = 0; n < state->scene_meshes[m].num_primitives; n++) {
-                packet->commands[command_idx].model_matrix = model;
-                packet->commands[command_idx].geom = state->scene_meshes[m].primitives[n];
-                packet->commands[command_idx].material = state->scene_meshes[m].materials[n];
+            for (uint32 n = 0; n < state->static_meshes[m].num_primitives; n++) {
+                render_command& cmd = packet->commands[command_idx];
 
-                packet->commands[command_idx].material.MetallicFactor = metalness;
-                packet->commands[command_idx].material.RoughnessFactor = roughness;
-                packet->commands[command_idx].material.DiffuseFactor = laml::Vec3(1.0f, 0.1f, 0.1f);
+                cmd.model_matrix = model;
+                cmd.geom = state->static_meshes[m].primitives[n];
+                cmd.material = state->static_meshes[m].materials[n];
+
+                cmd.material.MetallicFactor = metalness;
+                cmd.material.RoughnessFactor = roughness;
+                cmd.material.DiffuseFactor = laml::Vec3(1.0f, 0.1f, 0.1f);
+
+                cmd.skeleton_idx = 0;
 
                 command_idx++;
             }
         }
     }
-    #endif
 
     //packet->commands[0].model_matrix = eye;
     //packet->commands[0].geom = *state->level_geom;

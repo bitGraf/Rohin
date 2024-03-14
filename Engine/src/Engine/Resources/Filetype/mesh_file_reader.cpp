@@ -114,15 +114,12 @@ mesh_file_result parse_mesh_file(const char* resource_file_name, mesh_file **mes
         tmp->Primitives[n].Indices = PushArray(arena, uint32, PrimHeader->NumInds);
         memory_copy(tmp->Primitives[n].Indices, Indices, PrimHeader->NumInds * sizeof(uint32));
 
-        if (is_skinned) {
-            mesh_file_vertex_skinned* Vertices = AdvanceBufferArray(&file.data, mesh_file_vertex_skinned, PrimHeader->NumVerts, End);
-            tmp->Primitives[n].SkinnedVertices = PushArray(arena, mesh_file_vertex_skinned, PrimHeader->NumVerts);
-            memory_copy(tmp->Primitives[n].SkinnedVertices, Vertices, PrimHeader->NumVerts * sizeof(mesh_file_vertex_skinned));
-        } else {
-            mesh_file_vertex_static* Vertices = AdvanceBufferArray(&file.data, mesh_file_vertex_static, PrimHeader->NumVerts, End);
-            tmp->Primitives[n].StaticVertices = PushArray(arena, mesh_file_vertex_static, PrimHeader->NumVerts);
-            memory_copy(tmp->Primitives[n].StaticVertices, Vertices, PrimHeader->NumVerts * sizeof(mesh_file_vertex_static));
-        }
+        uint64 vert_size = is_skinned ? skinned_vert_size : static_vert_size;
+        vert_size = vert_size;
+
+        void* VerticesFromFile = AdvanceBufferSize_(&file.data, (PrimHeader->NumVerts)*(vert_size), End);
+        tmp->Primitives[n].Vertices = PushSize_(arena, (PrimHeader->NumVerts)*(vert_size));
+        memory_copy(tmp->Primitives[n].Vertices, VerticesFromFile, PrimHeader->NumVerts * vert_size);
     }
 
     // read skeleton if skinned
@@ -132,14 +129,6 @@ mesh_file_result parse_mesh_file(const char* resource_file_name, mesh_file **mes
 
         tmp->Skeleton.Bones = PushArray(arena, mesh_file_bone, SkeletonHeader->NumBones);
         for (uint32 b = 0; b < SkeletonHeader->NumBones; b++) {
-            /*
-            fwrite(&bone.bone_idx, sizeof(uint32), 1, fid) * sizeof(uint32);
-            fwrite(&bone.parent_idx, sizeof(int32), 1, fid) * sizeof(int32);
-            fwrite(&debug_length, sizeof(real32), 1, fid) * sizeof(real32);
-            fwrite(&bone.local_matrix.c_11, sizeof(real32), 16, fid) * sizeof(real32);
-            fwrite(&bone.inv_model_matrix.c_11, sizeof(real32), 16, fid) * sizeof(real32);
-            write_string(fid, bone.name);
-            */
 
             uint32* bone_idx = AdvanceBuffer(&file.data, uint32, End);
             tmp->Skeleton.Bones[b].bone_idx = *bone_idx;
@@ -177,5 +166,5 @@ mesh_file_result parse_mesh_file(const char* resource_file_name, mesh_file **mes
 
     *mesh_file_data = tmp;
 
-    return is_skinned ? mesh_file_result::is_animated : mesh_file_result::is_static;
+    return is_skinned ? mesh_file_result::is_skinned : mesh_file_result::is_static;
 }

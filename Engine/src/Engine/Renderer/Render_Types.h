@@ -261,6 +261,12 @@ struct render_command {
     laml::Mat4 model_matrix;
     render_geometry geom;
     render_material material;
+    uint32 skeleton_idx; // idx of 0 is NO skeleton! 1+ are valid skeletons
+};
+
+struct render_skeleton {
+    uint32 num_bones;
+    laml::Mat4* bones;
 };
 
 struct render_packet {
@@ -276,6 +282,12 @@ struct render_packet {
 
     uint32 num_commands;
     render_command* commands;
+    uint32 num_skeletons;
+    render_skeleton* skeletons;
+
+    uint32 _num_static, _num_skinned;
+    render_command* _static_cmds;
+    render_command* _skinned_cmds;
 
     // for collision visualization
     uint32 draw_colliders;

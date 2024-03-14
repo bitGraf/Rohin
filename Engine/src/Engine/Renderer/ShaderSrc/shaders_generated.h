@@ -223,6 +223,7 @@ struct shader_PrePass_Anim {
     uint32 Handle;
 
     ShaderUniform_mat4 r_Bones[128];
+    ShaderUniform_int r_UseSkin;
     ShaderUniform_mat4 r_Transform;
     ShaderUniform_mat4 r_View;
     ShaderUniform_mat4 r_Projection;
@@ -236,6 +237,7 @@ struct shader_PrePass_Anim {
     ShaderUniform_float u_Metalness;
     ShaderUniform_float u_Roughness;
     ShaderUniform_float u_TextureScale;
+    ShaderUniform_vec3 u_EmissiveColor;
     ShaderUniform_float r_AlbedoTexToggle;
     ShaderUniform_float r_NormalTexToggle;
     ShaderUniform_float r_MetalnessTexToggle;
@@ -249,8 +251,8 @@ struct shader_PrePass_Anim {
         uint32 out_Albedo;
         uint32 out_Normal;
         uint32 out_AMR;
-        uint32 out_Depth;
         uint32 out_Emissive;
+        uint32 out_Depth;
     } outputs;
 
     void InitShaderLocs();

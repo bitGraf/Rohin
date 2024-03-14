@@ -57,6 +57,9 @@ struct mesh_file_vertex_skinned {
     laml::Vector<int32, 4>  BoneIndices;
     laml::Vector<real32, 4> BoneWeights;
 };
+constexpr uint64 skinned_vert_size = sizeof(mesh_file_vertex_skinned);
+constexpr uint64 static_vert_size  = sizeof(mesh_file_vertex_static);
+
 struct mesh_file_skeleton_header {
     unsigned char Magic[4];
     uint32 NumBones;
@@ -65,8 +68,8 @@ struct mesh_file_primitive {
     mesh_file_primitive_header Header;
 
     uint32 *Indices;
-    mesh_file_vertex_static  *StaticVertices;
-    mesh_file_vertex_skinned *SkinnedVertices;
+    uint64 VertexAttribsSize;
+    void* Vertices;
 };
 struct mesh_file_bone {
     uint32 bone_idx;

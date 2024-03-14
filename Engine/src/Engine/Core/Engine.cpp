@@ -9,6 +9,7 @@
 
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Resources/Resource_Manager.h"
+#include "Imgui.h"
 
 struct RohinEngine {
     RohinApp* app;
@@ -191,6 +192,32 @@ bool32 start_rohin_engine(RohinApp* app) {
                 renderer_debug_UI_begin_frame();
 
                 engine.app->update_and_render(engine.app, packet, engine.last_frame_time);
+
+                // draw Engine debug stats
+                ImGui::Begin("Engine");
+                ImGui::Text("Total Memory:   %llu Mb (%llu Kb used)", (engine.engine_memory_size)/(1024*1024), (engine.frame_render_arena.Used+engine.engine_arena.Used+engine.resource_arena.Used)/1024);
+                ImGui::Text("  engine_arena:    %2llu Mb (%llu Kb used)",   (engine.engine_arena.Size)/(1024*1024),       (engine.engine_arena.Used)/1024);
+                ImGui::Text("  resource_arena:  %2llu Mb (%llu Kb used)",   (engine.resource_arena.Size)/(1024*1024),     (engine.resource_arena.Used)/1024);
+                ImGui::Text("  frame_arena:     %2llu Mb (%llu byte used)", (engine.frame_render_arena.Size)/(1024*1024), (engine.frame_render_arena.Used));
+                ImGui::Separator();
+                ImGui::Text("%d cmds | %d skeletons", packet->num_commands, packet->num_skeletons);
+                ImGui::End();
+
+                // sort packet commands into static/skinned command lists
+                packet->_num_skinned = packet->num_skeletons;
+                packet->_num_static  = packet->num_commands - packet->_num_skinned;
+                packet->_static_cmds  = PushArray(&engine.frame_render_arena, render_command, packet->_num_static);
+                packet->_skinned_cmds = PushArray(&engine.frame_render_arena, render_command, packet->_num_skinned);
+                uint32 static_idx = 0, skinned_idx = 0;
+                for (uint32 n = 0; n < packet->num_commands; n++) {
+                    const render_command& cmd = packet->commands[n];
+
+                    if (cmd.skeleton_idx) {
+                        packet->_skinned_cmds[skinned_idx++] = cmd;
+                    } else {
+                        packet->_static_cmds[static_idx++] = cmd;
+                    }
+                }
 
                 renderer_draw_frame(packet);
 
