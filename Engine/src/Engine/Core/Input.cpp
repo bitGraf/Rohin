@@ -337,29 +337,29 @@ RHAPI const char* input_get_key_string(keyboard_keys key) {
             return "numpad_div";
 
         case KEY_F1:
-            return "f1";
+            return "F1";
         case KEY_F2:
-            return "f2";
+            return "F2";
         case KEY_F3:
-            return "f3";
+            return "F3";
         case KEY_F4:
-            return "f4";
+            return "F4";
         case KEY_F5:
-            return "f5";
+            return "F5";
         case KEY_F6:
-            return "f6";
+            return "F6";
         case KEY_F7:
-            return "f7";
+            return "F7";
         case KEY_F8:
-            return "f8";
+            return "F8";
         case KEY_F9:
-            return "f9";
+            return "F9";
         case KEY_F10:
-            return "f10";
+            return "F10";
         case KEY_F11:
-            return "f11";
+            return "F11";
         case KEY_F12:
-            return "f12";
+            return "F12";
 
         case KEY_NUMLOCK:
             return "num_lock";

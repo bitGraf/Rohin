@@ -26,6 +26,8 @@ struct RohinEngine {
     memory_arena resource_arena;
     memory_arena frame_render_arena;
 
+    bool32 debug_mode;
+
     // tmp, should probably be pulled out into a 'scene' representation
     real32 view_vert_fov;
     laml::Mat4 projection_matrix;
@@ -52,6 +54,12 @@ bool32 engine_on_event(uint16 code, void* sender, void* listener, event_context 
             if (context.u16[0] == KEY_ESCAPE) {
                 event_context no_data = {};
                 event_fire(EVENT_CODE_APPLICATION_QUIT, 0, no_data);
+            } else if (context.u16[0] == KEY_F1) {
+                engine.debug_mode = !engine.debug_mode;
+                RH_INFO("Debug Mode: %s", engine.debug_mode ? "Enabled" : "Disabled");
+            } else {
+                keyboard_keys key = (keyboard_keys)context.u16[0];
+                //RH_INFO("Key Pressed: [%s]", input_get_key_string(key));
             }
     }
 
@@ -99,6 +107,7 @@ bool32 start_rohin_engine(RohinApp* app) {
     uint64 base_address = 0;
 #endif
 
+    engine.debug_mode = false;
     engine.engine_memory_size = Megabytes(64);
     engine.engine_memory = (uint8*)platform_alloc(engine.engine_memory_size, 0);
     CreateArena(&engine.frame_render_arena, Megabytes(1),  engine.engine_memory);
@@ -219,7 +228,7 @@ bool32 start_rohin_engine(RohinApp* app) {
                     }
                 }
 
-                renderer_draw_frame(packet);
+                renderer_draw_frame(packet, engine.debug_mode);
 
                 uint64 WorkCounter = platform_get_wall_clock();
                 real32 WorkSecondsElapsed = (real32)platform_get_seconds_elapsed(LastCounter, WorkCounter);

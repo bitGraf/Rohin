@@ -2,39 +2,6 @@
 
 #include "Engine/Renderer/Render_Types.h"
 
-struct joint {
-    static const int32 NullIndex = -1;
-
-    int32 parent_index;
-    laml::Mat4 local_matrix;
-    laml::Mat4 inverse_model_matrix;
-    laml::Mat4 final_transform;
-};
-
-struct joint_debug {
-    real32 length;
-    char* name;
-    laml::Mat4 model_matrix;
-};
-
-struct skeleton {
-    uint32 flag;
-    uint32 num_joints;
-    joint* joints;
-
-    joint_debug* joints_debug;
-};
-
-struct animation {
-    char* name;
-};
-
-struct material {
-    render_texture_2D diffuse_map;
-    render_texture_2D normal_map;
-    render_texture_2D amr_map;
-};
-
 struct debug_geometry {
     struct debug_vertex {
         laml::Vec3 position;
@@ -93,4 +60,20 @@ struct level_data {
     laml::Mat4 *collider_transforms;
 
     collision_grid grid;
+};
+
+struct bone_anim {
+    laml::Vec3* translation;
+    laml::Quat* rotation;
+    laml::Vec3* scale;
+};
+struct resource_animation {
+    char* name;
+
+    uint16 num_bones;
+    uint16 num_samples;
+    real32 frame_rate;
+    real32 length;
+
+    bone_anim* bones;
 };

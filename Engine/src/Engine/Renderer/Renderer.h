@@ -33,7 +33,7 @@ void renderer_shutdown();
 void renderer_resized(uint32 width, uint32 height);
 void renderer_on_event(uint16 code, void* sender, void* listener, event_context context);
 
-bool32 renderer_draw_frame(render_packet* packet);
+bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode);
 
 bool32 renderer_begin_wireframe();
 bool32 renderer_end_wireframe();
@@ -73,4 +73,4 @@ void renderer_draw_geometry_points(render_geometry* geom);
 void renderer_create_debug_UI();
 void renderer_shutdown_debug_UI();
 void renderer_debug_UI_begin_frame();
-void renderer_debug_UI_end_frame();
+void renderer_debug_UI_end_frame(bool32 draw_ui);

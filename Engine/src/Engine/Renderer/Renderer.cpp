@@ -604,7 +604,7 @@ void renderer_on_event(uint16 code, void* sender, void* listener, event_context 
                 RH_INFO("Renderer tone mapping: %s", render_state->tone_map ? "Enabled" : "Disabled");
             } else if (context.u16[0] == KEY_B) {
                 render_state->use_skins = !render_state->use_skins;
-                RH_INFO("Skinnging: %s", render_state->use_skins ? "Enabled" : "Disabled");
+                RH_INFO("Skinning: %s", render_state->use_skins ? "Enabled" : "Disabled");
             }
     }
 }
@@ -630,16 +630,16 @@ bool32 renderer_begin_Frame(real32 delta_time) {
 
     return true;
 }
-bool32 renderer_end_Frame(real32 delta_time) {
+bool32 renderer_end_Frame(real32 delta_time, bool32 draw_ui) {
     ImGui::End(); // ImGui::Begin("Renderer");
-    renderer_debug_UI_end_frame();
+    renderer_debug_UI_end_frame(draw_ui);
 
     bool32 result = backend->end_frame(delta_time);
     backend->frame_number++;
     return result;
 }
 
-bool32 renderer_draw_frame(render_packet* packet) {
+bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
     if (renderer_begin_Frame(packet->delta_time)) {
         // render all commands in the packet
         laml::Mat4 eye(1.0f);
@@ -1069,7 +1069,7 @@ bool32 renderer_draw_frame(render_packet* packet) {
         }
         #endif
 
-        bool32 result = renderer_end_Frame(packet->delta_time);
+        bool32 result = renderer_end_Frame(packet->delta_time, debug_mode);
 
         if (!result) {
             RH_ERROR("end_frame() failed for some reason!");
@@ -1214,9 +1214,11 @@ void renderer_debug_UI_begin_frame() {
     ImGui::NewFrame();
 }
 
-void renderer_debug_UI_end_frame() {
-    ImGui::Render();
-    backend->push_debug_group("ImGui");
-    backend->ImGui_end_frame();
-    backend->pop_debug_group(); // ImGui
+void renderer_debug_UI_end_frame(bool32 draw_ui) {
+    ImGui::Render(); // always call this, even if we don't draw to screen
+    if (draw_ui) {
+        backend->push_debug_group("ImGui");
+        backend->ImGui_end_frame();
+        backend->pop_debug_group(); // ImGui
+    }
 }

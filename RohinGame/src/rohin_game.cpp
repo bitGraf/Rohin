@@ -12,8 +12,11 @@
 #include <Engine/Collision/Character_Controller.h>
 
 #include <Engine/Renderer/Renderer.h>
+#include <Engine/Animation/Animation.h>
 
 #include <Engine/Core/Timing.h>
+
+#include <Engine/Resources/Filetype/anim_file_reader.h>
 
 #include <imgui/imgui.h>
 
@@ -46,6 +49,7 @@ struct game_state {
     resource_static_mesh* static_meshes;
     uint32 num_skinned_meshes;
     resource_skinned_mesh* skinned_meshes;
+    resource_animation* guy_idle_anim;
 
     player_state player;
     player_state debug_camera;
@@ -82,6 +86,8 @@ bool32 game_startup(RohinApp* app) {
     state->num_skinned_meshes = 1;
     state->skinned_meshes = PushArray(&state->mesh_arena, resource_skinned_mesh, state->num_static_meshes);
 
+    state->guy_idle_anim = PushArray(&state->mesh_arena, resource_animation, 1);
+
     app->memory.IsInitialized = true;
 
     event_register(EVENT_CODE_KEY_PRESSED, state, on_key_event);
@@ -113,7 +119,8 @@ bool32 game_initialize(RohinApp* app) {
     resource_load_texture_file("Data/textures/checker.png", &state->missing_material.DiffuseTexture);
 
     // load skinned character
-    resource_load_skinned_mesh("Data/Models/body_mesh.mesh", &state->skinned_meshes[0]);
+    resource_load_skinned_mesh("Data/Models/guy.mesh", &state->skinned_meshes[0]);
+    resource_load_animation("Data/Animations/guy_idle.anim", state->guy_idle_anim);
 
     // load spheres
     resource_load_static_mesh("Data/Models/sphere.mesh", &state->static_meshes[0]);
@@ -356,9 +363,9 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
     // 1. find the total number of render commands -> this is where some sort of culling/filtering would happen
     packet->num_commands = 0;
-    for (uint32 n = 0; n < state->num_static_meshes; n++) {
-        packet->num_commands += state->static_meshes[n].num_primitives;
-    }
+    //for (uint32 n = 0; n < state->num_static_meshes; n++) {
+    //    packet->num_commands += state->static_meshes[n].num_primitives;
+    //}
     for (uint32 n = 0; n < state->num_skinned_meshes; n++) {
         packet->num_commands += state->skinned_meshes[n].num_primitives;
     }
@@ -371,6 +378,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     
     uint32 command_idx  = 0;
     uint32 skeleton_idx = 1;
+    local_persist real32 anim_time = 0.0f;
 
     // skinned character
     for (uint32 m = 0; m < state->num_skinned_meshes; m++) {
@@ -390,12 +398,15 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         render_skeleton& skeleton = packet->skeletons[skeleton_idx];
         skeleton.num_bones = mesh->skeleton.num_bones;
         skeleton.bones = PushArray(packet->arena, laml::Mat4, skeleton.num_bones);
-        for (uint32 b = 0; b < skeleton.num_bones; b++) {
-            skeleton.bones[b] = eye;
-        }
+
+        sample_animation_at_time((const resource_skinned_mesh*)mesh, (const resource_animation*)state->guy_idle_anim, anim_time, skeleton.bones);
+
+        skeleton_idx++;
     }
+    anim_time += packet->delta_time;
 
     // spheres
+    #if 0
     for (int32 m1 = 0; m1 < NUM_X; m1++) {
         real32 xpos = (m1-((NUM_X-1)/2)) * spacing;
         real32 roughness = 0.0f;
@@ -430,6 +441,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
             }
         }
     }
+    #endif
 
     //packet->commands[0].model_matrix = eye;
     //packet->commands[0].geom = *state->level_geom;
