@@ -96,7 +96,7 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
     render_state->current_shader_out = 0;
     render_state->gamma_correct = true;
     render_state->tone_map = true;
-    render_state->use_skins = false;
+    render_state->use_skins = true;
 
     return true;
 }

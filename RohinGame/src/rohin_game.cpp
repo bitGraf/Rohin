@@ -6,6 +6,7 @@
 #include <Engine/Resources/Resource_Manager.h>
 #include <Engine/Core/Input.h>
 #include <Engine/Core/Event.h>
+#include <Engine/Core/String.h>
 #include <Engine/Memory/MemoryUtils.h>
 
 #include <Engine/Collision/Collision.h>
@@ -37,7 +38,7 @@ struct player_state {
     real32 radius;
 };
 
-struct game_state {
+struct rohin_game_state {
     memory_arena perm_arena;
     memory_arena trans_arena;
     memory_arena mesh_arena;
@@ -50,6 +51,10 @@ struct game_state {
     uint32 num_skinned_meshes;
     resource_skinned_mesh* skinned_meshes;
     resource_animation* guy_idle_anim;
+    resource_animation* guy_walk_anim;
+    resource_animation* guy_jump_anim;
+    animation_controller controller;
+    real64 speed;
 
     player_state player;
     player_state debug_camera;
@@ -66,14 +71,16 @@ struct game_state {
 };
 
 bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context);
+bool32 send_key_press_event_to_controller(uint16 code, void* sender, void* listener, event_context context);
+bool32 send_key_release_event_to_controller(uint16 code, void* sender, void* listener, event_context context);
 
 bool32 game_startup(RohinApp* app) {
     RH_INFO("Game startup.");
 
     // TODO: make sure memory is zeroed at this point
 
-    game_state* state = (game_state*)(app->memory.PermanentStorage);
-    CreateArena(&state->perm_arena, app->memory.PermanentStorageSize, (uint8*)app->memory.PermanentStorage + sizeof(game_state));
+    rohin_game_state* state = (rohin_game_state*)(app->memory.PermanentStorage);
+    CreateArena(&state->perm_arena, app->memory.PermanentStorageSize, (uint8*)app->memory.PermanentStorage + sizeof(rohin_game_state));
     state->mesh_arena = CreateSubArena(&state->perm_arena, Megabytes(1));
 
     CreateArena(&state->trans_arena, app->memory.TransientStorageSize, (uint8*)app->memory.TransientStorage);
@@ -87,6 +94,8 @@ bool32 game_startup(RohinApp* app) {
     state->skinned_meshes = PushArray(&state->mesh_arena, resource_skinned_mesh, state->num_static_meshes);
 
     state->guy_idle_anim = PushArray(&state->mesh_arena, resource_animation, 1);
+    state->guy_walk_anim = PushArray(&state->mesh_arena, resource_animation, 1);
+    state->guy_jump_anim = PushArray(&state->mesh_arena, resource_animation, 1);
 
     app->memory.IsInitialized = true;
 
@@ -98,7 +107,7 @@ bool32 game_startup(RohinApp* app) {
 bool32 game_initialize(RohinApp* app) {
     RH_INFO("Game initialize.");
 
-    game_state* state = (game_state*)(app->memory.PermanentStorage);
+    rohin_game_state* state = (rohin_game_state*)(app->memory.PermanentStorage);
     //resource_load_mesh_file("Data/Models/chao_garden/collision_meshes/Cube.mesh", state->player_geom, 0, 0, 0);
 
     // load the level geometry into the collision grid
@@ -121,6 +130,35 @@ bool32 game_initialize(RohinApp* app) {
     // load skinned character
     resource_load_skinned_mesh("Data/Models/guy.mesh", &state->skinned_meshes[0]);
     resource_load_animation("Data/Animations/guy_idle.anim", state->guy_idle_anim);
+    resource_load_animation("Data/Animations/guy_walk.anim", state->guy_walk_anim);
+    resource_load_animation("Data/Animations/guy_jump.anim", state->guy_jump_anim);
+
+    // Create animation_controller. define animation_graph with a few states
+    const uint32 param_jump_idx    = 0; 
+    const uint32 param_walking_idx = 1;
+    state->controller = create_anim_controller(3, 2, &state->mesh_arena);
+    event_register(EVENT_CODE_KEY_PRESSED,  &state->controller, send_key_press_event_to_controller);
+    event_register(EVENT_CODE_KEY_RELEASED, &state->controller, send_key_release_event_to_controller);
+    define_parameter(&state->controller, param_jump_idx,    param_type::PARAM_INT,   "space", param_mode::PARAM_KEY_EVENT, (void*)(KEY_SPACE));
+    define_parameter(&state->controller, param_walking_idx, param_type::PARAM_FLOAT, "speed", param_mode::PARAM_POLL,      (void*)(&state->speed));
+
+    const uint32 node_idle_idx = 0;
+    const uint32 node_walk_idx = 1;
+    const uint32 node_jump_idx = 2;
+    anim_graph_node node_idle = create_node("<idle>", 2, state->guy_idle_anim, 0, &state->mesh_arena);
+    define_connection_float(&node_idle, 0, node_walk_idx, param_walking_idx, trigger_type::TRIGGER_GT, 0.1);
+    define_connection_int(&node_idle, 1, node_jump_idx, param_jump_idx,    trigger_type::TRIGGER_EQ, 1);
+    state->controller.graph.nodes[node_idle_idx] = node_idle;
+
+    anim_graph_node node_walk = create_node("<walk>", 2, state->guy_walk_anim, 0, &state->mesh_arena);
+    define_connection_float(&node_walk, 0, node_idle_idx, param_walking_idx, trigger_type::TRIGGER_LEQ, 0.1);
+    define_connection_int(&node_walk, 1, node_jump_idx, param_jump_idx,    trigger_type::TRIGGER_EQ,  1);
+    state->controller.graph.nodes[node_walk_idx] = node_walk;
+
+    anim_graph_node node_jump = create_node("<jump>", 1, state->guy_jump_anim, NODE_PLAY_FULL, &state->mesh_arena);
+    define_connection_default(&node_jump, 0, node_idle_idx);
+    //define_connection_float(&node_jump, 1, node_walk_idx, param_walking_idx, trigger_type::TRIGGER_GT, 0.1);
+    state->controller.graph.nodes[node_jump_idx] = node_jump;
 
     // load spheres
     resource_load_static_mesh("Data/Models/sphere.mesh", &state->static_meshes[0]);
@@ -129,7 +167,7 @@ bool32 game_initialize(RohinApp* app) {
     }
 
     //state->player.position = {-5.0f, 1.0f, 0.0f};
-    state->player.position = {0.0f, 1.0f, 3.0f};
+    state->player.position = {0.0f, 1.5f, 3.0f};
     state->player.orientation = {0.0f, 0.0f, 0.0f, 1.0f};
     state->player.scale = 1.0f;
     state->player.height = 1.9f;
@@ -189,7 +227,7 @@ bool32 game_initialize(RohinApp* app) {
 
 bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta_time) {
     time_point update_start = start_timer();
-    game_state* state = (game_state*)(app->memory.PermanentStorage);
+    rohin_game_state* state = (rohin_game_state*)(app->memory.PermanentStorage);
 
     // Create ImGui window
     ImGui::Begin("RohinGame");
@@ -202,6 +240,10 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     laml::Mat4 eye(1.0f);
     int32 mouse_dx, mouse_dy;
     input_get_raw_mouse_offset(&mouse_dx, &mouse_dy);
+
+    mouse_dy = 0;
+    mouse_dx = 0;
+
     real32 x_sens = 10.0f;
     real32 y_sens = 5.0f;
     state->player.yaw   -= x_sens*mouse_dx*delta_time;
@@ -243,17 +285,19 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         move_dir = move_dir - right;
         moving = true;
     }
-    if (input_is_key_down(KEY_SPACE)) {
-        move_dir = move_dir + up;
-        moving = true;
-    } else if (input_is_key_down(KEY_LCONTROL)) {
-        move_dir = move_dir - up;
-        moving = true;
-    }
+    //if (input_is_key_down(KEY_SPACE)) {
+    //    move_dir = move_dir + up;
+    //    moving = true;
+    //} else if (input_is_key_down(KEY_LCONTROL)) {
+    //    move_dir = move_dir - up;
+    //    moving = true;
+    //}
     if (moving) move_dir = laml::normalize(move_dir);
     real32 move_dist = speed * delta_time;
     laml::Vec3 new_position = state->player.position;
+    state->speed = moving ? speed : 0.0;
 
+    update_controller(&state->controller);
 
     #ifdef DO_COLLISION
     collision_grid_get_sector_capsule(&state->grid, &state->sector, new_position, new_position+(move_dir*move_dist), state->collider.radius);
@@ -340,7 +384,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     new_position = new_position + (move_dir*move_dist);
 #endif
     #else
-        new_position = new_position + (move_dir*move_dist);
+        //new_position = new_position + (move_dir*move_dist);
     #endif
     state->player.position = new_position;
 
@@ -378,7 +422,6 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     
     uint32 command_idx  = 0;
     uint32 skeleton_idx = 1;
-    local_persist real32 anim_time = 0.0f;
 
     // skinned character
     for (uint32 m = 0; m < state->num_skinned_meshes; m++) {
@@ -399,11 +442,70 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         skeleton.num_bones = mesh->skeleton.num_bones;
         skeleton.bones = PushArray(packet->arena, laml::Mat4, skeleton.num_bones);
 
-        sample_animation_at_time((const resource_skinned_mesh*)mesh, (const resource_animation*)state->guy_idle_anim, anim_time, skeleton.bones);
+        ImGui::Begin("AnimGraph");
+        ImGui::Text("node_time = %.3f", state->controller.node_time);
+        ImGui::Text("anim_time = %.3f", state->controller.anim_time);
+        ImGui::SeparatorText("Params");
+        for (uint32 n = 0; n < state->controller.graph.num_params; n++) {
+            const anim_graph_param& param = state->controller.graph.params[n];
+
+            switch (param.type) {
+                case param_type::PARAM_INT:   {
+                    ImGui::Text("%-8s: [ int ] %d", param.name, param.curr_value.as_int);
+                } break;
+                case param_type::PARAM_FLOAT: {
+                    ImGui::Text("%-8s: [float] %f", param.name, param.curr_value.as_float);
+                } break;
+            }
+        }
+        ImGui::SeparatorText("Nodes");
+        for (uint32 n = 0; n < state->controller.graph.num_nodes; n++) {
+            const anim_graph_node& node = state->controller.graph.nodes[n];
+
+            if (n == state->controller.current_node) {
+                ImGui::Text(" * %s:'%s' - %d connections", node.name, node.anim->name, node.num_connections);
+            } else {
+                ImGui::Text("   %s:'%s' - %d connections", node.name, node.anim->name, node.num_connections);
+            }
+            for (uint32 c = 0; c < node.num_connections; c++) {
+                anim_graph_connection& con = node.connections[c];
+                anim_graph_param& param = state->controller.graph.params[con.param];
+
+                if (con.trigger_type == trigger_type::TRIGGER_ALWAYS) {
+                    ImGui::Text("     %d: -> '%s' by default", c, state->controller.graph.nodes[con.node].name);
+                } else {
+
+                    char* comp = "x";
+                    switch (con.trigger_type) {
+                        case trigger_type::TRIGGER_EQ: { comp = " ="; } break;
+                        case trigger_type::TRIGGER_NEQ: { comp = "!="; } break;
+                        case trigger_type::TRIGGER_LT: { comp = " <"; } break;
+                        case trigger_type::TRIGGER_LEQ: { comp = "<="; } break;
+                        case trigger_type::TRIGGER_GT: { comp = " >"; } break;
+                        case trigger_type::TRIGGER_GEQ: { comp = ">="; } break;
+                    }
+                    char buffer[256] = { 0 };
+                    switch (param.type) {
+                        case param_type::PARAM_INT: {
+                            string_build(buffer, 256, "%s %s %d", param.name, comp, con.trigger.as_int);
+                        } break;
+                        case param_type::PARAM_FLOAT: {
+                            string_build(buffer, 256, "%s %s %.2f", param.name, comp, con.trigger.as_int);
+                        } break;
+                    }
+                    ImGui::Text("     %d: -> '%s' if (%s)", c, state->controller.graph.nodes[con.node].name, buffer);
+                }
+            }
+        }
+
+        ImGui::End();
+
+        anim_graph_node* curr_node = &state->controller.graph.nodes[state->controller.current_node];
+        sample_animation_at_time((const resource_skinned_mesh*)mesh, (const resource_animation*)curr_node->anim, state->controller.node_time, skeleton.bones);
 
         skeleton_idx++;
     }
-    anim_time += packet->delta_time;
+    state->controller.node_time += packet->delta_time;
 
     // spheres
     #if 0
@@ -498,7 +600,7 @@ void game_shutdown(RohinApp* app) {
 
 
 bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context) {
-    game_state* state = (game_state*)listener;
+    rohin_game_state* state = (rohin_game_state*)listener;
 
     uint16 key_code = context.u16[0];
     if (key_code == KEY_C) {
@@ -539,6 +641,23 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
     //         context.u64,
     //         context.u32[0], context.u32[1],
     //         context.u16[0], context.u16[1], context.u16[2], context.u16[3]);
+
+    return false;
+}
+
+bool32 send_key_press_event_to_controller(uint16 code, void* sender, void* listener, event_context context) {
+    animation_controller* controller = (animation_controller*)listener;
+    uint16 key_code = context.u16[0];
+
+    controller_on_key_event(controller, key_code, true);
+
+    return false;
+}
+bool32 send_key_release_event_to_controller(uint16 code, void* sender, void* listener, event_context context) {
+    animation_controller* controller = (animation_controller*)listener;
+    uint16 key_code = context.u16[0];
+
+    controller_on_key_event(controller, key_code, false);
 
     return false;
 }

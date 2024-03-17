@@ -7,4 +7,4 @@
 #define AdvanceBuffer(Buffer, Type, End) (Type*)AdvanceBufferSize_(Buffer, sizeof(Type), End)
 uint8* AdvanceBufferSize_(uint8** Buffer, uint64 Size, uint8* End);
 
-int string_build(char* buffer, int buf_size, char* fmt, ...);
+RHAPI int string_build(char* buffer, int buf_size, char* fmt, ...);
