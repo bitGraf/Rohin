@@ -1,4 +1,6 @@
-#define _CRT_SECURE_NO_WARNINGS
+#ifndef _CRT_SECURE_NO_WARNINGS
+    #define _CRT_SECURE_NO_WARNINGS
+#endif
 #include <windows.h>
 #include <cstdio>
 #include <vector>
@@ -640,7 +642,7 @@ DWORD WriteShaderSourceFile(shader_definition Shader, char* ShaderStructBuffer, 
         uniform_definition Uniform = Shader.Uniforms[u];
 
         if (Uniform.Count > 1) {
-            bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    for (int n = 0; n < %d; n++) {\n", Uniform.Count);
+            bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "    for (unsigned int n = 0; n < %d; n++) {\n", Uniform.Count);
             if (Uniform.SimpleType) {
                 bytesWritten += wsprintfA(ShaderStructBuffer+bytesWritten, "        %s[n].Location = %d+n;\n", Uniform.Name, Uniform.Location);
             } else {

@@ -11,6 +11,7 @@ Engine/deps/OpenAL_soft/obj/
 *.nbt.bak
 Game/run_tree/Game.*
 build/
+bin/
 unity_build/
 OLD CODE/
 *.ctm

@@ -2,8 +2,8 @@
 
 Setlocal EnableDelayedExpansion
 
-if NOT EXIST build mkdir build
-if NOT EXIST build\int mkdir build\int
+if NOT EXIST bin mkdir bin
+if NOT EXIST bin\int mkdir bin\int
 
 if EXIST ../ctime %cd%/../ctime/ctime.exe -begin Tools/build_time.ctm
 
@@ -17,7 +17,7 @@ if ERRORLEVEL 1 (
 
 set StopBuild=0
 
-pushd Tools\shader_tool
+pushd Engine\shader_tool
 call build.bat
 popd
 set LastError=!ERRORLEVEL!
@@ -27,7 +27,7 @@ if !ERRORLEVEL! NEQ 0 (
     echo Stopping build!
 ) else (
     echo Shader tool built succesfully! Generating Engine ShaderSrc
-    Tools\shader_tool\bin\shader_tool.exe Game\run_tree\Data\Shaders\ Engine\src\Engine\Renderer\ShaderSrc\shaders_generated -quiet
+    bin\shader_tool.exe Game\run_tree\Data\Shaders\ Engine\src\Engine\Renderer\ShaderSrc\shaders_generated -quiet
 )
 
 rem if !StopBuild! NEQ 1 (

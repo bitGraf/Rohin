@@ -16,12 +16,12 @@ set Definitions=/D_DEBUG /DRH_EXPORT /D_CRT_SECURE_NO_WARNINGS /DROHIN_INTERNAL 
 set CompilerFlags=/MTd /nologo /Gm- /GR- /EHa- /Odi /std:c++14 %WarningFlags% /FC /Z7 %Definitions% /LD
 set IncludeDirs=/Isrc /I../Game/src /Ideps/math_lib/include /Ideps/stb /Ideps/imgui/imgui
 set LinkerFlags=/incremental:no /opt:ref /SUBSYSTEM:CONSOLE %CommonLinkerFlags% user32.lib Gdi32.lib Winmm.lib opengl32.lib
-set ObjectFlags=/Fo../build/int/
+set ObjectFlags=/Fo../bin/int/
 
 echo =====================================
 echo Building the Engine...
 
-cl %IncludeDirs% %CompilerFlags% %SrcFiles% /Fm../build/%Name%.map /Fe: ../build/%Name%.dll %ObjectFlags% /link %LinkerFlags%
+cl %IncludeDirs% %CompilerFlags% %SrcFiles% /Fm../bin/%Name%.map /Fe: ../bin/%Name%.dll %ObjectFlags% /link %LinkerFlags%
 
 if %ERRORLEVEL% NEQ 0 (
     echo ERRORLEVEL:%ERRORLEVEL%
