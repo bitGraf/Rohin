@@ -7,6 +7,7 @@ add_executable(shader_tool ${SrcFiles})
 #target_link_libraries(shader_tool PUBLIC opengl32 Winmm)
 
 target_compile_features(shader_tool PUBLIC cxx_std_14)
+add_dependencies(shader_tool start_time)
 
 target_compile_definitions(shader_tool PUBLIC
     _CRT_SECURE_NO_WARNINGS 
