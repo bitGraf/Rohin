@@ -28,14 +28,9 @@ add_subdirectory(Engine)
 add_subdirectory(RohinGame)
 
 # build timing
-#if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ctime/ctime.exe")
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ctime/ctime.exe")
     message(STATUS "Found CTime")
-    #add_custom_command(OUTPUT Tools/build_time_2.ctm
-    #                   #COMMAND ../ctime/ctime.exe -begin Tools/build_time.ctm
-    #                   #COMMAND echo "starting timer:"
-    #                   COMMAND meshconv -h
-    #                   #WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/"
-    #                   COMMENT "timing")
+    
     add_custom_target(start_time ALL
         COMMAND ../ctime/ctime.exe -begin Tools/build_time.ctm
         WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/"
@@ -47,10 +42,4 @@ add_subdirectory(RohinGame)
         WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/"
         COMMENT "Ending build timing"
         )
-    #ADD_CUSTOM_TARGET(shader_tool_run ALL
-    #    bin/shader_tool.exe "Game\\run_tree\\Data\\Shaders\\" "Engine\\src\\Engine\\Renderer\\ShaderSrc\\shaders_generated" "-quiet"
-    #    DEPENDS shader_tool
-    #    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    #    COMMENT "Generating shader source using shader_tool.exe"
-    #    VERBATIM)
-#endif()
+endif()
