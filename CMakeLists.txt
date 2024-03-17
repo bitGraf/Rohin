@@ -32,12 +32,12 @@ if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../ctime/ctime.exe")
     message(STATUS "Found CTime")
     
     add_custom_target(start_time ALL
-        COMMAND ../ctime/ctime.exe -begin Tools/build_time.ctm
+        COMMAND ../ctime/ctime.exe -begin Tools/build_time_cmake.ctm
         WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/"
         COMMENT "Starting build timing"
         )
     add_custom_target(end_time ALL
-        COMMAND ../ctime/ctime.exe -end Tools/build_time.ctm 0 # NOT RECORDING ERROR CODE!
+        COMMAND ../ctime/ctime.exe -end Tools/build_time_cmake.ctm 0 # NOT RECORDING ERROR CODE!
         DEPENDS rohin game
         WORKING_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/"
         COMMENT "Ending build timing"

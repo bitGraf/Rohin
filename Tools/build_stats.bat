@@ -1,4 +1,7 @@
 @echo off
 
-rem if EXIST ../ctime W:\ctime\ctime.exe -begin build/build_time.ctm
-if EXIST ..\..\ctime ..\..\ctime\ctime.exe -stats build_time.ctm
+echo "Batch File:"
+if EXIST ..\..\ctime ..\..\ctime\ctime.exe -stats build_time_bat.ctm
+
+echo "Cmake:"
+if EXIST ..\..\ctime ..\..\ctime\ctime.exe -stats build_time_cmake.ctm
