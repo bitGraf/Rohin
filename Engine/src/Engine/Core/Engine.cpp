@@ -166,7 +166,9 @@ bool32 start_rohin_engine(RohinApp* app) {
 
         engine.is_running = true;
 
-        engine.app->startup(engine.app);
+        if (!engine.app->startup(engine.app)) {
+            engine.is_running = false;
+        }
 
         uint64 LastCounter = platform_get_wall_clock();
         uint64 FlipWallClock = platform_get_wall_clock();

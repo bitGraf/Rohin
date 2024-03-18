@@ -54,6 +54,21 @@ size_t platform_get_full_resource_path(char* buffer, size_t buffer_length, const
 file_handle platform_read_entire_file(const char* full_path);
 void platform_free_file_data(file_handle* handle);
 
+struct file_info {
+    uint64 file_attributes;
+    uint64 creation_time;
+    uint64 last_access_time;
+    uint64 last_write_time;
+    uint64 file_size;
+};
+RHAPI bool32 platform_get_file_attributes(const char* full_path, file_info* info);
+RHAPI bool32 platform_copy_file(const char* src_path, const char* dst_path);
+
+RHAPI void* platform_load_shared_library(const char* lib_path);
+RHAPI void* platform_get_func_from_lib(void* shared_lib, const char* func_name);
+RHAPI void  platform_unload_shared_library(void* shared_lib);
+RHAPI void  platform_filetime_to_systime(uint64 file_time, char* buffer, uint64 buf_size);
+
 // this is bad and dumb :)
 #if RH_PLATFORM_LINUX
 void* platform_get_raw_handle();

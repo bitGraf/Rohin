@@ -15,7 +15,9 @@
 #define GAME_API
 #endif
 
+struct game_state {
+    uint32 value;
+};
 
-
-#define GAME_UPDATE_FUNC(name) void name()
-typedef GAME_UPDATE_FUNC(game_update);
+#define GAME_UPDATE_FUNC(name) void name(game_state* state)
+typedef GAME_UPDATE_FUNC(game_update_fcn);

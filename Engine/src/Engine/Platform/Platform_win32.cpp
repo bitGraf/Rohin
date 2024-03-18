@@ -9,6 +9,7 @@
 #ifdef RH_PLATFORM_WINDOWS
 
 #include <Windows.h>
+#include <shlwapi.h>
 #include <strsafe.h>
 #include <windowsx.h>
 #include <stdarg.h>
@@ -640,6 +641,91 @@ void platform_free_file_data(file_handle* handle) {
 
     handle->num_bytes = 0;
     handle->data = 0;
+}
+
+//struct file_info {
+//    uint64 file_attributes;
+//    uint64 creation_time;
+//    uint64 last_access_time;
+//    uint64 last_write_time;
+//    uint64 file_size;
+//};
+uint64 uint64_from_DWORDS(DWORD low, DWORD high) {
+    uint64 L = (uint64)low;
+    uint64 H = (uint64)high;
+    return (H<<32) | L;
+}
+void DWORDS_from_uint64(uint64 val, DWORD* low, DWORD* high) {
+    uint64 L = val & 0x00000000FFFFFFFF; // lower 32 bits
+    uint64 H = val & 0xFFFFFFFF00000000; // upper 32 bits
+
+    *low  = (DWORD)L;
+    *high = (DWORD)(H >> 32);
+}
+bool32 platform_get_file_attributes(const char* full_path, file_info* info) {
+    WIN32_FILE_ATTRIBUTE_DATA Data;
+    if (GetFileAttributesExA(full_path, GetFileExInfoStandard, &Data)) {
+        DWORD FileAttributes    = Data.dwFileAttributes;
+        FILETIME CreationTime   = Data.ftCreationTime;
+        FILETIME LastAccessTime = Data.ftLastAccessTime;
+        FILETIME LastWriteTime  = Data.ftLastWriteTime;
+        DWORD FilesizeHigh      = Data.nFileSizeHigh;
+        DWORD FilesizeLow       = Data.nFileSizeLow;
+
+        info->file_attributes = (uint64)FileAttributes;
+        info->creation_time    = uint64_from_DWORDS(CreationTime.dwLowDateTime,   CreationTime.dwHighDateTime);
+        info->last_access_time = uint64_from_DWORDS(LastAccessTime.dwLowDateTime, LastAccessTime.dwHighDateTime);
+        info->last_write_time  = uint64_from_DWORDS(LastWriteTime.dwLowDateTime,  LastWriteTime.dwHighDateTime);
+        info->file_size        = uint64_from_DWORDS(FilesizeLow,                  FilesizeHigh);
+        return true;
+    }
+
+    //RH_TRACE("Could not get file-info for '%s'", full_path);
+    return false;
+}
+
+void platform_filetime_to_systime(uint64 file_time, char* buffer, uint64 buf_size) {
+    // convert to cst
+    const uint64 one_hour = 36000000000; // 1 hour in 100-nanosecond intervals
+    file_time -= (5 * one_hour); // cst is UTC-5
+
+    FILETIME ft;
+    DWORDS_from_uint64(file_time, &ft.dwLowDateTime, &ft.dwHighDateTime);
+
+    SYSTEMTIME sys_time;
+    FileTimeToSystemTime(&ft, &sys_time);
+
+    WORD hour = sys_time.wHour;
+    char* am_pm = "am";
+    if (hour >= 12) {
+        hour -= 12; // get rid of 24 hour time
+        am_pm = "pm";
+    }
+    if (hour == 0)  hour  = 12; // turn hour 0 to 12:00
+
+
+    wnsprintfA(buffer, (int)buf_size,
+              "%02hu/%02hu/%04hu %02hu:%02hu:%02hu.%03hu %s",
+              sys_time.wMonth, sys_time.wDay,    sys_time.wYear,
+              hour,  sys_time.wMinute, sys_time.wSecond, sys_time.wMilliseconds, am_pm);
+}
+
+bool32 platform_copy_file(const char* src_path, const char* dst_path) {
+    if (CopyFileA(src_path, dst_path, FALSE) != 0) return true;
+
+    DWORD code = GetLastError();
+    RH_ERROR("Could not copy file from '%s' to '%s'. Error:[%u]", src_path, dst_path, code);
+    return false;
+}
+
+void* platform_load_shared_library(const char* lib_path) {
+    return LoadLibraryA(lib_path);
+}
+void* platform_get_func_from_lib(void* shared_lib, const char* func_name) {
+    return GetProcAddress((HMODULE)shared_lib, func_name);
+}
+void platform_unload_shared_library(void* shared_lib) {
+    FreeLibrary((HMODULE)shared_lib);
 }
 
 void platform_update_mouse() {

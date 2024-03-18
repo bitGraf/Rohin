@@ -3,6 +3,7 @@ message(STATUS "[shader_tool]")
 set(SrcFiles "shader_tool.cpp")
 
 add_executable(shader_tool ${SrcFiles})
+set_target_properties(shader_tool PROPERTIES FOLDER "utils")
 
 #target_link_libraries(shader_tool PUBLIC opengl32 Winmm)
 
@@ -25,5 +26,6 @@ ADD_CUSTOM_TARGET(shader_tool_run ALL
                  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                  COMMENT "Generating shader source using shader_tool.exe"
                  VERBATIM)
+set_target_properties(shader_tool_run PROPERTIES FOLDER "utils")
 
 message(STATUS "shader_tool configured")

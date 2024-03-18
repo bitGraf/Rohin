@@ -30,18 +30,6 @@ if !ERRORLEVEL! NEQ 0 (
     bin\shader_tool.exe Game\run_tree\Data\Shaders\ Engine\src\Engine\Renderer\ShaderSrc\shaders_generated -quiet
 )
 
-rem if !StopBuild! NEQ 1 (
-rem     pushd GameCode
-rem     call build.bat
-rem     popd
-rem     set LastError=!ERRORLEVEL!
-rem     if !ERRORLEVEL! NEQ 0 (
-rem         echo Error:!ERRORLEVEL!
-rem         set StopBuild=1
-rem         echo Stopping build!
-rem     )
-rem )
-
 if !StopBuild! NEQ 1 (
     pushd Engine
     call build.bat
@@ -55,7 +43,19 @@ if !StopBuild! NEQ 1 (
 )
 
 if !StopBuild! NEQ 1 (
-    pushd RohinGame
+    pushd Game
+    call build.bat
+    popd
+    set LastError=!ERRORLEVEL!
+    if !ERRORLEVEL! NEQ 0 (
+        echo Error:!ERRORLEVEL!
+        set StopBuild=1
+        echo Stopping build!
+    )
+)
+
+if !StopBuild! NEQ 1 (
+    pushd RohinApp
     call build.bat
     popd
     set LastError=%ERRORLEVEL%

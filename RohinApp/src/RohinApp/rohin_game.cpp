@@ -1,29 +1,99 @@
 #include "rohin_game.h"
 
 #include <Engine/Core/Logger.h>
-#include <Engine/Memory/Memory_Arena.h>
-#include <Engine/Renderer/Render_Types.h>
-#include <Engine/Resources/Resource_Manager.h>
+#include <Engine/Core/Timing.h>
 #include <Engine/Core/Input.h>
 #include <Engine/Core/Event.h>
 #include <Engine/Core/String.h>
 #include <Engine/Memory/MemoryUtils.h>
-
+#include <Engine/Memory/Memory_Arena.h>
+#include <Engine/Renderer/Renderer.h>
+#include <Engine/Renderer/Render_Types.h>
+#include <Engine/Resources/Resource_Manager.h>
+#include <Engine/Resources/Filetype/anim_file_reader.h>
 #include <Engine/Collision/Collision.h>
 #include <Engine/Collision/Character_Controller.h>
-
-#include <Engine/Renderer/Renderer.h>
 #include <Engine/Animation/Animation.h>
 
-#include <Engine/Core/Timing.h>
-
-#include <Engine/Resources/Filetype/anim_file_reader.h>
+#include <Engine/Platform/Platform.h>
 
 #include <imgui/imgui.h>
 
-int32  NUM_X   = 11;
-int32  NUM_Y   = 11;
-real32 spacing = 2.5f;
+// Game code interface
+global_variable const char* libgame_filename = "libgame.dll";
+global_variable const char* loaded_libgame_filename = "loaded_libgame.dll";
+global_variable const char* lock_filename = "lock.tmp";
+
+#include <Game/game.h>
+struct game_code
+{
+    void* GameCodeDLL;
+    uint64 DLLLastWriteTime;
+
+    game_update_fcn* GameUpdate;
+    
+    bool32 IsValid;
+};
+
+GAME_UPDATE_FUNC(GameUpdateStub) {
+    RH_WARN("STUB FUNCTION");
+}
+game_code LoadGameCode(const char* LibPath, const char* TempLibPath, const char* LockPath) {
+    game_code result = {};
+    result.GameUpdate = GameUpdateStub; // just in case
+
+    file_info lock_info;
+    if (!platform_get_file_attributes(LockPath, &lock_info)) {
+        file_info info;
+        if (!platform_get_file_attributes(LibPath, &info)) {
+            RH_INFO("Failed to get file-info for '%s'!", LibPath);
+            return result;
+        }
+
+        result.DLLLastWriteTime = info.last_write_time;
+
+        if (platform_copy_file(LibPath, TempLibPath)) {
+            result.GameCodeDLL = platform_load_shared_library(TempLibPath);
+            if (result.GameCodeDLL) {
+                char datestr[64];
+                platform_filetime_to_systime(info.last_write_time, datestr, 64);
+                RH_INFO("Succesfully loaded '%s' as '%s'!\n         DLL Filesize:  %llu Kb\n         DLL WriteTime: %s",
+                        LibPath, TempLibPath, info.file_size / 1024, datestr);
+                //RH_INFO("DLL Filesize:  %llu Kb", info.file_size/1024);
+                //RH_INFO("DLL WriteTime: %llu", info.last_write_time);
+
+                // get function pointers
+                game_update_fcn * func = (game_update_fcn*)platform_get_func_from_lib(result.GameCodeDLL, "GameUpdate");
+
+                if (func) {
+                    result.GameUpdate = func;
+                    result.IsValid = true;
+                } else {
+                    result.GameUpdate = GameUpdateStub;
+                }
+            } else {
+                RH_ERROR("Failed to load game code: LoadLibrary failed!");
+            }
+        } else {
+            RH_ERROR("Failed to load game code: CopyFile failed!");
+        }
+    } else {
+        RH_WARN("Failed to load game code: lock still in place!");
+    }
+
+    return result;
+}
+void UnloadGameCode(game_code* game) {
+    RH_INFO("Unloaded game library!");
+    if (game->GameCodeDLL) {
+        platform_unload_shared_library(game->GameCodeDLL);
+        game->GameCodeDLL = 0;
+    }
+
+    game->DLLLastWriteTime = 0;
+    game->IsValid = false;
+    game->GameUpdate = GameUpdateStub;
+}
 
 struct player_state {
     laml::Vec3 position;
@@ -42,6 +112,8 @@ struct rohin_game_state {
     memory_arena perm_arena;
     memory_arena trans_arena;
     memory_arena mesh_arena;
+
+    game_code game;
 
     resource_static_mesh* level_mesh;
     resource_static_mesh* player_mesh;
@@ -70,6 +142,10 @@ struct rohin_game_state {
     //level_data level;
 };
 
+int32  NUM_X   = 11;
+int32  NUM_Y   = 11;
+real32 spacing = 2.5f;
+
 bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context);
 bool32 send_key_press_event_to_controller(uint16 code, void* sender, void* listener, event_context context);
 bool32 send_key_release_event_to_controller(uint16 code, void* sender, void* listener, event_context context);
@@ -84,6 +160,12 @@ bool32 game_startup(RohinApp* app) {
     state->mesh_arena = CreateSubArena(&state->perm_arena, Megabytes(1));
 
     CreateArena(&state->trans_arena, app->memory.TransientStorageSize, (uint8*)app->memory.TransientStorage);
+
+    // load game-code
+    state->game = LoadGameCode(libgame_filename, loaded_libgame_filename, lock_filename);
+    if (!state->game.IsValid) {
+        return false;
+    }
 
     state->level_mesh  = PushStruct(&state->mesh_arena, resource_static_mesh);
     state->player_mesh = PushStruct(&state->mesh_arena, resource_static_mesh);
@@ -227,16 +309,31 @@ bool32 game_initialize(RohinApp* app) {
     return true;
 }
 
+static game_update_fcn game_update;
+
 bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta_time) {
     time_point update_start = start_timer();
     rohin_game_state* state = (rohin_game_state*)(app->memory.PermanentStorage);
+
+    // check if game.dll is out of date
+    file_info info;
+    platform_get_file_attributes(libgame_filename, &info);
+    if (info.last_write_time != state->game.DLLLastWriteTime) {
+        RH_INFO("Detected change in '%s'!", libgame_filename);
+        platform_sleep(250);
+        UnloadGameCode(&state->game);
+        state->game = LoadGameCode(libgame_filename, loaded_libgame_filename, lock_filename);
+    }
+
+    game_state gs;
+    gs.value = 25;
+    state->game.GameUpdate(&gs);
 
     // Create ImGui window
     ImGui::Begin("RohinGame");
     ImGui::Text("Window made by %s", __FILE__);
     ImGui::Text("  DeltaTime: %.3f ms",  delta_time*1000.0f);
     ImGui::Text("  Framerate: %.3f fps", 1.0f / delta_time);
-
 
     // simulate game state
     laml::Mat4 eye(1.0f);
@@ -597,6 +694,9 @@ void game_on_resize(RohinApp* app, uint32 new_width, uint32 new_height) {
 }
 
 void game_shutdown(RohinApp* app) {
+    rohin_game_state* state = (rohin_game_state*)(app->memory.PermanentStorage);
+
+    UnloadGameCode(&state->game);
     RH_INFO("Game shutdown.");
 }
 

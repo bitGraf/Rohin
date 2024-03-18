@@ -21,6 +21,6 @@ set ObjectFlags=/Fo../bin/int/
 echo =====================================
 echo Building the Windows entry point...
 
-cl %IncludeDirs% %CompilerFlags% %SrcFiles% /Fm../bin/%Name%.map /Fe: ../bin/%Name%.exe %ObjectFlags% /link %LinkerFlags%
+cl %IncludeDirs% %CompilerFlags% %SrcFiles% /Fe: ../bin/%Name%.exe %ObjectFlags% /link %LinkerFlags%
 
 EXIT /B %ERRORLEVEL%
