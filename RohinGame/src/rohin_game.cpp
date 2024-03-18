@@ -160,6 +160,8 @@ bool32 game_initialize(RohinApp* app) {
     //define_connection_float(&node_jump, 1, node_walk_idx, param_walking_idx, trigger_type::TRIGGER_GT, 0.1);
     state->controller.graph.nodes[node_jump_idx] = node_jump;
 
+    validate_controller(&state->controller);
+
     // load spheres
     resource_load_static_mesh("Data/Models/sphere.mesh", &state->static_meshes[0]);
     for (uint32 n = 1; n < state->num_static_meshes; n++) {

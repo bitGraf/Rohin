@@ -2,13 +2,13 @@
 
 #include "Engine/Resources/Resource_Types.h"
 
-struct anim_var {
-
-    union {
-        int64  as_int;
-        real64 as_float;
-    } trigger;
-};
+//struct anim_var {
+//
+//    union {
+//        int64  as_int;
+//        real64 as_float;
+//    } trigger;
+//};
 
 enum class param_type : uint32 {
     PARAM_NONE = 0,
@@ -38,7 +38,7 @@ struct anim_graph_connection {
     uint32 param;
 
     trigger_type trigger_type;
-    union {
+    union trigger_t {
         int64  as_int;
         real64 as_float;
     } trigger;
@@ -60,12 +60,12 @@ struct anim_graph_param {
     param_type type;
     param_mode mode;
 
-    union {
+    union curr_value_t {
         int64  as_int;
         real64 as_float;
     } curr_value;
 
-    union {
+    union update_t {
         void* watch_ptr;
         uint64 key_code;
     } update;
@@ -99,3 +99,4 @@ RHAPI void define_connection_int(anim_graph_node* node, uint32 connection_idx, u
 RHAPI void define_connection_default(anim_graph_node* node, uint32 connection_idx, uint32 new_node_idx);
 RHAPI void update_controller(animation_controller* controller);
 RHAPI void controller_on_key_event(animation_controller* controller, uint16 key_code, bool32 pressed);
+RHAPI bool32 validate_controller(animation_controller* controller);

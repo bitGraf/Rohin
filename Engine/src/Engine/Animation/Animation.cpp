@@ -2,6 +2,7 @@
 
 #include "Engine/Core/Asserts.h"
 #include "Engine/Memory/Memory_Arena.h"
+#include "Engine/Memory/MemoryUtils.h"
 #include "Engine/Core/Input.h"
 
 bool32 sample_animation_at_time(const resource_skinned_mesh* mesh,  const resource_animation* anim, real32 time, laml::Mat4* model_matrices) {
@@ -55,12 +56,16 @@ animation_controller create_anim_controller(uint32 num_nodes, uint32 num_params,
     controller.current_node = 0;
     controller.node_time = 0.0;
     controller.arena = arena;
-    
-    controller.graph.num_nodes = num_nodes;
-    controller.graph.nodes = PushArray(arena, anim_graph_node, num_nodes);
 
-    controller.graph.num_params = num_params;
-    controller.graph.params = PushArray(arena, anim_graph_param, num_params);
+    anim_graph& graph = controller.graph;
+
+    graph.num_nodes = num_nodes;
+    graph.nodes = PushArray(arena, anim_graph_node, num_nodes);
+    memory_zero(graph.nodes, graph.num_nodes*sizeof(anim_graph_node));
+
+    graph.num_params = num_params;
+    graph.params = PushArray(arena, anim_graph_param, num_params);
+    memory_zero(graph.params, graph.num_params*sizeof(anim_graph_param));
 
     return controller;
 }
@@ -86,11 +91,17 @@ void define_parameter(animation_controller* controller, uint32 param_idx,
                     real64 default_value = 0.0;
                     param.curr_value.as_float = default_value;
                 } break;
+                default: { 
+                    Assert(!"Invalid PARAM_TYPE set"); 
+                } break;
             }
         } break;
         case param_mode::PARAM_KEY_EVENT: {
             param.update.key_code = (uint64)watch_value;
             param.type = param_type::PARAM_INT; // doesn't make sense for key_events to be floats
+        } break;
+        case param_mode::PARAM_NONE: {
+            Assert(!"Invalid PARAM_MODE set"); 
         } break;
     }
 }
@@ -101,6 +112,8 @@ anim_graph_node create_node(const char* name, uint32 num_connections, resource_a
     node.num_connections = num_connections;
     node.anim = anim;
     node.connections = PushArray(arena, anim_graph_connection, num_connections);
+    memory_zero(node.connections, num_connections*sizeof(anim_graph_connection));
+
     node.flag = flag;
     node.anim_length = anim->num_samples / anim->frame_rate;
 
@@ -252,4 +265,56 @@ void controller_on_key_event(animation_controller * controller, uint16 key_code,
             }
         }
     }
+}
+
+
+RHAPI bool32 validate_controller(animation_controller* controller) {
+    const anim_graph& graph = controller->graph;
+
+    // check all params are defined
+    uint32 num_params = graph.num_params;
+    Assert(num_params != 0 && "0 params defined");
+    Assert(num_params < 1024 && "Too many params defined");
+    Assert(graph.params != nullptr && "Param array not allocated");
+    for (uint32 n = 0; n < num_params; n++) {
+        const anim_graph_param& param = graph.params[n];
+
+        Assert(param.type != param_type::PARAM_NONE && "PARAM_TYPE cannot be PARAM_NONE");
+        Assert(param.mode != param_mode::PARAM_NONE && "PARAM_MODE cannot be PARAM_NONE");
+
+        if (param.mode == param_mode::PARAM_POLL) {
+            Assert(param.update.watch_ptr != nullptr && "Watching a void pointer");
+        }
+        Assert(param.name != nullptr && "Param name is not set");
+    }
+
+    // check all nodes are defineds
+    uint32 num_nodes = graph.num_nodes;
+    Assert(num_nodes != 0 && "0 nodes defined");
+    Assert(num_nodes < 1024 && "Too many nodes defined");
+    Assert(graph.nodes != nullptr && "Node array not allocated");
+    for (uint32 n = 0; n < num_nodes; n++) {
+        const anim_graph_node& node = graph.nodes[n];
+
+        // check connections
+        uint32 num_connections = node.num_connections;
+        Assert(num_connections != 0    && "0 connections defined");
+        Assert(num_connections <  1024 && "Too many connections defined");
+        Assert(node.connections != nullptr && "Connections arra not allocated");
+
+        for (uint32 c = 0; c < num_connections; c++) {
+            const anim_graph_connection& con = node.connections[c];
+
+            Assert(con.node  < graph.num_nodes  && "Connection referencing node that doesn't exist");
+            Assert(con.param < graph.num_params && "Connection referencing param that doesn't exist");
+            Assert(con.trigger_type != trigger_type::TRIGGER_NONE && "TRIGGER_TYPE cannot be TRIGGER_NONE");
+        }
+
+        Assert(node.anim_length > 0.0 && "Animation length must be non-zero");
+
+        Assert(node.anim != nullptr && "Node anim is not set");
+        Assert(node.name != nullptr && "Node name is not set");
+    }
+
+    return true;
 }

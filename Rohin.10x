@@ -8,15 +8,15 @@
 		<ShowEmptyFolders>true</ShowEmptyFolders>
 		<IsVirtual>false</IsVirtual>
 		<IsFolder>false</IsFolder>
-		<BuildCommand>call build.bat</BuildCommand>
+		<BuildCommand>cmake --build build</BuildCommand>
 		<RebuildCommand></RebuildCommand>
 		<BuildFileCommand></BuildFileCommand>
 		<CleanCommand></CleanCommand>
 		<BuildWorkingDirectory></BuildWorkingDirectory>
 		<CancelBuild></CancelBuild>
-		<RunCommand>build\game.exe -r .\Game\run_tree</RunCommand>
+		<RunCommand>bin\game.exe -r .\Game\run_tree</RunCommand>
 		<RunCommandWorkingDirectory></RunCommandWorkingDirectory>
-		<DebugCommand>raddbg $(RootWorkspaceDirectory)\build\game.exe -r ..\Game\run_tree</DebugCommand>
+		<DebugCommand>raddbg $(RootWorkspaceDirectory)\bin\game.exe -r ..\Game\run_tree</DebugCommand>
 		<ExePathCommand></ExePathCommand>
 		<DebugSln></DebugSln>
 		<UseVisualStudioEnvBat>false</UseVisualStudioEnvBat>
