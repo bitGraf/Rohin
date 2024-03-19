@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-bool32 InitLogging() {
+bool32 InitLogging(bool32 create_console) {
+    platform_init_logging(create_console);
     return true;
 }
 

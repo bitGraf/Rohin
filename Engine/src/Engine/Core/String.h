@@ -8,3 +8,4 @@
 uint8* AdvanceBufferSize_(uint8** Buffer, uint64 Size, uint8* End);
 
 RHAPI int string_build(char* buffer, int buf_size, char* fmt, ...);
+RHAPI int string_compare(const char* str1, const char* str2);

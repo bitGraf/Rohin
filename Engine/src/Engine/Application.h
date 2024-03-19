@@ -4,6 +4,15 @@
 
 struct render_packet;
 
+struct RohinAppArgs {
+    bool32 create_console;
+    const char* data_path;
+
+    // raw
+    int argc;
+    const char** argv;
+};
+
 struct RohinAppConfig {
     const char* application_name;
     int32 start_x;
@@ -13,6 +22,8 @@ struct RohinAppConfig {
 
     uint64 requested_permanant_memory;
     uint64 requested_transient_memory;
+
+    RohinAppArgs args;
 };
 
 struct GameMemory {

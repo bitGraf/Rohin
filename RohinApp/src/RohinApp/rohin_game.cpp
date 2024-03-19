@@ -20,9 +20,9 @@
 #include <imgui/imgui.h>
 
 // Game code interface
-global_variable const char* libgame_filename = "libgame.dll";
-global_variable const char* loaded_libgame_filename = "loaded_libgame.dll";
-global_variable const char* lock_filename = "lock.tmp";
+global_variable char libgame_filename[256];
+global_variable char loaded_libgame_filename[256];
+global_variable char lock_filename[256];
 
 #include <Game/game.h>
 struct game_code
@@ -38,29 +38,39 @@ struct game_code
 GAME_UPDATE_FUNC(GameUpdateStub) {
     RH_WARN("STUB FUNCTION");
 }
-game_code LoadGameCode(const char* LibPath, const char* TempLibPath, const char* LockPath) {
+game_code LoadGameCode(const char* FullLibPath, const char* FullTempLibPath, const char* FullLockPath) {
     game_code result = {};
     result.GameUpdate = GameUpdateStub; // just in case
 
     file_info lock_info;
-    if (!platform_get_file_attributes(LockPath, &lock_info)) {
+    if (!platform_get_file_attributes(FullLockPath, &lock_info)) {
         file_info info;
-        if (!platform_get_file_attributes(LibPath, &info)) {
-            RH_INFO("Failed to get file-info for '%s'!", LibPath);
+        if (!platform_get_file_attributes(FullLibPath, &info)) {
+            RH_INFO("Failed to get file-info for '%s'!", FullLibPath);
             return result;
         }
 
         result.DLLLastWriteTime = info.last_write_time;
 
-        if (platform_copy_file(LibPath, TempLibPath)) {
-            result.GameCodeDLL = platform_load_shared_library(TempLibPath);
+        if (platform_copy_file(FullLibPath, FullTempLibPath)) {
+            result.GameCodeDLL = platform_load_shared_library(FullTempLibPath);
             if (result.GameCodeDLL) {
                 char datestr[64];
                 platform_filetime_to_systime(info.last_write_time, datestr, 64);
+
+                // trim the full path to jus tthe filename
+                const char* LibPath = FullLibPath;
+                for (const char* s = LibPath; *s; s++) {
+                    if (*s == '\\')
+                        LibPath = s+1;
+                }
+                const char* TempLibPath = FullTempLibPath;
+                for (const char* s = TempLibPath; *s; s++) {
+                    if (*s == '\\')
+                        TempLibPath = s+1;
+                }
                 RH_INFO("Succesfully loaded '%s' as '%s'!\n         DLL Filesize:  %llu Kb\n         DLL WriteTime: %s",
                         LibPath, TempLibPath, info.file_size / 1024, datestr);
-                //RH_INFO("DLL Filesize:  %llu Kb", info.file_size/1024);
-                //RH_INFO("DLL WriteTime: %llu", info.last_write_time);
 
                 // get function pointers
                 game_update_fcn * func = (game_update_fcn*)platform_get_func_from_lib(result.GameCodeDLL, "GameUpdate");
@@ -162,6 +172,10 @@ bool32 game_startup(RohinApp* app) {
     CreateArena(&state->trans_arena, app->memory.TransientStorageSize, (uint8*)app->memory.TransientStorage);
 
     // load game-code
+    // get full paths
+    platform_get_full_library_path(libgame_filename,        256, "libgame.dll");
+    platform_get_full_library_path(loaded_libgame_filename, 256, "loaded_libgame.dll");
+    platform_get_full_library_path(lock_filename,           256, "lock.tmp");
     state->game = LoadGameCode(libgame_filename, loaded_libgame_filename, lock_filename);
     if (!state->game.IsValid) {
         return false;

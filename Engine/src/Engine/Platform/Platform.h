@@ -29,6 +29,7 @@ struct AppConfig {
  * File I/O
  * */
 
+void platform_init_logging(bool32 create_console);
 bool32 platform_startup(AppConfig* config);
 RHAPI void platform_shutdown();
 bool32 platform_process_messages();
@@ -61,6 +62,7 @@ struct file_info {
     uint64 last_write_time;
     uint64 file_size;
 };
+RHAPI size_t platform_get_full_library_path(char* buffer, size_t buffer_length, const char* library_path);
 RHAPI bool32 platform_get_file_attributes(const char* full_path, file_info* info);
 RHAPI bool32 platform_copy_file(const char* src_path, const char* dst_path);
 

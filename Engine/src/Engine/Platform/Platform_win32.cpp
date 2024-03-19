@@ -41,6 +41,9 @@ struct PlatformState {
     char resource_path_prefix[WIN32_STATE_FILE_NAME_COUNT];
     uint32 resource_path_prefix_length;
 
+    char library_path_prefix[WIN32_STATE_FILE_NAME_COUNT];
+    uint32 library_path_prefix_length;
+
     WINDOWPLACEMENT window_position; // save the last window position for fullscreen purposes
     real64 inv_performance_counter_frequency;
 
@@ -53,13 +56,90 @@ struct PlatformState {
 
     HDC device_context;
 
-    WORD default_console_attributes;
+    WORD default_console_attributes_out;
+    WORD default_console_attributes_err;
+    bool32 alloced_console;
 };
 global_variable PlatformState global_win32_state;
 
 LRESULT CALLBACK win32_window_callback(HWND window, uint32 message, WPARAM w_param, LPARAM l_param);
 internal_func void Win32GetResourcePath(char* ResourcePathPrefix, uint8 PrefixLength);
 
+internal_func void CatStrings(size_t SourceACount, const char *SourceA,
+                              size_t SourceBCount, const char *SourceB,
+                              size_t DestCount, char *Dest) {
+    // TODO: Dest bounds checking!
+    
+    for(unsigned int Index = 0; Index < SourceACount; ++Index) {
+        *Dest++ = *SourceA++;
+    }
+
+    for(unsigned int Index = 0; Index < SourceBCount; ++Index) {
+        *Dest++ = *SourceB++;
+    }
+
+    *Dest++ = 0;
+}
+
+internal_func size_t StringLength(const char* String) {
+    size_t Count = 0;
+    while(*String++) {
+        ++Count;
+    }
+    return Count;
+}
+
+internal_func void Win32GetResourcePath(char* ResourcePathPrefix, uint8 PrefixLength) {
+    if (PrefixLength) {
+        // change all '\\' to '/'
+        for (char* Scan = ResourcePathPrefix; *Scan; Scan++) {
+            if (*Scan == '\\') {
+                *Scan = '/';
+            }
+        }
+        if (ResourcePathPrefix[PrefixLength-1] != '/') {
+            ResourcePathPrefix[PrefixLength] = '/';
+            PrefixLength++;
+        }
+
+        CatStrings(PrefixLength, ResourcePathPrefix, 0, 0, PrefixLength, global_win32_state.resource_path_prefix);
+        global_win32_state.resource_path_prefix_length = PrefixLength;
+    }
+}
+internal_func void Win32GetLibraryPath(char* LibraryPathPrefix, size_t PrefixLength) {
+    if (PrefixLength) {
+        // change all '\\' to '/'
+        for (char* Scan = LibraryPathPrefix; *Scan; Scan++) {
+            if (*Scan == '\\') {
+                *Scan = '/';
+            }
+        }
+        if (LibraryPathPrefix[PrefixLength-1] != '/') {
+            LibraryPathPrefix[PrefixLength] = '/';
+            PrefixLength++;
+        }
+
+        CatStrings(PrefixLength, LibraryPathPrefix, 0, 0, PrefixLength, global_win32_state.library_path_prefix);
+        global_win32_state.library_path_prefix_length = (uint32)PrefixLength;
+    }
+}
+
+void platform_init_logging(bool32 create_console) {
+    AttachConsole((DWORD)-1);
+
+    // setup console defaults
+    if (create_console) {
+        AllocConsole();
+        RH_DEBUG("Creating new console");
+    }
+    global_win32_state.alloced_console = create_console;
+
+    CONSOLE_SCREEN_BUFFER_INFO console_info;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
+    global_win32_state.default_console_attributes_out = console_info.wAttributes;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_ERROR_HANDLE), &console_info);
+    global_win32_state.default_console_attributes_err = console_info.wAttributes;
+}
 bool32 platform_startup(AppConfig* config) {
     global_win32_state.instance = GetModuleHandleA(NULL);
     global_win32_state.command_line = GetCommandLineA();
@@ -137,7 +217,25 @@ bool32 platform_startup(AppConfig* config) {
                 global_win32_state.resource_path_prefix[++global_win32_state.resource_path_prefix_length]   = '\0';
             }
         }
+
+        // same for library path
+        {
+            Win32GetLibraryPath(global_win32_state.exe_filename, 
+                                global_win32_state.one_past_last_slash_exe_filename - global_win32_state.exe_filename);
+
+            char buffer[256];
+            DWORD len = GetFullPathNameA(global_win32_state.library_path_prefix,
+                                         256, buffer, NULL);
+            StringCchCopyA(global_win32_state.library_path_prefix, len, buffer);
+            global_win32_state.library_path_prefix_length = lstrlenA(global_win32_state.library_path_prefix);
+
+            if (global_win32_state.library_path_prefix[global_win32_state.library_path_prefix_length] != '\\') {
+                global_win32_state.library_path_prefix[global_win32_state.library_path_prefix_length] = '\\';
+                global_win32_state.library_path_prefix[++global_win32_state.library_path_prefix_length]   = '\0';
+            }
+        }
     }
+
 
     // NOTE: Set the Windows scheduler granularity to 1ms
     //       so that our Sleep can be more granular
@@ -206,12 +304,7 @@ bool32 platform_startup(AppConfig* config) {
         return false;
     }
 
-    global_win32_state.device_context = GetDC(global_win32_state.window);
-
-    // setup console defaults
-    CONSOLE_SCREEN_BUFFER_INFO console_info;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
-    global_win32_state.default_console_attributes = console_info.wAttributes;
+    global_win32_state.device_context = GetDC(global_win32_state.window);   
 
     ShowWindow(global_win32_state.window, SW_SHOW);
 
@@ -241,6 +334,9 @@ bool32 platform_startup(AppConfig* config) {
 }
 
 void platform_shutdown() {
+    if (global_win32_state.alloced_console){
+        FreeConsole();
+    }
     // don't really need to do anything here...
     RH_INFO("Shutting down the platform layer.");
 }
@@ -274,7 +370,7 @@ void platform_console_write_error(const char* Message, uint8 Color) {
     uint64 length = strlen(Message);
     DWORD number_written = 0;
     WriteConsoleA(console_handle, Message, (DWORD)length, &number_written, 0);
-    SetConsoleTextAttribute(console_handle, global_win32_state.default_console_attributes);
+    SetConsoleTextAttribute(console_handle, global_win32_state.default_console_attributes_err);
 }
 
 void platform_console_write(const char* Message, uint8 Color) {
@@ -285,7 +381,7 @@ void platform_console_write(const char* Message, uint8 Color) {
     uint64 length = strlen(Message);
     DWORD number_written = 0;
     WriteConsoleA(console_handle, Message, (DWORD)length, &number_written, 0);
-    SetConsoleTextAttribute(console_handle, global_win32_state.default_console_attributes);
+    SetConsoleTextAttribute(console_handle, global_win32_state.default_console_attributes_out);
 }
 
 void platform_console_set_title(const char* Message, ...) {
@@ -529,51 +625,6 @@ void* memory_set(void* memory, uint8 value, uint64 size) {
     return memory;
 }
 
-
-internal_func void CatStrings(size_t SourceACount, const char *SourceA,
-                              size_t SourceBCount, const char *SourceB,
-                              size_t DestCount, char *Dest) {
-    // TODO: Dest bounds checking!
-    
-    for(unsigned int Index = 0; Index < SourceACount; ++Index) {
-        *Dest++ = *SourceA++;
-    }
-
-    for(unsigned int Index = 0; Index < SourceBCount; ++Index) {
-        *Dest++ = *SourceB++;
-    }
-
-    *Dest++ = 0;
-}
-
-internal_func size_t StringLength(const char* String) {
-    size_t Count = 0;
-    while(*String++) {
-        ++Count;
-    }
-    return Count;
-}
-
-internal_func void Win32GetResourcePath(char* ResourcePathPrefix, uint8 PrefixLength) {
-    if (PrefixLength) {
-        // change all '\\' to '/'
-        for (char* Scan = ResourcePathPrefix; *Scan; Scan++) {
-            if (*Scan == '\\') {
-                *Scan = '/';
-            }
-        }
-        if (ResourcePathPrefix[PrefixLength-1] != '/') {
-            ResourcePathPrefix[PrefixLength] = '/';
-            PrefixLength++;
-        }
-
-        CatStrings(PrefixLength, ResourcePathPrefix, 0, 0, PrefixLength, global_win32_state.resource_path_prefix);
-        global_win32_state.resource_path_prefix_length = PrefixLength;
-    }
-}
-
-
-
 // file IO
 size_t platform_get_full_resource_path(char* buffer, size_t buffer_length, const char* resource_path) {
     Assert(global_win32_state.resource_path_prefix);
@@ -583,6 +634,25 @@ size_t platform_get_full_resource_path(char* buffer, size_t buffer_length, const
     Assert(resource_path_length + global_win32_state.resource_path_prefix_length < buffer_length);
     CatStrings(global_win32_state.resource_path_prefix_length, global_win32_state.resource_path_prefix,
                resource_path_length, resource_path,
+               buffer_length, buffer);
+
+    size_t full_length = 0;
+    for (char* scan = buffer; *scan; scan++) {
+        full_length++;
+        if (*scan == '/') {
+            *scan = '\\';
+        }
+    }
+    return full_length;
+}
+size_t platform_get_full_library_path(char* buffer, size_t buffer_length, const char* library_path) {
+    Assert(global_win32_state.library_path_prefix);
+
+    size_t resource_path_length = StringLength(library_path);
+
+    Assert(resource_path_length + global_win32_state.library_path_prefix_length < buffer_length);
+    CatStrings(global_win32_state.library_path_prefix_length, global_win32_state.library_path_prefix,
+               resource_path_length, library_path,
                buffer_length, buffer);
 
     size_t full_length = 0;

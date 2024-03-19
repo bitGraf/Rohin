@@ -1,0 +1,14 @@
+Bugs to fix:
+[x] Startup working directory
+    [x] Find binary data (libgame.dll and rohin.dll)
+    [x] Find Data directory (for models, textures, shaders, etc.)
+    [x] Works when clicking 'game.exe' 
+    [x] Works when run through 10x
+    [x] Works when run through game.sln
+    [x] Works when clicking 'game.exe' (from cmake)
+    [x] Works when run through visual studio (from cmake)
+    [x] -r flag still works
+
+[~] Console output weirdness
+    [x] Console prints normally in 10x
+    [~] Console closes automatically in Visual Studio

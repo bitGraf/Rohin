@@ -6,6 +6,7 @@
 #include "Engine/Memory/Memory_Arena.h"
 #include "Engine/Core/Event.h"
 #include "Engine/Core/Input.h"
+#include "Engine/Core/String.h"
 
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Resources/Resource_Manager.h"
@@ -79,14 +80,44 @@ bool32 engine_on_event(uint16 code, void* sender, void* listener, event_context 
     return false;
 }
 
+const char* getCmdOption(const char** begin, const char** end, const char* option) {
+    for (const char** opt = begin; opt < end; opt++) {
+        if (string_compare(*opt, option) == 0) {
+            if (opt + 1 < end) {
+                return *(opt + 1);
+            }
+        }
+    }
+
+    return 0;
+}
+bool32 cmdOptionExists(const char** begin, const char** end, const char* option) {
+    for (const char** opt = begin; opt < end; opt++) {
+        if (string_compare(*opt, option) == 0) {
+            return true;
+        }
+    }
+
+    return false;
+}
+void parseArguments(RohinAppArgs* args, int argc, const char** argv) {
+    const char* data_path = getCmdOption(argv, argv + argc, "-r");
+    if (data_path) {
+        args->data_path = data_path;
+    } else {
+        args->data_path = nullptr;
+    }
+
+    args->create_console = !cmdOptionExists(argv, argv + argc, "--no-console");
+}
 bool32 start_rohin_engine(RohinApp* app) {
     engine.app = app;
     
+    
     // get memory for the application
     // initialize all systems we need to
-    InitLogging();
-
-    RH_INFO("Rohin Engine v0.0.1");
+    parseArguments(&app->app_config.args, app->app_config.args.argc, app->app_config.args.argv);
+    InitLogging(app->app_config.args.create_console);
 
     AppConfig config;
     config.application_name = app->app_config.application_name;
@@ -100,6 +131,8 @@ bool32 start_rohin_engine(RohinApp* app) {
         RH_FATAL("Failed on platform startup!");
         return false;
     }
+
+    RH_INFO("Rohin Engine v0.0.1");
 
 #if ROHIN_INTERNAL
     uint64 base_address = Terabytes(2);

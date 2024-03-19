@@ -9,8 +9,10 @@
 
 extern bool32 create_application(RohinApp* app);
 
-int main() {
+int main(int argc, char** argv) {
     RohinApp app;
+    app.app_config.args.argc = argc;
+    app.app_config.args.argv = (const char**)argv;
 
     if (!create_application(&app)) {
         RH_FATAL("Could not create application!");
@@ -26,9 +28,18 @@ int main() {
     if (!start_rohin_engine(&app)) {
         RH_FATAL("Something went wrong! shutting down...");
         platform_shutdown();
-        //platform_sleep(2500);
+        platform_sleep(2500);
         return -3;
     }
 
     return 0;
 }
+
+#if RH_PLATFORM_WINDOWS
+#include <cstdlib>
+int WinMain(void* instance, void* prev_instance, char* cmd_line, int show_cmd) {
+    //int argc = __argc;
+    //char** argv = __argv;
+    return main(__argc, __argv);
+}
+#endif

@@ -6,6 +6,7 @@
 		<SyncFiles>true</SyncFiles>
 		<Recursive>true</Recursive>
 		<ShowEmptyFolders>true</ShowEmptyFolders>
+		<IncludeFilesWithoutExt>false</IncludeFilesWithoutExt>
 		<IsVirtual>false</IsVirtual>
 		<IsFolder>false</IsFolder>
 		<BuildCommand>call build.bat</BuildCommand>
@@ -14,7 +15,7 @@
 		<CleanCommand></CleanCommand>
 		<BuildWorkingDirectory></BuildWorkingDirectory>
 		<CancelBuild></CancelBuild>
-		<RunCommand>bin\game.exe -r ..\Game\run_tree</RunCommand>
+		<RunCommand>bin\game.exe -r Game\run_tree</RunCommand>
 		<RunCommandWorkingDirectory></RunCommandWorkingDirectory>
 		<DebugCommand>raddbg $(RootWorkspaceDirectory)\bin\game.exe -r ..\Game\run_tree</DebugCommand>
 		<ExePathCommand></ExePathCommand>
