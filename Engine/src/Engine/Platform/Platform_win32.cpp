@@ -139,6 +139,15 @@ void platform_init_logging(bool32 create_console) {
     global_win32_state.default_console_attributes_out = console_info.wAttributes;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_ERROR_HANDLE), &console_info);
     global_win32_state.default_console_attributes_err = console_info.wAttributes;
+
+    #if RH_INTERNAL
+    // move console to a nicer positon
+    // note: this -seems- to only control the console that gets spawned by the app.
+    //       i.e.: if you run from command line by typing game.exe for example,
+    //       the console does not move. This is how i want it!
+    HWND console_window = GetConsoleWindow();
+    SetWindowPos(console_window, HWND_TOP, 900, 17, 1003, 1000, 0);
+    #endif
 }
 bool32 platform_startup(AppConfig* config) {
     global_win32_state.instance = GetModuleHandleA(NULL);
@@ -285,8 +294,9 @@ bool32 platform_startup(AppConfig* config) {
     AdjustWindowRectEx(&border_rect, window_style, 0, window_ex_style);
 
     // move/resize window based on border dimmensions
-    window_x += border_rect.left;
-    window_y += border_rect.top;
+    //window_x += border_rect.left; // we actually want to specify the window position (not client position)
+    //window_y += border_rect.top;
+    window_y += 7;
     window_width += border_rect.right - border_rect.left;
     window_height += border_rect.bottom - border_rect.top;
 
@@ -297,6 +307,11 @@ bool32 platform_startup(AppConfig* config) {
         window_style,
         window_x, window_y, window_width, window_height,
         0, 0, global_win32_state.instance, 0);
+
+    RECT actual_rect;
+    GetWindowRect(global_win32_state.window, &actual_rect);
+    // weird: it says 0,0 but is not all the way in the corner...
+    //        on my machine, 7 pixels away from the left (top is perfect)
 
     if (!global_win32_state.window) {
         MessageBoxA(0, "Failed to create window.", "Error", MB_ICONEXCLAMATION | MB_OK);

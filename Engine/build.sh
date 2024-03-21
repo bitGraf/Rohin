@@ -2,7 +2,7 @@
 
 Name=rohin
 WarningFlags='-Wall -Werror -Wno-unused' #/wd4189 /wd4201 /wd4100
-Definitions='-D_DEBUG -DROHIN_INTERNAL -DRH_EXPORT'
+Definitions='-D_DEBUG -DRH_INTERNAL -DRH_EXPORT'
 CompilerFlags='-c -fPIC -fno-rtti -fno-exceptions -O0 -std=c++14 -g '$WarningFlags' '$Definitions
 IncludeDirs='-I../../Engine/src -I../../Engine/deps/math_lib/include -I../../Engine/deps/stb'
 LinkerFlags='-lGL -lX11 -lX11-xcb' #user32.lib Gdi32.lib Winmm.lib opengl32.lib

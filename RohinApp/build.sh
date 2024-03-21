@@ -2,7 +2,7 @@
 
 Name=game
 WarningFlags='-Wall -Werror -Wno-unused' #/wd4189 /wd4201 /wd4100
-Definitions='-D_DEBUG -DROHIN_INTERNAL'
+Definitions='-D_DEBUG -DRH_INTERNAL'
 CompilerFlags='-c -fPIC -fno-rtti -fno-exceptions -O0 -std=c++14 -g '$WarningFlags' '$Definitions
 IncludeDirs='-I../../Engine/src -I../../RohinGame/src -I../../Engine/deps/math_lib/include'
 #LinkerFlags='-L../ -l:librohin.so -Wl,-rpath,.'

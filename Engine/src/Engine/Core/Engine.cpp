@@ -134,7 +134,7 @@ bool32 start_rohin_engine(RohinApp* app) {
 
     RH_INFO("Rohin Engine v0.0.1");
 
-#if ROHIN_INTERNAL
+#if RH_INTERNAL
     uint64 base_address = Terabytes(2);
 #else
     uint64 base_address = 0;
@@ -192,10 +192,10 @@ bool32 start_rohin_engine(RohinApp* app) {
 
     void* memory = platform_alloc(config.requested_memory, base_address);
     if (memory) {
-        engine.app->memory.PermanentStorage = memory;
-        engine.app->memory.PermanentStorageSize = engine.app->app_config.requested_permanant_memory;
-        engine.app->memory.TransientStorage = ((uint8*)memory + engine.app->memory.PermanentStorageSize);
-        engine.app->memory.TransientStorageSize = engine.app->app_config.requested_transient_memory;
+        engine.app->memory.AppStorage = memory;
+        engine.app->memory.AppStorageSize = engine.app->app_config.requested_permanant_memory;
+        engine.app->memory.GameStorage = ((uint8*)memory + engine.app->memory.AppStorageSize);
+        engine.app->memory.GameStorageSize = engine.app->app_config.requested_transient_memory;
 
         engine.is_running = true;
 
@@ -243,6 +243,8 @@ bool32 start_rohin_engine(RohinApp* app) {
                 ImGui::Text("  engine_arena:    %2llu Mb (%llu Kb used)",   (engine.engine_arena.Size)/(1024*1024),       (engine.engine_arena.Used)/1024);
                 ImGui::Text("  resource_arena:  %2llu Mb (%llu Kb used)",   (engine.resource_arena.Size)/(1024*1024),     (engine.resource_arena.Used)/1024);
                 ImGui::Text("  frame_arena:     %2llu Mb (%llu byte used)", (engine.frame_render_arena.Size)/(1024*1024), (engine.frame_render_arena.Used));
+                ImGui::Separator();
+                ImGui::Text("Application Memory: %llu Mb (%llu Kb used)", (app->memory.AppStorageSize + app->memory.GameStorageSize) / (1024 * 1024), 0);
                 ImGui::Separator();
                 ImGui::Text("%d cmds | %d skeletons", packet->num_commands, packet->num_skeletons);
                 ImGui::End();

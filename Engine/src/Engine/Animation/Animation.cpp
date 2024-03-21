@@ -3,6 +3,7 @@
 #include "Engine/Core/Asserts.h"
 #include "Engine/Memory/Memory_Arena.h"
 #include "Engine/Memory/MemoryUtils.h"
+#include "Engine/Core/String.h"
 #include "Engine/Core/Input.h"
 
 bool32 sample_animation_at_time(const resource_skinned_mesh* mesh,  const resource_animation* anim, real32 time, laml::Mat4* model_matrices) {
@@ -13,6 +14,7 @@ bool32 sample_animation_at_time(const resource_skinned_mesh* mesh,  const resour
 
     const real32 sample_time = 1.0f / anim->frame_rate;
     uint16 sample_idx = (uint16)(time / sample_time); // just get the nearest index
+    if (sample_idx >= num_samples) sample_idx = num_samples;
 
     // 1. First! calculate the local transform for each bone
     uint16 num_bones = anim->num_bones;
@@ -74,7 +76,7 @@ void define_parameter(animation_controller* controller, uint32 param_idx,
                       param_mode mode, void* watch_value) {
 
     anim_graph_param& param = controller->graph.params[param_idx];
-    param.name = name;
+    param.name = copy_string_to_arena(name, controller->arena);
     param.type = type;
     param.mode = mode;
 
@@ -84,11 +86,11 @@ void define_parameter(animation_controller* controller, uint32 param_idx,
 
             switch (type) {
                 case param_type::PARAM_INT: {
-                    int64 default_value = 0;
+                    int32 default_value = 0;
                     param.curr_value.as_int = default_value;
                 } break;
                 case param_type::PARAM_FLOAT: {
-                    real64 default_value = 0.0;
+                    real32 default_value = 0.0;
                     param.curr_value.as_float = default_value;
                 } break;
                 default: { 
@@ -108,26 +110,26 @@ void define_parameter(animation_controller* controller, uint32 param_idx,
 
 anim_graph_node create_node(const char* name, uint32 num_connections, resource_animation* anim, uint32 flag, memory_arena* arena) {
     anim_graph_node node;
-    node.name = name;
+    node.name = copy_string_to_arena(name, arena);;
     node.num_connections = num_connections;
     node.anim = anim;
     node.connections = PushArray(arena, anim_graph_connection, num_connections);
     memory_zero(node.connections, num_connections*sizeof(anim_graph_connection));
 
     node.flag = flag;
-    node.anim_length = anim->num_samples / anim->frame_rate;
+    node.anim_length = anim->length;
 
     return node;
 }
 
-void define_connection_float(anim_graph_node* node, uint32 connection_idx, uint32 new_node_idx, uint32 param_idx, trigger_type type, real64 float_trigger) {
+void define_connection_float(anim_graph_node* node, uint32 connection_idx, uint32 new_node_idx, uint32 param_idx, trigger_type type, real32 float_trigger) {
     anim_graph_connection& con = node->connections[connection_idx];
     con.node = new_node_idx;
     con.param = param_idx;
     con.trigger_type = type;
     con.trigger.as_float = float_trigger;
 }
-void define_connection_int(anim_graph_node* node, uint32 connection_idx, uint32 new_node_idx, uint32 param_idx, trigger_type type, int64 int_trigger) {
+void define_connection_int(anim_graph_node* node, uint32 connection_idx, uint32 new_node_idx, uint32 param_idx, trigger_type type, int32 int_trigger) {
     anim_graph_connection& con = node->connections[connection_idx];
     con.node = new_node_idx;
     con.param = param_idx;
@@ -140,7 +142,7 @@ void define_connection_default(anim_graph_node* node, uint32 connection_idx, uin
     con.trigger_type = trigger_type::TRIGGER_ALWAYS;
 }
 
-bool32 test_float(real64 value, real64 trigger, trigger_type type) {
+bool32 test_float(real32 value, real32 trigger, trigger_type type) {
     switch (type) {
         case trigger_type::TRIGGER_EQ:     return (value == trigger);
         case trigger_type::TRIGGER_NEQ:    return (value != trigger);
@@ -154,7 +156,7 @@ bool32 test_float(real64 value, real64 trigger, trigger_type type) {
     return false;
 }
 
-bool32 test_int(int64 value, int64 trigger, trigger_type type) {
+bool32 test_int(int32 value, int32 trigger, trigger_type type) {
     switch (type) {
         case trigger_type::TRIGGER_EQ:     return (value == trigger);
         case trigger_type::TRIGGER_NEQ:    return (value != trigger);
@@ -168,10 +170,12 @@ bool32 test_int(int64 value, int64 trigger, trigger_type type) {
     return false;
 }
 
-void update_controller(animation_controller* controller) {
+void update_controller(animation_controller* controller, real32 delta_time) {
     anim_graph& graph = controller->graph;
     anim_graph_node& current_node = graph.nodes[controller->current_node];
+    current_node.anim_length = current_node.anim->length;
 
+    controller->node_time += delta_time;
     controller->anim_time = controller->node_time;
     while (controller->anim_time > current_node.anim_length) {
         controller->anim_time -= current_node.anim_length;
@@ -185,11 +189,11 @@ void update_controller(animation_controller* controller) {
             case param_mode::PARAM_POLL: {
                 switch (param.type) {
                     case param_type::PARAM_INT: {
-                        int64* val_ptr = (int64*)param.update.watch_ptr;
+                        int32* val_ptr = (int32*)param.update.watch_ptr;
                         param.curr_value.as_int = *val_ptr;
                     } break;
                     case param_type::PARAM_FLOAT: {
-                        real64* val_ptr = (real64*)param.update.watch_ptr;
+                        real32* val_ptr = (real32*)param.update.watch_ptr;
                         param.curr_value.as_float = *val_ptr;
                     } break;
                 }

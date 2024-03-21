@@ -24,10 +24,10 @@ add_dependencies(Engine shader_tool_run)
 target_compile_features(Engine PUBLIC cxx_std_14)
 
 target_compile_definitions(Engine PRIVATE
-    RH_EXPORT 
     _CRT_SECURE_NO_WARNINGS 
-    ROHIN_INTERNAL 
-    ROHIN_WINDOWS 
+    RH_EXPORT 
+    RH_INTERNAL 
+    RH_PLATFORM_WINDOWS 
     RH_COMPILE_OPENGL_4_4
 )
 

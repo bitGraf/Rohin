@@ -8,6 +8,7 @@
 #include "Engine/Core/Input.h"
 #include "Engine/Memory/MemoryUtils.h"
 
+#include "Engine/Platform/Platform.h"
 #include "Engine/Resources/Resource_Manager.h"
 
 #include "Engine/Collision/Collision.h"
@@ -1197,7 +1198,11 @@ void renderer_create_debug_UI() {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
 
-    RH_INFO("ImGui Context created.");
+    static char ini_filename[256]; // todo: silly! made static so string sticks around
+    platform_get_full_resource_path(ini_filename, 256, "imgui.ini");
+    io.IniFilename = ini_filename;
+
+    RH_INFO("ImGui Context created. '%s'", io.IniFilename);
 
     // Setup Platform/Renderer backends
     backend->ImGui_Init();

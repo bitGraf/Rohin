@@ -39,8 +39,8 @@ struct anim_graph_connection {
 
     trigger_type trigger_type;
     union trigger_t {
-        int64  as_int;
-        real64 as_float;
+        int32  as_int;
+        real32 as_float;
     } trigger;
 };
 
@@ -61,8 +61,8 @@ struct anim_graph_param {
     param_mode mode;
 
     union curr_value_t {
-        int64  as_int;
-        real64 as_float;
+        int32  as_int;
+        real32 as_float;
     } curr_value;
 
     union update_t {
@@ -94,9 +94,9 @@ RHAPI void define_parameter(animation_controller* controller, uint32 param_idx,
                             param_type type, const char* name, 
                             param_mode mode,  void* watch_value);
 RHAPI anim_graph_node create_node(const char* name, uint32 num_connections, resource_animation* anim, uint32 flag, memory_arena* arena);
-RHAPI void define_connection_float(anim_graph_node* node, uint32 connection_idx, uint32 new_node_idx, uint32 param_idx, trigger_type type, real64 float_trigger);
-RHAPI void define_connection_int(anim_graph_node* node, uint32 connection_idx, uint32 new_node_idx, uint32 param_idx, trigger_type type, int64  int_trigger);
+RHAPI void define_connection_float(anim_graph_node* node, uint32 connection_idx, uint32 new_node_idx, uint32 param_idx, trigger_type type, real32 float_trigger);
+RHAPI void define_connection_int(anim_graph_node* node, uint32 connection_idx, uint32 new_node_idx, uint32 param_idx, trigger_type type, int32  int_trigger);
 RHAPI void define_connection_default(anim_graph_node* node, uint32 connection_idx, uint32 new_node_idx);
-RHAPI void update_controller(animation_controller* controller);
+RHAPI void update_controller(animation_controller* controller, real32 delta_time);
 RHAPI void controller_on_key_event(animation_controller* controller, uint16 key_code, bool32 pressed);
 RHAPI bool32 validate_controller(animation_controller* controller);

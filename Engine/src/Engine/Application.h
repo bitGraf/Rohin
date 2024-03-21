@@ -26,14 +26,16 @@ struct RohinAppConfig {
     RohinAppArgs args;
 };
 
-struct GameMemory {
+struct RohinMemory {
     bool32 IsInitialized;
 
-    uint64 PermanentStorageSize;
-    void*  PermanentStorage; // NOTE: REQUIRED to be cleared to zero at startup!!
+    // Mainly used by RohinApp
+    uint64 AppStorageSize;
+    void*  AppStorage; // NOTE: REQUIRED to be cleared to zero at startup!!
 
-    uint64 TransientStorageSize;
-    void*  TransientStorage; // NOTE: REQUIRED to be cleared to zero at startup!!
+    // To be used in Game
+    uint64 GameStorageSize;
+    void*  GameStorage; // NOTE: REQUIRED to be cleared to zero at startup!!
 };
 
 struct RohinApp {
@@ -46,5 +48,5 @@ struct RohinApp {
     void (*on_resize)(RohinApp* app, uint32 new_width, uint32 new_height);
     void (*shutdown)(RohinApp* app);
 
-    GameMemory memory;
+    RohinMemory memory;
 };

@@ -739,16 +739,16 @@ int main(int argc, char** argv) {
 #else
             uint64 BaseAddress = 0;
 #endif
-            game_memory GameMemory = {};
-            GameMemory.PermanentStorageSize = Megabytes(64);
-            GameMemory.TransientStorageSize = Gigabytes(1);
+            game_memory RohinMemory = {};
+            RohinMemory.AppStorageSize = Megabytes(64);
+            RohinMemory.GameStorageSize = Gigabytes(1);
 
-            GlobalWin32State.TotalSize = GameMemory.PermanentStorageSize + GameMemory.TransientStorageSize;
+            GlobalWin32State.TotalSize = RohinMemory.AppStorageSize + RohinMemory.GameStorageSize;
             // TODO: look into MEM_LARGE_PAGES
             GlobalWin32State.GameMemoryBlock = VirtualAlloc((LPVOID)BaseAddress, (size_t)GlobalWin32State.TotalSize,
                                                             MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-            GameMemory.PermanentStorage = GlobalWin32State.GameMemoryBlock;
-            GameMemory.TransientStorage = ((uint8*)GameMemory.PermanentStorage + GameMemory.PermanentStorageSize);
+            RohinMemory.AppStorage = GlobalWin32State.GameMemoryBlock;
+            RohinMemory.GameStorage = ((uint8*)RohinMemory.AppStorage + RohinMemory.AppStorageSize);
 
             
             uint64 RenderStorageSize = Megabytes(2);
@@ -781,7 +781,7 @@ int main(int argc, char** argv) {
             }
 #endif
 
-            if (GameMemory.PermanentStorage && GameMemory.TransientStorage) {
+            if (RohinMemory.AppStorage && RohinMemory.GameStorage) {
 
                 LARGE_INTEGER LastCounter = Win32GetWallClock();
                 LARGE_INTEGER FlipWallClock = Win32GetWallClock();
@@ -890,7 +890,7 @@ int main(int argc, char** argv) {
                         }
 
                         //OpenGLBeginFrame();
-                        Game.GameUpdateAndRender(&GameMemory, NewInput); //, &GlobalCommandBuffer);
+                        Game.GameUpdateAndRender(&RohinMemory, NewInput); //, &GlobalCommandBuffer);
                         //Win32ListRenderCommands(&CommandBuffer);
 
 #if 0
