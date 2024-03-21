@@ -14,6 +14,7 @@
 #include <Engine/Collision/Collision.h>
 #include <Engine/Collision/Character_Controller.h>
 #include <Engine/Animation/Animation.h>
+#include <Engine/Scene/Scene.h>
 
 #include <Engine/Platform/Platform.h>
 
@@ -40,6 +41,7 @@ struct game_code {
 
 GAME_UPDATE_FUNC(GameUpdateStub) {
     RH_WARN("STUB FUNCTION");
+    return nullptr;
 }
 GAME_KEY_EVENT_FUNC(GameKeyEventStub) {
     RH_WARN("STUB FUNCTION");
@@ -135,6 +137,8 @@ struct rohin_app_state {
 
     bool32       cam_static;
     camera_state debug_camera;
+
+    scene_3D *current_scene;
 };
 
 bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context);
@@ -201,7 +205,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         state->game = LoadGameCode(libgame_filename, loaded_libgame_filename, lock_filename);
     }
 
-    state->game.GameUpdate(&state->memory, packet, delta_time);
+    state->current_scene = state->game.GameUpdate(&state->memory, packet, delta_time);
 
     // Create ImGui window
     ImGui::Begin("RohinGame");
@@ -279,6 +283,78 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
     // calculate view-point
     packet->camera_pos = state->debug_camera.position;
     packet->camera_orientation = state->debug_camera.orientation;
+
+    // generate render commands
+    if (state->current_scene) {
+        // 1. find the total number of render commands -> this is where some sort of culling/filtering would happen
+        uint32 num_static_meshes = (uint32)GetArrayCount(state->current_scene->static_entities);
+        uint32 num_skinned_meshes = (uint32)GetArrayCount(state->current_scene->skinned_entities);
+
+        packet->num_commands = 0;
+        packet->num_skeletons = 0;
+        for (uint32 n = 0; n < num_static_meshes; n++) {
+            const resource_static_mesh* mesh = state->current_scene->static_entities[n].static_mesh;
+            packet->num_commands += mesh->num_primitives;
+        }
+        for (uint32 n = 0; n < num_skinned_meshes; n++) {
+            const resource_skinned_mesh* mesh = state->current_scene->skinned_entities[n].skinned_mesh;
+            packet->num_commands += mesh->num_primitives;
+            packet->num_skeletons++;
+        }
+
+        // 2. allocate memory on the frame-arena to hold commands
+        packet->commands = PushArray(packet->arena, render_command,  packet->num_commands);
+        packet->skeletons = PushArray(packet->arena, render_skeleton, packet->num_skeletons+1); // start at 1, so skeleton[0] is reserved
+    
+        uint32 command_idx = 0;
+        uint32 skeleton_idx = 1; // 0 is reserved!
+
+        // static meshes
+        for (uint32 n = 0; n < num_static_meshes; n++) {
+            const entity_static& entity = state->current_scene->static_entities[n];
+            const resource_static_mesh* mesh = entity.static_mesh;
+            mesh->transform; // use this?
+
+            for (uint32 p = 0; p < mesh->num_primitives; p++) {
+                render_command& cmd = packet->commands[command_idx];
+
+                cmd.model_matrix = entity.transform; // or just this?
+                cmd.geom = mesh->primitives[p];
+                cmd.material = mesh->materials[p];
+                cmd.skeleton_idx = 0;
+
+                command_idx++;
+            }
+        }
+
+        // skinned meshes
+        for (uint32 n = 0; n < num_skinned_meshes; n++) {
+            const entity_skinned& entity = state->current_scene->skinned_entities[n];
+            const resource_skinned_mesh* mesh = entity.skinned_mesh;
+            mesh->transform; // use this?
+
+            for (uint32 p = 0; p < mesh->num_primitives; p++) {
+                render_command& cmd = packet->commands[command_idx];
+
+                cmd.model_matrix = entity.transform;
+                cmd.geom = mesh->primitives[p];
+                cmd.material = mesh->materials[p];
+                cmd.skeleton_idx = skeleton_idx;
+
+                command_idx++;
+            }
+
+            render_skeleton& skeleton = packet->skeletons[skeleton_idx];
+            skeleton.num_bones = mesh->skeleton.num_bones;
+            skeleton.bones = PushArray(packet->arena, laml::Mat4, skeleton.num_bones);
+
+            const animation_controller* controller = entity.controller;
+            const anim_graph_node& curr_node = controller->graph.nodes[controller->current_node];
+            sample_animation_at_time(mesh, curr_node.anim, controller->node_time, skeleton.bones);
+
+            skeleton_idx++;
+        }
+    }
 
     // timing
     ImGui::Text("Game: Update and Render - %.3f ms", measure_elapsed_time(update_start)*1000.0f);

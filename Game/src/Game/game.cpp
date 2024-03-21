@@ -14,12 +14,19 @@
 #include <Engine/Collision/Collision.h>
 #include <Engine/Collision/Character_Controller.h>
 #include <Engine/Animation/Animation.h>
+#include <Engine/Scene/Scene.h>
 
 #include <imgui/imgui.h>
 
 struct game_state {
     memory_arena arena;
 
+    // basic scene
+    scene_3D scene;
+    entity_static  *static_entity;
+    entity_skinned *skinned_entity;
+
+    resource_static_mesh static_mesh;
     // character
     resource_skinned_mesh guy_mesh;
     resource_animation guy_idle_anim;
@@ -100,6 +107,16 @@ void init_game(game_state* state, game_memory* memory) {
     state->saved_str1 = copy_string_to_arena("test1", &state->arena);
     state->saved_str2 = copy_string_to_arena("test2", &state->arena);
 
+    // define basic scene
+    create_scene(&state->scene, "basic_scene", &state->arena);
+
+    resource_load_static_mesh("Data/Models/helmet.mesh", &state->static_mesh);
+    state->static_entity = create_static_entity(&state->scene, "static_entity", &state->static_mesh);
+    state->skinned_entity = create_skinned_entity(&state->scene, "skinned_entity", &state->guy_mesh, &state->guy_controller);
+    RH_INFO("Scene created. %d Static entities. %d Skinned entities.",
+            GetArrayCount(state->scene.static_entities),
+            GetArrayCount(state->scene.skinned_entities));
+
     RH_INFO("Game initialized");
 }
 
@@ -154,36 +171,6 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
 
     update_controller(&state->guy_controller, delta_time);
 
-    // generate render commands
-    // 1. find the total number of render commands -> this is where some sort of culling/filtering would happen
-    packet->num_commands = state->guy_mesh.num_primitives;
-    // 1.5 find total number of skeletons
-    packet->num_skeletons = 1;
-
-    // 2. allocate memory on the frame-arena to hold commands
-    packet->commands  = PushArray(packet->arena, render_command,  packet->num_commands);
-    packet->skeletons = PushArray(packet->arena, render_skeleton, packet->num_skeletons+1); // +1 so 0 is reserved as no skeleton
-    
-    uint32 command_idx  = 0;
-    uint32 skeleton_idx = 1;
-
-    // skinned character
-    const resource_skinned_mesh* mesh = &state->guy_mesh;
-    laml::Mat4 mesh_transform(1.0f);
-    for (uint32 p = 0; p < mesh->num_primitives; p++) {
-        render_command& cmd = packet->commands[command_idx];
-
-        cmd.model_matrix = mesh_transform;
-        cmd.geom         = mesh->primitives[p];
-        cmd.material     = mesh->materials[p];
-        cmd.skeleton_idx = skeleton_idx;
-
-        command_idx++;
-    }
-
-    render_skeleton& skeleton = packet->skeletons[skeleton_idx];
-    skeleton.num_bones = mesh->skeleton.num_bones;
-    skeleton.bones = PushArray(packet->arena, laml::Mat4, skeleton.num_bones);
     #if 0 // static strings don't work with dll reloading.
     ImGui::Begin(state->saved_str1);
     ImGui::Text(state->saved_str2);
@@ -248,10 +235,7 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
     ImGui::End();
     #endif
 
-    anim_graph_node* curr_node = &state->guy_controller.graph.nodes[state->guy_controller.current_node];
-    sample_animation_at_time((const resource_skinned_mesh*)mesh, (const resource_animation*)curr_node->anim, state->guy_controller.node_time, skeleton.bones);
-
-    skeleton_idx++;
+    return &state->scene;
 }
 
 GAME_API GAME_KEY_EVENT_FUNC(GameKeyEvent) {

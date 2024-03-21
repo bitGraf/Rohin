@@ -29,7 +29,7 @@ void* _CreateArraySize_(memory_arena* arena, uint64 element_size, uint64 num_to_
     return dynarray;
 }
 
-void* _ArrayPushPtr_(void* dynarray, void* data_ptr, uint64 data_size) {
+void* ArrayPushPtr(void* dynarray, void* data_ptr, uint64 data_size) {
     uint64 count    = ((uint64*)dynarray)[DYNARRAY_COUNT];
     uint64 stride   = ((uint64*)dynarray)[DYNARRAY_STRIDE];
     uint64 capacity = ((uint64*)dynarray)[DYNARRAY_CAPACITY];
@@ -99,6 +99,19 @@ void* _ArrayReserve_(void* dynarray, uint64 new_capacity) {
     }
 
     return dynarray;
+}
+
+void* _ArrayPeek_(void* dynarray) {
+    uint64 count    = ((uint64*)dynarray)[DYNARRAY_COUNT];
+    uint64 stride   = ((uint64*)dynarray)[DYNARRAY_STRIDE];
+    uint64 capacity = ((uint64*)dynarray)[DYNARRAY_CAPACITY];
+    memory_arena* arena = ((memory_arena**)dynarray)[DYNARRAY_ARENA];
+
+    Assert(count > 0 && "Tried to pop from an array with count 0");
+
+    // get last element
+    uint64 offset = (count-1) * stride;
+    return ((uint8*)dynarray) + offset;
 }
 
 void ArrayClear(void* dynarray) {

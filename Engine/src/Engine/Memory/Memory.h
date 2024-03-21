@@ -14,12 +14,12 @@ RHAPI void* memory_set(void* memory, uint8 value, uint64 size);
 RHAPI void* _CreateArraySize_(memory_arena* arena, uint64 element_size, uint64 num_to_reserve);
 
 // dynarray MUST be created (from CreateArray or internal) before using any of the below methods.
-#define ArrayPush(dynarray, val)                                                    \
+#define ArrayPushValue(dynarray, val)                                               \
 {                                                                                   \
     decltype(val) temp = val;                                                       \
-    dynarray = (decltype(dynarray))_ArrayPushPtr_(dynarray, &temp, sizeof(temp));    \
+    dynarray = (decltype(dynarray))ArrayPushPtr(dynarray, &temp, sizeof(temp));   \
 }
-RHAPI void* _ArrayPushPtr_(void* dynarray, void* data_ptr, uint64 data_size);
+RHAPI void* ArrayPushPtr(void* dynarray, void* data_ptr, uint64 data_size);
 
 #define ArrayResize(dynarray, new_count) \
     dynarray = (decltype(dynarray))_ArrayResize_(dynarray, new_count);
@@ -29,6 +29,9 @@ RHAPI void* _ArrayResize_(void* dynarray, uint64 new_count);
     dynarray = (decltype(dynarray))_ArrayReserve_(dynarray, new_capacity);
 RHAPI void* _ArrayReserve_(void* dynarray, uint64 new_capacity);
 
+#define ArrayPeek(dynarray) \
+    (decltype(dynarray))_ArrayPeek_(dynarray);
+RHAPI void* _ArrayPeek_(void* dynarray);
 
 RHAPI void ArrayClear(void* dynarray);
 

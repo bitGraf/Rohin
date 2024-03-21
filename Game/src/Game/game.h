@@ -2,6 +2,7 @@
 
 #include <Engine/Defines.h>
 struct render_packet;
+struct scene_3D;
 
 // .dll export api
 #ifdef GAME_EXPORT
@@ -23,7 +24,7 @@ struct game_memory {
     void*  GameStorage; // NOTE: REQUIRED to be cleared to zero at startup!!
 };
 
-#define GAME_UPDATE_FUNC(name) void name(game_memory* memory, render_packet* packet, real32 delta_time)
+#define GAME_UPDATE_FUNC(name) scene_3D* name(game_memory* memory, render_packet* packet, real32 delta_time)
 typedef GAME_UPDATE_FUNC(game_update_fcn);
 
 #define GAME_KEY_EVENT_FUNC(name) void name(game_memory* memory, uint16 key_code, uint16 key_state)
