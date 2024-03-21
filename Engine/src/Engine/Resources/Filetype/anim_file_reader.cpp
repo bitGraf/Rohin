@@ -5,7 +5,7 @@
 #include "Engine/Core/String.h"
 #include "Engine/Platform/Platform.h"
 #include "Engine/Memory/Memory_Arena.h"
-#include "Engine/Memory/MemoryUtils.h"
+#include "Engine/Memory/Memory.h"
 
 internal_func bool32 CheckTag(uint8* Buffer, const char* Token, size_t NumChars) {
     for (size_t n = 0; n < NumChars; n++) {

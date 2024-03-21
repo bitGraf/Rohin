@@ -26,5 +26,5 @@ struct game_memory {
 #define GAME_UPDATE_FUNC(name) void name(game_memory* memory, render_packet* packet, real32 delta_time)
 typedef GAME_UPDATE_FUNC(game_update_fcn);
 
-#define GAME_EVENT_FUNC(name) void name(game_memory* memory)
-typedef GAME_EVENT_FUNC(game_event_fcn);
+#define GAME_KEY_EVENT_FUNC(name) void name(game_memory* memory, uint16 key_code, uint16 key_state)
+typedef GAME_KEY_EVENT_FUNC(game_key_event_fcn);

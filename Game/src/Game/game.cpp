@@ -5,7 +5,7 @@
 #include <Engine/Core/Input.h>
 #include <Engine/Core/Event.h>
 #include <Engine/Core/String.h>
-#include <Engine/Memory/MemoryUtils.h>
+#include <Engine/Memory/Memory.h>
 #include <Engine/Memory/Memory_Arena.h>
 #include <Engine/Renderer/Renderer.h>
 #include <Engine/Renderer/Render_Types.h>
@@ -252,6 +252,9 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
     sample_animation_at_time((const resource_skinned_mesh*)mesh, (const resource_animation*)curr_node->anim, state->guy_controller.node_time, skeleton.bones);
 
     skeleton_idx++;
+}
+
+GAME_API GAME_KEY_EVENT_FUNC(GameKeyEvent) {
 }
 
 

@@ -6,7 +6,7 @@
 #include "Engine/Core/Asserts.h"
 #include "Engine/Core/Event.h"
 #include "Engine/Core/Input.h"
-#include "Engine/Memory/MemoryUtils.h"
+#include "Engine/Memory/Memory.h"
 
 #include "Engine/Platform/Platform.h"
 #include "Engine/Resources/Resource_Manager.h"

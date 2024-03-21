@@ -5,7 +5,7 @@
 #include <Engine/Core/Input.h>
 #include <Engine/Core/Event.h>
 #include <Engine/Core/String.h>
-#include <Engine/Memory/MemoryUtils.h>
+#include <Engine/Memory/Memory.h>
 #include <Engine/Memory/Memory_Arena.h>
 #include <Engine/Renderer/Renderer.h>
 #include <Engine/Renderer/Render_Types.h>
@@ -32,8 +32,8 @@ struct game_code {
     void* GameCodeDLL;
     uint64 DLLLastWriteTime;
 
-    game_update_fcn* GameUpdate;
-    game_event_fcn*  GameEvent;
+    game_update_fcn*     GameUpdate;
+    game_key_event_fcn*  GameKeyEvent;
     
     bool32 IsValid;
 };
@@ -41,7 +41,7 @@ struct game_code {
 GAME_UPDATE_FUNC(GameUpdateStub) {
     RH_WARN("STUB FUNCTION");
 }
-GAME_UPDATE_FUNC(GameEventStub) {
+GAME_KEY_EVENT_FUNC(GameKeyEventStub) {
     RH_WARN("STUB FUNCTION");
 }
 game_code LoadGameCode(const char* FullLibPath, const char* FullTempLibPath, const char* FullLockPath) {

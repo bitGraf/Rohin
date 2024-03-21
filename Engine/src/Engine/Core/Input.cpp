@@ -2,7 +2,7 @@
 
 #include "Engine/Core/Asserts.h"
 #include "Engine/Core/Logger.h"
-#include "Engine/Memory/MemoryUtils.h"
+#include "Engine/Memory/Memory.h"
 #include "Engine/Memory/Memory_Arena.h"
 #include "Engine/Core/Event.h"
 

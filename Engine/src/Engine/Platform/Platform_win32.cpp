@@ -3,7 +3,7 @@
 #include "Engine/Core/Logger.h"
 #include "Engine/Core/Asserts.h"
 #include "Engine/Core/Event.h"
-#include "Engine/Memory/MemoryUtils.h"
+#include "Engine/Memory/Memory.h"
 #include "Engine/Core/Input.h"
 
 #ifdef RH_PLATFORM_WINDOWS

@@ -2,7 +2,7 @@
 
 #include "Engine/Core/Logger.h"
 #include "Engine/Core/Asserts.h"
-#include "Engine/Memory/MemoryUtils.h"
+#include "Engine/Memory/Memory.h"
 
 #include "OpenGL_Types.h"
 #include "OpenGL_Platform.h"

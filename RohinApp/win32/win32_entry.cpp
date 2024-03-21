@@ -320,7 +320,7 @@ internal_func void
 
 internal_func win32_replay_buffer* 
     Win32GetReplayBuffer(int Index) {
-    Assert(Index < ArrayCount(GlobalWin32State.ReplayBuffers));
+    Assert(Index < GetArrayCount(GlobalWin32State.ReplayBuffers));
     win32_replay_buffer* Result = &GlobalWin32State.ReplayBuffers[Index];
     return Result;
 }
@@ -758,7 +758,7 @@ int main(int argc, char** argv) {
             //GlobalCommandBuffer.Base = (uint8*)RenderStorage;
 
 #if RH_INTERNAL
-            for (int ReplayIndex = 0; ReplayIndex < ArrayCount(GlobalWin32State.ReplayBuffers); ReplayIndex++) {
+            for (int ReplayIndex = 0; ReplayIndex < GetArrayCount(GlobalWin32State.ReplayBuffers); ReplayIndex++) {
                 win32_replay_buffer* ReplayBuffer = &GlobalWin32State.ReplayBuffers[ReplayIndex];
 
                 // TODO: These files should go to a tmp directory!
@@ -824,12 +824,12 @@ int main(int argc, char** argv) {
                     // game_controller_input ZeroController = {};
                     *NewKeyboardController = {};
                     NewKeyboardController->IsConnected = true;
-                    for (int ButtonIndex = 0; ButtonIndex < ArrayCount(NewKeyboardController->Buttons); ButtonIndex++) {
+                    for (int ButtonIndex = 0; ButtonIndex < GetArrayCount(NewKeyboardController->Buttons); ButtonIndex++) {
                         NewKeyboardController->Buttons[ButtonIndex].EndedDown =
                             OldKeyboardController->Buttons[ButtonIndex].EndedDown;
                     }
 #endif
-                    for (int ButtonIndex = 0; ButtonIndex < ArrayCount(NewInput->MouseButtons); ButtonIndex++) {
+                    for (int ButtonIndex = 0; ButtonIndex < GetArrayCount(NewInput->MouseButtons); ButtonIndex++) {
                         NewInput->MouseButtons[ButtonIndex].EndedDown =
                             OldInput->MouseButtons[ButtonIndex].EndedDown;
                     }
@@ -852,8 +852,8 @@ int main(int argc, char** argv) {
                         // TODO: Need to not poll disconected controlelrs
                         // TODO: Should we poll this more frequently?
                         DWORD MaxControllerCount = XUSER_MAX_COUNT;
-                        if (MaxControllerCount > (ArrayCount(NewInput->Controllers) - 1)) {
-                            MaxControllerCount = (ArrayCount(NewInput->Controllers) - 1);
+                        if (MaxControllerCount > (GetArrayCount(NewInput->Controllers) - 1)) {
+                            MaxControllerCount = (GetArrayCount(NewInput->Controllers) - 1);
                         }
 
                         for (DWORD ControllerIndex = 0; ControllerIndex < MaxControllerCount; ControllerIndex++) {
@@ -1034,8 +1034,8 @@ int main(int argc, char** argv) {
                             // TODO: Need to not poll disconected controlelrs
                             // TODO: Should we poll this more frequently?
                             DWORD MaxControllerCount = XUSER_MAX_COUNT;
-                            if (MaxControllerCount > (ArrayCount(NewInput->Controllers) - 1)) {
-                                MaxControllerCount = (ArrayCount(NewInput->Controllers) - 1);
+                            if (MaxControllerCount > (GetArrayCount(NewInput->Controllers) - 1)) {
+                                MaxControllerCount = (GetArrayCount(NewInput->Controllers) - 1);
                             }
 
                             for (DWORD ControllerIndex = 0; ControllerIndex < MaxControllerCount; ControllerIndex++) {
@@ -1179,7 +1179,7 @@ int main(int argc, char** argv) {
 
 inline game_controller_input*
     GetController(game_input* Input, int ControllerIndex) {
-    Assert(ControllerIndex < ArrayCount(Input->Controllers));
+    Assert(ControllerIndex < GetArrayCount(Input->Controllers));
 
     game_controller_input* Controller = &Input->Controllers[ControllerIndex];
     return Controller;

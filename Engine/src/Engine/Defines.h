@@ -28,8 +28,6 @@ typedef size_t memory_index;
 #define Gigabytes(Value) (Megabytes(Value)*1024LL)
 #define Terabytes(Value) (Gigabytes(Value)*1024LL)
 
-#define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
-
 #define local_persist   static
 #define global_variable static
 #define internal_func   static
