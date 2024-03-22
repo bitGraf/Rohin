@@ -32,7 +32,6 @@ bool32 resource_load_static_mesh(const char* resource_file_name, resource_static
     }
 
     mesh->num_primitives = file_data->Header.NumPrims;
-    mesh->transform = laml::Mat4(1.0f); // what is this even?
 
     // buffer primitives to gpu
     mesh->primitives = PushArray(arena, render_geometry, mesh->num_primitives);
@@ -104,7 +103,6 @@ bool32 resource_load_skinned_mesh(const char* resource_file_name, resource_skinn
     }
 
     mesh->num_primitives = file_data->Header.NumPrims;
-    mesh->transform = laml::Mat4(1.0f); // what is this even?
 
     // buffer primitives to gpu
     mesh->primitives = PushArray(arena, render_geometry, mesh->num_primitives);

@@ -25,7 +25,7 @@ struct resource_static_mesh {
     render_geometry *primitives;
     render_material *materials;
 
-    laml::Mat4 transform;
+    //laml::Mat4 transform; // unused! maybe as a default mesh offset?
 };
 struct resource_bone {
     uint32 bone_idx;
@@ -46,7 +46,7 @@ struct resource_skinned_mesh {
     render_material *materials;
     resource_skeleton skeleton;
 
-    laml::Mat4 transform;
+    //laml::Mat4 transform; // unused! maybe as a default mesh offset?
 };
 
 struct level_data {

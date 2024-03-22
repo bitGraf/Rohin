@@ -42,6 +42,7 @@ struct game_state {
     real32 curr_speed;
 
     bool32 debug_mode;
+    char scene_filename[256];
     char* saved_str1;
     char* saved_str2;
 };
@@ -112,10 +113,24 @@ void init_game(game_state* state, game_memory* memory) {
 
     resource_load_static_mesh("Data/Models/helmet.mesh", &state->static_mesh);
     state->static_entity = create_static_entity(&state->scene, "static_entity", &state->static_mesh);
+    state->static_entity->position = laml::Vec3(-2.0f, 1.5f, 0.0f);
+    state->static_entity->orientation = laml::transform::quat_from_axis_angle(laml::Vec3(1.0f, 0.0f, 0.0f) , 180.0f);
+
     state->skinned_entity = create_skinned_entity(&state->scene, "skinned_entity", &state->guy_mesh, &state->guy_controller);
+    resource_static_mesh* mesh = PushStruct(&state->arena, resource_static_mesh);
+    resource_load_static_mesh("Data/Models/plane.mesh", mesh);
+    mesh->materials[0].RoughnessFactor = 0.95f; // todo: pull materials out of mesh file? make it a separate thing entirely?
+    mesh->materials[0].MetallicFactor = 0.0f;
+    create_static_entity(&state->scene, "floor", mesh);
+
     RH_INFO("Scene created. %d Static entities. %d Skinned entities.",
             GetArrayCount(state->scene.static_entities),
             GetArrayCount(state->scene.skinned_entities));
+
+    state->guy_run_anim.frame_rate = 60.0f;
+    state->guy_run_anim.length = state->guy_run_anim.num_samples / 60.0f;
+
+    string_build(state->scene_filename, 256, "scene.out");
 
     RH_INFO("Game initialized");
 }
@@ -127,11 +142,15 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
 
         memory->IsInitialized = true;
     }
-    
-    // tmp change
-    state->guy_run_anim.frame_rate = 60.0f;
-    state->guy_run_anim.length = state->guy_run_anim.num_samples / state->guy_run_anim.frame_rate;
 
+    state->static_entity->euler_ypr[0] += 10.0f * delta_time;
+    state->static_entity->euler_ypr[1] += 20.0f * delta_time;
+    state->static_entity->euler_ypr[2] += 50.0f * delta_time;
+    state->static_entity->orientation = laml::transform::quat_from_ypr(
+        state->static_entity->euler_ypr[0],
+        state->static_entity->euler_ypr[1],
+        state->static_entity->euler_ypr[2]);
+    
     if (!state->debug_mode) {
         laml::Vec3 forward(0.0f, 0.0f, -1.0f);
         laml::Vec3   right(1.0f, 0.0f,  0.0f);
@@ -147,6 +166,16 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
         }
         if (input_is_key_down(KEY_S)) {
             move_dir = move_dir - forward;
+            move_input = true;
+            is_moving = true;
+        }
+        if (input_is_key_down(KEY_A)) {
+            move_dir = move_dir - right;
+            move_input = true;
+            is_moving = true;
+        }
+        if (input_is_key_down(KEY_D)) {
+            move_dir = move_dir + right;
             move_input = true;
             is_moving = true;
         }
@@ -166,10 +195,130 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
         }
 
         state->position = state->position + state->velocity*delta_time;
+        state->skinned_entity->position = state->position;
     }
 
 
     update_controller(&state->guy_controller, delta_time);
+
+    char label_name[64];
+    ImGui::Begin("Scene");
+    ImGui::InputText("filename:", state->scene_filename, 256);
+    if (ImGui::Button("Write scene to disk")) {
+        RH_INFO("Saving scene to '%s'", state->scene_filename);
+        serialize_scene(state->scene_filename, &state->scene);
+    }
+    ImGui::Text("Name: %s", state->scene.name);
+    ImGui::SeparatorText("Lighting");
+    
+    if (ImGui::TreeNode("Sun")) {
+        static real32 sun_yp[2] = { 0.0f, 0.0f };
+    //if (ImGui::CollapsingHeader("Sun")) {
+        ImGui::DragFloat("Strength", &state->scene.sun.strength, 0.5f, 0.0f, 100.0f);
+        ImGui::DragFloat2("Direction", sun_yp, 0.5f, -180.0f, 180.0f);
+        state->scene.sun.direction = laml::transform::dir_from_yp(sun_yp[0], sun_yp[1]);
+        ImGui::ColorPicker3("Color", state->scene.sun.color._data);
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Point Lights")) {
+        uint32 num_point_lights = (uint32)GetArrayCount(state->scene.pointlights);
+        ImGui::Text("%u pointlights", num_point_lights);
+        ImGui::SameLine();
+        if (ImGui::Button("Add PointLight")) {
+            ArrayAdd(state->scene.pointlights);
+            scene_point_light* newlight = ArrayPeek(state->scene.pointlights);
+
+            newlight->position = laml::Vec3(0.0f, 1.0f, 0.0f);
+            newlight->color = laml::Vec3(1.0f, 1.0f, 1.0f);
+            newlight->strength = 25.0f;
+        }
+        for (uint64 n = 0; n < num_point_lights; n++) {
+            scene_point_light* pl = &state->scene.pointlights[n];
+            string_build(label_name, 64, "pointlight #%u", n+1);
+            if (ImGui::TreeNode(label_name)) {
+                ImGui::DragFloat3("Position", pl->position._data, 0.01f, -FLT_MAX, FLT_MAX);
+                ImGui::DragFloat3("Color",    pl->color._data,    0.01f,  0.0f, 1.0f);
+                ImGui::DragFloat("Strength", &pl->strength,       0.5f,   0.0f, FLT_MAX);
+
+                ImGui::TreePop();
+            }
+        }
+        ImGui::TreePop();
+    }
+    if (ImGui::TreeNode("Spot Lights")) {
+        uint32 num_spot_lights = (uint32)GetArrayCount(state->scene.spotlights);
+        ImGui::Text("%u spotlight", num_spot_lights);
+        ImGui::SameLine();
+        if (ImGui::Button("Add SpotLight")) {
+            ArrayAdd(state->scene.spotlights);
+            scene_spot_light* newlight = ArrayPeek(state->scene.spotlights);
+            num_spot_lights = (uint32)GetArrayCount(state->scene.spotlights);
+
+            newlight->position = laml::Vec3(0.0f, 1.0f, 0.0f);
+            newlight->direction = laml::Vec3(0.0f, -1.0f, 0.0f);
+            newlight->color = laml::Vec3(1.0f, 1.0f, 1.0f);
+            newlight->strength = 25.0f;
+            newlight->inner = 55.0f;
+            newlight->outer = 65.0f;
+        }
+        for (uint64 n = 0; n < num_spot_lights; n++) {
+            scene_spot_light* sl = &state->scene.spotlights[n];
+            string_build(label_name, 64, "spotlight #%u", n+1);
+            if (ImGui::TreeNode(label_name)) {
+                ImGui::DragFloat3("Position",  sl->position._data,  0.01f, -FLT_MAX, FLT_MAX);
+                ImGui::DragFloat3("Direction", sl->direction._data, 0.01f, -FLT_MAX, FLT_MAX);
+                ImGui::DragFloat3("Color",     sl->color._data,     0.01f,  0.0f, 1.0f);
+                ImGui::DragFloat("Strength",  &sl->strength,        0.5f,   0.0f, FLT_MAX);
+                ImGui::DragFloat("Inner",     &sl->inner,           0.5f,   0.0f, sl->outer-0.5f);
+                ImGui::DragFloat("Outer",     &sl->outer,           0.5f,   0.0f, 90.0f);
+                if (sl->outer < sl->inner)
+                    sl->inner = sl->outer;
+
+                ImGui::TreePop();
+            }
+        }
+        ImGui::TreePop();
+    }
+
+    ImGui::SeparatorText("Static Entities");
+    uint64 num_entities = GetArrayCount(state->scene.static_entities);
+    ImGui::Text("%u static_entities", num_entities);
+    for (uint64 n = 0; n < num_entities; n++) {
+        entity_static* ent = &state->scene.static_entities[n];
+        string_build(label_name, 64, "static_entity #%u [%s]", n, ent->name);
+        if (ImGui::TreeNode(label_name)) {
+            ImGui::DragFloat3("Position", ent->position._data,    0.01f, -FLT_MAX, FLT_MAX);
+            ImGui::DragFloat3("Rotation", ent->euler_ypr, 0.5f, -180.0f, 180.0f);
+            ent->orientation = laml::transform::quat_from_ypr(ent->euler_ypr[0], ent->euler_ypr[1], ent->euler_ypr[2]);
+            ImGui::DragFloat3("Scale",    ent->scale._data,       0.01f, 0.01f, FLT_MAX);
+
+            ImGui::TreePop();
+        }
+    }
+
+    ImGui::SeparatorText("Skinned Entities");
+    num_entities = GetArrayCount(state->scene.skinned_entities);
+    ImGui::Text("%u skinned_entities", num_entities);
+    for (uint64 n = 0; n < num_entities; n++) {
+        entity_skinned* ent = &state->scene.skinned_entities[n];
+        string_build(label_name, 64, "skinned_entity #%u [%s]", n, ent->name);
+        if (ImGui::TreeNode(label_name)) {
+            ImGui::DragFloat3("Position", ent->position._data,    0.01f, -FLT_MAX, FLT_MAX);
+            ImGui::DragFloat3("Rotation", ent->euler_ypr, 0.5f, -180.0f, 180.0f);
+            ent->orientation = laml::transform::quat_from_ypr(ent->euler_ypr[0], ent->euler_ypr[1], ent->euler_ypr[2]);
+            ImGui::DragFloat3("Scale",    ent->scale._data,       0.01f, 0.01f, FLT_MAX);
+            ImGui::Separator();
+            ImGui::Text("Node: '%s'",       ent->controller->graph.nodes[ent->controller->current_node].name);
+            ImGui::Text("Aimation: '%s'",   ent->controller->graph.nodes[ent->controller->current_node].anim->name);
+            ImGui::Text("node_time = %.3f", ent->controller->node_time);
+            ImGui::Text("anim_time = %.3f", ent->controller->anim_time);
+
+            ImGui::TreePop();
+        }
+    }
+
+    ImGui::End();
 
     #if 0 // static strings don't work with dll reloading.
     ImGui::Begin(state->saved_str1);
@@ -239,6 +388,11 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
 }
 
 GAME_API GAME_KEY_EVENT_FUNC(GameKeyEvent) {
+    game_state* state = (game_state*)memory->GameStorage;
+
+    if (key_code == KEY_C) {
+        state->debug_mode = !state->debug_mode;
+    }
 }
 
 

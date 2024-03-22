@@ -51,6 +51,24 @@ void* ArrayPushPtr(void* dynarray, void* data_ptr, uint64 data_size) {
     return dynarray;
 }
 
+void* _ArrayAdd_(void* dynarray) {
+    uint64 count    = ((uint64*)dynarray)[DYNARRAY_COUNT];
+    uint64 stride   = ((uint64*)dynarray)[DYNARRAY_STRIDE];
+    uint64 capacity = ((uint64*)dynarray)[DYNARRAY_CAPACITY];
+    memory_arena* arena = ((memory_arena**)dynarray)[DYNARRAY_ARENA];
+
+    if ((count+1) > capacity) {
+        // Need to auto resize!
+        uint64 new_capacity = CALC_NEW_CAP(capacity);
+        dynarray = _ArrayReserve_(dynarray, new_capacity);
+    }
+
+    uint8* insert_at = ((uint8*)dynarray + (count*stride));
+    ((uint64*)dynarray)[DYNARRAY_COUNT]++; // increment count
+
+    return dynarray;
+}
+
 void* _ArrayResize_(void* dynarray, uint64 new_count) {
     uint64 count    = ((uint64*)dynarray)[DYNARRAY_COUNT];
     uint64 stride   = ((uint64*)dynarray)[DYNARRAY_STRIDE];

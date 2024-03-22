@@ -269,6 +269,18 @@ struct render_skeleton {
     laml::Mat4* bones;
 };
 
+struct render_light {
+    laml::Vec3 position;
+    laml::Vec3 direction;
+    laml::Vec3 color;
+    real32 strength;
+    real32 inner, outer; // cos(cone_angle)! must be precalculated
+};
+
+struct render_sky_light {
+    // todo: pull env-map code out of renderer.cpp
+};
+
 struct render_packet {
     memory_arena* arena;
 
@@ -285,21 +297,16 @@ struct render_packet {
     uint32 num_skeletons;
     render_skeleton* skeletons;
 
+    // lighting
+    render_light sun;
+    uint32 num_point_lights;
+    render_light* point_lights;
+    uint32 num_spot_lights;
+    render_light* spot_lights;
+
+
+    // internal
     uint32 _num_static, _num_skinned;
     render_command* _static_cmds;
     render_command* _skinned_cmds;
-
-    // for collision visualization
-    uint32 draw_colliders;
-    collision_grid* col_grid;
-    render_command collider_geom;
-
-    collision_sector sector;
-    uint32 num_tris;
-    uint32* triangle_indices;
-
-    uint32 num_intersecting_tris;
-    uint32* intersecting_triangle_indices;
-
-    laml::Vec3 contact_point;
 };

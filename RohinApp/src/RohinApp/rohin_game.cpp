@@ -48,7 +48,8 @@ GAME_KEY_EVENT_FUNC(GameKeyEventStub) {
 }
 game_code LoadGameCode(const char* FullLibPath, const char* FullTempLibPath, const char* FullLockPath) {
     game_code result = {};
-    result.GameUpdate = GameUpdateStub; // just in case
+    result.GameUpdate   = GameUpdateStub;   // just in case
+    result.GameKeyEvent = GameKeyEventStub; // just in case
 
     file_info lock_info;
     if (!platform_get_file_attributes(FullLockPath, &lock_info)) {
@@ -81,13 +82,16 @@ game_code LoadGameCode(const char* FullLibPath, const char* FullTempLibPath, con
                         LibPath, TempLibPath, info.file_size / 1024, datestr);
 
                 // get function pointers
-                game_update_fcn * func = (game_update_fcn*)platform_get_func_from_lib(result.GameCodeDLL, "GameUpdate");
+                game_update_fcn    *update_func =    (game_update_fcn*)platform_get_func_from_lib(result.GameCodeDLL, "GameUpdate");
+                game_key_event_fcn *event_func  = (game_key_event_fcn*)platform_get_func_from_lib(result.GameCodeDLL, "GameKeyEvent");
 
-                if (func) {
-                    result.GameUpdate = func;
+                if (update_func && event_func) {
+                    result.GameUpdate   = update_func;
+                    result.GameKeyEvent = event_func;
                     result.IsValid = true;
                 } else {
-                    result.GameUpdate = GameUpdateStub;
+                    result.GameUpdate   = GameUpdateStub;
+                    result.GameKeyEvent = GameKeyEventStub;
                 }
             } else {
                 RH_ERROR("Failed to load game code: LoadLibrary failed!");
@@ -313,12 +317,14 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         for (uint32 n = 0; n < num_static_meshes; n++) {
             const entity_static& entity = state->current_scene->static_entities[n];
             const resource_static_mesh* mesh = entity.static_mesh;
-            mesh->transform; // use this?
+            
+            laml::Mat4 mesh_transform;
+            laml::transform::create_transform(mesh_transform, entity.orientation, entity.position, entity.scale);
 
             for (uint32 p = 0; p < mesh->num_primitives; p++) {
                 render_command& cmd = packet->commands[command_idx];
 
-                cmd.model_matrix = entity.transform; // or just this?
+                cmd.model_matrix = mesh_transform;
                 cmd.geom = mesh->primitives[p];
                 cmd.material = mesh->materials[p];
                 cmd.skeleton_idx = 0;
@@ -331,12 +337,14 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         for (uint32 n = 0; n < num_skinned_meshes; n++) {
             const entity_skinned& entity = state->current_scene->skinned_entities[n];
             const resource_skinned_mesh* mesh = entity.skinned_mesh;
-            mesh->transform; // use this?
+            
+            laml::Mat4 mesh_transform;
+            laml::transform::create_transform(mesh_transform, entity.orientation, entity.position, entity.scale);
 
             for (uint32 p = 0; p < mesh->num_primitives; p++) {
                 render_command& cmd = packet->commands[command_idx];
 
-                cmd.model_matrix = entity.transform;
+                cmd.model_matrix = mesh_transform;
                 cmd.geom = mesh->primitives[p];
                 cmd.material = mesh->materials[p];
                 cmd.skeleton_idx = skeleton_idx;
@@ -354,6 +362,33 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
             skeleton_idx++;
         }
+
+        // gather lighting info
+        packet->sun.direction = state->current_scene->sun.direction;
+        packet->sun.color     = state->current_scene->sun.color;
+        packet->sun.strength  = state->current_scene->sun.strength;
+
+        packet->num_point_lights = (uint32)GetArrayCount(state->current_scene->pointlights);
+        packet->num_spot_lights  = (uint32)GetArrayCount(state->current_scene->spotlights);
+
+        packet->point_lights = PushArray(packet->arena, render_light, packet->num_point_lights);
+        for (uint32 n = 0; n < packet->num_point_lights; n++) {
+            packet->point_lights[n].position = state->current_scene->pointlights[n].position;
+            packet->point_lights[n].color    = state->current_scene->pointlights[n].color;
+            packet->point_lights[n].strength = state->current_scene->pointlights[n].strength;
+        }
+
+        packet->spot_lights  = PushArray(packet->arena, render_light, packet->num_spot_lights);
+        for (uint32 n = 0; n < packet->num_spot_lights; n++) {
+            packet->spot_lights[n].position  = state->current_scene->spotlights[n].position;
+            packet->spot_lights[n].direction = state->current_scene->spotlights[n].direction;
+            packet->spot_lights[n].color     = state->current_scene->spotlights[n].color;
+            packet->spot_lights[n].strength  = state->current_scene->spotlights[n].strength;
+            packet->spot_lights[n].inner     = laml::cosd(state->current_scene->spotlights[n].inner); // precalulate cos(theta)
+            packet->spot_lights[n].outer     = laml::cosd(state->current_scene->spotlights[n].outer);
+        }
+
+        // todo: environment/sky
     }
 
     // timing
@@ -400,6 +435,8 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
         state->cam_static = !state->cam_static;
         RH_TRACE("Camera Mode: [%s]", state->cam_static ? "static" : "wasd+mouselook");
     }
+
+    state->game.GameKeyEvent(&state->memory, key_code, true);
 
     return false;
 }

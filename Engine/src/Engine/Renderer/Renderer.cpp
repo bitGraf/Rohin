@@ -113,11 +113,11 @@ bool32 renderer_create_pipeline() {
 
     // load default textures
     backend->push_debug_group("Load Resources");
-    if (!resource_load_texture_file("Data/Images/white.png", &render_state->white_tex)) {
+    if (!resource_load_texture_file("Data/textures/white.png", &render_state->white_tex)) {
         RH_FATAL("Could not load default textures");
         return false;
     }
-    if (!resource_load_texture_file("Data/Images/black.png", &render_state->black_tex)) {
+    if (!resource_load_texture_file("Data/textures/black.png", &render_state->black_tex)) {
         RH_FATAL("Could not load default textures");
         return false;
     }
@@ -828,31 +828,32 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
         backend->use_framebuffer(&render_state->lbuffer);
         backend->use_shader(pLighting);
 
-        // TODO: let the scene define these (and more lights)
-        float sun_dir[] = {0.0f, -0.7071f, 0.7071f};
-        float sun_color[] = {1.0f, 0.0f, 1.0f};
-        float sun_strength = 0.0f;
-
+        // sun
         backend->upload_uniform_float4x4(lighting.r_Projection, packet->projection_matrix._data);
-        backend->upload_uniform_float3(lighting.r_sun.Direction, sun_dir);
-        backend->upload_uniform_float3(lighting.r_sun.Color, sun_color);
-        backend->upload_uniform_float(lighting.r_sun.Strength, sun_strength);
+        backend->upload_uniform_float3(lighting.r_sun.Direction, packet->sun.direction._data);
+        backend->upload_uniform_float3(lighting.r_sun.Color, packet->sun.color._data);
+        backend->upload_uniform_float(lighting.r_sun.Strength, packet->sun.strength);
 
         backend->upload_uniform_float4x4(lighting.r_View, packet->view_matrix._data);
 
         // point lights
-        const uint32 num_lights = 4;
-        laml::Vec3 light_pos[] = {
-            laml::Vec3(-10.0f,  10.0f, 10.0f),
-            laml::Vec3( 10.0f,  10.0f, 10.0f),
-            laml::Vec3(-10.0f, -10.0f, 10.0f),
-            laml::Vec3( 10.0f, -10.0f, 10.0f),
-        };
-        laml::Vec3 light_color(1.0f, 0.6f, 1.0f);
-        for (uint32 n = 0; n < num_lights; n++) {
-            backend->upload_uniform_float3(lighting.r_pointLights[n].Position, light_pos[n]._data);
-            backend->upload_uniform_float3(lighting.r_pointLights[n].Color, light_color._data);
-            backend->upload_uniform_float(lighting.r_pointLights[n].Strength, 300.0f);
+        #define MAX_POINTLIGHTS 32
+        const uint32 num_point_lights = (packet->num_point_lights > MAX_POINTLIGHTS) ? MAX_POINTLIGHTS : packet->num_point_lights;
+        for (uint32 n = 0; n < num_point_lights; n++) {
+            backend->upload_uniform_float3(lighting.r_pointLights[n].Position, packet->point_lights[n].position._data);
+            backend->upload_uniform_float3(lighting.r_pointLights[n].Color,    packet->point_lights[n].color._data);
+            backend->upload_uniform_float(lighting.r_pointLights[n].Strength,  packet->point_lights[n].strength);
+        }
+        // spot lights
+        #define MAX_SPOTLIGHTS  32
+        const uint32 num_spot_lights = (packet->num_spot_lights > MAX_POINTLIGHTS) ? MAX_SPOTLIGHTS : packet->num_spot_lights;
+        for (uint32 n = 0; n < num_spot_lights; n++) {
+            backend->upload_uniform_float3(lighting.r_spotLights[n].Position,  packet->spot_lights[n].position._data);
+            backend->upload_uniform_float3(lighting.r_spotLights[n].Direction, packet->spot_lights[n].direction._data);
+            backend->upload_uniform_float3(lighting.r_spotLights[n].Color,     packet->spot_lights[n].color._data);
+            backend->upload_uniform_float(lighting.r_spotLights[n].Strength,   packet->spot_lights[n].strength);
+            backend->upload_uniform_float(lighting.r_spotLights[n].Inner,      packet->spot_lights[n].inner);
+            backend->upload_uniform_float(lighting.r_spotLights[n].Outer,      packet->spot_lights[n].outer);
         }
 
         backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Albedo].handle, lighting.u_albedo.SamplerID);
