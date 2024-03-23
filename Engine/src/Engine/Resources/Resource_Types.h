@@ -26,7 +26,7 @@ struct resource_texture_2D {
     uint16 width;
     uint16 height;
     uint16 num_channels;
-    uint16 flag;
+    uint16 is_hdr;
 };
 struct resource_texture_3D {
     render_texture_3D texture;
@@ -35,7 +35,7 @@ struct resource_texture_3D {
     uint16 height;
     uint16 depth;
     uint16 num_channels;
-    uint16 flag;
+    uint16 is_hdr;
 };
 struct resource_texture_cube {
     render_texture_cube texture;
@@ -43,7 +43,7 @@ struct resource_texture_cube {
     uint16 width;
     uint16 height;
     uint16 num_channels;
-    uint16 flag;
+    uint16 is_hdr;
 };
 
 struct resource_material {

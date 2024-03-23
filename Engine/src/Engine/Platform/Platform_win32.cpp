@@ -376,6 +376,20 @@ void platform_free(void* memory) {
     VirtualFree(memory, 0, MEM_RELEASE);
 }
 
+void platform_assert_message(const char* fmt, ...) {
+    char MsgBuffer[1024];
+
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(MsgBuffer, sizeof(MsgBuffer), fmt, args);
+    va_end(args);
+
+    int button_pressed = MessageBox(NULL, MsgBuffer, 
+                                    "Assertion Failed!", 
+                                    MB_ABORTRETRYIGNORE | MB_ICONEXCLAMATION | MB_DEFBUTTON1 | MB_TASKMODAL);
+    RH_INFO("You pressed button [%d] in response", button_pressed);
+}
+
 global_variable WORD console_level_colors[6] = {64, 4, 6, 2, 1, 8};
 void platform_console_write_error(const char* Message, uint8 Color) {
     HANDLE console_handle = GetStdHandle(STD_ERROR_HANDLE);

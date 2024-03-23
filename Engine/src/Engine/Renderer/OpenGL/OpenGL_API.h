@@ -34,7 +34,8 @@ struct OpenGL_api final : public renderer_api {
 
     void create_texture_2D(struct render_texture_2D*     texture, texture_creation_info_2D   create_info, const void* data, bool32 is_hdr) override final;
     void create_texture_3D(struct render_texture_3D*     texture, texture_creation_info_3D   create_info, const void* data, bool32 is_hdr) override final;
-    void create_texture_cube(struct render_texture_cube* texture, texture_creation_info_cube create_info, const void** data, bool32 is_hdr) override final;
+    void create_texture_cube(struct render_texture_cube* texture, texture_creation_info_cube create_info, 
+                             const void*** data, bool32 is_hdr, uint32 mip_levels) override final;
 
     void destroy_texture_2D(struct render_texture_2D* texture) override final;
     void destroy_texture_3D(struct render_texture_3D* texture) override final;
@@ -82,6 +83,9 @@ struct OpenGL_api final : public renderer_api {
     void clear_viewport(real32 r, real32 g, real32 b, real32 a) override final;
     void clear_viewport_only_color(real32 r, real32 g, real32 b, real32 a) override final;
     void clear_framebuffer_attachment(frame_buffer_attachment* attach, real32 r, real32 b, real32 g, real32 a) override final;
+
+    void get_texture_data(render_texture_2D texture, void* data, int num_channels, bool is_hdr, uint32 mip) override final;
+    void get_cubemap_data(render_texture_cube texture, void* data, int num_channels, bool is_hdr, uint32 face, uint32 mip) override final;
 
     void upload_uniform_float(   ShaderUniform_float uniform, real32  value) override final;
     void upload_uniform_float2(  ShaderUniform_vec2  uniform, const laml::Vec2& values) override final;

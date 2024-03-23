@@ -22,9 +22,14 @@ Bugs to fix:
         [x] create new texture types (texture_2D, texture_3D, texture_cube)
         [x] pull sky light code out of renderer.cpp, and make reusable
         [x] allow scene to set sky light
-        [ ] save pre-baked sky light maps to file
-        [ ] load pre-baked sky light maps from file
+        [x] save pre-baked sky light maps to file
+            [x] save mip-maps for cubemaps :)
+        [x] load pre-baked sky light maps from file
+            [x] why no load ;-; -> They load :)
         [x] add shader float that controls sky light contribution [0, 1]
+        [ ] Speed up IBL_Bake writing/reading!
+            [ ] combine output files? (cubemap faces/mip-mip levels?)
+            [ ] hybrid load/compute?
     [ ] !!! Shadows !!!
 
 [ ] Animation
@@ -34,3 +39,6 @@ Bugs to fix:
     [ ] add rest of animation_controller info, and get rid of AnimGraph window
     [ ] !!! serialize scene to file !!!
     [ ] !!! load scene from file    !!!
+
+[ ] Assert pass
+    [ ] Use AssertMsg() for many cases that use Assrt() right now

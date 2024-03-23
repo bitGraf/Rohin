@@ -46,7 +46,7 @@ void renderer_create_texture(struct render_texture_2D* texture,
                              const void* data, bool32 is_hdr);
 void renderer_create_texture_cube(struct render_texture_cube* texture,
                                   texture_creation_info_cube create_info, 
-                                  const void** data, bool32 is_hdr);
+                                  const void*** data, bool32 is_hdr, uint32 mip_levels = 1);
 void renderer_precompute_env_map_from_equirectangular(struct resource_env_map* env_map, real32* data);
 
 void renderer_destroy_texture(struct render_texture_2D* texture);
@@ -74,6 +74,10 @@ void renderer_draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_
 void renderer_draw_geometry(render_geometry* geom, render_material* mat);
 void renderer_draw_geometry_lines(render_geometry* geom);
 void renderer_draw_geometry_points(render_geometry* geom);
+
+// get texture from gpu to cpu
+void renderer_get_texture_data(render_texture_2D   texture, void* data, int num_channels, bool is_hdr, uint32 mip);
+void renderer_get_cubemap_data(render_texture_cube texture, void* data, int num_channels, bool is_hdr, uint32 face, uint32 mip);
 
 // debug_ui
 void renderer_create_debug_UI();

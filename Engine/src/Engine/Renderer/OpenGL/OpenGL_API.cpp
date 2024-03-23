@@ -337,7 +337,7 @@ void OpenGL_api::create_texture_2D(struct render_texture_2D* texture,
 }
 void OpenGL_api::create_texture_cube(struct render_texture_cube* texture,
                                      texture_creation_info_cube create_info, 
-                                     const void** data, bool32 is_hdr) {
+                                     const void*** data, bool32 is_hdr, uint32 mip_levels) {
     glGenTextures(1, &texture->handle);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture->handle);
 
@@ -365,10 +365,29 @@ void OpenGL_api::create_texture_cube(struct render_texture_cube* texture,
             Assert(false);
     }
 
-    for (uint32 i = 0; i < 6; i++) {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, InternalFormat, create_info.width, create_info.height, 0, Format, Type, data[i]);
+    bool32 has_mips = mip_levels > 1;
+
+    if (has_mips) {
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL , mip_levels-1);
+        for (uint32 i = 0; i < 6; i++) {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, InternalFormat, create_info.width, create_info.height, 0, Format, Type, NULL);
+        }
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
     }
-    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
+    for (uint32 i = 0; i < 6; i++) {
+        for (uint32 mip = 0; mip < mip_levels; mip++) {
+            int32 mip_width  = (int32)((real32)(create_info.width)  * std::pow(0.5, mip));
+            int32 mip_height = (int32)((real32)(create_info.height) * std::pow(0.5, mip));
+
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, mip, InternalFormat, mip_width, mip_height, 0, Format, Type, data[i][mip]);
+        }
+    }
+
+    if (!has_mips) {
+        // todo: need an option in texture_create_ingo_ that specifies if we want mipmaps generated
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    }
 
     // This for font texture
     //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -623,6 +642,7 @@ static GLenum DataType(GLenum format) {
         case GL_RG16F:
         case GL_RG32F:
         case GL_RGBA16F:
+        case GL_RGB16F:
         case GL_RGB32F:
         case GL_R32F:
         case GL_RGBA32F: return GL_FLOAT;
@@ -638,11 +658,12 @@ static GLenum DataFormat(GLenum format) {
         case GL_R32F:
         case GL_R8: return GL_RED;
         case GL_RG16F: return GL_RG;
-        case GL_RGB8: return GL_RGB;
-        case GL_RGBA:
-        case GL_RGBA8: return GL_RGBA;
+        case GL_RGB8:
+        case GL_RGB16F:
         case GL_RGB32F: return GL_RGB;
-        case GL_RGBA16F: return GL_RGBA;
+        case GL_RGBA:
+        case GL_RGBA8:
+        case GL_RGBA16F:
         case GL_RGBA32F: return GL_RGBA;
     }
 
@@ -669,6 +690,7 @@ bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo,
             case frame_buffer_texture_format::R32F:    { internal_format = GL_R32F;    color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA8:   { internal_format = GL_RGBA8;   color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA16F: { internal_format = GL_RGBA16F; color_attachment = true; } break;
+            case frame_buffer_texture_format::RGB16F:  { internal_format = GL_RGB16F;  color_attachment = true; } break;
             case frame_buffer_texture_format::RG16F:   { internal_format = GL_RG16F;   color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA32F: { internal_format = GL_RGBA32F; color_attachment = true; } break;
             case frame_buffer_texture_format::None:    { Assert(false); } break;
@@ -683,6 +705,7 @@ bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo,
             case frame_buffer_texture_format::R32F:    {  } break;
             case frame_buffer_texture_format::RGBA8:   {  } break;
             case frame_buffer_texture_format::RGBA16F: {  } break;
+            case frame_buffer_texture_format::RGB16F:  {  } break;
             case frame_buffer_texture_format::RG16F:   {  } break;
             case frame_buffer_texture_format::RGBA32F: {  } break;
             case frame_buffer_texture_format::None:    { Assert(false); } break;
@@ -748,6 +771,7 @@ bool32 OpenGL_api::recreate_framebuffer(frame_buffer* fbo) {
             case frame_buffer_texture_format::R32F:    { internal_format = GL_R32F;    color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA8:   { internal_format = GL_RGBA8;   color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA16F: { internal_format = GL_RGBA16F; color_attachment = true; } break;
+            case frame_buffer_texture_format::RGB16F:  { internal_format = GL_RGB16F;  color_attachment = true; } break;
             case frame_buffer_texture_format::RG16F:   { internal_format = GL_RG16F;   color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA32F: { internal_format = GL_RGBA32F; color_attachment = true; } break;
             case frame_buffer_texture_format::None:    { Assert(false); } break;
@@ -762,6 +786,7 @@ bool32 OpenGL_api::recreate_framebuffer(frame_buffer* fbo) {
             case frame_buffer_texture_format::R32F:    {  } break;
             case frame_buffer_texture_format::RGBA8:   {  } break;
             case frame_buffer_texture_format::RGBA16F: {  } break;
+            case frame_buffer_texture_format::RGB16F:  {  } break;
             case frame_buffer_texture_format::RG16F:   {  } break;
             case frame_buffer_texture_format::RGBA32F: {  } break;
             case frame_buffer_texture_format::None:    { Assert(false); } break;
@@ -818,6 +843,7 @@ bool32 OpenGL_api::create_framebuffer_cube(frame_buffer* fbo,
             case frame_buffer_texture_format::R32F:    { internal_format = GL_R32F;    color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA8:   { internal_format = GL_RGBA8;   color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA16F: { internal_format = GL_RGBA16F; color_attachment = true; } break;
+            case frame_buffer_texture_format::RGB16F:  { internal_format = GL_RGB16F;  color_attachment = true; } break;
             case frame_buffer_texture_format::RGBA32F: { internal_format = GL_RGBA32F; color_attachment = true; } break;
             case frame_buffer_texture_format::None:    { Assert(false); } break;
 
@@ -831,6 +857,7 @@ bool32 OpenGL_api::create_framebuffer_cube(frame_buffer* fbo,
             case frame_buffer_texture_format::R32F:    {  } break;
             case frame_buffer_texture_format::RGBA8:   {  } break;
             case frame_buffer_texture_format::RGBA16F: {  } break;
+            case frame_buffer_texture_format::RGB16F:  {  } break;
             case frame_buffer_texture_format::RGBA32F: {  } break;
             case frame_buffer_texture_format::None:    { Assert(false); } break;
         }
@@ -997,6 +1024,58 @@ void OpenGL_api::clear_framebuffer_attachment(frame_buffer_attachment *attach, r
     #else
         // not defined...
     #endif
+}
+
+void OpenGL_api::get_texture_data(render_texture_2D texture, void* data, int num_channels, bool is_hdr, uint32 mip) {
+    GLenum Type = is_hdr ? GL_FLOAT : GL_UNSIGNED_BYTE;
+
+    GLenum InternalFormat = 0;
+    switch (num_channels) {
+        case 1: {
+            InternalFormat = GL_RED;
+        } break;
+        case 2: {
+            InternalFormat = GL_RG;
+        } break;
+        case 3: {
+            InternalFormat = GL_RGB;
+        } break;
+        case 4: {
+            InternalFormat = GL_RGBA;
+        } break;
+        default:
+            Assert(false);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, texture.handle);
+    glGetTexImage(GL_TEXTURE_2D, mip, InternalFormat, Type, data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void OpenGL_api::get_cubemap_data(render_texture_cube texture, void* data, int num_channels, bool is_hdr, uint32 face, uint32 mip) {
+    GLenum Type = is_hdr ? GL_FLOAT : GL_UNSIGNED_BYTE;
+
+    GLenum InternalFormat = 0;
+    switch (num_channels) {
+        case 1: {
+            InternalFormat = GL_RED;
+        } break;
+        case 2: {
+            InternalFormat = GL_RG;
+        } break;
+        case 3: {
+            InternalFormat = GL_RGB;
+        } break;
+        case 4: {
+            InternalFormat = GL_RGBA;
+        } break;
+        default:
+            Assert(false);
+    }
+
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture.handle);
+    glGetTexImage(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, mip, InternalFormat, Type, data);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 }
 
 void OpenGL_api::upload_uniform_float(   ShaderUniform_float uniform, real32  value) {

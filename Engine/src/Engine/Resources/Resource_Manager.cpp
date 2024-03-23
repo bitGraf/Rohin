@@ -30,7 +30,7 @@ memory_arena* resource_get_arena() {
 }
 
 
-RHAPI bool32 resource_load_debug_mesh_data(const char* resource_file_name, debug_geometry* geom) {
+bool32 resource_load_debug_mesh_data(const char* resource_file_name, debug_geometry* geom) {
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
 
@@ -99,7 +99,7 @@ RHAPI bool32 resource_load_debug_mesh_data(const char* resource_file_name, debug
     return true;
 }
 
-RHAPI bool32 resource_load_debug_mesh_into_geometry(const char* resource_file_name, render_geometry* geom) {
+bool32 resource_load_debug_mesh_into_geometry(const char* resource_file_name, render_geometry* geom) {
     debug_geometry data;
     if (!resource_load_debug_mesh_data(resource_file_name, &data)) {
         return false;

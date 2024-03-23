@@ -960,8 +960,8 @@ void renderer_create_texture(struct render_texture_2D* texture,
 }
 void renderer_create_texture_cube(struct render_texture_cube* texture,
                                   texture_creation_info_cube create_info,
-                                  const void** data, bool32 is_hdr) {
-    backend->create_texture_cube(texture, create_info, data, is_hdr);
+                                  const void*** data, bool32 is_hdr, uint32 mip_levels) {
+    backend->create_texture_cube(texture, create_info, data, is_hdr, mip_levels);
 }
 void renderer_destroy_texture(struct render_texture_2D* texture) {
     backend->destroy_texture_2D(texture);
@@ -1140,8 +1140,8 @@ void renderer_precompute_env_map_from_equirectangular(resource_env_map* env_map,
 
     // all framebuffers have the same attachment layout
     frame_buffer_attachment attachments[] = {
-        { 0, frame_buffer_texture_format::RGBA16F, black }, // Albedo
-        { 0, frame_buffer_texture_format::Depth,   black }, // Depth-buffer
+        { 0, frame_buffer_texture_format::RGB16F, black },  // Albedo
+        { 0, frame_buffer_texture_format::Depth,  black }, // Depth-buffer
     };
 
     // cubemap conversion fbo
@@ -1269,7 +1269,13 @@ void renderer_precompute_env_map_from_equirectangular(resource_env_map* env_map,
     env_map->map.irradiance.handle = irradiance.attachments[0].handle;
     env_map->map.prefilter.handle  = ibl_prefilter.attachments[0].handle;
 
-    // TODO: write these textures to disk
-
     RH_INFO("------ Done Baking. ----------------------------");
+}
+
+void renderer_get_texture_data(render_texture_2D texture, void* data, int num_channels, bool is_hdr, uint32 mip) {
+    backend->get_texture_data(texture, data, num_channels, is_hdr, mip);
+}
+
+void renderer_get_cubemap_data(render_texture_cube texture, void* data, int num_channels, bool is_hdr, uint32 face, uint32 mip) {
+    backend->get_cubemap_data(texture, data, num_channels, is_hdr, face, mip);
 }
