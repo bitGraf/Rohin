@@ -28,9 +28,9 @@ struct renderer_state {
     uint32 render_width;
     uint32 render_height;
 
-    render_texture_2D white_tex;
-    render_texture_2D black_tex;
-    render_texture_2D cube_tex;
+    resource_texture_2D   white_tex;
+    resource_texture_2D   black_tex;
+    resource_texture_cube cube_tex;
 #if SIMPLE_RENDER_PASS
     // simple render pass
     //shader simple_shader;
@@ -46,7 +46,7 @@ struct renderer_state {
 
     shader_Screen screen_shader;
 
-    render_texture_2D hdr_image;
+    resource_texture_2D hdr_image;
     shader_HDRI_to_cubemap convert_shader;
     frame_buffer cubemap;
 
@@ -399,7 +399,7 @@ bool32 renderer_create_pipeline() {
 
         backend->use_shader(pConvert);
         backend->upload_uniform_float4x4(convert.r_Projection, cap_projection._data);
-        backend->bind_texture(render_state->hdr_image.handle, convert.u_hdri.SamplerID);
+        backend->bind_texture_2D(render_state->hdr_image.texture, convert.u_hdri.SamplerID);
 
         backend->set_viewport(0, 0, ENV_CUBE_MAP_SIZE, ENV_CUBE_MAP_SIZE);
         backend->use_framebuffer(&render_state->cubemap);
@@ -440,7 +440,7 @@ bool32 renderer_create_pipeline() {
 
         backend->use_shader(pConvolute);
         backend->upload_uniform_float4x4(convolute.r_Projection, cap_projection._data);
-        backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor].handle, convolute.u_env_cubemap.SamplerID);
+        backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor], convolute.u_env_cubemap.SamplerID);
 
         backend->set_viewport(0, 0, IRRADIANCE_CUBE_MAP_SIZE, IRRADIANCE_CUBE_MAP_SIZE);
         backend->use_framebuffer(&render_state->irradiance);
@@ -481,7 +481,7 @@ bool32 renderer_create_pipeline() {
 
         backend->use_shader(pPreFilter);
         backend->upload_uniform_float4x4(prefilter.r_Projection, cap_projection._data);
-        backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor].handle, prefilter.u_env_cubemap.SamplerID);
+        backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor], prefilter.u_env_cubemap.SamplerID);
 
         RH_DEBUG("Pre-Filtering Environment Map");
         backend->use_framebuffer(&render_state->ibl_prefilter);
@@ -682,9 +682,9 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
 
             backend->upload_uniform_float3(simple.u_color, mat.DiffuseFactor._data);
             if (mat.flag & 0x02) {
-                backend->bind_texture(mat.DiffuseTexture.handle, 0);
+                backend->bind_texture_2D(mat.DiffuseTexture, 0);
             } else {
-                backend->bind_texture(render_state->white_tex.handle, 0);
+                backend->bind_texture_2D(render_state->white_tex, 0);
             }
 
             renderer_draw_geometry(&cmd.geom);
@@ -705,7 +705,7 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
         skybox_view.c_34 = 0;
         backend->upload_uniform_float4x4(render_state->skybox_shader.r_View, skybox_view._data);
         backend->upload_uniform_float4x4(render_state->skybox_shader.r_Projection, packet->projection_matrix._data);
-        backend->bind_texture_cube(render_state->cube_tex.handle, 0);
+        backend->bind_texture_cube(render_state->cube_tex, 0);
 
         backend->draw_geometry(&render_state->cube_geom);
 
@@ -756,12 +756,12 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
                     backend->upload_uniform_float(prepass_static.r_AmbientTexToggle,   (mat.flag & 0x08) ? 1.0f : 0.0f);
                     backend->upload_uniform_float(prepass_static.r_EmissiveTexToggle,  (mat.flag & 0x10) ? 1.0f : 0.0f);
 
-                    backend->bind_texture(mat.DiffuseTexture.handle,  prepass_static.u_AlbedoTexture.SamplerID);
-                    backend->bind_texture(mat.NormalTexture.handle,   prepass_static.u_NormalTexture.SamplerID);
-                    backend->bind_texture(mat.AMRTexture.handle,      prepass_static.u_AmbientTexture.SamplerID);
-                    backend->bind_texture(mat.AMRTexture.handle,      prepass_static.u_MetalnessTexture.SamplerID);
-                    backend->bind_texture(mat.AMRTexture.handle,      prepass_static.u_RoughnessTexture.SamplerID);
-                    backend->bind_texture(mat.EmissiveTexture.handle, prepass_static.u_EmissiveTexture.SamplerID);
+                    backend->bind_texture_2D(mat.DiffuseTexture,  prepass_static.u_AlbedoTexture.SamplerID);
+                    backend->bind_texture_2D(mat.NormalTexture,   prepass_static.u_NormalTexture.SamplerID);
+                    backend->bind_texture_2D(mat.AMRTexture,      prepass_static.u_AmbientTexture.SamplerID);
+                    backend->bind_texture_2D(mat.AMRTexture,      prepass_static.u_MetalnessTexture.SamplerID);
+                    backend->bind_texture_2D(mat.AMRTexture,      prepass_static.u_RoughnessTexture.SamplerID);
+                    backend->bind_texture_2D(mat.EmissiveTexture, prepass_static.u_EmissiveTexture.SamplerID);
 
                     backend->upload_uniform_float4x4(prepass_static.r_Transform,
                                                      cmd.model_matrix._data);
@@ -796,12 +796,12 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
                     backend->upload_uniform_float(prepass_skinned.r_AmbientTexToggle,   (mat.flag & 0x08) ? 1.0f : 0.0f);
                     backend->upload_uniform_float(prepass_skinned.r_EmissiveTexToggle,  (mat.flag & 0x10) ? 1.0f : 0.0f);
 
-                    backend->bind_texture(mat.DiffuseTexture.handle,  prepass_skinned.u_AlbedoTexture.SamplerID);
-                    backend->bind_texture(mat.NormalTexture.handle,   prepass_skinned.u_NormalTexture.SamplerID);
-                    backend->bind_texture(mat.AMRTexture.handle,      prepass_skinned.u_AmbientTexture.SamplerID);
-                    backend->bind_texture(mat.AMRTexture.handle,      prepass_skinned.u_MetalnessTexture.SamplerID);
-                    backend->bind_texture(mat.AMRTexture.handle,      prepass_skinned.u_RoughnessTexture.SamplerID);
-                    backend->bind_texture(mat.EmissiveTexture.handle, prepass_skinned.u_EmissiveTexture.SamplerID);
+                    backend->bind_texture_2D(mat.DiffuseTexture,  prepass_skinned.u_AlbedoTexture.SamplerID);
+                    backend->bind_texture_2D(mat.NormalTexture,   prepass_skinned.u_NormalTexture.SamplerID);
+                    backend->bind_texture_2D(mat.AMRTexture,      prepass_skinned.u_AmbientTexture.SamplerID);
+                    backend->bind_texture_2D(mat.AMRTexture,      prepass_skinned.u_MetalnessTexture.SamplerID);
+                    backend->bind_texture_2D(mat.AMRTexture,      prepass_skinned.u_RoughnessTexture.SamplerID);
+                    backend->bind_texture_2D(mat.EmissiveTexture, prepass_skinned.u_EmissiveTexture.SamplerID);
 
                     // upload skeleton data
                     Assert(cmd.skeleton_idx);
@@ -856,14 +856,14 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
             backend->upload_uniform_float(lighting.r_spotLights[n].Outer,      packet->spot_lights[n].outer);
         }
 
-        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Albedo].handle, lighting.u_albedo.SamplerID);
-        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Normal].handle, lighting.u_normal.SamplerID);
-        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Depth].handle,  lighting.u_depth.SamplerID);
-        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_AMR].handle,    lighting.u_amr.SamplerID);
+        backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Albedo], lighting.u_albedo.SamplerID);
+        backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Normal], lighting.u_normal.SamplerID);
+        backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Depth],  lighting.u_depth.SamplerID);
+        backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_AMR],    lighting.u_amr.SamplerID);
 
-        backend->bind_texture_cube(render_state->irradiance.attachments[0].handle,       lighting.u_irradiance.SamplerID);
-        backend->bind_texture_cube(render_state->ibl_prefilter.attachments[0].handle,    lighting.u_prefilter.SamplerID);
-        backend->bind_texture(render_state->BRDF_LUT.attachments[0].handle,         lighting.u_brdf_LUT.SamplerID);
+        backend->bind_texture_cube(render_state->irradiance.attachments[0],       lighting.u_irradiance.SamplerID);
+        backend->bind_texture_cube(render_state->ibl_prefilter.attachments[0],    lighting.u_prefilter.SamplerID);
+        backend->bind_texture_2D(render_state->BRDF_LUT.attachments[0],         lighting.u_brdf_LUT.SamplerID);
 
         backend->disable_depth_test();
         backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
@@ -896,7 +896,7 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
         backend->upload_uniform_float(skybox.r_toneMap, render_state->tone_map ? 1.0f : 0.0f);
         backend->upload_uniform_float(skybox.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
 
-        backend->bind_texture_cube(render_state->cubemap.attachments[0].handle, 0);
+        backend->bind_texture_cube(render_state->cubemap.attachments[0], 0);
 
         backend->set_stencil_mask(0xFF);
         backend->set_stencil_func(render_stencil_func::NotEqual, 100, 0xFF);
@@ -916,14 +916,14 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
         backend->upload_uniform_float(screen.r_toneMap, render_state->tone_map ? 1.0f : 0.0f);
         backend->upload_uniform_float(screen.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
 
-        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Albedo].handle,    screen.u_albedo.SamplerID);
-        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Normal].handle,    screen.u_normal.SamplerID);
-        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_AMR].handle,       screen.u_amr.SamplerID);
-        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Depth].handle,     screen.u_depth.SamplerID);
-        backend->bind_texture(render_state->gbuffer.attachments[prepass.outputs.out_Emissive].handle,  screen.u_emissive.SamplerID);
-        backend->bind_texture(render_state->lbuffer.attachments[lighting.outputs.out_Diffuse].handle,  screen.u_diffuse.SamplerID);
-        backend->bind_texture(render_state->lbuffer.attachments[lighting.outputs.out_Specular].handle, screen.u_specular.SamplerID);
-        backend->bind_texture(render_state->black_tex.handle,                                          screen.u_ssao.SamplerID);
+        backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Albedo],    screen.u_albedo.SamplerID);
+        backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Normal],    screen.u_normal.SamplerID);
+        backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_AMR],       screen.u_amr.SamplerID);
+        backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Depth],     screen.u_depth.SamplerID);
+        backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Emissive],  screen.u_emissive.SamplerID);
+        backend->bind_texture_2D(render_state->lbuffer.attachments[lighting.outputs.out_Diffuse],  screen.u_diffuse.SamplerID);
+        backend->bind_texture_2D(render_state->lbuffer.attachments[lighting.outputs.out_Specular], screen.u_specular.SamplerID);
+        backend->bind_texture_2D(render_state->black_tex.texture,                                  screen.u_ssao.SamplerID);
 
         backend->disable_depth_test();
         backend->set_stencil_mask(0xFF);
@@ -1123,14 +1123,18 @@ bool32 renderer_end_wireframe() {
 
 
 
-void renderer_create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) {
-    backend->create_texture(texture, data, is_hdr);
+void renderer_create_texture(struct render_texture_2D* texture,
+                             texture_creation_info_2D create_info, 
+                             const void* data, bool32 is_hdr) {
+    backend->create_texture_2D(texture, create_info, data, is_hdr);
 }
-void renderer_create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr) {
-    backend->create_texture_cube(texture, data, is_hdr);
+void renderer_create_texture_cube(struct render_texture_cube* texture,
+                                  texture_creation_info_cube create_info,
+                                  const void** data, bool32 is_hdr) {
+    backend->create_texture_cube(texture, create_info, data, is_hdr);
 }
 void renderer_destroy_texture(struct render_texture_2D* texture) {
-    backend->destroy_texture(texture);
+    backend->destroy_texture_2D(texture);
 }
 
 void renderer_create_mesh(render_geometry* mesh, 

@@ -293,14 +293,16 @@ void OpenGL_api::pop_debug_group() {
     glPopDebugGroup();
 }
 
-void OpenGL_api::create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) {
+void OpenGL_api::create_texture_2D(struct render_texture_2D* texture, 
+                                   texture_creation_info_2D create_info, 
+                                   const void* data, bool32 is_hdr) {
     glGenTextures(1, &texture->handle);
     glBindTexture(GL_TEXTURE_2D, texture->handle);
 
     GLenum InternalFormat = 0;
     GLenum Format = 0;
     GLenum Type = is_hdr ? GL_FLOAT : GL_UNSIGNED_BYTE;
-    switch (texture->num_channels) {
+    switch (create_info.num_channels) {
         case 1: {
             InternalFormat = is_hdr ? GL_R16F : GL_R8;
             Format = GL_RED;
@@ -321,7 +323,7 @@ void OpenGL_api::create_texture(struct render_texture_2D* texture, const void* d
             Assert(false);
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat, texture->width, texture->height, 0, Format, Type, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat, create_info.width, create_info.height, 0, Format, Type, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     // This for font texture
@@ -333,14 +335,16 @@ void OpenGL_api::create_texture(struct render_texture_2D* texture, const void* d
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
-void OpenGL_api::create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr) {
+void OpenGL_api::create_texture_cube(struct render_texture_cube* texture,
+                                     texture_creation_info_cube create_info, 
+                                     const void** data, bool32 is_hdr) {
     glGenTextures(1, &texture->handle);
     glBindTexture(GL_TEXTURE_CUBE_MAP, texture->handle);
 
     GLenum InternalFormat = 0;
     GLenum Format = 0;
     GLenum Type = is_hdr ? GL_FLOAT : GL_UNSIGNED_BYTE;
-    switch (texture->num_channels) {
+    switch (create_info.num_channels) {
         case 1: {
             InternalFormat = is_hdr ? GL_R16F : GL_R8;
             Format = GL_RED;
@@ -362,7 +366,7 @@ void OpenGL_api::create_texture_cube(struct render_texture_2D* texture, const vo
     }
 
     for (uint32 i = 0; i < 6; i++) {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, InternalFormat, texture->width, texture->height, 0, Format, Type, data[i]);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, InternalFormat, create_info.width, create_info.height, 0, Format, Type, data[i]);
     }
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
@@ -376,7 +380,20 @@ void OpenGL_api::create_texture_cube(struct render_texture_2D* texture, const vo
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
-void OpenGL_api::destroy_texture(struct render_texture_2D* texture) {
+
+void OpenGL_api::create_texture_3D(struct render_texture_3D* texture, 
+                                   texture_creation_info_3D create_info, 
+                                   const void* data, bool32 is_hdr) {
+    RH_ERROR("OpenGL::create_texture_3D() not yet implemented!");
+}
+
+void OpenGL_api::destroy_texture_2D(struct render_texture_2D* texture) {
+    glDeleteTextures(1, &texture->handle);
+}
+void OpenGL_api::destroy_texture_3D(struct render_texture_3D* texture) {
+    glDeleteTextures(1, &texture->handle);
+}
+void OpenGL_api::destroy_texture_cube(struct render_texture_cube* texture) {
     glDeleteTextures(1, &texture->handle);
 }
 
@@ -933,13 +950,31 @@ void OpenGL_api::draw_geometry_points(render_geometry* geom) {
     glDrawElements(GL_POINTS, geom->num_inds, GL_UNSIGNED_INT, 0);
 }
 
-void OpenGL_api::bind_texture(uint32 tex_handle, uint32 slot) {
+void OpenGL_api::bind_texture_2D(render_texture_2D texture, uint32 slot) {
     glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_2D, tex_handle);
+    glBindTexture(GL_TEXTURE_2D, texture.handle);
 }
-void OpenGL_api::bind_texture_cube(uint32 tex_handle, uint32 slot) {
+void OpenGL_api::bind_texture_3D(render_texture_3D texture, uint32 slot) {
     glActiveTexture(GL_TEXTURE0 + slot);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, tex_handle);
+    glBindTexture(GL_TEXTURE_3D, texture.handle);
+}
+void OpenGL_api::bind_texture_cube(render_texture_cube texture, uint32 slot) {
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, texture.handle);
+}
+
+
+void OpenGL_api::bind_texture_2D(frame_buffer_attachment attachment, uint32 slot) {
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_2D, attachment.handle);
+}
+void OpenGL_api::bind_texture_3D(frame_buffer_attachment attachment, uint32 slot) {
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_3D, attachment.handle);
+}
+void OpenGL_api::bind_texture_cube(frame_buffer_attachment attachment, uint32 slot) {
+    glActiveTexture(GL_TEXTURE0 + slot);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, attachment.handle);
 }
 
 
@@ -964,79 +999,30 @@ void OpenGL_api::clear_framebuffer_attachment(frame_buffer_attachment *attach, r
     #endif
 }
 
-
-/*
-void OpenGL_api::upload_uniform_float(shader* shader_prog, const char* uniform_name, float  value) {
-    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
-
-    glUniform1f(uniform_location, value);
-}
-void OpenGL_api::upload_uniform_float2(shader* shader_prog, const char* uniform_name, float* values) {
-    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
-
-    glUniform2fv(uniform_location, 1, values);
-}
-void OpenGL_api::upload_uniform_float3(shader* shader_prog, const char* uniform_name, float* values) {
-    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
-
-    glUniform3fv(uniform_location, 1, values);
-}
-void OpenGL_api::upload_uniform_float4(shader* shader_prog, const char* uniform_name, float* values) {
-    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
-    
-    glUniform4fv(uniform_location, 1, values);
-}
-void OpenGL_api::upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) {
-    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
-
-    glUniformMatrix4fv(uniform_location, 1, GL_FALSE, values);
-}
-void OpenGL_api::upload_uniform_int(shader* shader_prog, const char* uniform_name, int  value) {
-    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
-
-    glUniform1i(uniform_location, value);
-}
-void OpenGL_api::upload_uniform_int2(shader* shader_prog, const char* uniform_name, int* values) {
-    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
-
-    glUniform2iv(uniform_location, 1, values);
-}
-void OpenGL_api::upload_uniform_int3(shader* shader_prog, const char* uniform_name, int* values) {
-    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
-
-    glUniform3iv(uniform_location, 1, values);
-}
-void OpenGL_api::upload_uniform_int4(shader* shader_prog, const char* uniform_name, int* values) {
-    int uniform_location = glGetUniformLocation(shader_prog->handle, uniform_name);
-
-    glUniform4iv(uniform_location, 1, values);
-}
-*/
-
-void OpenGL_api::upload_uniform_float(   ShaderUniform uniform, float  value) {
+void OpenGL_api::upload_uniform_float(   ShaderUniform_float uniform, real32  value) {
     glUniform1f(uniform.Location, value);
 }
-void OpenGL_api::upload_uniform_float2(  ShaderUniform uniform, float* values) {
-    glUniform2fv(uniform.Location, 1, values);
+void OpenGL_api::upload_uniform_float2(  ShaderUniform_vec2 uniform, const laml::Vec2& values) {
+    glUniform2fv(uniform.Location, 1, values._data);
 }
-void OpenGL_api::upload_uniform_float3(  ShaderUniform uniform, float* values) {
-    glUniform3fv(uniform.Location, 1, values);
+void OpenGL_api::upload_uniform_float3(  ShaderUniform_vec3 uniform, const laml::Vec3& values) {
+    glUniform3fv(uniform.Location, 1, values._data);
 }
-void OpenGL_api::upload_uniform_float4(  ShaderUniform uniform, float* values) {
-    glUniform4fv(uniform.Location, 1, values);
+void OpenGL_api::upload_uniform_float4(  ShaderUniform_vec4 uniform, const laml::Vec4& values) {
+    glUniform4fv(uniform.Location, 1, values._data);
 }
-void OpenGL_api::upload_uniform_float4x4(ShaderUniform uniform, float* values) {
-    glUniformMatrix4fv(uniform.Location, 1, GL_FALSE, values);
+void OpenGL_api::upload_uniform_float4x4(ShaderUniform_mat4 uniform, const laml::Mat4& values) {
+    glUniformMatrix4fv(uniform.Location, 1, GL_FALSE, values._data);
 }
-void OpenGL_api::upload_uniform_int(     ShaderUniform uniform, int  value) {
+void OpenGL_api::upload_uniform_int(     ShaderUniform_int  uniform, int32  value) {
     glUniform1i(uniform.Location, value);
 }
-void OpenGL_api::upload_uniform_int2(    ShaderUniform uniform, int* values) {
-    glUniform2iv(uniform.Location, 1, values);
+void OpenGL_api::upload_uniform_int2(    ShaderUniform_ivec2 uniform, const laml::Vector<int32,2>& values) {
+    glUniform2iv(uniform.Location, 1, values._data);
 }
-void OpenGL_api::upload_uniform_int3(    ShaderUniform uniform, int* values) {
-    glUniform3iv(uniform.Location, 1, values);
+void OpenGL_api::upload_uniform_int3(    ShaderUniform_ivec3 uniform, const laml::Vector<int32,3>& values) {
+    glUniform3iv(uniform.Location, 1, values._data);
 }
-void OpenGL_api::upload_uniform_int4(    ShaderUniform uniform, int* values) {
-    glUniform4iv(uniform.Location, 1, values);
+void OpenGL_api::upload_uniform_int4(    ShaderUniform_ivec4 uniform, const laml::Vector<int32,4>& values) {
+    glUniform4iv(uniform.Location, 1, values._data);
 }

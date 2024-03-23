@@ -20,10 +20,51 @@ enum class mesh_file_result : int32 {
     is_skinned
 };
 
+struct resource_texture_2D {
+    render_texture_2D texture;
+
+    uint16 width;
+    uint16 height;
+    uint16 num_channels;
+    uint16 flag;
+};
+struct resource_texture_3D {
+    render_texture_3D texture;
+
+    uint16 width;
+    uint16 height;
+    uint16 depth;
+    uint16 num_channels;
+    uint16 flag;
+};
+struct resource_texture_cube {
+    render_texture_cube texture;
+
+    uint16 width;
+    uint16 height;
+    uint16 num_channels;
+    uint16 flag;
+};
+
+struct resource_material {
+    laml::Vec3 DiffuseFactor;
+    real32 NormalScale;
+    real32 AmbientStrength;
+    real32 MetallicFactor;
+    real32 RoughnessFactor;
+    laml::Vec3 EmissiveFactor;
+    uint32 flag;
+
+    resource_texture_2D DiffuseTexture;
+    resource_texture_2D NormalTexture;
+    resource_texture_2D AMRTexture;
+    resource_texture_2D EmissiveTexture;
+};
+
 struct resource_static_mesh {
     uint32 num_primitives;
     render_geometry *primitives;
-    render_material *materials;
+    resource_material *materials;
 
     //laml::Mat4 transform; // unused! maybe as a default mesh offset?
 };
@@ -43,7 +84,7 @@ struct resource_skeleton {
 struct resource_skinned_mesh {
     uint32 num_primitives;
     render_geometry *primitives;
-    render_material *materials;
+    resource_material *materials;
     resource_skeleton skeleton;
 
     //laml::Mat4 transform; // unused! maybe as a default mesh offset?

@@ -146,6 +146,7 @@ struct rohin_app_state {
 };
 
 bool32 on_key_event(uint16 code, void* sender, void* listener, event_context context);
+void copy_material(render_material* dst, const resource_material* src);
 
 bool32 game_startup(RohinApp* app) {
     RH_INFO("Game startup.");
@@ -326,7 +327,10 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
                 cmd.model_matrix = mesh_transform;
                 cmd.geom = mesh->primitives[p];
-                cmd.material = mesh->materials[p];
+
+                // copy resource_material to render_material
+                copy_material(&cmd.material, &mesh->materials[p]);
+
                 cmd.skeleton_idx = 0;
 
                 command_idx++;
@@ -346,7 +350,10 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
                 cmd.model_matrix = mesh_transform;
                 cmd.geom = mesh->primitives[p];
-                cmd.material = mesh->materials[p];
+
+                // copy resource_material to render_material
+                copy_material(&cmd.material, &mesh->materials[p]);
+
                 cmd.skeleton_idx = skeleton_idx;
 
                 command_idx++;
@@ -439,4 +446,18 @@ bool32 on_key_event(uint16 code, void* sender, void* listener, event_context con
     state->game.GameKeyEvent(&state->memory, key_code, true);
 
     return false;
+}
+
+
+void copy_material(render_material* dst, const resource_material* src) {
+    dst->DiffuseFactor   = src->DiffuseFactor;
+    dst->NormalScale     = src->NormalScale;
+    dst->AmbientStrength = src->AmbientStrength;
+    dst->MetallicFactor  = src->MetallicFactor;
+    dst->RoughnessFactor = src->RoughnessFactor;
+    dst->flag            = src->flag;
+    dst->DiffuseTexture  = src->DiffuseTexture.texture;
+    dst->NormalTexture   = src->NormalTexture.texture;
+    dst->AMRTexture      = src->AMRTexture.texture;
+    dst->EmissiveTexture = src->EmissiveTexture.texture;
 }

@@ -10,7 +10,7 @@
 #include <stb/stb_image.h>
 
 bool32 resource_load_texture_file(const char* resource_file_name,
-                                  render_texture_2D* texture) {
+                                  resource_texture_2D* texture) {
 
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
@@ -40,7 +40,12 @@ bool32 resource_load_texture_file(const char* resource_file_name,
     texture->height = (uint16)y;
     texture->num_channels = (uint16)n;
     texture->flag = 0;
-    renderer_create_texture(texture, bitmap, false);
+
+    texture_creation_info_2D info;
+    info.width = texture->width;
+    info.height = texture->height;
+    info.num_channels = texture->num_channels;
+    renderer_create_texture(&texture->texture, info, bitmap, false);
 
     stbi_image_free(bitmap);
 
@@ -49,7 +54,7 @@ bool32 resource_load_texture_file(const char* resource_file_name,
 
 
 bool32 resource_load_texture_file_hdr(const char* resource_file_name,
-                                      render_texture_2D* texture) {
+                                      resource_texture_2D* texture) {
 
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
@@ -79,14 +84,19 @@ bool32 resource_load_texture_file_hdr(const char* resource_file_name,
     texture->height = (uint16)y;
     texture->num_channels = (uint16)n;
     texture->flag = 0;
-    renderer_create_texture(texture, data, true);
+
+    texture_creation_info_2D info;
+    info.width = texture->width;
+    info.height = texture->height;
+    info.num_channels = texture->num_channels;
+    renderer_create_texture(&texture->texture, info, data, true);
 
     stbi_image_free(data);
 
     return true;
 }
 
-bool32 resource_load_texture_debug_cube_map(render_texture_2D* texture) {
+bool32 resource_load_texture_debug_cube_map(resource_texture_cube* texture) {
     char* cube_sides[] = {
         "Data/textures/pos_x.png",
         "Data/textures/neg_x.png",
@@ -128,7 +138,12 @@ bool32 resource_load_texture_debug_cube_map(render_texture_2D* texture) {
     texture->height = (uint16)y[0];
     texture->num_channels = (uint16)n[0];
     texture->flag = 0;
-    renderer_create_texture_cube(texture, (const void**)(bitmap), false);
+
+    texture_creation_info_cube info;
+    info.width = texture->width;
+    info.height = texture->height;
+    info.num_channels = texture->num_channels;
+    renderer_create_texture_cube(&texture->texture, info, (const void**)(bitmap), false);
 
     for (uint32 i = 0; i < 6; i++) {
         stbi_image_free(bitmap[i]);

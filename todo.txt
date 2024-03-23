@@ -12,3 +12,25 @@ Bugs to fix:
 [~] Console output weirdness
     [x] Console prints normally in 10x
     [~] Console closes automatically in Visual Studio
+
+[ ] Finish lighting in scene representation
+    [x] directional light
+    [x] point lights
+    [x] spot lights
+    [~] sky light
+        [x] Split render_texture_2D into render_texture_ and resource_texture
+        [x] create new texture types (texture_2D, texture_3D, texture_cube)
+        [ ] pull sky light code out of renderer.cpp, and make reusable
+        [ ] allow scene to set sky light
+        [ ] save pre-baked sky light maps to file
+        [ ] load pre-baked sky light maps from file
+        [ ] add shader float that controls sky light contribution [0, 1]
+    [ ] !!! Shadows !!!
+
+[ ] Animation
+    [ ] Animation blending between anim_graph nodes
+
+[ ] Scene 'editor' pane
+    [ ] add rest of animation_controller info, and get rid of AnimGraph window
+    [ ] !!! serialize scene to file !!!
+    [ ] !!! load scene from file    !!!

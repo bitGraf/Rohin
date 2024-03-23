@@ -54,104 +54,6 @@ enum class render_stencil_op : uint8 {
     Invert
 };
 
-struct renderer_api {
-    //struct platform_state* plat_state; // platform-specific state
-    uint64 frame_number;
-
-    virtual bool32 initialize(const char* application_name, struct platform_state* plat_state) = 0;
-    virtual void shutdown() = 0;
-    virtual void resized(uint16 width, uint16 height) = 0;
-
-    virtual bool32 begin_frame(real32 delta_time) = 0;
-    virtual bool32 end_frame(real32 delta_time) = 0;
-
-    virtual bool32 ImGui_Init() = 0;
-    virtual bool32 ImGui_begin_frame() = 0;
-    virtual bool32 ImGui_end_frame() = 0;
-    virtual bool32 ImGui_Shutdown() = 0;
-
-    virtual void set_draw_mode(render_draw_mode mode) = 0;
-    virtual void set_highlight_mode(bool32 enabled) = 0;
-    virtual void enable_depth_test() = 0;
-    virtual void disable_depth_test() = 0;
-    virtual void enable_depth_mask() = 0;
-    virtual void disable_depth_mask() = 0;
-
-    virtual void enable_stencil_test() = 0;
-    virtual void disable_stencil_test() = 0;
-    virtual void set_stencil_mask(uint32 mask) = 0;
-    virtual void set_stencil_func(render_stencil_func func, uint32 ref, uint32 mask) = 0;
-    virtual void set_stencil_op(render_stencil_op sfail, render_stencil_op dpfail, render_stencil_op dppass) = 0;
-
-    virtual void push_debug_group(const char* label) = 0;
-    virtual void pop_debug_group() = 0;
-
-    virtual void create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) = 0;
-    virtual void create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr) = 0;
-    virtual void destroy_texture(struct render_texture_2D* texture) = 0;
-
-    virtual void create_mesh(render_geometry* mesh, 
-                             uint32 num_verts, const void* vertices,
-                             uint32 num_inds, const uint32* indices,
-                             const ShaderDataType* attributes) = 0;
-    virtual void destroy_mesh(render_geometry* mesh) = 0;
-
-    virtual bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) = 0;
-    virtual void destroy_shader(shader* shader_prog) = 0;
-
-    virtual bool32 create_framebuffer(frame_buffer* fbo, 
-                                      int num_attachments, 
-                                      const frame_buffer_attachment* attachments) = 0;
-    virtual bool32 recreate_framebuffer(frame_buffer* fbo) = 0;
-    virtual bool32 create_framebuffer_cube(frame_buffer* fbo, 
-                                           int num_attachments, 
-                                           const frame_buffer_attachment* attachments,
-                                           bool32 generate_mipmaps) = 0;
-    virtual void copy_framebuffer_depthbuffer(frame_buffer * src, frame_buffer * dst) = 0;
-    virtual void copy_framebuffer_stencilbuffer(frame_buffer * src, frame_buffer * dst) = 0;
-    virtual void destroy_framebuffer(frame_buffer* fbo) = 0;
-
-    virtual void use_shader(shader* shader_prog) = 0;
-    virtual void use_framebuffer(frame_buffer *fbuffer) = 0;
-    virtual void set_framebuffer_cube_face(frame_buffer* fbuffer, uint32 attach_idx, uint32 slot, uint32 mip_level) = 0;
-    virtual void resize_framebuffer_renderbuffer(frame_buffer* fbuffer, uint32 new_width, uint32 new_height) = 0;
-
-    virtual void draw_geometry(render_geometry* geom) = 0;
-    virtual void draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) = 0;
-    virtual void draw_geometry(render_geometry* geom, render_material* mat) = 0;
-    virtual void draw_geometry_lines(render_geometry* geom) = 0;
-    virtual void draw_geometry_points(render_geometry* geom) = 0;
-
-    virtual void bind_texture(uint32 tex_handle, uint32 slot) = 0;
-    virtual void bind_texture_cube(uint32 tex_handle, uint32 slot) = 0;
-
-    virtual void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) = 0;
-    virtual void clear_viewport(real32 r, real32 g, real32 b, real32 a) = 0;
-    virtual void clear_viewport_only_color(real32 r, real32 g, real32 b, real32 a) = 0;
-    virtual void clear_framebuffer_attachment(frame_buffer_attachment* attach, real32 r, real32 g, real32 b, real32 a) = 0;
-
-    // uniforms
-    //virtual void upload_uniform_float(   shader* shader_prog, const char* uniform_name, float  value) = 0;
-    //virtual void upload_uniform_float2(  shader* shader_prog, const char* uniform_name, float* values) = 0;
-    //virtual void upload_uniform_float3(  shader* shader_prog, const char* uniform_name, float* values) = 0;
-    //virtual void upload_uniform_float4(  shader* shader_prog, const char* uniform_name, float* values) = 0;
-    //virtual void upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) = 0;
-    //virtual void upload_uniform_int(     shader* shader_prog, const char* uniform_name, int  value) = 0;
-    //virtual void upload_uniform_int2(    shader* shader_prog, const char* uniform_name, int* values) = 0;
-    //virtual void upload_uniform_int3(    shader* shader_prog, const char* uniform_name, int* values) = 0;
-    //virtual void upload_uniform_int4(    shader* shader_prog, const char* uniform_name, int* values) = 0;
-
-    virtual void upload_uniform_float(   ShaderUniform uniform, float  value) = 0;
-    virtual void upload_uniform_float2(  ShaderUniform uniform, float* values) = 0;
-    virtual void upload_uniform_float3(  ShaderUniform uniform, float* values) = 0;
-    virtual void upload_uniform_float4(  ShaderUniform uniform, float* values) = 0;
-    virtual void upload_uniform_float4x4(ShaderUniform uniform, float* values) = 0;
-    virtual void upload_uniform_int(     ShaderUniform uniform, int  value) = 0;
-    virtual void upload_uniform_int2(    ShaderUniform uniform, int* values) = 0;
-    virtual void upload_uniform_int3(    ShaderUniform uniform, int* values) = 0;
-    virtual void upload_uniform_int4(    ShaderUniform uniform, int* values) = 0;
-};
-
 // the actual geometry that the gpu holds onto
 // separately, a 'resource' will exist to 
 // represent an actual mesh.
@@ -165,11 +67,37 @@ struct render_geometry {
 
 struct render_texture_2D {
     uint32 handle; // handle to the gpu version of this data
-
+};
+struct texture_creation_info_2D {
     uint16 width;
     uint16 height;
     uint16 num_channels;
-    uint16 flag;
+
+    // filtering flags
+};
+
+struct render_texture_3D {
+    uint32 handle; // handle to the gpu version of this data
+};
+struct texture_creation_info_3D {
+    uint16 width;
+    uint16 height;
+    uint16 depth;
+    uint16 num_channels;
+
+    // filtering flags
+};
+
+struct render_texture_cube {
+    uint32 handle; // handle to the gpu version of this data
+};
+struct texture_creation_info_cube {
+    uint16 width;
+    uint16 height;
+    uint16 depth;
+    uint16 num_channels;
+
+    // filtering flags
 };
 
 struct render_material {
@@ -197,11 +125,15 @@ struct ShaderUniform {
 };
 
 typedef ShaderUniform ShaderUniform_int;
+typedef ShaderUniform ShaderUniform_ivec2;
+typedef ShaderUniform ShaderUniform_ivec3;
+typedef ShaderUniform ShaderUniform_ivec4;
 
 typedef ShaderUniform ShaderUniform_float;
 typedef ShaderUniform ShaderUniform_vec2;
 typedef ShaderUniform ShaderUniform_vec3;
 typedef ShaderUniform ShaderUniform_vec4;
+
 typedef ShaderUniform ShaderUniform_mat3;
 typedef ShaderUniform ShaderUniform_mat4;
 typedef ShaderUniform ShaderUniform_sampler2D;
@@ -309,4 +241,104 @@ struct render_packet {
     uint32 _num_static, _num_skinned;
     render_command* _static_cmds;
     render_command* _skinned_cmds;
+};
+
+
+
+
+struct renderer_api {
+    //struct platform_state* plat_state; // platform-specific state
+    uint64 frame_number;
+
+    virtual bool32 initialize(const char* application_name, struct platform_state* plat_state) = 0;
+    virtual void shutdown() = 0;
+    virtual void resized(uint16 width, uint16 height) = 0;
+
+    virtual bool32 begin_frame(real32 delta_time) = 0;
+    virtual bool32 end_frame(real32 delta_time) = 0;
+
+    virtual bool32 ImGui_Init() = 0;
+    virtual bool32 ImGui_begin_frame() = 0;
+    virtual bool32 ImGui_end_frame() = 0;
+    virtual bool32 ImGui_Shutdown() = 0;
+
+    virtual void set_draw_mode(render_draw_mode mode) = 0;
+    virtual void set_highlight_mode(bool32 enabled) = 0;
+    virtual void enable_depth_test() = 0;
+    virtual void disable_depth_test() = 0;
+    virtual void enable_depth_mask() = 0;
+    virtual void disable_depth_mask() = 0;
+
+    virtual void enable_stencil_test() = 0;
+    virtual void disable_stencil_test() = 0;
+    virtual void set_stencil_mask(uint32 mask) = 0;
+    virtual void set_stencil_func(render_stencil_func func, uint32 ref, uint32 mask) = 0;
+    virtual void set_stencil_op(render_stencil_op sfail, render_stencil_op dpfail, render_stencil_op dppass) = 0;
+
+    virtual void push_debug_group(const char* label) = 0;
+    virtual void pop_debug_group() = 0;
+
+    virtual void create_texture_2D(struct   render_texture_2D*   texture, texture_creation_info_2D   create_info, const void*  data, bool32 is_hdr) = 0;
+    virtual void create_texture_3D(struct   render_texture_3D*   texture, texture_creation_info_3D   create_info, const void*  data, bool32 is_hdr) = 0;
+    virtual void create_texture_cube(struct render_texture_cube* texture, texture_creation_info_cube create_info, const void** data, bool32 is_hdr) = 0;
+
+    virtual void destroy_texture_2D(struct   render_texture_2D*   texture) = 0;
+    virtual void destroy_texture_3D(struct   render_texture_3D*   texture) = 0;
+    virtual void destroy_texture_cube(struct render_texture_cube* texture) = 0;
+
+    virtual void create_mesh(render_geometry* mesh, 
+                             uint32 num_verts, const void* vertices,
+                             uint32 num_inds, const uint32* indices,
+                             const ShaderDataType* attributes) = 0;
+    virtual void destroy_mesh(render_geometry* mesh) = 0;
+
+    virtual bool32 create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) = 0;
+    virtual void destroy_shader(shader* shader_prog) = 0;
+
+    virtual bool32 create_framebuffer(frame_buffer* fbo, 
+                                      int num_attachments, 
+                                      const frame_buffer_attachment* attachments) = 0;
+    virtual bool32 recreate_framebuffer(frame_buffer* fbo) = 0;
+    virtual bool32 create_framebuffer_cube(frame_buffer* fbo, 
+                                           int num_attachments, 
+                                           const frame_buffer_attachment* attachments,
+                                           bool32 generate_mipmaps) = 0;
+    virtual void copy_framebuffer_depthbuffer(frame_buffer * src, frame_buffer * dst) = 0;
+    virtual void copy_framebuffer_stencilbuffer(frame_buffer * src, frame_buffer * dst) = 0;
+    virtual void destroy_framebuffer(frame_buffer* fbo) = 0;
+
+    virtual void use_shader(shader* shader_prog) = 0;
+    virtual void use_framebuffer(frame_buffer *fbuffer) = 0;
+    virtual void set_framebuffer_cube_face(frame_buffer* fbuffer, uint32 attach_idx, uint32 slot, uint32 mip_level) = 0;
+    virtual void resize_framebuffer_renderbuffer(frame_buffer* fbuffer, uint32 new_width, uint32 new_height) = 0;
+
+    virtual void draw_geometry(render_geometry* geom) = 0;
+    virtual void draw_geometry(render_geometry* geom, uint32 start_idx, uint32 num_inds) = 0;
+    virtual void draw_geometry(render_geometry* geom, render_material* mat) = 0;
+    virtual void draw_geometry_lines( render_geometry* geom) = 0;
+    virtual void draw_geometry_points(render_geometry* geom) = 0;
+
+    virtual void bind_texture_2D(  render_texture_2D texture, uint32 slot) = 0;
+    virtual void bind_texture_3D(  render_texture_3D texture, uint32 slot) = 0;
+    virtual void bind_texture_cube(render_texture_cube texture, uint32 slot) = 0;
+
+    virtual void bind_texture_2D(frame_buffer_attachment attachment, uint32 slot) = 0;
+    virtual void bind_texture_3D(frame_buffer_attachment attachment, uint32 slot) = 0;
+    virtual void bind_texture_cube(frame_buffer_attachment attachment, uint32 slot) = 0;
+
+    virtual void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) = 0;
+    virtual void clear_viewport(real32 r, real32 g, real32 b, real32 a) = 0;
+    virtual void clear_viewport_only_color(real32 r, real32 g, real32 b, real32 a) = 0;
+    virtual void clear_framebuffer_attachment(frame_buffer_attachment* attach, real32 r, real32 g, real32 b, real32 a) = 0;
+
+    // uniforms
+    virtual void upload_uniform_float(   ShaderUniform_float uniform, real32  value) = 0;
+    virtual void upload_uniform_float2(  ShaderUniform_vec2  uniform, const laml::Vec2& values) = 0;
+    virtual void upload_uniform_float3(  ShaderUniform_vec3  uniform, const laml::Vec3& values) = 0;
+    virtual void upload_uniform_float4(  ShaderUniform_vec4  uniform, const laml::Vec4& values) = 0;
+    virtual void upload_uniform_float4x4(ShaderUniform_mat4  uniform, const laml::Mat4& values) = 0;
+    virtual void upload_uniform_int(     ShaderUniform_int   uniform, int32  value) = 0;
+    virtual void upload_uniform_int2(    ShaderUniform_ivec2 uniform, const laml::Vector<int32,2>& values) = 0;
+    virtual void upload_uniform_int3(    ShaderUniform_ivec3 uniform, const laml::Vector<int32,3>& values) = 0;
+    virtual void upload_uniform_int4(    ShaderUniform_ivec4 uniform, const laml::Vector<int32, 4>& values) = 0;
 };

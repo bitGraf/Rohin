@@ -44,7 +44,7 @@ bool32 resource_load_static_mesh(const char* resource_file_name, resource_static
     }
 
     // buffer textures to gpu
-    mesh->materials = PushArray(arena, render_material, mesh->num_primitives);
+    mesh->materials = PushArray(arena, resource_material, mesh->num_primitives);
     for (int n = 0; n < file_data->Header.NumPrims; n++) {
         mesh_file_material *mat = &file_data->Materials[n];
         
@@ -115,7 +115,7 @@ bool32 resource_load_skinned_mesh(const char* resource_file_name, resource_skinn
     }
 
     // buffer textures to gpu
-    mesh->materials = PushArray(arena, render_material, mesh->num_primitives);
+    mesh->materials = PushArray(arena, resource_material, mesh->num_primitives);
     for (int n = 0; n < file_data->Header.NumPrims; n++) {
         mesh_file_material *mat = &file_data->Materials[n];
         

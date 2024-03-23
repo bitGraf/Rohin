@@ -32,9 +32,13 @@ struct OpenGL_api final : public renderer_api {
     void set_stencil_func(render_stencil_func func, uint32 ref, uint32 mask) override final;
     void set_stencil_op(render_stencil_op sfail, render_stencil_op dpfail, render_stencil_op dppass) override final;
 
-    void create_texture(struct render_texture_2D* texture, const void* data, bool32 is_hdr) override final;
-    void create_texture_cube(struct render_texture_2D* texture, const void** data, bool32 is_hdr) override final;
-    void destroy_texture(struct render_texture_2D* texture) override final;
+    void create_texture_2D(struct render_texture_2D*     texture, texture_creation_info_2D   create_info, const void* data, bool32 is_hdr) override final;
+    void create_texture_3D(struct render_texture_3D*     texture, texture_creation_info_3D   create_info, const void* data, bool32 is_hdr) override final;
+    void create_texture_cube(struct render_texture_cube* texture, texture_creation_info_cube create_info, const void** data, bool32 is_hdr) override final;
+
+    void destroy_texture_2D(struct render_texture_2D* texture) override final;
+    void destroy_texture_3D(struct render_texture_3D* texture) override final;
+    void destroy_texture_cube(struct render_texture_cube* texture) override final;
 
     void create_mesh(render_geometry* mesh, 
                      uint32 num_verts, const void* vertices,
@@ -66,32 +70,26 @@ struct OpenGL_api final : public renderer_api {
     void draw_geometry_lines(render_geometry* geom) override final;
     void draw_geometry_points(render_geometry* geom) override final;
 
-    void bind_texture(uint32 tex_handle, uint32 slot) override final;
-    void bind_texture_cube(uint32 tex_handle, uint32 slot) override final;
+    void bind_texture_2D(render_texture_2D texture, uint32 slot) override final;
+    void bind_texture_3D(render_texture_3D texture, uint32 slot) override final;
+    void bind_texture_cube(render_texture_cube texture, uint32 slot) override final;
+
+    void bind_texture_2D(frame_buffer_attachment   attachment, uint32 slot) override final;
+    void bind_texture_3D(frame_buffer_attachment   attachment, uint32 slot) override final;
+    void bind_texture_cube(frame_buffer_attachment attachment, uint32 slot) override final;
 
     void set_viewport(uint32 x, uint32 y, uint32 width, uint32 height) override final;
     void clear_viewport(real32 r, real32 g, real32 b, real32 a) override final;
     void clear_viewport_only_color(real32 r, real32 g, real32 b, real32 a) override final;
     void clear_framebuffer_attachment(frame_buffer_attachment* attach, real32 r, real32 b, real32 g, real32 a) override final;
 
-    // uniforms
-    //void upload_uniform_float(   shader* shader_prog, const char* uniform_name, float  value) override final;
-    //void upload_uniform_float2(  shader* shader_prog, const char* uniform_name, float* values) override final;
-    //void upload_uniform_float3(  shader* shader_prog, const char* uniform_name, float* values) override final;
-    //void upload_uniform_float4(  shader* shader_prog, const char* uniform_name, float* values) override final;
-    //void upload_uniform_float4x4(shader* shader_prog, const char* uniform_name, float* values) override final;
-    //void upload_uniform_int(     shader* shader_prog, const char* uniform_name, int  value) override final;
-    //void upload_uniform_int2(    shader* shader_prog, const char* uniform_name, int* values) override final;
-    //void upload_uniform_int3(    shader* shader_prog, const char* uniform_name, int* values) override final;
-    //void upload_uniform_int4(    shader* shader_prog, const char* uniform_name, int* values) override final;
-
-    void upload_uniform_float(   ShaderUniform uniform, float  value) override final;
-    void upload_uniform_float2(  ShaderUniform uniform, float* values) override final;
-    void upload_uniform_float3(  ShaderUniform uniform, float* values) override final;
-    void upload_uniform_float4(  ShaderUniform uniform, float* values) override final;
-    void upload_uniform_float4x4(ShaderUniform uniform, float* values) override final;
-    void upload_uniform_int(     ShaderUniform uniform, int  value) override final;
-    void upload_uniform_int2(    ShaderUniform uniform, int* values) override final;
-    void upload_uniform_int3(    ShaderUniform uniform, int* values) override final;
-    void upload_uniform_int4(    ShaderUniform uniform, int* values) override final;
+    void upload_uniform_float(   ShaderUniform_float uniform, real32  value) override final;
+    void upload_uniform_float2(  ShaderUniform_vec2  uniform, const laml::Vec2& values) override final;
+    void upload_uniform_float3(  ShaderUniform_vec3  uniform, const laml::Vec3& values) override final;
+    void upload_uniform_float4(  ShaderUniform_vec4  uniform, const laml::Vec4& values) override final;
+    void upload_uniform_float4x4(ShaderUniform_mat4  uniform, const laml::Mat4& values) override final;
+    void upload_uniform_int(     ShaderUniform_int   uniform, int32  value) override final;
+    void upload_uniform_int2(    ShaderUniform_ivec2 uniform, const laml::Vector<int32,2>& values) override final;
+    void upload_uniform_int3(    ShaderUniform_ivec3 uniform, const laml::Vector<int32,3>& values) override final;
+    void upload_uniform_int4(    ShaderUniform_ivec4 uniform, const laml::Vector<int32,4>& values) override final;
 };
