@@ -47,6 +47,7 @@ layout (location = 396) uniform sampler2D u_amr;
 layout (location = 397) uniform samplerCube u_irradiance;
 layout (location = 398) uniform samplerCube u_prefilter;
 layout (location = 399) uniform sampler2D   u_brdf_LUT;
+layout (location = 400) uniform float       u_env_map_contribution;
 
 const vec3 FD = vec3(0.04);
 const float PI = 3.141592;
@@ -295,6 +296,6 @@ void IBL(vec3 F0, vec3 R) {
 	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
     
 	// Indiriect LIghting
-	m_Params.Diffuse  += ambient * m_Params.AO;
-	m_Params.Specular += specular * m_Params.AO;
+	m_Params.Diffuse  += ambient  * m_Params.AO * u_env_map_contribution;
+	m_Params.Specular += specular * m_Params.AO * u_env_map_contribution;
 }

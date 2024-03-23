@@ -46,16 +46,6 @@ struct renderer_state {
 
     shader_Screen screen_shader;
 
-    resource_texture_2D hdr_image;
-    shader_HDRI_to_cubemap convert_shader;
-    frame_buffer cubemap;
-
-    shader_Irradiance_Convolve irradiance_convolve_shader;
-    frame_buffer irradiance;
-
-    frame_buffer ibl_prefilter;
-    shader_IBL_Prefilter ibl_prefilter_shader;
-
     frame_buffer BRDF_LUT;
     shader_BRDF_Integrate brdf_integrate_shader;
 #endif
@@ -265,7 +255,7 @@ bool32 renderer_create_pipeline() {
     backend->upload_uniform_int(prepass_skinned.u_EmissiveTexture,  prepass_skinned.u_EmissiveTexture.SamplerID);
 
     // create g-buffer
-    laml::Vec4 black;
+    laml::Vec4 black(0.0f);
     laml::Vec4 white(1.0f);
     laml::Vec4 _dist(100.0f, 100.0f, 100.0f, 1.0f);
     {
@@ -303,6 +293,8 @@ bool32 renderer_create_pipeline() {
     backend->upload_uniform_int(lighting.u_irradiance,  lighting.u_irradiance.SamplerID);
     backend->upload_uniform_int(lighting.u_prefilter,   lighting.u_prefilter.SamplerID);
     backend->upload_uniform_int(lighting.u_brdf_LUT,    lighting.u_brdf_LUT.SamplerID);
+    
+    backend->upload_uniform_float(lighting.u_env_map_contribution, 1.0f);
     // create l-buffer
     {
         frame_buffer_attachment attachments[] = {
@@ -344,173 +336,7 @@ bool32 renderer_create_pipeline() {
     backend->pop_debug_group(); // screen shader
     RH_TRACE("%.3lf ms to create Screen shader", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
-    // load hdr for IBL
-    backend->push_debug_group("Load Env. Map");
-    if (!resource_load_texture_file_hdr("Data/textures/newport_loft.hdr", &render_state->hdr_image)) {
-    //if (!resource_load_texture_file_hdr("Data/textures/metro_noord_1k.hdr", &render_state->hdr_image)) {
-        RH_FATAL("Could not load environment HDR");
-        return false;
-    }
-
-    laml::Mat4 cap_projection;
-    laml::transform::create_projection_perspective(cap_projection, 90.0f, 1.0f, 0.1f, 10.0f);
-
-    laml::Mat4 captureViews[6];
-    laml::Vec3 eye(0.0f);
-    laml::Vec3 pos_x(1.0f, 0.0f, 0.0f);
-    laml::Vec3 pos_y(0.0f, 1.0f, 0.0f);
-    laml::Vec3 pos_z(0.0f, 0.0f, 1.0f);
-    laml::Vec3 neg_x(-1.0f,  0.0f,  0.0f);
-    laml::Vec3 neg_y( 0.0f, -1.0f,  0.0f);
-    laml::Vec3 neg_z( 0.0f,  0.0f, -1.0f);
-
-    laml::transform::lookAt(captureViews[0], eye, pos_x, neg_y);
-    laml::transform::lookAt(captureViews[1], eye, neg_x, neg_y);
-    laml::transform::lookAt(captureViews[2], eye, neg_y, neg_z);
-    laml::transform::lookAt(captureViews[3], eye, pos_y, pos_z);
-    laml::transform::lookAt(captureViews[4], eye, pos_z, neg_y);
-    laml::transform::lookAt(captureViews[5], eye, neg_z, neg_y);
-
-    const uint32 ENV_CUBE_MAP_SIZE = 1024;
-    const uint32 IRRADIANCE_CUBE_MAP_SIZE = 32;
-    const uint32 PREFILTER_CUBE_MAP_SIZE = 128;
     const uint32 BRDF_LUT_SIZE = 512;
-
-    shader_HDRI_to_cubemap& convert = render_state->convert_shader;
-    {
-        // setup conversion shader
-        shader* pConvert = (shader*)(&render_state->convert_shader);
-        if (!resource_load_shader_file("Data/Shaders/HDRI_to_cubemap.glsl", pConvert)) {
-            RH_FATAL("Could not setup the conversion shader");
-            return false;
-        }
-        renderer_use_shader(pConvert);
-        convert.InitShaderLocs();
-        backend->upload_uniform_int(convert.u_hdri, convert.u_hdri.SamplerID);
-
-        // setup HDR cubemap
-        frame_buffer_attachment attachments[] = {
-            { 0, frame_buffer_texture_format::RGBA16F, black }, // Albedo
-            { 0, frame_buffer_texture_format::Depth,   black }, // Depth-buffer
-        };
-        render_state->cubemap.width = ENV_CUBE_MAP_SIZE;
-        render_state->cubemap.height = ENV_CUBE_MAP_SIZE;
-        renderer_create_framebuffer_cube(&render_state->cubemap, convert.outputs.num_outputs+1, attachments, false);
-
-        backend->use_shader(pConvert);
-        backend->upload_uniform_float4x4(convert.r_Projection, cap_projection._data);
-        backend->bind_texture_2D(render_state->hdr_image.texture, convert.u_hdri.SamplerID);
-
-        backend->set_viewport(0, 0, ENV_CUBE_MAP_SIZE, ENV_CUBE_MAP_SIZE);
-        backend->use_framebuffer(&render_state->cubemap);
-        for(int n = 0; n < 6; n++) {
-            backend->upload_uniform_float4x4(convert.r_View, captureViews[n]._data);
-            backend->set_framebuffer_cube_face(&render_state->cubemap, convert.outputs.FragColor, n, 0);
-
-            backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
-
-            backend->draw_geometry(&render_state->cube_geom);
-        }
-        backend->use_framebuffer(0);
-    }
-    backend->pop_debug_group(); // load HDRi
-    RH_TRACE("%.3lf ms to Convert hdri to cubemap", measure_elapsed_time(last_time, &last_time)*1000.0f);
-
-    backend->push_debug_group("Irradiance Convolution");
-    {
-        // convolution shader
-        shader* pConvolute = (shader*)(&render_state->irradiance_convolve_shader);
-        shader_Irradiance_Convolve& convolute = render_state->irradiance_convolve_shader;
-        if (!resource_load_shader_file("Data/Shaders/Irradiance_Convolve.glsl", pConvolute)) {
-            RH_FATAL("Could not setup the convolution shader");
-            return false;
-        }
-        renderer_use_shader(pConvolute);
-        convolute.InitShaderLocs();
-        backend->upload_uniform_int(convolute.u_env_cubemap, convolute.u_env_cubemap.SamplerID);
-
-        // Perform irradiance convolution
-        frame_buffer_attachment attachments[] = {
-            { 0, frame_buffer_texture_format::RGBA16F, black }, // Albedo
-            { 0, frame_buffer_texture_format::Depth,   black }, // Depth-buffer
-        };
-        render_state->irradiance.width  = IRRADIANCE_CUBE_MAP_SIZE;
-        render_state->irradiance.height = IRRADIANCE_CUBE_MAP_SIZE;
-        renderer_create_framebuffer_cube(&render_state->irradiance, convolute.outputs.num_outputs+1, attachments, false);
-
-        backend->use_shader(pConvolute);
-        backend->upload_uniform_float4x4(convolute.r_Projection, cap_projection._data);
-        backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor], convolute.u_env_cubemap.SamplerID);
-
-        backend->set_viewport(0, 0, IRRADIANCE_CUBE_MAP_SIZE, IRRADIANCE_CUBE_MAP_SIZE);
-        backend->use_framebuffer(&render_state->irradiance);
-        for(int n = 0; n < 6; n++) {
-            backend->upload_uniform_float4x4(convolute.r_View, captureViews[n]._data);
-            backend->set_framebuffer_cube_face(&render_state->irradiance, convolute.outputs.FragColor, n, 0);
-
-            backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
-
-            backend->draw_geometry(&render_state->cube_geom);
-        }
-        backend->use_framebuffer(0);
-    }
-    backend->pop_debug_group(); // irradiance convolve
-    RH_TRACE("%.3lf ms to convolute env map into irradiance", measure_elapsed_time(last_time, &last_time)*1000.0f);
-
-    backend->push_debug_group("Prefilter");
-    {
-        // IBL Prefilter shader
-        shader* pPreFilter = (shader*)(&render_state->ibl_prefilter_shader);
-        shader_IBL_Prefilter& prefilter = render_state->ibl_prefilter_shader;
-        if (!resource_load_shader_file("Data/Shaders/IBL_Prefilter.glsl", pPreFilter)) {
-            RH_FATAL("Could not setup the env. map pre-filter shader");
-            return false;
-        }
-        renderer_use_shader(pPreFilter);
-        prefilter.InitShaderLocs();
-        backend->upload_uniform_int(prefilter.u_env_cubemap, prefilter.u_env_cubemap.SamplerID);
-
-        // Perform pre-filtering
-        frame_buffer_attachment attachments[] = {
-            { 0, frame_buffer_texture_format::RGBA16F, black }, // Albedo
-            { 0, frame_buffer_texture_format::Depth,   black }, // Depth-buffer
-        };
-        render_state->ibl_prefilter.width  = PREFILTER_CUBE_MAP_SIZE;
-        render_state->ibl_prefilter.height = PREFILTER_CUBE_MAP_SIZE;
-        renderer_create_framebuffer_cube(&render_state->ibl_prefilter, prefilter.outputs.num_outputs+1, attachments, true);
-
-        backend->use_shader(pPreFilter);
-        backend->upload_uniform_float4x4(prefilter.r_Projection, cap_projection._data);
-        backend->bind_texture_cube(render_state->cubemap.attachments[convert.outputs.FragColor], prefilter.u_env_cubemap.SamplerID);
-
-        RH_DEBUG("Pre-Filtering Environment Map");
-        backend->use_framebuffer(&render_state->ibl_prefilter);
-        const int maxMipLevels = 6;
-        for (int mip = 0; mip < maxMipLevels; mip++) {
-            uint32 mip_width  = (uint32)((real32)(PREFILTER_CUBE_MAP_SIZE) * std::pow(0.5, mip));
-            uint32 mip_height = (uint32)((real32)(PREFILTER_CUBE_MAP_SIZE) * std::pow(0.5, mip));
-            backend->resize_framebuffer_renderbuffer(&render_state->ibl_prefilter, mip_width, mip_height);
-            backend->set_viewport(0, 0, mip_width, mip_height);
-            
-            real32 roughness = (real32)mip / (real32)(maxMipLevels - 1);
-            backend->upload_uniform_float(prefilter.r_roughness, roughness);
-            RH_DEBUG(" Mip %d: %dx%d - Roughness=%.2f", mip, mip_width, mip_height, roughness);
-            for(int n = 0; n < 6; n++) {
-                //RH_DEBUG("  Face %d", n);
-                backend->upload_uniform_float4x4(prefilter.r_View, captureViews[n]._data);
-                backend->set_framebuffer_cube_face(&render_state->ibl_prefilter, prefilter.outputs.FragColor, n, mip);
-
-                backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
-
-                backend->draw_geometry(&render_state->cube_geom);
-            }
-        }
-        backend->resize_framebuffer_renderbuffer(&render_state->ibl_prefilter, PREFILTER_CUBE_MAP_SIZE, PREFILTER_CUBE_MAP_SIZE);
-        backend->use_framebuffer(0);
-    }
-    backend->pop_debug_group(); // Prefilter
-    RH_TRACE("%.3lf ms to prefilter env map", measure_elapsed_time(last_time, &last_time)*1000.0f);
-
     backend->push_debug_group("BRDF lut generation");
     {
         // setup BRDF Integration
@@ -627,7 +453,8 @@ bool32 renderer_begin_Frame(real32 delta_time) {
     }
 
     backend->set_viewport(0, 0, render_state->render_width, render_state->render_height);
-    backend->clear_viewport(0.8f, 0.1f, 0.8f, 0.1f);
+    //backend->clear_viewport(0.8f, 0.1f, 0.8f, 0.1f);
+    backend->clear_viewport(0.112f, 0.112f, 0.069f, 0.0f);
 
     return true;
 }
@@ -855,15 +682,16 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
             backend->upload_uniform_float(lighting.r_spotLights[n].Inner,      packet->spot_lights[n].inner);
             backend->upload_uniform_float(lighting.r_spotLights[n].Outer,      packet->spot_lights[n].outer);
         }
+        backend->upload_uniform_float(lighting.u_env_map_contribution,  packet->env_map.strength);
 
         backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Albedo], lighting.u_albedo.SamplerID);
         backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Normal], lighting.u_normal.SamplerID);
         backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Depth],  lighting.u_depth.SamplerID);
         backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_AMR],    lighting.u_amr.SamplerID);
 
-        backend->bind_texture_cube(render_state->irradiance.attachments[0],       lighting.u_irradiance.SamplerID);
-        backend->bind_texture_cube(render_state->ibl_prefilter.attachments[0],    lighting.u_prefilter.SamplerID);
-        backend->bind_texture_2D(render_state->BRDF_LUT.attachments[0],         lighting.u_brdf_LUT.SamplerID);
+        backend->bind_texture_cube(packet->env_map.irradiance,          lighting.u_irradiance.SamplerID);
+        backend->bind_texture_cube(packet->env_map.prefilter,           lighting.u_prefilter.SamplerID);
+        backend->bind_texture_2D(render_state->BRDF_LUT.attachments[0], lighting.u_brdf_LUT.SamplerID);
 
         backend->disable_depth_test();
         backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
@@ -878,33 +706,35 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
         ImGui::Text(" Lighting: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
         // Draw Skybox
-        backend->push_debug_group("Skybox");
-
         backend->use_framebuffer(0);
         backend->copy_framebuffer_stencilbuffer(&render_state->gbuffer, 0);
 
-        shader* pSkybox = (shader*)(&render_state->skybox_shader);
-        shader_Skybox& skybox = render_state->skybox_shader;
-        backend->use_shader(pSkybox);
-        laml::Mat4 skybox_view;
-        memory_copy(&skybox_view, &packet->view_matrix, sizeof(laml::Mat4));
-        skybox_view.c_14 = 0;
-        skybox_view.c_24 = 0;
-        skybox_view.c_34 = 0;
-        backend->upload_uniform_float4x4(render_state->skybox_shader.r_View, skybox_view._data);
-        backend->upload_uniform_float4x4(render_state->skybox_shader.r_Projection, packet->projection_matrix._data);
-        backend->upload_uniform_float(skybox.r_toneMap, render_state->tone_map ? 1.0f : 0.0f);
-        backend->upload_uniform_float(skybox.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
+        if (packet->draw_skybox) {
+            backend->push_debug_group("Skybox");
 
-        backend->bind_texture_cube(render_state->cubemap.attachments[0], 0);
+            shader* pSkybox = (shader*)(&render_state->skybox_shader);
+            shader_Skybox& skybox = render_state->skybox_shader;
+            backend->use_shader(pSkybox);
+            laml::Mat4 skybox_view;
+            memory_copy(&skybox_view, &packet->view_matrix, sizeof(laml::Mat4));
+            skybox_view.c_14 = 0;
+            skybox_view.c_24 = 0;
+            skybox_view.c_34 = 0;
+            backend->upload_uniform_float4x4(render_state->skybox_shader.r_View, skybox_view._data);
+            backend->upload_uniform_float4x4(render_state->skybox_shader.r_Projection, packet->projection_matrix._data);
+            backend->upload_uniform_float(skybox.r_toneMap, render_state->tone_map ? 1.0f : 0.0f);
+            backend->upload_uniform_float(skybox.r_gammaCorrect, render_state->gamma_correct ? 1.0f : 0.0f);
 
-        backend->set_stencil_mask(0xFF);
-        backend->set_stencil_func(render_stencil_func::NotEqual, 100, 0xFF);
-        backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Keep);
-        backend->draw_geometry(&render_state->cube_geom);
+            backend->bind_texture_cube(packet->env_map.skybox, 0);
 
-        backend->pop_debug_group();  //Skybox
-        ImGui::Text(" Skybox: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
+            backend->set_stencil_mask(0xFF);
+            backend->set_stencil_func(render_stencil_func::NotEqual, 100, 0xFF);
+            backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Keep);
+            backend->draw_geometry(&render_state->cube_geom);
+
+            backend->pop_debug_group();  //Skybox
+            ImGui::Text(" Skybox: %.2f ms", measure_elapsed_time(last_time, &last_time)*1000.0f);
+        }
 
         // SCREEN STAGE
         backend->push_debug_group("Screen Composite");
@@ -1231,4 +1061,215 @@ void renderer_debug_UI_end_frame(bool32 draw_ui) {
         backend->ImGui_end_frame();
         backend->pop_debug_group(); // ImGui
     }
+}
+
+// Precompute environment maps
+void renderer_precompute_env_map_from_equirectangular(resource_env_map* env_map, real32* data) {
+    time_point bake_start = start_timer();
+    time_point last_time = bake_start;
+
+    RH_INFO("------ Baking Environment Map ------------------");
+
+    //
+    // -1. constants
+    //
+    const uint32 ENV_CUBE_MAP_SIZE        = env_map->skybox_size;
+    const uint32 IRRADIANCE_CUBE_MAP_SIZE = env_map->irradiance_size;
+    const uint32 PREFILTER_CUBE_MAP_SIZE  = env_map->prefilter_size;
+
+    laml::Mat4 cap_projection;
+    laml::transform::create_projection_perspective(cap_projection, 90.0f, 1.0f, 0.1f, 10.0f);
+
+    laml::Mat4 captureViews[6];
+    laml::Vec3 eye(0.0f);
+    laml::Vec3 pos_x(1.0f, 0.0f, 0.0f);
+    laml::Vec3 pos_y(0.0f, 1.0f, 0.0f);
+    laml::Vec3 pos_z(0.0f, 0.0f, 1.0f);
+    laml::Vec3 neg_x(-1.0f,  0.0f,  0.0f);
+    laml::Vec3 neg_y( 0.0f, -1.0f,  0.0f);
+    laml::Vec3 neg_z( 0.0f,  0.0f, -1.0f);
+
+    laml::transform::lookAt(captureViews[0], eye, pos_x, neg_y);
+    laml::transform::lookAt(captureViews[1], eye, neg_x, neg_y);
+    laml::transform::lookAt(captureViews[2], eye, neg_y, neg_z);
+    laml::transform::lookAt(captureViews[3], eye, pos_y, pos_z);
+    laml::transform::lookAt(captureViews[4], eye, pos_z, neg_y);
+    laml::transform::lookAt(captureViews[5], eye, neg_z, neg_y);
+
+    laml::Vec4 black(0.0f);
+
+    //
+    // 0. shaders/FBOs needed for the conversion. Create/destroy them here b/c i don't need to keep them around (i hope c:)
+    //
+
+    backend->disable_depth_test();
+    backend->disable_stencil_test();
+
+    // convert hdri to cubemap
+    shader_HDRI_to_cubemap convert;
+    shader* pConvert = (shader*)(&convert);
+    if (!resource_load_shader_file("Data/Shaders/HDRI_to_cubemap.glsl", pConvert)) {
+        RH_FATAL("Could not setup the conversion shader");
+        return;
+    }
+    convert.InitShaderLocs();
+    renderer_use_shader(pConvert);
+    backend->upload_uniform_int(convert.u_hdri, convert.u_hdri.SamplerID);
+
+    // convolute diffuse irradiance
+    shader_Irradiance_Convolve convolute;
+    shader* pConvolute = (shader*)(&convolute);
+    if (!resource_load_shader_file("Data/Shaders/Irradiance_Convolve.glsl", pConvolute)) {
+        RH_FATAL("Could not setup the convolution shader");
+        return;
+    }
+    convolute.InitShaderLocs();
+    renderer_use_shader(pConvolute);
+    backend->upload_uniform_int(convolute.u_env_cubemap, convolute.u_env_cubemap.SamplerID);
+
+    // IBL Prefilter shader
+    shader_IBL_Prefilter prefilter;
+    shader* pPreFilter = (shader*)(&prefilter);
+    if (!resource_load_shader_file("Data/Shaders/IBL_Prefilter.glsl", pPreFilter)) {
+        RH_FATAL("Could not setup the env. map pre-filter shader");
+        return;
+    }
+    prefilter.InitShaderLocs();
+    renderer_use_shader(pPreFilter);
+    backend->upload_uniform_int(prefilter.u_env_cubemap, prefilter.u_env_cubemap.SamplerID);
+
+    // all framebuffers have the same attachment layout
+    frame_buffer_attachment attachments[] = {
+        { 0, frame_buffer_texture_format::RGBA16F, black }, // Albedo
+        { 0, frame_buffer_texture_format::Depth,   black }, // Depth-buffer
+    };
+
+    // cubemap conversion fbo
+    frame_buffer cubemap;
+    cubemap.width = ENV_CUBE_MAP_SIZE;
+    cubemap.height = ENV_CUBE_MAP_SIZE;
+    renderer_create_framebuffer_cube(&cubemap, convert.outputs.num_outputs+1, attachments, false);
+
+    // diffuse irradiance fbo
+    frame_buffer irradiance;
+    irradiance.width  = IRRADIANCE_CUBE_MAP_SIZE;
+    irradiance.height = IRRADIANCE_CUBE_MAP_SIZE;
+    renderer_create_framebuffer_cube(&irradiance, convolute.outputs.num_outputs+1, attachments, false);
+
+    // Pre-filtering fbo
+    frame_buffer ibl_prefilter;
+    ibl_prefilter.width  = PREFILTER_CUBE_MAP_SIZE;
+    ibl_prefilter.height = PREFILTER_CUBE_MAP_SIZE;
+    renderer_create_framebuffer_cube(&ibl_prefilter, prefilter.outputs.num_outputs+1, attachments, true);
+    RH_TRACE("%.3lf ms to setup shaders and fbos", measure_elapsed_time(last_time, &last_time)*1000.0f);
+
+    //
+    // 1. turn equirectangular image to cubemap
+    // 
+    backend->push_debug_group("Load Env. Map");
+
+    texture_creation_info_2D info;
+    info.width = env_map->src.width;
+    info.height = env_map->src.height;
+    info.num_channels = env_map->src.num_channels;
+    renderer_create_texture(&env_map->src.texture, info, data, true);
+
+    backend->use_shader(pConvert);
+    backend->upload_uniform_float4x4(convert.r_Projection, cap_projection._data);
+    backend->bind_texture_2D(env_map->src.texture, convert.u_hdri.SamplerID);
+
+    backend->set_viewport(0, 0, ENV_CUBE_MAP_SIZE, ENV_CUBE_MAP_SIZE);
+    backend->use_framebuffer(&cubemap);
+    for(int n = 0; n < 6; n++) {
+        backend->upload_uniform_float4x4(convert.r_View, captureViews[n]._data);
+        backend->set_framebuffer_cube_face(&cubemap, convert.outputs.FragColor, n, 0);
+
+        backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
+
+        backend->draw_geometry(&render_state->cube_geom);
+    }
+    backend->use_framebuffer(0);
+
+    backend->pop_debug_group(); // load HDRi
+    RH_TRACE("%.3lf ms to Convert hdri to cubemap", measure_elapsed_time(last_time, &last_time)*1000.0f);
+
+    //
+    // 2. convulute diffuse irradiance into cubemap
+    //
+    backend->push_debug_group("Irradiance Convolution");
+    
+    backend->use_shader(pConvolute);
+    backend->upload_uniform_float4x4(convolute.r_Projection, cap_projection._data);
+    backend->bind_texture_cube(cubemap.attachments[convert.outputs.FragColor], convolute.u_env_cubemap.SamplerID);
+
+    backend->set_viewport(0, 0, IRRADIANCE_CUBE_MAP_SIZE, IRRADIANCE_CUBE_MAP_SIZE);
+    backend->use_framebuffer(&irradiance);
+    for(int n = 0; n < 6; n++) {
+        backend->upload_uniform_float4x4(convolute.r_View, captureViews[n]._data);
+        backend->set_framebuffer_cube_face(&irradiance, convolute.outputs.FragColor, n, 0);
+
+        backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
+
+        backend->draw_geometry(&render_state->cube_geom);
+    }
+    backend->use_framebuffer(0);
+
+    backend->pop_debug_group(); // irradiance convolve
+    RH_TRACE("%.3lf ms to convolute env map into irradiance", measure_elapsed_time(last_time, &last_time)*1000.0f);
+
+    //
+    // 3. prefilter env_map into cubemap
+    //
+    backend->push_debug_group("Prefilter");
+     
+    backend->use_shader(pPreFilter);
+    backend->upload_uniform_float4x4(prefilter.r_Projection, cap_projection._data);
+    backend->bind_texture_cube(cubemap.attachments[convert.outputs.FragColor], prefilter.u_env_cubemap.SamplerID);
+
+    RH_DEBUG("Pre-Filtering Environment Map");
+    backend->use_framebuffer(&ibl_prefilter);
+    const int maxMipLevels = 6;
+    for (int mip = 0; mip < maxMipLevels; mip++) {
+        uint32 mip_width  = (uint32)((real32)(PREFILTER_CUBE_MAP_SIZE) * std::pow(0.5, mip));
+        uint32 mip_height = (uint32)((real32)(PREFILTER_CUBE_MAP_SIZE) * std::pow(0.5, mip));
+        backend->resize_framebuffer_renderbuffer(&ibl_prefilter, mip_width, mip_height);
+        backend->set_viewport(0, 0, mip_width, mip_height);
+            
+        real32 roughness = (real32)mip / (real32)(maxMipLevels - 1);
+        backend->upload_uniform_float(prefilter.r_roughness, roughness);
+        RH_DEBUG(" Mip %d: %dx%d - Roughness=%.2f", mip, mip_width, mip_height, roughness);
+        for(int n = 0; n < 6; n++) {
+            //RH_DEBUG("  Face %d", n);
+            backend->upload_uniform_float4x4(prefilter.r_View, captureViews[n]._data);
+            backend->set_framebuffer_cube_face(&ibl_prefilter, prefilter.outputs.FragColor, n, mip);
+
+            backend->clear_viewport(0.0f, 0.0f, 0.0f, 0.0f);
+
+            backend->draw_geometry(&render_state->cube_geom);
+        }
+    }
+    backend->resize_framebuffer_renderbuffer(&ibl_prefilter, PREFILTER_CUBE_MAP_SIZE, PREFILTER_CUBE_MAP_SIZE);
+    backend->use_framebuffer(0);
+
+    backend->enable_depth_test();
+    
+    backend->pop_debug_group(); // Prefilter
+    RH_TRACE("%.3lf ms to prefilter env map", measure_elapsed_time(last_time, &last_time)*1000.0f);
+    RH_TRACE("%.3lf ms total", measure_elapsed_time(bake_start, &last_time)*1000.0f);
+
+    //
+    // 4. write calculated textures to disk and generate metadata file
+    //
+
+    // first generate new textures that are not part of the fbos
+    // todo: do I need to do this? can the fbos just 'release' 
+    // nvm! glDeleteFramebuffers() just deletes the FBO. the texture
+    // attachments -should- still be valid.
+    env_map->map.skybox.handle     = cubemap.attachments[0].handle;
+    env_map->map.irradiance.handle = irradiance.attachments[0].handle;
+    env_map->map.prefilter.handle  = ibl_prefilter.attachments[0].handle;
+
+    // TODO: write these textures to disk
+
+    RH_INFO("------ Done Baking. ----------------------------");
 }

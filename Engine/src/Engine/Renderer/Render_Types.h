@@ -209,8 +209,11 @@ struct render_light {
     real32 inner, outer; // cos(cone_angle)! must be precalculated
 };
 
-struct render_sky_light {
-    // todo: pull env-map code out of renderer.cpp
+struct render_env_map {
+    render_texture_cube skybox;
+    render_texture_cube prefilter;
+    render_texture_cube irradiance;
+    real32 strength; // contribution to diffuse and specular lighting
 };
 
 struct render_packet {
@@ -235,7 +238,9 @@ struct render_packet {
     render_light* point_lights;
     uint32 num_spot_lights;
     render_light* spot_lights;
+    render_env_map env_map;
 
+    bool32 draw_skybox;
 
     // internal
     uint32 _num_static, _num_skinned;

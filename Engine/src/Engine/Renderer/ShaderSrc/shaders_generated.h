@@ -74,6 +74,7 @@ struct shader_Lighting {
     ShaderUniform_samplerCube u_irradiance;
     ShaderUniform_samplerCube u_prefilter;
     ShaderUniform_sampler2D   u_brdf_LUT;
+    ShaderUniform_float       u_env_map_contribution;
 
     struct {
         uint32 num_outputs;

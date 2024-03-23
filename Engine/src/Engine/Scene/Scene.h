@@ -37,14 +37,16 @@ struct scene_dir_light {
     laml::Vec3 color;
     real32 strength;
 
-    bool32 cast_shadow;
+    bool cast_shadow;
+    bool enabled;
 };
 struct scene_point_light {
     laml::Vec3 position;
     laml::Vec3 color;
     real32 strength;
 
-    bool32 cast_shadow;
+    bool cast_shadow;
+    bool enabled;
 };
 struct scene_spot_light {
     laml::Vec3 position;
@@ -53,10 +55,14 @@ struct scene_spot_light {
     real32 strength;
     real32 inner, outer; // cone angles in degrees!
 
-    bool32 cast_shadow;
+    bool cast_shadow;
+    bool enabled;
 };
 struct scene_sky_light {
-    uint32 placeholder;
+    resource_env_map environment;
+
+    real32 strength;
+    bool draw_skybox;
 };
 
 struct scene_3D {
@@ -64,7 +70,7 @@ struct scene_3D {
 
     char* name;
 
-    entity_static*  static_entities; // dynarray
+    entity_static*  static_entities;  // dynarray
     entity_skinned* skinned_entities; // dynarray
 
     scene_dir_light sun;

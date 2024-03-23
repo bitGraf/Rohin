@@ -207,6 +207,7 @@ bool32 start_rohin_engine(RohinApp* app) {
         engine.app->initialize(engine.app);
 
         // Game Loop!
+        RH_INFO("------ Starting Main Loop ----------------------");
         while(engine.is_running) {
             if (!platform_process_messages()) {
                 engine.is_running = false;

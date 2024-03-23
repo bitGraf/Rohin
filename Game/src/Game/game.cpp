@@ -111,6 +111,9 @@ void init_game(game_state* state, game_memory* memory) {
     // define basic scene
     create_scene(&state->scene, "basic_scene", &state->arena);
 
+    resource_load_env_map("Data/env_maps/newport_loft.hdr", &state->scene.sky.environment);
+    //resource_load_env_map("Data/env_maps/metro_noord_1k.hdr", &state->scene.sky.environment);
+
     resource_load_static_mesh("Data/Models/helmet.mesh", &state->static_mesh);
     state->static_entity = create_static_entity(&state->scene, "static_entity", &state->static_mesh);
     state->static_entity->position = laml::Vec3(-2.0f, 1.5f, 0.0f);
@@ -141,6 +144,8 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
         init_game(state, memory);
 
         memory->IsInitialized = true;
+
+        RH_INFO("------ Scene Initialized -----------------------");
     }
 
     state->static_entity->euler_ypr[0] += 10.0f * delta_time;
@@ -208,13 +213,24 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
         RH_INFO("Saving scene to '%s'", state->scene_filename);
         serialize_scene(state->scene_filename, &state->scene);
     }
+    if (ImGui::Button("Reload Skybox")) {
+        RH_INFO("Dumb button pressed :3");
+        resource_load_env_map("Data/env_maps/metro_noord_1k.hdr", &state->scene.sky.environment);
+    }
     ImGui::Text("Name: %s", state->scene.name);
     ImGui::SeparatorText("Lighting");
     
+    if (ImGui::TreeNode("Skybox")) {
+        ImGui::DragFloat("Contribution", &state->scene.sky.strength, 0.01f, 0.0f, 1.0f);
+        ImGui::Checkbox("Draw Skybox", &state->scene.sky.draw_skybox);
+        ImGui::TreePop();
+    }
+
     if (ImGui::TreeNode("Sun")) {
-        static real32 sun_yp[2] = { 0.0f, 0.0f };
+        ImGui::Checkbox("Enabled", &state->scene.sun.enabled);
+        static real32 sun_yp[2] = { 0.0f, -90.0f };
     //if (ImGui::CollapsingHeader("Sun")) {
-        ImGui::DragFloat("Strength", &state->scene.sun.strength, 0.5f, 0.0f, 100.0f);
+        ImGui::DragFloat("Strength", &state->scene.sun.strength, 0.1f, 0.0f, 25.0f);
         ImGui::DragFloat2("Direction", sun_yp, 0.5f, -180.0f, 180.0f);
         state->scene.sun.direction = laml::transform::dir_from_yp(sun_yp[0], sun_yp[1]);
         ImGui::ColorPicker3("Color", state->scene.sun.color._data);
@@ -237,6 +253,7 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
             scene_point_light* pl = &state->scene.pointlights[n];
             string_build(label_name, 64, "pointlight #%u", n+1);
             if (ImGui::TreeNode(label_name)) {
+                ImGui::Checkbox("Enabled", &pl->enabled);
                 ImGui::DragFloat3("Position", pl->position._data, 0.01f, -FLT_MAX, FLT_MAX);
                 ImGui::DragFloat3("Color",    pl->color._data,    0.01f,  0.0f, 1.0f);
                 ImGui::DragFloat("Strength", &pl->strength,       0.5f,   0.0f, FLT_MAX);
@@ -266,6 +283,7 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
             scene_spot_light* sl = &state->scene.spotlights[n];
             string_build(label_name, 64, "spotlight #%u", n+1);
             if (ImGui::TreeNode(label_name)) {
+                ImGui::Checkbox("Enabled", &sl->enabled);
                 ImGui::DragFloat3("Position",  sl->position._data,  0.01f, -FLT_MAX, FLT_MAX);
                 ImGui::DragFloat3("Direction", sl->direction._data, 0.01f, -FLT_MAX, FLT_MAX);
                 ImGui::DragFloat3("Color",     sl->color._data,     0.01f,  0.0f, 1.0f);

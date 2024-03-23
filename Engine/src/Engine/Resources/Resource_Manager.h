@@ -32,3 +32,5 @@ RHAPI bool32 resource_load_texture_file(const char* resource_file_name,
 RHAPI bool32 resource_load_texture_file_hdr(const char* resource_file_name,
                                             resource_texture_2D* texture);
 RHAPI bool32 resource_load_texture_debug_cube_map(resource_texture_cube* texture);
+RHAPI bool32 resource_load_env_map(const char* resource_file_name,
+                                   resource_env_map* env_map);

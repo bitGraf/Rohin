@@ -16,7 +16,8 @@ void create_scene(scene_3D* scene, const char* name, memory_arena* arena) {
     scene->pointlights = CreateArray(arena, scene_point_light, 10);
     scene->spotlights  = CreateArray(arena, scene_spot_light,  10);
 
-    scene->sky.placeholder = 0; // placeholder
+    scene->sky.strength = 1.0f;
+    scene->sky.draw_skybox = true;
 
     // reserve dynarrays for entity types
     scene->static_entities  = CreateArray(arena, entity_static,  10);

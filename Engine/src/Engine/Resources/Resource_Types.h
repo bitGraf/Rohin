@@ -118,3 +118,17 @@ struct resource_animation {
 
     bone_anim* bones;
 };
+
+struct resource_env_map {
+    // original equirectangular texture
+    resource_texture_2D src;
+
+    // final output
+    render_env_map map;
+
+    // cubemap dims (all square, rgb32f)
+    uint16 skybox_size;     // 1024
+    uint16 irradiance_size; // 32
+    uint16 prefilter_size;  // 128
+
+};

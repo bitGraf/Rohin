@@ -169,7 +169,7 @@ bool32 resource_load_skinned_mesh(const char* resource_file_name, resource_skinn
         memory_copy(bone.debug_name, file_data->Skeleton.Bones[b].name.str, name_len + 1);
         bone.debug_name[name_len] = 0; // null terminate
 
-        RH_INFO("Bone: [%2d | %2d] '%s'", bone.bone_idx, bone.parent_idx, bone.debug_name);
+        //RH_INFO("Bone: [%2d | %2d] '%s'", bone.bone_idx, bone.parent_idx, bone.debug_name);
     }
 
     return false;

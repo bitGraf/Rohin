@@ -374,6 +374,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         packet->sun.direction = state->current_scene->sun.direction;
         packet->sun.color     = state->current_scene->sun.color;
         packet->sun.strength  = state->current_scene->sun.strength;
+        packet->sun.strength  = state->current_scene->sun.enabled ? state->current_scene->sun.strength : 0.0f;
 
         packet->num_point_lights = (uint32)GetArrayCount(state->current_scene->pointlights);
         packet->num_spot_lights  = (uint32)GetArrayCount(state->current_scene->spotlights);
@@ -382,7 +383,7 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         for (uint32 n = 0; n < packet->num_point_lights; n++) {
             packet->point_lights[n].position = state->current_scene->pointlights[n].position;
             packet->point_lights[n].color    = state->current_scene->pointlights[n].color;
-            packet->point_lights[n].strength = state->current_scene->pointlights[n].strength;
+            packet->point_lights[n].strength  = state->current_scene->pointlights[n].enabled ? state->current_scene->pointlights[n].strength : 0.0f;
         }
 
         packet->spot_lights  = PushArray(packet->arena, render_light, packet->num_spot_lights);
@@ -390,12 +391,18 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
             packet->spot_lights[n].position  = state->current_scene->spotlights[n].position;
             packet->spot_lights[n].direction = state->current_scene->spotlights[n].direction;
             packet->spot_lights[n].color     = state->current_scene->spotlights[n].color;
-            packet->spot_lights[n].strength  = state->current_scene->spotlights[n].strength;
+            packet->spot_lights[n].strength  = state->current_scene->spotlights[n].enabled ? state->current_scene->spotlights[n].strength : 0.0f;
             packet->spot_lights[n].inner     = laml::cosd(state->current_scene->spotlights[n].inner); // precalulate cos(theta)
             packet->spot_lights[n].outer     = laml::cosd(state->current_scene->spotlights[n].outer);
         }
 
-        // todo: environment/sky
+        // environment/sky
+        packet->env_map.skybox     = state->current_scene->sky.environment.map.skybox;
+        packet->env_map.irradiance = state->current_scene->sky.environment.map.irradiance;
+        packet->env_map.prefilter  = state->current_scene->sky.environment.map.prefilter;
+        packet->env_map.strength   = state->current_scene->sky.strength;
+
+        packet->draw_skybox = (bool32)state->current_scene->sky.draw_skybox;
     }
 
     // timing

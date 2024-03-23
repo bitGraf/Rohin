@@ -20,11 +20,11 @@ Bugs to fix:
     [~] sky light
         [x] Split render_texture_2D into render_texture_ and resource_texture
         [x] create new texture types (texture_2D, texture_3D, texture_cube)
-        [ ] pull sky light code out of renderer.cpp, and make reusable
-        [ ] allow scene to set sky light
+        [x] pull sky light code out of renderer.cpp, and make reusable
+        [x] allow scene to set sky light
         [ ] save pre-baked sky light maps to file
         [ ] load pre-baked sky light maps from file
-        [ ] add shader float that controls sky light contribution [0, 1]
+        [x] add shader float that controls sky light contribution [0, 1]
     [ ] !!! Shadows !!!
 
 [ ] Animation

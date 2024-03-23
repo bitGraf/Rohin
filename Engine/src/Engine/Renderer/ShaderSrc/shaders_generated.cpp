@@ -76,6 +76,7 @@ void shader_Lighting::InitShaderLocs() {
     u_prefilter.SamplerID = 5;
       u_brdf_LUT.Location = 399;
       u_brdf_LUT.SamplerID = 6;
+          u_env_map_contribution.Location = 400;
 }
 void shader_Line::InitShaderLocs() {
     outputs.num_outputs = 1;
