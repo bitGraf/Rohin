@@ -22,7 +22,7 @@ enum log_level {
     LOG_LEVEL_TRACE = 5
 };
 
-RHAPI bool32 InitLogging(bool32 create_console);
+RHAPI bool32 InitLogging(bool32 create_console, log_level max_log_level = LOG_LEVEL_INFO);
 RHAPI void ShutdownLogging();
 
 RHAPI void LogOutput(log_level Level, const char* Message, ...);

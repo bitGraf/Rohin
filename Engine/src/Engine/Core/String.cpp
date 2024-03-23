@@ -10,7 +10,7 @@
 #include <string.h>
 
 uint8* AdvanceBufferSize_(uint8** Buffer, uint64 Size, uint8* End) {
-    Assert((*Buffer + Size) <= End);
+    AssertMsg((*Buffer + Size) <= End, "Reached the end of the buffer!");
     uint8* Result = *Buffer;
     *Buffer += Size;
     return Result;

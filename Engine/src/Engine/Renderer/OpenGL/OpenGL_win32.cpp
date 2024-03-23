@@ -331,12 +331,12 @@ bool32 OpenGL_ImGui_End_Frame() {
 //}
 
 void OpenGL_set_swap_interval(int32 interval) {
-    Assert(wglSwapIntervalEXT);
+    AssertMsg(wglSwapIntervalEXT, "wglSwapIntervalEXT is NULL");
     
     wglSwapIntervalEXT(interval);
 }
 int32 OpenGL_get_swap_interval() {
-    Assert(wglGetSwapIntervalEXT);
+    AssertMsg(wglGetSwapIntervalEXT, "wglGetSwapIntervalEXT is NULL");
 
     return wglGetSwapIntervalEXT();
 }

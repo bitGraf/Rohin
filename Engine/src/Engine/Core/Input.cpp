@@ -34,7 +34,7 @@ global_variable input_system_state* global_input_state;
 
 bool32 input_init(struct memory_arena* arena) {
     global_input_state = PushStruct(arena, input_system_state);
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
 
     for (uint16 n = 0; n < KEY_MAX_KEYS; n++) {
         global_input_state->keyboard_current.keys[n] = 0;
@@ -53,7 +53,7 @@ void input_shutdown() {
 }
 
 void input_update(real32 delta_time) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
 
     platform_update_mouse();
 
@@ -70,7 +70,7 @@ void input_update(real32 delta_time) {
 
 // internal functions to respond to key events
 void input_process_key(keyboard_keys key, uint8 pressed) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
 
     // only if the state has changed since last call/update
     if (global_input_state->keyboard_current.keys[key] != pressed) {
@@ -83,7 +83,7 @@ void input_process_key(keyboard_keys key, uint8 pressed) {
 }
 
 void input_process_mouse_button(mouse_button_codes button, uint8 pressed) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
 
     // only if the state has changed since last call/update
     if (global_input_state->mouse_current.buttons[button] != pressed) {
@@ -95,7 +95,7 @@ void input_process_mouse_button(mouse_button_codes button, uint8 pressed) {
     }
 }
 void input_process_mouse_move(int32 mouse_x, int32 mouse_y) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
 
     // only if the state has changed since last call/update
     if (global_input_state->mouse_current.x_pos != mouse_x || 
@@ -113,14 +113,14 @@ void input_process_mouse_move(int32 mouse_x, int32 mouse_y) {
     }
 }
 void input_process_raw_mouse_move(int32 mouse_dx, int32 mouse_dy) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
 
     global_input_state->mouse_raw_dx += mouse_dx;
     global_input_state->mouse_raw_dy += mouse_dy;
 }
 
 void input_process_mouse_wheel(int32 mouse_z) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
 
     event_context data;
     data.i32[0] = mouse_z;
@@ -131,19 +131,19 @@ void input_process_mouse_wheel(int32 mouse_z) {
 // Key down is true!
 // Up is false!
 RHAPI bool32 input_is_key_down(keyboard_keys key) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     return (bool)global_input_state->keyboard_current.keys[key] == true;
 }
 RHAPI bool32 input_is_key_up(keyboard_keys key) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     return (bool)global_input_state->keyboard_current.keys[key] == false;
 }
 RHAPI bool32 input_was_key_down(keyboard_keys key) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     return (bool)global_input_state->keyboard_previous.keys[key] == true;
 }
 RHAPI bool32 input_was_key_up(keyboard_keys key) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     return (bool)global_input_state->keyboard_previous.keys[key] == false;
 }
 
@@ -151,34 +151,34 @@ RHAPI bool32 input_was_key_up(keyboard_keys key) {
 // Key down is true!
 // Up is false!
 RHAPI bool32 input_is_button_down(mouse_button_codes button) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     return (bool)global_input_state->mouse_current.buttons[button] == true;
 }
 RHAPI bool32 input_is_button_up(mouse_button_codes button) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     return (bool)global_input_state->mouse_current.buttons[button] == false;
 }
 RHAPI bool32 input_was_button_down(mouse_button_codes button) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     return (bool)global_input_state->mouse_previous.buttons[button] == true;
 }
 RHAPI bool32 input_was_button_up(mouse_button_codes button) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     return (bool)global_input_state->mouse_previous.buttons[button] == false;
 }
 
 void input_get_mouse_pos(int32* x, int32* y) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     *x = global_input_state->mouse_current.x_pos;
     *y = global_input_state->mouse_current.y_pos;
 }
 void input_get_prev_mouse_pos(int32* x, int32* y) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     *x = global_input_state->mouse_previous.x_pos;
     *y = global_input_state->mouse_previous.y_pos;
 }
 void input_get_raw_mouse_offset(int32* dx, int32* dy) {
-    Assert(global_input_state);
+    AssertMsg(global_input_state, "global_input_state is NULL");
     *dx = global_input_state->mouse_raw_dx;
     *dy = global_input_state->mouse_raw_dy;
 }

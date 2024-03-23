@@ -376,7 +376,7 @@ void platform_free(void* memory) {
     VirtualFree(memory, 0, MEM_RELEASE);
 }
 
-void platform_assert_message(const char* fmt, ...) {
+bool32 platform_assert_message(const char* fmt, ...) {
     char MsgBuffer[1024];
 
     va_list args;
@@ -385,9 +385,15 @@ void platform_assert_message(const char* fmt, ...) {
     va_end(args);
 
     int button_pressed = MessageBox(NULL, MsgBuffer, 
-                                    "Assertion Failed!", 
-                                    MB_ABORTRETRYIGNORE | MB_ICONEXCLAMATION | MB_DEFBUTTON1 | MB_TASKMODAL);
+                                    "Assertion Failed! Ignore?", 
+                                    MB_YESNO | MB_ICONEXCLAMATION | MB_DEFBUTTON1 | MB_TASKMODAL);
+
     RH_INFO("You pressed button [%d] in response", button_pressed);
+    if (button_pressed == IDYES) {
+        return false;
+    }
+
+    return true;
 }
 
 global_variable WORD console_level_colors[6] = {64, 4, 6, 2, 1, 8};
@@ -656,11 +662,11 @@ void* memory_set(void* memory, uint8 value, uint64 size) {
 
 // file IO
 size_t platform_get_full_resource_path(char* buffer, size_t buffer_length, const char* resource_path) {
-    Assert(global_win32_state.resource_path_prefix);
+    AssertMsg(global_win32_state.resource_path_prefix, "ResourcePathPrefix is not set yet!");
 
     size_t resource_path_length = StringLength(resource_path);
 
-    Assert(resource_path_length + global_win32_state.resource_path_prefix_length < buffer_length);
+    AssertMsg(resource_path_length + global_win32_state.resource_path_prefix_length < buffer_length, "ResourcePathPrefix is too long!");
     CatStrings(global_win32_state.resource_path_prefix_length, global_win32_state.resource_path_prefix,
                resource_path_length, resource_path,
                buffer_length, buffer);
@@ -675,11 +681,11 @@ size_t platform_get_full_resource_path(char* buffer, size_t buffer_length, const
     return full_length;
 }
 size_t platform_get_full_library_path(char* buffer, size_t buffer_length, const char* library_path) {
-    Assert(global_win32_state.library_path_prefix);
+    AssertMsg(global_win32_state.library_path_prefix, "LibraryPathPrefix is not set yet!");
 
     size_t resource_path_length = StringLength(library_path);
 
-    Assert(resource_path_length + global_win32_state.library_path_prefix_length < buffer_length);
+    AssertMsg(resource_path_length + global_win32_state.library_path_prefix_length < buffer_length, "LibraryPathPrefix is too long!");
     CatStrings(global_win32_state.library_path_prefix_length, global_win32_state.library_path_prefix,
                resource_path_length, library_path,
                buffer_length, buffer);
@@ -711,7 +717,7 @@ file_handle platform_read_entire_file(const char* full_path) {
             DWORD BytesRead;
             if (Buffer) {
                 if (ReadFile(FileHandle, Buffer, (DWORD)FileSizeBytes.QuadPart, &BytesRead, NULL)) {
-                    Assert((BytesRead+1) == FileSizeBytes.QuadPart);// +1 for null-terminator!
+                    AssertMsg((BytesRead+1) == FileSizeBytes.QuadPart, "Did not read the whole file!");// +1 for null-terminator!
 
                     file.num_bytes = BytesRead;
                     file.data = (uint8*)Buffer;
@@ -733,7 +739,7 @@ file_handle platform_read_entire_file(const char* full_path) {
     return file;
 }
 void platform_free_file_data(file_handle* handle) {
-    Assert(handle);
+    AssertMsg(handle, "Freeing a NULL file handle");
     if (handle->num_bytes > 0 && handle->data) {
         VirtualFree(handle->data, 0, MEM_RELEASE);
     }

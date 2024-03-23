@@ -35,7 +35,7 @@ void* ArrayPushPtr(void* dynarray, void* data_ptr, uint64 data_size) {
     uint64 capacity = ((uint64*)dynarray)[DYNARRAY_CAPACITY];
     memory_arena* arena = ((memory_arena**)dynarray)[DYNARRAY_ARENA];
 
-    Assert(data_size <= stride && "Tried to push too many bytes to a dynamic array!");
+    AssertMsg(data_size <= stride, "Tried to push too many bytes to a dynamic array!");
 
     if ((count+1) > capacity) {
         // Need to auto resize!
@@ -125,7 +125,7 @@ void* _ArrayPeek_(void* dynarray) {
     uint64 capacity = ((uint64*)dynarray)[DYNARRAY_CAPACITY];
     memory_arena* arena = ((memory_arena**)dynarray)[DYNARRAY_ARENA];
 
-    Assert(count > 0 && "Tried to pop from an array with count 0");
+    AssertMsg(count > 0, "Tried to pop from an array with count 0");
 
     // get last element
     uint64 offset = (count-1) * stride;

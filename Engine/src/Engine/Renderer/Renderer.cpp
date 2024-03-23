@@ -93,7 +93,7 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
 }
 
 bool32 renderer_create_pipeline() {
-    Assert(render_state);
+    AssertMsg(render_state, "render_state is NULL");
 
     RH_DEBUG("Creating Render Pipeline");
     time_point pipeline_start = start_timer();
@@ -631,7 +631,7 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
                     backend->bind_texture_2D(mat.EmissiveTexture, prepass_skinned.u_EmissiveTexture.SamplerID);
 
                     // upload skeleton data
-                    Assert(cmd.skeleton_idx);
+                    AssertMsg(cmd.skeleton_idx, "Trying to render Skinned mesh with skeleton_idx 0!");
                     const render_skeleton& skeleton = packet->skeletons[cmd.skeleton_idx];
                     backend->upload_uniform_int(prepass_skinned.r_UseSkin, render_state->use_skins);
                     for (uint32 b = 0; b < skeleton.num_bones; b++) {

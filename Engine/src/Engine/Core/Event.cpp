@@ -121,7 +121,7 @@ bool32 event_fire(uint16 code, void* sender, event_context context) {
 
     for (uint16 n = 0; n < event_entry->num_listeners; n++) {
         registered_event* event = &event_entry->events[n];
-        Assert(event->callback);
+        AssertMsg(event->callback, "Event callback is NULL");
         //RH_TRACE("Firing event code %d to listener %d", code, n);
         if (event->callback(code, sender, event->listener, context)) {
             return true; // callback is handled, stop propogating this message

@@ -32,7 +32,7 @@ bool32 parse_anim_file(const char* resource_file_name, anim_file **anim_file_dat
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
 
-    RH_DEBUG("Full filename: [%s]", full_path);
+    RH_TRACE("Full filename: [%s]", full_path);
 
     file_handle file = platform_read_entire_file(full_path);
     if (!file.num_bytes) {
@@ -45,7 +45,7 @@ bool32 parse_anim_file(const char* resource_file_name, anim_file **anim_file_dat
     anim_file_header* Header = AdvanceBuffer(&file.data, anim_file_header, End);
 
     if (!CheckHeader(Header, file.num_bytes)) {
-        Assert(!"Incorrect header\n");
+        AssertMsg(false, "Incorrect .anim file header!");
         return false;
     }
 
@@ -94,9 +94,9 @@ bool32 parse_anim_file(const char* resource_file_name, anim_file **anim_file_dat
 
     uint8* EndTag = AdvanceBufferArray(&file.data, uint8, 4, End); // VERT
     if (!CheckTag(EndTag, "END", 4)) {
-        Assert(!"Did not end up at the correct place in the file ;~;\n");
+        AssertMsg(false, "Did not end up at the correct place in the file ;~;\n");
     }
-    Assert(file.data == End);
+    AssertMsg(file.data == End, "Not at the end of the file");
 
     platform_free_file_data(&file);
 

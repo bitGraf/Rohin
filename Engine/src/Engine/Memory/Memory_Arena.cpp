@@ -13,7 +13,7 @@ void ResetArena(memory_arena* Arena) {
 }
 
 void* PushSize_(memory_arena* Arena, memory_index Size) {
-    Assert((Arena->Used + Size) <= Arena->Size);
+    AssertMsg((Arena->Used + Size) <= Arena->Size, "Arena ran out of memory");
     void* Result = Arena->Base + Arena->Used;
     Arena->Used += Size;
 
@@ -21,7 +21,7 @@ void* PushSize_(memory_arena* Arena, memory_index Size) {
 }
 
 memory_arena CreateSubArena(memory_arena* BaseArena, memory_index SubArenaSize) {
-    Assert((BaseArena->Size - BaseArena->Used) >= SubArenaSize);
+    AssertMsg((BaseArena->Size - BaseArena->Used) >= SubArenaSize, "SubArena is too large");
     memory_arena sub_arena;
 
     CreateArena(&sub_arena, SubArenaSize, BaseArena->Base + BaseArena->Used);

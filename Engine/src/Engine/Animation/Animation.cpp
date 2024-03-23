@@ -94,7 +94,7 @@ void define_parameter(animation_controller* controller, uint32 param_idx,
                     param.curr_value.as_float = default_value;
                 } break;
                 default: { 
-                    Assert(!"Invalid PARAM_TYPE set"); 
+                    AssertMsg(false, "Invalid PARAM_TYPE set"); 
                 } break;
             }
         } break;
@@ -103,7 +103,7 @@ void define_parameter(animation_controller* controller, uint32 param_idx,
             param.type = param_type::PARAM_INT; // doesn't make sense for key_events to be floats
         } break;
         case param_mode::PARAM_NONE: {
-            Assert(!"Invalid PARAM_MODE set"); 
+            AssertMsg(false, "Invalid PARAM_MODE set"); 
         } break;
     }
 }
@@ -277,47 +277,47 @@ RHAPI bool32 validate_controller(animation_controller* controller) {
 
     // check all params are defined
     uint32 num_params = graph.num_params;
-    Assert(num_params != 0 && "0 params defined");
-    Assert(num_params < 1024 && "Too many params defined");
-    Assert(graph.params != nullptr && "Param array not allocated");
+    AssertMsg(num_params != 0, "0 params defined");
+    AssertMsg(num_params < 1024, "Too many params defined");
+    AssertMsg(graph.params != nullptr, "Param array not allocated");
     for (uint32 n = 0; n < num_params; n++) {
         const anim_graph_param& param = graph.params[n];
 
-        Assert(param.type != param_type::PARAM_NONE && "PARAM_TYPE cannot be PARAM_NONE");
-        Assert(param.mode != param_mode::PARAM_NONE && "PARAM_MODE cannot be PARAM_NONE");
+        AssertMsg(param.type != param_type::PARAM_NONE, "PARAM_TYPE cannot be PARAM_NONE");
+        AssertMsg(param.mode != param_mode::PARAM_NONE, "PARAM_MODE cannot be PARAM_NONE");
 
         if (param.mode == param_mode::PARAM_POLL) {
-            Assert(param.update.watch_ptr != nullptr && "Watching a void pointer");
+            AssertMsg(param.update.watch_ptr != nullptr, "Watching a void pointer");
         }
-        Assert(param.name != nullptr && "Param name is not set");
+        AssertMsg(param.name != nullptr, "Param name is not set");
     }
 
     // check all nodes are defineds
     uint32 num_nodes = graph.num_nodes;
-    Assert(num_nodes != 0 && "0 nodes defined");
-    Assert(num_nodes < 1024 && "Too many nodes defined");
-    Assert(graph.nodes != nullptr && "Node array not allocated");
+    AssertMsg(num_nodes != 0, "0 nodes defined");
+    AssertMsg(num_nodes < 1024, "Too many nodes defined");
+    AssertMsg(graph.nodes != nullptr, "Node array not allocated");
     for (uint32 n = 0; n < num_nodes; n++) {
         const anim_graph_node& node = graph.nodes[n];
 
         // check connections
         uint32 num_connections = node.num_connections;
-        Assert(num_connections != 0    && "0 connections defined");
-        Assert(num_connections <  1024 && "Too many connections defined");
-        Assert(node.connections != nullptr && "Connections arra not allocated");
+        AssertMsg(num_connections != 0, "0 connections defined");
+        AssertMsg(num_connections <  1024, "Too many connections defined");
+        AssertMsg(node.connections != nullptr, "Connections arra not allocated");
 
         for (uint32 c = 0; c < num_connections; c++) {
             const anim_graph_connection& con = node.connections[c];
 
-            Assert(con.node  < graph.num_nodes  && "Connection referencing node that doesn't exist");
-            Assert(con.param < graph.num_params && "Connection referencing param that doesn't exist");
-            Assert(con.trigger_type != trigger_type::TRIGGER_NONE && "TRIGGER_TYPE cannot be TRIGGER_NONE");
+            AssertMsg(con.node  < graph.num_nodes,  "Connection referencing node that doesn't exist");
+            AssertMsg(con.param < graph.num_params, "Connection referencing param that doesn't exist");
+            AssertMsg(con.trigger_type != trigger_type::TRIGGER_NONE, "TRIGGER_TYPE cannot be TRIGGER_NONE");
         }
 
-        Assert(node.anim_length > 0.0 && "Animation length must be non-zero");
+        AssertMsg(node.anim_length > 0.0, "Animation length must be non-zero");
 
-        Assert(node.anim != nullptr && "Node anim is not set");
-        Assert(node.name != nullptr && "Node name is not set");
+        AssertMsg(node.anim != nullptr, "Node anim is not set");
+        AssertMsg(node.name != nullptr, "Node name is not set");
     }
 
     return true;

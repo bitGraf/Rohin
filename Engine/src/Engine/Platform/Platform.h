@@ -35,7 +35,7 @@ RHAPI void platform_shutdown();
 bool32 platform_process_messages();
 void* platform_alloc(uint64 size, uint64 base_address);
 void platform_free(void* memory);
-void platform_assert_message(const char* fmt, ...);
+bool32 platform_assert_message(const char* fmt, ...);
 void platform_console_write_error(const char* Message, uint8 Color);
 void platform_console_write(const char* Message, uint8 Color);
 void platform_console_set_title(const char* Message, ...);

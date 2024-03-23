@@ -63,7 +63,7 @@ bool32 resource_load_level_file(const char* resource_file_name, level_data* data
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
 
-    RH_DEBUG("Full filename: [%s]", full_path);
+    RH_TRACE("Full filename: [%s]", full_path);
 
     file_handle file = platform_read_entire_file(full_path);
     if (!file.num_bytes) {

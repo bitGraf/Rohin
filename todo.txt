@@ -40,5 +40,8 @@ Bugs to fix:
     [ ] !!! serialize scene to file !!!
     [ ] !!! load scene from file    !!!
 
-[ ] Assert pass
-    [ ] Use AssertMsg() for many cases that use Assrt() right now
+[x] Assert pass
+    [x] Use AssertMsg() for many cases that use Assert() right now
+    [x] Create global max_log_level variable that disables messages
+
+[ ] Config file for basic runtime settings

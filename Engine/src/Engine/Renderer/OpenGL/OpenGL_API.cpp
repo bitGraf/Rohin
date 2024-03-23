@@ -24,14 +24,9 @@ internal_func GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType Type) {
         case ShaderDataType::Int4:   return GL_INT;
 
         case ShaderDataType::Bool:   return GL_BOOL;
-
-        case ShaderDataType::None:   {
-            Assert(false);
-            return 0;
-        }
     }
 
-    Assert(false);
+    AssertMsg(false, "Invalid ShaderDataType");
     return 0;
 }
 
@@ -49,14 +44,9 @@ internal_func bool IsIntegerType(ShaderDataType Type) {
         case ShaderDataType::Mat3:   return false;
         case ShaderDataType::Mat4:   return false;
         case ShaderDataType::Bool:   return false;
-
-        case ShaderDataType::None:   {
-            Assert(false);
-            return false;
-        }
     }
 
-    Assert(false);
+    AssertMsg(false, "Invalid ShaderDataType");
     return 0;
 }
 
@@ -77,14 +67,9 @@ internal_func uint32 GetComponentCount(ShaderDataType Type) {
 
         case ShaderDataType::Mat3:   return 3 * 3;
         case ShaderDataType::Mat4:   return 4 * 4;
-
-        case ShaderDataType::None:   {
-            Assert(false);
-            return 0;
-        }
     }
 
-    Assert(false);
+    AssertMsg(false, "Invalid ShaderDataType");
     return 0;
 }
 
@@ -105,14 +90,9 @@ internal_func uint32 ShaderDataTypeSize(ShaderDataType Type) {
 
         case ShaderDataType::Mat3:   return 4 * 3 * 3;
         case ShaderDataType::Mat4:   return 4 * 4 * 4;
-
-        case ShaderDataType::None:   {
-            Assert(false);
-            return 0;
-        }
     }
 
-    Assert(false);
+    AssertMsg(false, "Invalid ShaderDataType");
     return 0;
 }
 
@@ -320,7 +300,7 @@ void OpenGL_api::create_texture_2D(struct render_texture_2D* texture,
             Format = GL_RGBA;
         } break;
         default:
-            Assert(false);
+            AssertMsg(false, "Invalid number of channels");
     }
 
     glTexImage2D(GL_TEXTURE_2D, 0, InternalFormat, create_info.width, create_info.height, 0, Format, Type, data);
@@ -362,7 +342,7 @@ void OpenGL_api::create_texture_cube(struct render_texture_cube* texture,
             Format = GL_RGBA;
         } break;
         default:
-            Assert(false);
+            AssertMsg(false, "Invalid number of channels");
     }
 
     bool32 has_mips = mip_levels > 1;
@@ -427,10 +407,10 @@ vertex_layout calculate_stride(const ShaderDataType* attributes) {
     vertex_layout layout = {};
     for (const ShaderDataType* scan = attributes; *scan != ShaderDataType::None; scan++) {
         layout.num_attributes++;
-        Assert(layout.num_attributes < MAX_VERTEX_ATTRIBUTES); // just limit it to a reasonable amount now
+        AssertMsg(layout.num_attributes < MAX_VERTEX_ATTRIBUTES, "Too many vertex attributes!"); // just limit it to a reasonable amount now
         layout.stride += ShaderDataTypeSize(*scan);
     }
-    Assert(layout.num_attributes > 0);
+    AssertMsg(layout.num_attributes > 0, "Zero vertex attributes assigned!");
     return layout;
 }
 
@@ -535,12 +515,12 @@ internal_func const uint8*
 bool32 OpenGL_api::create_shader(shader* shader_prog, const uint8* shader_source, uint64 num_bytes) {
     const uint8* VertexStart = shader_source;
     VertexStart = FindAfterToken(shader_source, num_bytes, "#type vertex");
-    Assert(VertexStart);
+    AssertMsg(VertexStart, "Could not find '#type vertex' tag!");
     VertexStart++;
 
     const uint8* FragmentStart = shader_source;
     FragmentStart = FindAfterToken(shader_source, num_bytes, "#type fragment");
-    Assert(FragmentStart);
+    AssertMsg(FragmentStart, "Could not find '#type fragment' tag!");
     FragmentStart++;
 
     uint32 VertexLength   = (uint32)((FragmentStart - VertexStart) - sizeof("#type fragment") - 1);

@@ -24,7 +24,7 @@ void resource_shutdown() {
 }
 
 memory_arena* resource_get_arena() {
-    Assert(resource_arena);
+    AssertMsg(resource_arena, "resource_arena is NULL!");
 
     return resource_arena;
 }
@@ -34,7 +34,7 @@ bool32 resource_load_debug_mesh_data(const char* resource_file_name, debug_geome
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
 
-    RH_DEBUG("Full filename: [%s]", full_path);
+    RH_TRACE("Full filename: [%s]", full_path);
 
     file_handle file = platform_read_entire_file(full_path);
     if (!file.num_bytes) {

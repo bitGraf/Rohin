@@ -13,34 +13,37 @@
         #define debugBreak() __builtin_trap()
     #endif
 
-    RHAPI void ReportAssertionFailure(const char* expression, const char* message, const char* file, int32 line);
+    RHAPI bool32 ReportAssertionFailure(const char* expression, const char* message, const char* file, int32 line);
 
-    #define Assert(expr)                                                 \
-        {                                                                \
-            if (expr) {                                                  \
-            } else {                                                     \
-                ReportAssertionFailure(#expr, "", __FILE__, __LINE__);   \
-                debugBreak();                                            \
-            }                                                            \
+    #define Assert(expr)                                                        \
+        {                                                                       \
+            if (expr) {                                                         \
+            } else {                                                            \
+                if (ReportAssertionFailure(#expr, "", __FILE__, __LINE__)) {    \
+                    debugBreak();                                               \
+                }                                                               \
+            }                                                                   \
         }
 
-    #define AssertMsg(expr, message)                                         \
-        {                                                                     \
-            if (expr) {                                                       \
-            } else {                                                          \
-                ReportAssertionFailure(#expr, message, __FILE__, __LINE__);   \
-                debugBreak();                                                 \
-            }                                                                 \
+    #define AssertMsg(expr, message)                                                \
+        {                                                                           \
+            if (expr) {                                                             \
+            } else {                                                                \
+                if (ReportAssertionFailure(#expr, message, __FILE__, __LINE__)) {   \
+                    debugBreak();                                                   \
+                }                                                                   \
+            }                                                                       \
         }
 
     #ifdef _DEBUG
-        #define AssertDebug(expr)                                           \
-            {                                                                \
-                if (expr) {                                                  \
-                } else {                                                     \
-                    ReportAssertionFailure(#expr, "", __FILE__, __LINE__);   \
-                    debugBreak();                                            \
-                }                                                            \
+        #define AssertDebug(expr)                                                \
+            {                                                                    \
+                if (expr) {                                                      \
+                } else {                                                         \
+                    if (ReportAssertionFailure(#expr, "", __FILE__, __LINE__))   \
+                        debugBreak();                                            \
+                    }                                                            \
+                }                                                                \
             }
     #else
         #define Assert_debug(expr)  // Does nothing at all

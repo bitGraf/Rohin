@@ -18,7 +18,7 @@ bool32 resource_load_texture_file(const char* resource_file_name,
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
 
-    RH_DEBUG("Full filename: [%s]", full_path);
+    RH_TRACE("Full filename: [%s]", full_path);
 
     file_handle file = platform_read_entire_file(full_path);
     if (!file.num_bytes) {
@@ -62,7 +62,7 @@ bool32 resource_load_texture_file_hdr(const char* resource_file_name,
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
 
-    RH_DEBUG("Full filename: [%s]", full_path);
+    RH_TRACE("Full filename: [%s]", full_path);
 
     file_handle file = platform_read_entire_file(full_path);
     if (!file.num_bytes) {
@@ -121,7 +121,7 @@ bool32 resource_load_texture_debug_cube_map(resource_texture_cube* texture) {
 
         platform_get_full_resource_path(full_path, 256, cube_sides[face]);
 
-        RH_DEBUG("Full filename: [%s]", full_path);
+        RH_TRACE("Full filename: [%s]", full_path);
 
         file_handle file = platform_read_entire_file(full_path);
         if (!file.num_bytes) {
@@ -165,7 +165,7 @@ bool32 resource_load_env_map(const char* resource_file_name,
     char full_path[256];
     platform_get_full_resource_path(full_path, 256, resource_file_name);
 
-    RH_DEBUG("Full filename: [%s]", full_path);
+    RH_TRACE("Full filename: [%s]", full_path);
 
     memory_arena* arena = resource_get_arena();
 
@@ -398,9 +398,9 @@ bool32 resource_load_texture_cube_map_with_mips(const char* resource_file_base_n
                 int32 mip_width  = (int32)((real32)(cube_width)  * std::pow(0.5, mip));
                 int32 mip_height = (int32)((real32)(cube_height) * std::pow(0.5, mip));
 
-                Assert(face_width == mip_width);
-                Assert(face_height == mip_height);
-                Assert(face_num_channels == num_channels);
+                AssertMsg(face_width == mip_width, "Cubemap Face has different width than the rest");
+                AssertMsg(face_height == mip_height, "Cubemap Face has different height than the rest");
+                AssertMsg(face_num_channels == num_channels, "Cubemap Face has different num_channels than the rest");
             }
             platform_free_file_data(&file);
 
@@ -475,9 +475,9 @@ bool32 resource_load_texture_cube_map_hdr_with_mips(const char* resource_file_ba
                 int32 mip_width  = (int32)((real32)(cube_width)  * std::pow(0.5, mip));
                 int32 mip_height = (int32)((real32)(cube_height) * std::pow(0.5, mip));
 
-                Assert(face_width == mip_width);
-                Assert(face_height == mip_height);
-                Assert(face_num_channels == num_channels);
+                AssertMsg(face_width == mip_width,           "Cubemap Face has different width than the rest, or incorrect mip-map size");
+                AssertMsg(face_height == mip_height,         "Cubemap Face has different height than the rest, or incorrect mip-map size");
+                AssertMsg(face_num_channels == num_channels, "Cubemap Face has different num_channels than the rest");
             }
             platform_free_file_data(&file);
 
