@@ -11,7 +11,7 @@ popd
 
 
 set Name=rohin
-set WarningFlags=/W4 /WX /wd4189 /wd4201 /wd4100
+set WarningFlags=/W4 /WX /wd4189 /wd4201 /wd4100 /wd4505
 set Definitions=/D_CRT_SECURE_NO_WARNINGS /D_DEBUG /DRH_EXPORT /DRH_INTERNAL /DRH_PLATFORM_WINDOWS /DRH_COMPILE_OPENGL_4_4
 set CompilerFlags=/MTd /nologo /Gm- /GR- /EHa- /Odi /std:c++14 %WarningFlags% /FC /Z7 %Definitions% /LD
 set IncludeDirs=/Isrc /Ideps/math_lib/include /Ideps/stb /Ideps/imgui/imgui

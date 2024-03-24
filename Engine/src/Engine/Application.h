@@ -6,7 +6,7 @@ struct render_packet;
 
 struct RohinAppArgs {
     bool32 create_console;
-    const char* data_path;
+    //const char* data_path;
 
     // raw
     int argc;
@@ -23,6 +23,8 @@ struct RohinAppConfig {
 
     uint64 requested_permanant_memory;
     uint64 requested_transient_memory;
+
+    log_level app_log_level;
 
     RohinAppArgs args;
 };

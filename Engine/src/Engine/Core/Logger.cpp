@@ -2,10 +2,12 @@
 #include "Asserts.h"
 #include "Engine/Platform/Platform.h"
 
+#include "Engine/Core/String.h"
+
 #include <stdio.h>
 #include <stdarg.h>
 
-global_variable log_level max_log_level;
+global_variable log_level max_log_level = log_level::LOG_LEVEL_TRACE;
 
 bool32 InitLogging(bool32 create_console, log_level max_level) {
     max_log_level = max_level;
@@ -14,6 +16,37 @@ bool32 InitLogging(bool32 create_console, log_level max_level) {
 }
 
 void ShutdownLogging() {
+}
+
+/*
+ *  LOG_LEVEL_FATAL = 0,
+ *  LOG_LEVEL_ERROR = 1,
+ *  LOG_LEVEL_WARN  = 2,
+ *  LOG_LEVEL_INFO  = 3,
+ *  LOG_LEVEL_DEBUG = 4,
+ *  LOG_LEVEL_TRACE = 5
+ */
+log_level log_level_from_string(char* log_level_str) {
+    if (string_compare(log_level_str, "FATAL") == 0) {
+        return log_level::LOG_LEVEL_FATAL;
+    }
+    if (string_compare(log_level_str, "ERROR") == 0) {
+        return log_level::LOG_LEVEL_ERROR;
+    }
+    if (string_compare(log_level_str, "WARN") == 0) {
+        return log_level::LOG_LEVEL_WARN;
+    }
+    if (string_compare(log_level_str, "INFO") == 0) {
+        return log_level::LOG_LEVEL_INFO;
+    }
+    if (string_compare(log_level_str, "DEBUG") == 0) {
+        return log_level::LOG_LEVEL_DEBUG;
+    }
+    if (string_compare(log_level_str, "TRACE") == 0) {
+        return log_level::LOG_LEVEL_TRACE;
+    }
+
+    return log_level::LOG_LEVEL_INFO;
 }
 
 void LogOutput(log_level Level, const char* Message, ...) {

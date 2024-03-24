@@ -17,6 +17,18 @@ uint8* AdvanceBufferSize_(uint8** Buffer, uint64 Size, uint8* End) {
     return Result;
 }
 
+uint64 string_copy(char* dst_buffer, uint64 dst_buf_size, char* src_buffer) {
+    uint64 num_copied = 0;
+    for (uint64 n = 0; n < dst_buf_size; n++) {
+        dst_buffer[n] = src_buffer[n];
+        num_copied++;
+        
+        // check after, so we still copy the null-terminator
+        if (src_buffer[n] == 0) break;
+    }
+    return num_copied;
+}
+
 uint64 string_length(char* buffer) {
     uint64 len = 0;
     for (char* scan = buffer; *scan; scan++) {
@@ -78,7 +90,6 @@ void string_replace(char* buffer, uint64 buf_size, char replace_this, char with_
 }
 
 uint64 string_find_first(char* buffer, char* end, char token) {
-
     for (char* scan = buffer; (scan < end) && (*scan); scan++) {
         if (*scan == token) {
             return (scan - buffer);
@@ -86,6 +97,17 @@ uint64 string_find_first(char* buffer, char* end, char token) {
     }
     
     return (end-buffer);
+}
+
+uint64 string_find_last(char* buffer, char* end, char token) {
+    uint64 last = 0;
+    for (char* scan = buffer; (scan < end) && (*scan); scan++) {
+        if (*scan == token) {
+            last = (scan - buffer);
+        }
+    }
+    
+    return last;
 }
 
 char* string_skip_whitespace(char* buffer, char* end) {

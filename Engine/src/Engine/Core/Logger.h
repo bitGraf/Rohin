@@ -13,17 +13,9 @@
 #define LOG_TRACE_ENABLED 0
 #endif
 
-enum log_level {
-    LOG_LEVEL_FATAL = 0,
-    LOG_LEVEL_ERROR = 1,
-    LOG_LEVEL_WARN = 2,
-    LOG_LEVEL_INFO = 3,
-    LOG_LEVEL_DEBUG = 4,
-    LOG_LEVEL_TRACE = 5
-};
-
 RHAPI bool32 InitLogging(bool32 create_console, log_level max_log_level = LOG_LEVEL_INFO);
 RHAPI void ShutdownLogging();
+RHAPI log_level log_level_from_string(char* log_level_str);
 
 RHAPI void LogOutput(log_level Level, const char* Message, ...);
 

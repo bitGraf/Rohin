@@ -13,11 +13,18 @@ bool32 create_application(RohinApp* app);
 #include <Engine/Entry_Point.h>
 
 bool32 create_application(RohinApp* app) {
+    // setup paths early, so we can load a config file here
+    if (!platform_setup_paths()) {
+        RH_FATAL("Either not find the /Data/ directory, or could not change directory properly");
+        return false;
+    }
+
     uint8 arena_buffer[2048];
     memory_zero(arena_buffer, sizeof(arena_buffer));
     memory_arena arena;
     CreateArena(&arena, sizeof(arena_buffer), arena_buffer);
-    const char* config_filename = "Game/run_tree/startup.conf";
+    const char* config_filename = "startup.conf";
+
     config_file config = parse_config_from_file(&arena, config_filename, "startup.conf");
 
     if (config.load_successful) {
@@ -32,8 +39,14 @@ bool32 create_application(RohinApp* app) {
 
         app->app_config.requested_permanant_memory = Megabytes(get_config_int(&config, "app_config.memory.requested_permanant_memory", 32));
         app->app_config.requested_transient_memory = Megabytes(get_config_int(&config, "app_config.memory.requested_transient_memory", 256));
+
+        char* log_level_str = get_config_string(&config, "app_config.log_level", "INFO");
+        app->app_config.app_log_level = log_level_from_string(log_level_str);
+
     } else {
         memory_copy(app->app_config.application_name, "Rohin App", 10);
+
+        app->app_config.app_log_level = log_level::LOG_LEVEL_INFO;
 
         app->app_config.start_x = 10;
         app->app_config.start_y = 10;

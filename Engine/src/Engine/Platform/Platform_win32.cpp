@@ -5,6 +5,7 @@
 #include "Engine/Core/Event.h"
 #include "Engine/Memory/Memory.h"
 #include "Engine/Core/Input.h"
+#include "Engine/Core/String.h"
 
 #ifdef RH_PLATFORM_WINDOWS
 
@@ -29,20 +30,20 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #endif
 
 // platform_win32.cpp manages this struct, no one else needs to access it
-#define WIN32_STATE_FILE_NAME_COUNT MAX_PATH
+#define WIN32_STATE_FILE_NAME_COUNT (MAX_PATH)
 struct PlatformState {
     HINSTANCE instance;
     HWND window;
     LPSTR command_line;
 
-    char exe_filename[WIN32_STATE_FILE_NAME_COUNT];
-    char *one_past_last_slash_exe_filename;
+    char exe_path[WIN32_STATE_FILE_NAME_COUNT];
+    uint64 exe_path_len;
 
     char resource_path_prefix[WIN32_STATE_FILE_NAME_COUNT];
-    uint32 resource_path_prefix_length;
+    uint64 resource_path_prefix_length;
 
     char library_path_prefix[WIN32_STATE_FILE_NAME_COUNT];
-    uint32 library_path_prefix_length;
+    uint64 library_path_prefix_length;
 
     WINDOWPLACEMENT window_position; // save the last window position for fullscreen purposes
     real64 inv_performance_counter_frequency;
@@ -124,6 +125,58 @@ internal_func void Win32GetLibraryPath(char* LibraryPathPrefix, size_t PrefixLen
     }
 }
 
+bool32 platform_setup_paths() {
+    AttachConsole((DWORD)-1);
+
+    // find out current working directory -> this changes depending on 
+    // how the game is launched! I want the behavior to end up the same
+    // regardless, so we do this rigamarole.
+    char cwd[WIN32_STATE_FILE_NAME_COUNT];
+    if (!GetCurrentDirectory(WIN32_STATE_FILE_NAME_COUNT, cwd)) return false;
+    RH_INFO("Current Working Directory: [%s]", cwd);
+
+    // 1.  find the .exe filename! this includes /path/to/game.exe
+    //    so we strip everything after the last /
+    if (!GetModuleFileNameA(NULL, global_win32_state.exe_path, WIN32_STATE_FILE_NAME_COUNT)) return false;
+    RH_INFO("EXE filename: [%s]", global_win32_state.exe_path);
+    string_replace(global_win32_state.exe_path, WIN32_STATE_FILE_NAME_COUNT, '/', '\\');
+    global_win32_state.exe_path_len = 1+string_find_last(global_win32_state.exe_path, global_win32_state.exe_path+WIN32_STATE_FILE_NAME_COUNT, '\\'); // add 1 to get the trailing slash
+    global_win32_state.exe_path[global_win32_state.exe_path_len] = 0;
+    RH_INFO("EXE path:     [%s]", global_win32_state.exe_path);
+
+    // 2.  cwd into the exe path, so we start next to the .exe always
+    if (!SetCurrentDirectory(global_win32_state.exe_path)) return false;
+    if (!GetCurrentDirectory(WIN32_STATE_FILE_NAME_COUNT, cwd)) return false;
+    RH_INFO("Current Working Directory: [%s]", cwd);
+
+    // 2.5 In a 'release' build, this would be in the /Game/run_tree/ dir
+    //     right next to the Data/ directory. For development however, 
+    //     the executable (and its libraries) will be in the /bin directory,
+    //     so when RH_INTERNAL is set we assume we need to do another cwd
+    if (PathFileExistsA(".\\Data\\")) {
+        // we are in the run_tree directory
+        if (!GetCurrentDirectory(WIN32_STATE_FILE_NAME_COUNT, cwd)) return false;
+        RH_INFO("Current Working Directory: [%s]", cwd);
+    } else {
+#if RH_INTERNAL
+        // we are in the bin directory
+        if (!SetCurrentDirectory("..\\Game\\run_tree\\")) return false;
+        if (!GetCurrentDirectory(WIN32_STATE_FILE_NAME_COUNT, cwd)) return false;
+        RH_INFO("Current Working Directory: [%s]", cwd);
+#endif
+    }
+
+
+    global_win32_state.resource_path_prefix_length = string_copy(global_win32_state.resource_path_prefix, 
+                                                                 WIN32_STATE_FILE_NAME_COUNT, ".\\") - 1;
+
+    global_win32_state.library_path_prefix_length = string_copy(global_win32_state.library_path_prefix, 
+                                                                WIN32_STATE_FILE_NAME_COUNT,
+                                                                global_win32_state.exe_path) - 1;
+
+    return true;
+}
+
 void platform_init_logging(bool32 create_console) {
     AttachConsole((DWORD)-1);
 
@@ -157,94 +210,6 @@ bool32 platform_startup(AppConfig* config) {
     QueryPerformanceFrequency(&PerfCounterFrequencyResult);
     int64 performance_counter_frequency = PerfCounterFrequencyResult.QuadPart;
     global_win32_state.inv_performance_counter_frequency = 1.0 / ((real64)performance_counter_frequency);
-
-    // get exe filename/path
-    {
-        DWORD SizeOfFilename = GetModuleFileNameA(0, global_win32_state.exe_filename, sizeof(global_win32_state.exe_filename));
-        global_win32_state.one_past_last_slash_exe_filename = global_win32_state.exe_filename;
-        for (char *Scan = global_win32_state.exe_filename; *Scan; ++Scan) {
-            if (*Scan == '\\') {
-                global_win32_state.one_past_last_slash_exe_filename = Scan + 1;
-            }
-        }
-    }
-
-    // get resource path prefix
-    {
-        bool32 FoundResourcePath = false;
-        char ResourcePathPrefix[256] = { 0 };
-        uint8 PrefixLength = 0;
-        for (char* Scan = global_win32_state.command_line; *Scan; Scan++) {
-            if ((*Scan == '-') && (*(Scan+1) == 'r')) {
-                FoundResourcePath = true;
-                char* cpy = ResourcePathPrefix;
-                for (char* Scan2 = (Scan + 3); (*Scan2 && (*Scan2 != ' ')); Scan2++) {
-                    *cpy++ = *Scan2;
-                    Scan = Scan2;
-                    PrefixLength++;
-                }
-            }
-        }
-        if (FoundResourcePath) {
-            // .exe run with a -r flag
-            RH_DEBUG("Run with a -r flag");
-            Win32GetResourcePath(ResourcePathPrefix, PrefixLength);
-        } else {
-            DWORD dwAttrib = GetFileAttributes("Data");
-
-            if (dwAttrib != INVALID_FILE_ATTRIBUTES && 
-                            (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
-                // the executable is right next to the data folder, no resource prefix needed
-                RH_DEBUG("Found the Data/ directory!");
-            } else {
-                // Neither is the case, assuming we are being run in the build/ directory
-                dwAttrib = GetFileAttributes("../Game");
-                if (dwAttrib != INVALID_FILE_ATTRIBUTES &&
-                                (dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
-                    RH_DEBUG("Looks like you ran from the build/ directory!");
-                    char DefaultResourcePath[] = "../Game/run_tree/";
-                    Win32GetResourcePath(DefaultResourcePath, sizeof(DefaultResourcePath)-1);
-                } else {
-                    RH_FATAL("I don't know where I am!");
-                    RH_FATAL("Shutting down...!");
-                    Sleep(2500);
-                    return false;
-                }
-            }
-        }
-
-        // resolve resource paths to get absolute prefix
-        {
-            char buffer[256];
-            DWORD len = GetFullPathNameA(global_win32_state.resource_path_prefix,
-                                         256, buffer, NULL);
-            StringCchCopyA(global_win32_state.resource_path_prefix, len, buffer);
-            global_win32_state.resource_path_prefix_length = lstrlenA(global_win32_state.resource_path_prefix);
-
-            if (global_win32_state.resource_path_prefix[global_win32_state.resource_path_prefix_length] != '\\') {
-                global_win32_state.resource_path_prefix[global_win32_state.resource_path_prefix_length] = '\\';
-                global_win32_state.resource_path_prefix[++global_win32_state.resource_path_prefix_length]   = '\0';
-            }
-        }
-
-        // same for library path
-        {
-            Win32GetLibraryPath(global_win32_state.exe_filename, 
-                                global_win32_state.one_past_last_slash_exe_filename - global_win32_state.exe_filename);
-
-            char buffer[256];
-            DWORD len = GetFullPathNameA(global_win32_state.library_path_prefix,
-                                         256, buffer, NULL);
-            StringCchCopyA(global_win32_state.library_path_prefix, len, buffer);
-            global_win32_state.library_path_prefix_length = lstrlenA(global_win32_state.library_path_prefix);
-
-            if (global_win32_state.library_path_prefix[global_win32_state.library_path_prefix_length] != '\\') {
-                global_win32_state.library_path_prefix[global_win32_state.library_path_prefix_length] = '\\';
-                global_win32_state.library_path_prefix[++global_win32_state.library_path_prefix_length]   = '\0';
-            }
-        }
-    }
-
 
     // NOTE: Set the Windows scheduler granularity to 1ms
     //       so that our Sleep can be more granular

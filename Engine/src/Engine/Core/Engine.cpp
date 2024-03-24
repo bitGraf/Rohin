@@ -101,6 +101,7 @@ bool32 cmdOptionExists(const char** begin, const char** end, const char* option)
     return false;
 }
 void parseArguments(RohinAppArgs* args, int argc, const char** argv) {
+    /*
     const char* data_path = getCmdOption(argv, argv + argc, "-r");
     if (data_path) {
         args->data_path = data_path;
@@ -108,16 +109,16 @@ void parseArguments(RohinAppArgs* args, int argc, const char** argv) {
         args->data_path = nullptr;
     }
 
+    */
     args->create_console = !cmdOptionExists(argv, argv + argc, "--no-console");
 }
 bool32 start_rohin_engine(RohinApp* app) {
     engine.app = app;
     
-    
     // get memory for the application
     // initialize all systems we need to
     parseArguments(&app->app_config.args, app->app_config.args.argc, app->app_config.args.argv);
-    InitLogging(app->app_config.args.create_console);
+    InitLogging(app->app_config.args.create_console, app->app_config.app_log_level);
 
     AppConfig config;
     config.application_name = app->app_config.application_name;

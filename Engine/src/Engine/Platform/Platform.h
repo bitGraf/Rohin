@@ -30,6 +30,7 @@ struct AppConfig {
  * */
 
 void platform_init_logging(bool32 create_console);
+RHAPI bool32 platform_setup_paths();
 bool32 platform_startup(AppConfig* config);
 RHAPI void platform_shutdown();
 bool32 platform_process_messages();
