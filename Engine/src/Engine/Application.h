@@ -13,8 +13,9 @@ struct RohinAppArgs {
     const char** argv;
 };
 
+#define MAX_APP_NAME 128
 struct RohinAppConfig {
-    const char* application_name;
+    char application_name[MAX_APP_NAME];
     int32 start_x;
     int32 start_y;
     int32 start_width;

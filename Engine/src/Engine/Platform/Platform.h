@@ -53,8 +53,8 @@ struct file_handle {
     uint8* data;
 };
 size_t platform_get_full_resource_path(char* buffer, size_t buffer_length, const char* resource_path);
-file_handle platform_read_entire_file(const char* full_path);
-void platform_free_file_data(file_handle* handle);
+RHAPI file_handle platform_read_entire_file(const char* full_path);
+RHAPI void platform_free_file_data(file_handle* handle);
 
 struct file_info {
     uint64 file_attributes;

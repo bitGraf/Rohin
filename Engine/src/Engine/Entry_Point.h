@@ -13,6 +13,7 @@ int main(int argc, char** argv) {
     RohinApp app;
     app.app_config.args.argc = argc;
     app.app_config.args.argv = (const char**)argv;
+    memory_zero(app.app_config.application_name, sizeof(app.app_config.application_name));
 
     if (!create_application(&app)) {
         RH_FATAL("Could not create application!");

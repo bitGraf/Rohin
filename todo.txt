@@ -9,9 +9,9 @@ Bugs to fix:
     [x] Works when run through visual studio (from cmake)
     [x] -r flag still works
 
-[~] Console output weirdness
+[x] Console output weirdness
     [x] Console prints normally in 10x
-    [~] Console closes automatically in Visual Studio
+    [x] Console closes automatically in Visual Studio
 
 [ ] Finish lighting in scene representation
     [x] directional light
@@ -44,4 +44,15 @@ Bugs to fix:
     [x] Use AssertMsg() for many cases that use Assert() right now
     [x] Create global max_log_level variable that disables messages
 
-[ ] Config file for basic runtime settings
+[x] Config file for basic runtime settings
+
+[ ] rohin_dev parity features
+    [ ] Scene swapping
+    [ ] Debug rendering (wireframe, lines, axes, etc.)
+    [ ] Collision being used
+    [ ] Text rendering
+    [ ] 2D rendering (menus and such)
+    [ ] Sound
+    [ ] Entity scripting
+    [ ] Input 'axes' and 'actions'
+    [ ] Gamepad Input

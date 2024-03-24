@@ -1,26 +1,48 @@
 #include "rohin_game.h"
 
 #define TEST 0
-#if !TEST
+#if !defined(TEST) || TEST == 0
+
+#include <Engine/Core/Config.h>
+#include <Engine/Memory/Memory_Arena.h>
+#include <Engine/Memory/Memory.h>
+#include <Engine/Core/String.h>
 
 #include <Engine/Application.h>
 bool32 create_application(RohinApp* app);
 #include <Engine/Entry_Point.h>
 
 bool32 create_application(RohinApp* app) {
-    app->app_config.application_name = "Rohin App";
-    
-    //app->app_config.start_x = 540;
-    //app->app_config.start_y = 100;
-    //app->app_config.start_width = 1280;
-    //app->app_config.start_height = 720;
-    app->app_config.start_x = 10;
-    app->app_config.start_y = 10;
-    app->app_config.start_width = 800;
-    app->app_config.start_height = 600;
+    uint8 arena_buffer[2048];
+    memory_zero(arena_buffer, sizeof(arena_buffer));
+    memory_arena arena;
+    CreateArena(&arena, sizeof(arena_buffer), arena_buffer);
+    const char* config_filename = "Game/run_tree/startup.conf";
+    config_file config = parse_config_from_file(&arena, config_filename, "startup.conf");
 
-    app->app_config.requested_permanant_memory = Megabytes(32);
-    app->app_config.requested_transient_memory = Megabytes(256);
+    if (config.load_successful) {
+        char* app_name = get_config_string(&config, "app_config.app_name", "default_name");
+        uint64 name_len = string_length(app_name);
+        memory_copy(app->app_config.application_name, app_name, name_len);
+
+        app->app_config.start_x      = get_config_int(&config, "app_config.start_x", 10);
+        app->app_config.start_y      = get_config_int(&config, "app_config.start_y", 10);
+        app->app_config.start_width  = get_config_int(&config, "app_config.start_width", 800);
+        app->app_config.start_height = get_config_int(&config, "app_config.start_height", 600);
+
+        app->app_config.requested_permanant_memory = Megabytes(get_config_int(&config, "app_config.memory.requested_permanant_memory", 32));
+        app->app_config.requested_transient_memory = Megabytes(get_config_int(&config, "app_config.memory.requested_transient_memory", 256));
+    } else {
+        memory_copy(app->app_config.application_name, "Rohin App", 10);
+
+        app->app_config.start_x = 10;
+        app->app_config.start_y = 10;
+        app->app_config.start_width = 800;
+        app->app_config.start_height = 600;
+
+        app->app_config.requested_permanant_memory = Megabytes(32);
+        app->app_config.requested_transient_memory = Megabytes(256);
+    }
 
     app->startup = game_startup;
     app->initialize = game_initialize;
@@ -31,7 +53,66 @@ bool32 create_application(RohinApp* app) {
     return true;
 }
 
-#else
+#elif TEST == 1
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
+#include <Engine/Core/Config.h>
+
+#include <Engine/Memory/Memory.h>
+#include <Engine/Memory/Memory_Arena.h>
+#include <Engine/Core/Logger.h>
+#include <Engine/Platform/Platform.h>
+#include <Engine/Core/String.h>
+#include <Engine/Core/Timing.h>
+
+
+//int WinMain(void* instance, void* prev_instance, char* cmd_line, int show_cmd) {
+int WinMain(HINSTANCE instance, HINSTANCE prev_instance, char* cmd_line, int show_cmd) {
+    InitLogging(false, LOG_LEVEL_DEBUG);
+    RH_TRACE("starting...");
+
+    uint8 arena_buffer[32*1024];
+    memory_zero(arena_buffer, sizeof(arena_buffer));
+    memory_arena arena;
+    CreateArena(&arena, sizeof(arena_buffer), arena_buffer);
+
+    const char* filename = "../Game/run_tree/startup.conf";
+    file_handle file = platform_read_entire_file(filename);
+    if (!file.num_bytes) {
+        RH_ERROR("Failed to read resource file");
+        platform_sleep(500);
+        return -1;
+    }
+    RH_TRACE("File '%s' read: %llu bytes", filename, file.num_bytes);
+
+    LARGE_INTEGER freq, start, end;
+    QueryPerformanceFrequency(&freq);
+
+    QueryPerformanceCounter(&start);
+    config_file config = parse_config_from_file(&arena, filename, "startup.conf");
+    QueryPerformanceCounter(&end);
+
+    double elapsed_time = (double)(end.QuadPart - start.QuadPart) / ((double)freq.QuadPart);
+    RH_INFO("%f ms to parse.", elapsed_time*1000.0f);
+
+    platform_free_file_data(&file);
+    memory_zero(file.data, file.num_bytes); // just so we know for sure the config_file owns its own data
+
+    // now extract values from it
+    RH_INFO("app_name = '%s'",   get_config_string(&config, "app_config.app_name",  "default app name"));
+    RH_INFO("start_x = %d",      get_config_int(&config, "app_config.start_x",      0));
+    RH_INFO("start_y = %d",      get_config_int(&config, "app_config.start_y",      0));
+    RH_INFO("start_width = %d",  get_config_int(&config, "app_config.start_width",  100));
+    RH_INFO("start_height = %d", get_config_int(&config, "app_config.start_height", 100));
+
+    RH_INFO("requested_permanant_memory = %d",   get_config_int(&config, "app_config.memory.requested_permanant_memory", 1));
+    RH_INFO("requested_transient_memory = %d",   get_config_int(&config, "app_config.memory.requested_transient_memory", 1));
+
+    platform_sleep(2500);
+    return 0;
+}
+#elif TEST==2
 
 #include <stdlib.h>
 #include <stdio.h>
