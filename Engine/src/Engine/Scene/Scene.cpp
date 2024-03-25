@@ -3,6 +3,7 @@
 #include "Engine/Memory/Memory.h"
 #include "Engine/Memory/Memory_Arena.h"
 #include "Engine/Core/String.h"
+#include "Engine/Core/Logger.h"
 
 void create_scene(scene_3D* scene, const char* name, memory_arena* arena) {
     scene->name = copy_string_to_arena(name, arena);
@@ -60,6 +61,99 @@ entity_skinned* create_skinned_entity(scene_3D* scene, const char* name,
     return new_entity_ptr;
 }
 
+// TODO: STD library
+#include <stdio.h>
 bool32 serialize_scene(const char* filename, const scene_3D* scene) {
-    return false;
+    FILE* fid = fopen(filename, "w");
+    if (fid == NULL) {
+        RH_ERROR("Could not open file for writing: '%s'", filename);
+        return false;
+    }
+
+    /*
+        char* name;
+
+        entity_static*  static_entities;  // dynarray
+        entity_skinned* skinned_entities; // dynarray
+
+        scene_dir_light sun;
+        scene_sky_light sky;
+        scene_point_light* pointlights; // dynarray
+        scene_spot_light*  spotlights;  // dynarray
+    */
+
+    uint32 num_static_entities  = (uint32)GetArrayCount(scene->static_entities);
+    uint32 num_skinned_entities = (uint32)GetArrayCount(scene->skinned_entities);
+    
+    uint32 num_point_lights = (uint32)GetArrayCount(scene->pointlights);
+    uint32 num_spot_lights = (uint32)GetArrayCount(scene->spotlights);
+
+    fprintf(fid, "scene: \n");
+    fprintf(fid, "    name: %s\n", scene->name);
+    fprintf(fid, "\n");
+
+    // static_entities array
+    fprintf(fid, "    static_entities: []\n");
+    for (uint32 n = 0; n < num_static_entities; n++) {
+        entity_static* ent = &scene->static_entities[n];
+
+        fprintf(fid, "    -:\n");
+        fprintf(fid, "        id: %d\n", n);
+        fprintf(fid, "        name: %s\n", ent->name);
+        fprintf(fid, "        mesh: %s\n", "mesh_name");
+        fprintf(fid, "        position: vec3(%f,%f,%f)\n", ent->position.x, ent->position.y, ent->position.z);
+        fprintf(fid, "        orientation: quat(%f,%f,%f,%f)\n", ent->orientation.x, ent->orientation.y, ent->orientation.z, ent->orientation.w);
+        fprintf(fid, "        scale: vec3(%f,%f,%f)\n",          ent->scale.x, ent->scale.y, ent->scale.z);
+        fprintf(fid, "\n");
+    }
+
+    // skinned entities array
+    fprintf(fid, "    skinned_entities: []\n");
+    for (uint32 n = 0; n < num_skinned_entities; n++) {
+        entity_skinned* ent = &scene->skinned_entities[n];
+
+        fprintf(fid, "    -:\n");
+        fprintf(fid, "        id: %d\n", n);
+        fprintf(fid, "        name: %s\n", ent->name);
+        fprintf(fid, "        mesh: %s\n", "mesh_name");
+        fprintf(fid, "        controller: %s\n", "controller_name");
+        fprintf(fid, "        position: vec3(%f,%f,%f)\n",       ent->position.x,    ent->position.y,    ent->position.z);
+        fprintf(fid, "        orientation: quat(%f,%f,%f,%f)\n", ent->orientation.x, ent->orientation.y, ent->orientation.z, ent->orientation.w);
+        fprintf(fid, "        scale: vec3(%f,%f,%f)\n",          ent->scale.x,       ent->scale.y,       ent->scale.z);
+        fprintf(fid, "\n");
+    }
+
+    // point lights array
+    fprintf(fid, "    pointlights: []\n");
+    for (uint32 n = 0; n < num_point_lights; n++) {
+        scene_point_light* ent = &scene->pointlights[n];
+
+        fprintf(fid, "    -:\n");
+        fprintf(fid, "        id: %d\n", n);
+        fprintf(fid, "        position: vec3(%f,%f,%f)\n", ent->position.x, ent->position.y, ent->position.z);
+        fprintf(fid, "        color: vec3(%f,%f,%f)\n",    ent->color.x,    ent->color.y,    ent->color.z);
+        fprintf(fid, "        strength: %f\n",    ent->strength);
+        fprintf(fid, "        cast_shadow: %s\n", ent->cast_shadow ? "Yes" : "No");
+        fprintf(fid, "\n");
+    }
+
+    // spot lights array
+    fprintf(fid, "    spotlights: []\n");
+    for (uint32 n = 0; n < num_spot_lights; n++) {
+        scene_spot_light* ent = &scene->spotlights[n];
+
+        fprintf(fid, "    -:\n");
+        fprintf(fid, "        id: %d\n", n);
+        fprintf(fid, "        position: vec3(%f,%f,%f)\n",  ent->position.x,  ent->position.y,  ent->position.z);
+        fprintf(fid, "        direction: vec3(%f,%f,%f)\n", ent->direction.x, ent->direction.y, ent->direction.z);
+        fprintf(fid, "        color: vec3(%f,%f,%f)\n",     ent->color.x,     ent->color.y,     ent->color.z);
+        fprintf(fid, "        strength: %f\n",    ent->strength);
+        fprintf(fid, "        inner: %f # deg\n", ent->inner);
+        fprintf(fid, "        outer: %f # deg\n", ent->outer);
+        fprintf(fid, "        cast_shadow: %s\n", ent->cast_shadow ? "Yes" : "No");
+        fprintf(fid, "\n");
+    }
+
+    fclose(fid);
+    return true;
 }

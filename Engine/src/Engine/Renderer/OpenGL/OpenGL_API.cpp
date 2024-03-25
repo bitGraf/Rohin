@@ -651,8 +651,35 @@ static GLenum DataFormat(GLenum format) {
     return 0;
 }
 
-bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo, 
-                                      int num_attachments, const frame_buffer_attachment* attachments) {
+static GLenum WrapType(texture_wrap_type type) {
+    switch (type) {
+        case texture_wrap_type::clamp_to_edge:   return GL_CLAMP_TO_EDGE;
+        case texture_wrap_type::clamp_to_border: return GL_CLAMP_TO_BORDER;
+        case texture_wrap_type::mirrored_repeat: return GL_MIRRORED_REPEAT;
+        case texture_wrap_type::repeat:          return GL_REPEAT;
+    }
+
+    Assert(false);
+    return 0;
+}
+static GLenum FilterType(texture_filter_type type) {
+    switch (type) {
+        case texture_filter_type::linear:   return GL_LINEAR;
+        case texture_filter_type::nearest:  return GL_NEAREST;
+
+        case texture_filter_type::nearest_mipmap_nearest: return GL_NEAREST_MIPMAP_NEAREST;
+        case texture_filter_type::nearest_mipmap_linear:  return GL_NEAREST_MIPMAP_LINEAR;
+        case texture_filter_type::linear_mipmap_nearest:  return GL_LINEAR_MIPMAP_NEAREST;
+        case texture_filter_type::linear_mipmap_linear:   return GL_LINEAR_MIPMAP_LINEAR;
+    }
+
+    Assert(false);
+    return 0;
+}
+
+bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo, int num_attachments, 
+                                      const frame_buffer_attachment* attachments,
+                                      frame_buffer_create_info info) {
 
     glGenFramebuffers(1, &fbo->handle);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo->handle);
@@ -698,10 +725,16 @@ bool32 OpenGL_api::create_framebuffer(frame_buffer* fbo,
                          fbo->width, fbo->height, 0, 
                          DataFormat(internal_format), DataType(internal_format), nullptr);
 
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, FilterType(info.min_filter));
+            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, FilterType(info.mag_filter));
+            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, WrapType(info.wrap_s));
+            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, WrapType(info.wrap_t));
+
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, info.border._data);
 
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + n, 
                                    GL_TEXTURE_2D, fbo->attachments[n].handle, 0);
@@ -1000,7 +1033,21 @@ void OpenGL_api::clear_viewport_only_color(real32 r, real32 g, real32 b, real32 
 void OpenGL_api::clear_framebuffer_attachment(frame_buffer_attachment *attach, real32 r, real32 b, real32 g, real32 a) {
     #if defined(RH_COMPILE_OPENGL_4_4)
         float color[] = {r, g, b, a};
-        glClearTexImage(attach->handle, 0, GL_RGBA, GL_FLOAT, color);
+        GLenum format = GL_RGBA, type = GL_UNSIGNED_BYTE;
+        switch(attach->texture_format) {
+            case frame_buffer_texture_format::RED8:    { format = GL_RED;  type = GL_UNSIGNED_BYTE; } break;
+            case frame_buffer_texture_format::R32F:    { format = GL_RED;  type = GL_FLOAT; } break;
+            case frame_buffer_texture_format::RGBA8:   { format = GL_RGBA; type = GL_UNSIGNED_BYTE; } break;
+            case frame_buffer_texture_format::RGBA16F: { format = GL_RGBA; type = GL_FLOAT; } break;
+            case frame_buffer_texture_format::RGB16F:  { format = GL_RGB;  type = GL_FLOAT; } break;
+            case frame_buffer_texture_format::RG16F:   { format = GL_RG;   type = GL_FLOAT; } break;
+            case frame_buffer_texture_format::RGBA32F: { format = GL_RGBA; type = GL_FLOAT; } break;
+
+            case frame_buffer_texture_format::None:    { Assert(false); } break;
+            case frame_buffer_texture_format::DEPTH24STENCIL8: { Assert(false); } break;
+        }
+        //glClearTexImage(attach->handle, 0, GL_RGBA, GL_FLOAT, color);
+        glClearTexImage(attach->handle, 0, format, type, color);
     #else
         // not defined...
     #endif

@@ -50,7 +50,8 @@ struct OpenGL_api final : public renderer_api {
     void destroy_shader(shader* shader_prog) override final;
     bool32 create_framebuffer(frame_buffer* fbo, 
                               int num_attachments, 
-                              const frame_buffer_attachment* attachments) override final;
+                              const frame_buffer_attachment* attachments,
+                              frame_buffer_create_info info) override final;
     bool32 recreate_framebuffer(frame_buffer* fbo) override final;
     bool32 create_framebuffer_cube(frame_buffer* fbo, 
                                    int num_attachments, 

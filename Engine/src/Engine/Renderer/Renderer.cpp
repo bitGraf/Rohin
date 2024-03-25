@@ -44,6 +44,12 @@ struct renderer_state {
     shader_Lighting lighting_shader;
     frame_buffer lbuffer;
 
+    shader_Screen_Texture vis_shader;
+
+    shader_ShadowPass_Anim skinned_shadow_shader;
+    shader_ShadowPass static_shadow_shader;
+    frame_buffer sun_shadow_buffer;
+
     shader_Screen screen_shader;
 
     frame_buffer BRDF_LUT;
@@ -52,6 +58,8 @@ struct renderer_state {
 
     shader_Skybox skybox_shader;
 
+    int32 visualize_maps;
+    int32 map_to_visualise; // unused
     int32 current_shader_out;
     int32 gamma_correct;
     int32 tone_map;
@@ -62,7 +70,7 @@ struct renderer_state {
     render_geometry cube_geom;
     render_geometry axis_geom;
     render_geometry screen_quad;
-    render_geometry small_quad;
+    render_geometry quad_2D;
 };
 
 global_variable renderer_api* backend;
@@ -88,6 +96,7 @@ bool32 renderer_initialize(memory_arena* arena, const char* application_name, pl
     render_state->gamma_correct = true;
     render_state->tone_map = true;
     render_state->use_skins = true;
+    render_state->visualize_maps = false;
 
     return true;
 }
@@ -179,12 +188,11 @@ bool32 renderer_create_pipeline() {
         backend->create_mesh(&render_state->screen_quad, 4, quad_verts, 6, quad_inds, quad_attrs);
     }
     {
-        real32 s = 0.4f;
         real32 quad_verts[] = {
-             0, -s, 0, 0, 0, // 0
-             s, -s, 0, 1, 0, // 1
-             s,  s, 0, 1, 1, // 2
-             0,  s, 0, 0, 1  // 3
+             0, 0, 0, 0, 0, // 0
+             1, 0, 0, 1, 0, // 1
+             1, 1, 0, 1, 1, // 2
+             0, 1, 0, 0, 1  // 3
         };
         uint32 quad_inds[] = {
             // bottom tri
@@ -192,7 +200,7 @@ bool32 renderer_create_pipeline() {
             0, 2, 3
         };
         const ShaderDataType quad_attrs[] = { ShaderDataType::Float3, ShaderDataType::Float2, ShaderDataType::None };
-        backend->create_mesh(&render_state->small_quad, 4, quad_verts, 6, quad_inds, quad_attrs);
+        backend->create_mesh(&render_state->quad_2D, 4, quad_verts, 6, quad_inds, quad_attrs);
     }
 
     backend->pop_debug_group(); // load resources
@@ -285,10 +293,11 @@ bool32 renderer_create_pipeline() {
     }
     renderer_use_shader(pLighting);
     lighting.InitShaderLocs();
-    backend->upload_uniform_int(lighting.u_albedo, lighting.u_albedo.SamplerID);
-    backend->upload_uniform_int(lighting.u_normal, lighting.u_normal.SamplerID);
-    backend->upload_uniform_int(lighting.u_depth,  lighting.u_depth.SamplerID);
-    backend->upload_uniform_int(lighting.u_amr,    lighting.u_amr.SamplerID);
+    backend->upload_uniform_int(lighting.u_albedo,       lighting.u_albedo.SamplerID);
+    backend->upload_uniform_int(lighting.u_normal,       lighting.u_normal.SamplerID);
+    backend->upload_uniform_int(lighting.u_depth,        lighting.u_depth.SamplerID);
+    backend->upload_uniform_int(lighting.u_amr,          lighting.u_amr.SamplerID);
+    backend->upload_uniform_int(lighting.u_SunShadowMap, lighting.u_SunShadowMap.SamplerID);
 
     backend->upload_uniform_int(lighting.u_irradiance,  lighting.u_irradiance.SamplerID);
     backend->upload_uniform_int(lighting.u_prefilter,   lighting.u_prefilter.SamplerID);
@@ -370,6 +379,55 @@ bool32 renderer_create_pipeline() {
     backend->pop_debug_group(); // brdf lut
     RH_TRACE("%.3lf ms to generate BRDF integration LUT", measure_elapsed_time(last_time, &last_time)*1000.0f);
 
+    // shadow mapping
+    {
+        // static shadow mapping shader
+        shader* pShadow = (shader*)(&render_state->static_shadow_shader);
+        shader_ShadowPass& shadow = render_state->static_shadow_shader;
+        if (!resource_load_shader_file("Data/Shaders/ShadowPass.glsl", pShadow)) {
+            RH_FATAL("Could not setup the ShadowPass shader");
+            return false;
+        }
+        shadow.InitShaderLocs();
+        renderer_use_shader(pShadow);
+
+        // skinned shadow mapping shader
+        shader* pShadowSkinned = (shader*)(&render_state->skinned_shadow_shader);
+        shader_ShadowPass_Anim& shadow_skinned = render_state->skinned_shadow_shader;
+        if (!resource_load_shader_file("Data/Shaders/ShadowPass_Anim.glsl", pShadowSkinned)) {
+            RH_FATAL("Could not setup the ShadowPass_Anim shader");
+            return false;
+        }
+        shadow_skinned.InitShaderLocs();
+        renderer_use_shader(pShadowSkinned);
+
+        // setup shadowmap texture
+        frame_buffer_attachment attachments[] = {
+            { 0, frame_buffer_texture_format::RGBA32F,  black }, // Depth-buffer
+            { 0, frame_buffer_texture_format::Depth,    black }, // Depth-buffer
+        };
+        render_state->sun_shadow_buffer.width  = 1024;
+        render_state->sun_shadow_buffer.height = 1024;
+        frame_buffer_create_info info;
+        info.min_filter = texture_filter_type::linear;
+        info.mag_filter = texture_filter_type::linear;
+        info.wrap_s = texture_wrap_type::clamp_to_border;
+        info.wrap_t = texture_wrap_type::clamp_to_border;
+        info.border = laml::Vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        renderer_create_framebuffer(&render_state->sun_shadow_buffer, 2, attachments, info);
+
+        // visualization
+        shader* pVis = (shader*)(&render_state->vis_shader);
+        shader_Screen_Texture& vis = render_state->vis_shader;
+        if (!resource_load_shader_file("Data/Shaders/Screen_Texture.glsl", pVis)) {
+            RH_FATAL("Could not setup the visualizer shader");
+            return false;
+        }
+        vis.InitShaderLocs();
+        renderer_use_shader(pVis);
+        backend->upload_uniform_int(vis.u_texture, vis.u_texture.SamplerID);
+    }
+
     backend->pop_debug_group(); // PBR pipeline
     RH_TRACE("%.3lf ms to Create PBR Pipeline", measure_elapsed_time(pbr_pipeline_start)*1000.0f);
 
@@ -432,6 +490,9 @@ void renderer_on_event(uint16 code, void* sender, void* listener, event_context 
             } else if (context.u16[0] == KEY_B) {
                 render_state->use_skins = !render_state->use_skins;
                 RH_INFO("Skinning: %s", render_state->use_skins ? "Enabled" : "Disabled");
+            } else if (context.u16[0] == KEY_M) {
+                render_state->visualize_maps = !render_state->visualize_maps;
+                RH_INFO("Shadowmap Viz: %s", render_state->visualize_maps ? "Enabled" : "Disabled");
             }
     }
 }
@@ -543,11 +604,96 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
         time_point last_time = pbr_pass_start;
 
         backend->push_debug_group("PBR Rendering Pipeline");
+
+        // Shadow pass
+        laml::Mat4 lightSpaceMatrix;
+        backend->push_debug_group("Shadow Pass");
+        {
+            backend->use_framebuffer(&render_state->sun_shadow_buffer);
+            backend->set_viewport(0, 0, 1024, 1024);
+            backend->clear_viewport(0, 0, 0, 0);
+            //backend->clear_framebuffer_attachment(&render_state->sun_shadow_buffer.attachments[0], 1, 1, 1, 1);
+
+            // view matrix is form the pov of the light
+            laml::Mat4 light_view, shadow_projection;
+            laml::Mat4 light_trans;
+            laml::Vec3 light_root(0.0f, 0.0f, 0.0f);
+            laml::Vec3 light_pos = light_root - (20.0f * packet->sun.direction);
+            laml::Vec3 up(0.0f, 1.0f, 0.0f);
+            if (abs(laml::dot(packet->sun.direction, up)) < (0.975f)) {
+                laml::transform::lookAt(light_trans, light_pos, light_root, up);
+            } else {
+                laml::transform::lookAt(light_trans, light_pos, light_root, laml::Vec3(1.0f, 0.0f, 0.0f));
+            }
+            laml::transform::create_view_matrix_from_transform(light_view, light_trans);
+            //light_view = light_trans;
+
+            // projection matrix is to a square viewport
+            //laml::transform::create_projection_perspective(shadow_projection, 60.0f, 1.0f, 0.1f, 100.0f);
+            laml::transform::create_projection_orthographic(shadow_projection, 
+                                                            -5.0f, 5.0f, 
+                                                            -5.0f, 5.0f, 
+                                                            0.0f, 30.0f);
+            lightSpaceMatrix = laml::mul(shadow_projection, light_view);
+
+            backend->disable_stencil_test();
+            backend->push_debug_group("Static Meshes");
+            { // Static Meshes
+                shader_ShadowPass& shadow_static = render_state->static_shadow_shader;
+                shader * pShadowStatic = (shader*)(&render_state->static_shadow_shader);
+                renderer_use_shader(pShadowStatic);
+
+                backend->upload_uniform_float4x4(shadow_static.r_View, light_view);
+                backend->upload_uniform_float4x4(shadow_static.r_Projection, shadow_projection);
+
+                for (uint32 cmd_index = 0; cmd_index < packet->_num_static; cmd_index++) {
+                    render_command& cmd = packet->_static_cmds[cmd_index];
+                    render_material& mat = cmd.material;
+
+                    backend->upload_uniform_float4x4(shadow_static.r_Transform,
+                                                     cmd.model_matrix._data);
+                    renderer_draw_geometry(&cmd.geom);
+                }
+            }
+            backend->pop_debug_group();
+
+            backend->push_debug_group("Skinned Meshes");
+            { // Skinned
+                shader_ShadowPass_Anim& shadow_skinned = render_state->skinned_shadow_shader;
+                shader * pShadowSkinned = (shader*)(&render_state->skinned_shadow_shader);
+                renderer_use_shader(pShadowSkinned);
+
+                backend->upload_uniform_float4x4(shadow_skinned.r_View, light_view);
+                backend->upload_uniform_float4x4(shadow_skinned.r_Projection, shadow_projection);
+
+                for (uint32 cmd_index = 0; cmd_index < packet->_num_skinned; cmd_index++) {
+                    render_command& cmd = packet->_skinned_cmds[cmd_index];
+                    render_material& mat = cmd.material;
+
+                    // upload skeleton data
+                    AssertMsg(cmd.skeleton_idx, "Trying to render Skinned mesh with skeleton_idx 0!");
+                    const render_skeleton& skeleton = packet->skeletons[cmd.skeleton_idx];
+                    backend->upload_uniform_int(shadow_skinned.r_UseSkin, render_state->use_skins);
+                    for (uint32 b = 0; b < skeleton.num_bones; b++) {
+                        backend->upload_uniform_float4x4(shadow_skinned.r_Bones[b], skeleton.bones[b]._data);
+                    }
+
+                    backend->upload_uniform_float4x4(shadow_skinned.r_Transform,
+                                                     cmd.model_matrix._data);
+                    renderer_draw_geometry(&cmd.geom);
+                }
+            }
+            backend->pop_debug_group();
+        }
+        backend->pop_debug_group();
+
+
         backend->push_debug_group("G-Buffer Generation");
         shader_PrePass& prepass = render_state->static_pre_pass_shader;
         // PREPASS STAGE
         {
             backend->use_framebuffer(&render_state->gbuffer);
+            backend->set_viewport(0, 0, render_state->render_width, render_state->render_height);
             backend->clear_viewport(0, 0, 0, 0);
             backend->clear_framebuffer_attachment(&render_state->gbuffer.attachments[prepass.outputs.out_Depth], 1, 1, 1, 1);
 
@@ -688,6 +834,9 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
         backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Normal], lighting.u_normal.SamplerID);
         backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_Depth],  lighting.u_depth.SamplerID);
         backend->bind_texture_2D(render_state->gbuffer.attachments[prepass.outputs.out_AMR],    lighting.u_amr.SamplerID);
+        backend->bind_texture_2D(render_state->sun_shadow_buffer.attachments[0],                lighting.u_SunShadowMap.SamplerID);
+
+        backend->upload_uniform_float4x4(lighting.r_LightSpaceMatrix, lightSpaceMatrix);
 
         backend->bind_texture_cube(packet->env_map.irradiance,          lighting.u_irradiance.SamplerID);
         backend->bind_texture_cube(packet->env_map.prefilter,           lighting.u_prefilter.SamplerID);
@@ -760,6 +909,28 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
         backend->set_stencil_func(render_stencil_func::Equal, 100, 0xFF);
         backend->set_stencil_op(render_stencil_op::Keep, render_stencil_op::Keep, render_stencil_op::Keep);
         backend->draw_geometry(&render_state->screen_quad);
+
+        if (render_state->visualize_maps) {
+            static laml::Vec4 rect(10.0f, 10.0f, 250.0f, 250.0f);
+            ImGui::Begin("ShadowMap");
+            ImGui::SliderFloat("X", &rect.x, 0, (real32)render_state->render_width);
+            ImGui::SliderFloat("Y", &rect.y, 0, (real32)render_state->render_height);
+            ImGui::SliderFloat("Size",  &rect.z, 0, (real32)render_state->render_width);
+            rect.w = rect.z; // keep it square
+            //ImGui::SliderFloat("Height", &rect.w, 0, (real32)render_state->render_height);
+            ImGui::End();
+
+            backend->disable_stencil_test();
+            backend->use_shader((shader*)(&render_state->vis_shader));
+            //backend->upload_uniform_float4(render_state->vis_shader.r_rect, laml::Vec4(10.0f, 10.0f, 250.0f, 250.0f));
+            backend->upload_uniform_float4(render_state->vis_shader.r_rect, rect);
+            backend->upload_uniform_float(render_state->vis_shader.r_screen_width,  (real32)render_state->render_width);
+            backend->upload_uniform_float(render_state->vis_shader.r_screen_height, (real32)render_state->render_height);
+
+            backend->bind_texture_2D(render_state->sun_shadow_buffer.attachments[0], render_state->vis_shader.u_texture.SamplerID);
+            backend->draw_geometry(&render_state->quad_2D);
+        }
+
         backend->enable_depth_test();
 
         backend->pop_debug_group();  //Screen Composite
@@ -990,7 +1161,22 @@ void renderer_destroy_shader(shader* shader_prog) {
 bool32 renderer_create_framebuffer(frame_buffer* fbo, 
                                    int num_attachments, 
                                    const frame_buffer_attachment* attachments) {
-    return backend->create_framebuffer(fbo, num_attachments, attachments);
+    frame_buffer_create_info info;
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    info.min_filter = texture_filter_type::linear;
+    info.mag_filter = texture_filter_type::linear;
+    info.wrap_s = texture_wrap_type::clamp_to_edge;
+    info.wrap_t = texture_wrap_type::clamp_to_edge;
+    return backend->create_framebuffer(fbo, num_attachments, attachments, info);
+}
+bool32 renderer_create_framebuffer(frame_buffer* fbo, 
+                                   int num_attachments, 
+                                   const frame_buffer_attachment* attachments,
+                                   frame_buffer_create_info info) {
+    return backend->create_framebuffer(fbo, num_attachments, attachments, info);
 }
 bool32 renderer_create_framebuffer_cube(frame_buffer* fbo, 
                                         int num_attachments, 

@@ -77,6 +77,9 @@ void shader_Lighting::InitShaderLocs() {
       u_brdf_LUT.Location = 399;
       u_brdf_LUT.SamplerID = 6;
           u_env_map_contribution.Location = 400;
+           r_LightSpaceMatrix.Location = 401;
+      u_SunShadowMap.Location = 402;
+      u_SunShadowMap.SamplerID = 7;
 }
 void shader_Line::InitShaderLocs() {
     outputs.num_outputs = 1;
@@ -269,6 +272,35 @@ void shader_Screen::InitShaderLocs() {
     r_outputSwitch.Location = 9;
     r_toneMap.Location = 10;
     r_gammaCorrect.Location = 11;
+}
+void shader_Screen_Texture::InitShaderLocs() {
+    outputs.num_outputs = 0;
+
+     r_rect.Location = 1;
+    r_screen_width.Location = 2;
+    r_screen_height.Location = 3;
+    u_texture.Location = 4;
+    u_texture.SamplerID = 0;
+}
+void shader_ShadowPass::InitShaderLocs() {
+    outputs.num_outputs = 1;
+    outputs.out_Depth = 0;
+
+    r_Transform.Location = 1;
+    r_View.Location = 2;
+    r_Projection.Location = 3;
+}
+void shader_ShadowPass_Anim::InitShaderLocs() {
+    outputs.num_outputs = 1;
+    outputs.out_Depth = 0;
+
+    for (unsigned int n = 0; n < 128; n++) {
+        r_Bones[n].Location = 1+n;
+    }
+    r_UseSkin.Location = 129;
+    r_Transform.Location = 130;
+    r_View.Location = 131;
+    r_Projection.Location = 132;
 }
 void shader_simple::InitShaderLocs() {
     outputs.num_outputs = 1;

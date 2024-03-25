@@ -48,6 +48,7 @@ Bugs to fix:
 
 [ ] rohin_dev parity features
     [ ] Scene swapping
+        [ ] change config-file to support arrays
     [ ] Debug rendering (wireframe, lines, axes, etc.)
     [ ] Collision being used
     [ ] Text rendering

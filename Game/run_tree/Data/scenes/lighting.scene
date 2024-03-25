@@ -1,0 +1,70 @@
+scene: 
+    name: basic_scene
+
+    static_entities: []
+    -:
+        id: 0
+        name: static_entity
+        mesh: mesh_name
+        position: vec3(-2.000000,1.500000,0.000000)
+        orientation: quat(-0.151150,-0.590267,-0.590726,0.528944)
+        scale: vec3(1.000000,1.000000,1.000000)
+
+    -:
+        id: 1
+        name: floor
+        mesh: mesh_name
+        position: vec3(0.000000,0.000000,0.000000)
+        orientation: quat(0.000000,0.000000,0.000000,1.000000)
+        scale: vec3(1.000000,1.000000,1.000000)
+
+    skinned_entities: []
+    -:
+        id: 0
+        name: skinned_entity
+        mesh: mesh_name
+        controller: controller_name
+        position: vec3(0.000000,0.000000,0.000000)
+        orientation: quat(0.000000,0.000000,0.000000,1.000000)
+        scale: vec3(1.000000,1.000000,1.000000)
+
+    pointlights: []
+    -:
+        id: 0
+        position: vec3(0.000000,1.540000,-2.670000)
+        color: vec3(1.000000,1.000000,0.000000)
+        strength: 112.500000
+        cast_shadow: No
+
+    -:
+        id: 1
+        position: vec3(3.030000,1.000000,0.000000)
+        color: vec3(0.270000,0.870000,1.000000)
+        strength: 25.000000
+        cast_shadow: No
+
+    -:
+        id: 2
+        position: vec3(0.000000,1.000000,3.090000)
+        color: vec3(1.000000,0.190000,0.130000)
+        strength: 64.000000
+        cast_shadow: No
+
+    -:
+        id: 3
+        position: vec3(-3.180000,1.000000,0.310000)
+        color: vec3(1.000000,0.000000,1.000000)
+        strength: 33.000000
+        cast_shadow: No
+
+    spotlights: []
+    -:
+        id: 0
+        position: vec3(3.960000,0.800000,-2.960000)
+        direction: vec3(-1.050000,-0.710000,0.670000)
+        color: vec3(0.000000,0.400000,0.000000)
+        strength: 150.500000
+        inner: 41.500000 # deg
+        outer: 54.500000 # deg
+        cast_shadow: No
+

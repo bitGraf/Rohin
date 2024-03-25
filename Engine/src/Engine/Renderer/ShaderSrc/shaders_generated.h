@@ -75,6 +75,8 @@ struct shader_Lighting {
     ShaderUniform_samplerCube u_prefilter;
     ShaderUniform_sampler2D   u_brdf_LUT;
     ShaderUniform_float       u_env_map_contribution;
+    ShaderUniform_mat4        r_LightSpaceMatrix;
+    ShaderUniform_sampler2D   u_SunShadowMap;
 
     struct {
         uint32 num_outputs;
@@ -275,6 +277,50 @@ struct shader_Screen {
 
     struct {
         uint32 num_outputs;
+    } outputs;
+
+    void InitShaderLocs();
+};
+struct shader_Screen_Texture {
+    uint32 Handle;
+
+    ShaderUniform_vec4  r_rect;
+    ShaderUniform_float r_screen_width;
+    ShaderUniform_float r_screen_height;
+    ShaderUniform_sampler2D u_texture;
+
+    struct {
+        uint32 num_outputs;
+    } outputs;
+
+    void InitShaderLocs();
+};
+struct shader_ShadowPass {
+    uint32 Handle;
+
+    ShaderUniform_mat4 r_Transform;
+    ShaderUniform_mat4 r_View;
+    ShaderUniform_mat4 r_Projection;
+
+    struct {
+        uint32 num_outputs;
+        uint32 out_Depth;
+    } outputs;
+
+    void InitShaderLocs();
+};
+struct shader_ShadowPass_Anim {
+    uint32 Handle;
+
+    ShaderUniform_mat4 r_Bones[128];
+    ShaderUniform_int r_UseSkin;
+    ShaderUniform_mat4 r_Transform;
+    ShaderUniform_mat4 r_View;
+    ShaderUniform_mat4 r_Projection;
+
+    struct {
+        uint32 num_outputs;
+        uint32 out_Depth;
     } outputs;
 
     void InitShaderLocs();

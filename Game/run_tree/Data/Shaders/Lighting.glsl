@@ -49,6 +49,10 @@ layout (location = 398) uniform samplerCube u_prefilter;
 layout (location = 399) uniform sampler2D   u_brdf_LUT;
 layout (location = 400) uniform float       u_env_map_contribution;
 
+// Shadow Maps
+layout (location = 401) uniform mat4        r_LightSpaceMatrix;
+layout (location = 402) uniform sampler2D   u_SunShadowMap;
+
 const vec3 FD = vec3(0.04);
 const float PI = 3.141592;
 const float Epsilon = 0.00001;
@@ -69,6 +73,8 @@ struct PBRParameters {
 
     vec3 Diffuse;
     vec3 Specular;
+
+    float Shadow;
 };
 PBRParameters m_Params;
 
@@ -96,11 +102,42 @@ void main() {
     // Fresnel reflectance, metals use albedo
 	vec3 F0 = mix(FD, m_Params.Albedo, m_Params.Metalness);
 
+    // shadow mapping - need fragPos in light-space!
+    vec4 worldspace = inverse(r_View) * vec4(m_Params.FragPos, 1.0);
+    vec4 FragPosLightSpace = r_LightSpaceMatrix * inverse(r_View) * vec4(m_Params.FragPos, 1.0);
+    vec3 projCoords = FragPosLightSpace.xyz / FragPosLightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    float closestDepth = texture(u_SunShadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+    float bias = 0.005;
+
+    // single sample
+    m_Params.Shadow = (currentDepth-bias) > closestDepth ? 1.0 : 0.0;
+
+    // multi-sample PCF
+    m_Params.Shadow = 0.0;
+    vec2 texel_size = 1.0 / textureSize(u_SunShadowMap, 0);
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            float pcf_depth = texture(u_SunShadowMap, projCoords.xy + vec2(x, y) * texel_size).r;
+            m_Params.Shadow += (currentDepth - bias) > pcf_depth ? 1.0 : 0.0;
+        }
+    }
+    m_Params.Shadow /= 9.0;
+
+
+    if (projCoords.z > 1.0)
+        m_Params.Shadow = 0.0;
+
     Lighting(F0);
     IBL(F0, RWorld);
 
-    out_Diffuse = vec4(m_Params.Diffuse, 1);
+    out_Diffuse  = vec4(m_Params.Diffuse, 1);
     out_Specular = vec4(m_Params.Specular, 1);
+
+    //out_Diffuse = vec4(m_Params.Shadow, m_Params.Shadow, m_Params.Shadow, 1);
+    //out_Diffuse = vec4(closestDepth, closestDepth, closestDepth, 1);
+    //out_Specular = vec4(0, 0, 0, 1);
 }
 
 // reconstruct view-space frag position from depth buffer
@@ -195,8 +232,8 @@ void CalcSunDirect(vec3 F0) {
     // Cook-Torrance
 	vec3 specularBRDF = (F * D * G) / max(Epsilon, 4.0 * NdotL * m_Params.NdotV);
 
-    m_Params.Diffuse += diffuseBRDF * Lradiance * NdotL;
-    m_Params.Specular += specularBRDF * Lradiance * NdotL;
+    m_Params.Diffuse  += (diffuseBRDF  * Lradiance * NdotL) * (1.0 - m_Params.Shadow);
+    m_Params.Specular += (specularBRDF * Lradiance * NdotL) * (1.0 - m_Params.Shadow);
 }
 
 void CalcPointLightDirect(vec3 F0, Light pl) {

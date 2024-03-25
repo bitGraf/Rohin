@@ -40,7 +40,7 @@ void main() {
 
     mat4 model2view = r_View * r_Transform;
     mat4 normalMatrix = transpose(inverse(model2view));
-    vs_Output.Position = vec3(model2view * boneTransform * vec4(a_Position, 1.0));
+    vs_Output.Position = vec3(model2view * localPosition);
     vs_Output.Normal = vec3(normalMatrix * vec4(a_Normal, 0));
     vs_Output.TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
     vs_Output.ViewNormalMatrix = mat3(normalMatrix) * mat3(a_Tangent, a_Bitangent, a_Normal);

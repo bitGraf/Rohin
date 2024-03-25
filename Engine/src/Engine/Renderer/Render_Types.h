@@ -167,9 +167,42 @@ enum class frame_buffer_texture_format {
     // Depth/stencil
     //DEPTH32F,
     DEPTH24STENCIL8,
+    //DepthStencil=DEPTH24STENCIL8,
 
     // Defaults
     Depth = DEPTH24STENCIL8
+};
+/*
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+*/
+enum class texture_wrap_type {
+    clamp_to_edge,
+    clamp_to_border,
+    mirrored_repeat,
+    repeat,
+};
+enum class texture_filter_type {
+    // only options for mag_filter
+    linear,
+    nearest,
+
+    // works for both min and mag
+    nearest_mipmap_nearest,
+    linear_mipmap_nearest,
+    nearest_mipmap_linear,
+    linear_mipmap_linear
+};
+struct frame_buffer_create_info {
+    texture_filter_type min_filter;
+    texture_filter_type mag_filter;
+
+    texture_wrap_type wrap_s;
+    texture_wrap_type wrap_t;
+
+    laml::Vec4 border;
 };
 
 struct frame_buffer_attachment {
@@ -303,7 +336,8 @@ struct renderer_api {
 
     virtual bool32 create_framebuffer(frame_buffer* fbo, 
                                       int num_attachments, 
-                                      const frame_buffer_attachment* attachments) = 0;
+                                      const frame_buffer_attachment* attachments,
+                                      frame_buffer_create_info info) = 0;
     virtual bool32 recreate_framebuffer(frame_buffer* fbo) = 0;
     virtual bool32 create_framebuffer_cube(frame_buffer* fbo, 
                                            int num_attachments, 

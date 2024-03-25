@@ -62,6 +62,10 @@ void renderer_destroy_shader(shader* shader_prog);
 bool32 renderer_create_framebuffer(frame_buffer* fbo, 
                                    int num_attachments, 
                                    const frame_buffer_attachment* attachments);
+bool32 renderer_create_framebuffer(frame_buffer* fbo, 
+                                   int num_attachments, 
+                                   const frame_buffer_attachment* attachments,
+                                   frame_buffer_create_info info);
 bool32 renderer_create_framebuffer_cube(frame_buffer* fbo, 
                                         int num_attachments, 
                                         const frame_buffer_attachment* attachments,

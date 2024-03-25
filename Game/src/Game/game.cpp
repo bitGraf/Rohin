@@ -111,6 +111,10 @@ void init_game(game_state* state, game_memory* memory) {
     // define basic scene
     create_scene(&state->scene, "basic_scene", &state->arena);
 
+    state->scene.sun.direction = laml::normalize(laml::Vec3(1.5f, -1.0f, 0.0f));
+    state->scene.sun.enabled = true;
+    state->scene.sun.strength = 20.0f;
+
     resource_load_env_map("Data/env_maps/newport_loft.hdr", &state->scene.sky.environment);
     //resource_load_env_map("Data/env_maps/metro_noord_1k.hdr", &state->scene.sky.environment);
 
@@ -133,7 +137,7 @@ void init_game(game_state* state, game_memory* memory) {
     state->guy_run_anim.frame_rate = 60.0f;
     state->guy_run_anim.length = state->guy_run_anim.num_samples / 60.0f;
 
-    string_build(state->scene_filename, 256, "scene.out");
+    string_build(state->scene_filename, 256, "Data\\Scenes\\out.scene");
 
     RH_INFO("Game initialized");
 }
@@ -228,7 +232,7 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
 
     if (ImGui::TreeNode("Sun")) {
         ImGui::Checkbox("Enabled", &state->scene.sun.enabled);
-        static real32 sun_yp[2] = { 0.0f, -90.0f };
+        static real32 sun_yp[2] = { -90.0f, -45.0f };
     //if (ImGui::CollapsingHeader("Sun")) {
         ImGui::DragFloat("Strength", &state->scene.sun.strength, 0.1f, 0.0f, 25.0f);
         ImGui::DragFloat2("Direction", sun_yp, 0.5f, -180.0f, 180.0f);
