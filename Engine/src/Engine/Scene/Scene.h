@@ -37,8 +37,12 @@ struct scene_dir_light {
     laml::Vec3 color;
     real32 strength;
 
-    bool cast_shadow;
     bool enabled;
+    bool cast_shadow;
+    real32 shadowmap_projection_size;
+    real32 shadowmap_projection_depth;
+    laml::Vec3 origin_point;
+    real32 dist_from_origin;
 };
 struct scene_point_light {
     laml::Vec3 position;

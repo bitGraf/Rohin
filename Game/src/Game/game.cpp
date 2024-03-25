@@ -113,6 +113,7 @@ void init_game(game_state* state, game_memory* memory) {
 
     state->scene.sun.direction = laml::normalize(laml::Vec3(1.5f, -1.0f, 0.0f));
     state->scene.sun.enabled = true;
+    state->scene.sun.cast_shadow = true;
     state->scene.sun.strength = 20.0f;
 
     resource_load_env_map("Data/env_maps/newport_loft.hdr", &state->scene.sky.environment);
@@ -232,10 +233,16 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
 
     if (ImGui::TreeNode("Sun")) {
         ImGui::Checkbox("Enabled", &state->scene.sun.enabled);
+        ImGui::SameLine();
+        ImGui::Checkbox("Cast Shadows", &state->scene.sun.cast_shadow);
         static real32 sun_yp[2] = { -90.0f, -45.0f };
     //if (ImGui::CollapsingHeader("Sun")) {
         ImGui::DragFloat("Strength", &state->scene.sun.strength, 0.1f, 0.0f, 25.0f);
         ImGui::DragFloat2("Direction", sun_yp, 0.5f, -180.0f, 180.0f);
+        ImGui::DragFloat("OrthoWidth", &state->scene.sun.shadowmap_projection_size, 0.1f, 1.0f, 50.0f);
+        ImGui::DragFloat("OrthoDepth", &state->scene.sun.shadowmap_projection_depth, 0.1f, 1.0f, 100.0f);
+        ImGui::DragFloat("DistFromOrigin", &state->scene.sun.dist_from_origin, 0.1f, 1.0f, 100.0f);
+        ImGui::DragFloat3("Origin", state->scene.sun.origin_point._data, 0.1f, -10.0f, 10.0f);
         state->scene.sun.direction = laml::transform::dir_from_yp(sun_yp[0], sun_yp[1]);
         ImGui::ColorPicker3("Color", state->scene.sun.color._data);
         ImGui::TreePop();

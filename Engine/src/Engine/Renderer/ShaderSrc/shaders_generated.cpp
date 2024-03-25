@@ -287,8 +287,7 @@ void shader_ShadowPass::InitShaderLocs() {
     outputs.out_Depth = 0;
 
     r_Transform.Location = 1;
-    r_View.Location = 2;
-    r_Projection.Location = 3;
+    r_LightSpace.Location = 2;
 }
 void shader_ShadowPass_Anim::InitShaderLocs() {
     outputs.num_outputs = 1;
@@ -299,8 +298,7 @@ void shader_ShadowPass_Anim::InitShaderLocs() {
     }
     r_UseSkin.Location = 129;
     r_Transform.Location = 130;
-    r_View.Location = 131;
-    r_Projection.Location = 132;
+    r_LightSpace.Location = 131;
 }
 void shader_simple::InitShaderLocs() {
     outputs.num_outputs = 1;

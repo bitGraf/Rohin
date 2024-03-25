@@ -15,9 +15,8 @@ layout (location = 129) uniform int r_UseSkin;
 
 // can combine these two into ModelView matrix
 layout (location = 130) uniform mat4 r_Transform;
-layout (location = 131) uniform mat4 r_View;
 
-layout (location = 132) uniform mat4 r_Projection;
+layout (location = 131) uniform mat4 r_LightSpace;
 
 void main() {
     float finalWeight = 1 - a_BoneWeights[0] - a_BoneWeights[1] - a_BoneWeights[2]; // ensure total weight is 1
@@ -31,7 +30,7 @@ void main() {
         localPosition = boneTransform * localPosition;
     }
 
-    gl_Position = r_Projection * r_View * r_Transform * localPosition;
+    gl_Position = r_LightSpace * r_Transform * localPosition;
 }
 
 #type fragment

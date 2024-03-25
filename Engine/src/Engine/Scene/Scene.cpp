@@ -14,6 +14,13 @@ void create_scene(scene_3D* scene, const char* name, memory_arena* arena) {
     scene->sun.color = laml::rgb8_to_rgba32f(201, 226, 255);
     scene->sun.strength = 1.0f;
 
+    scene->sun.enabled = true;
+    scene->sun.cast_shadow = false;
+    scene->sun.shadowmap_projection_size = 5.0f;
+    scene->sun.shadowmap_projection_depth = 20.0f;
+    scene->sun.origin_point = laml::Vec3(0.0f);
+    scene->sun.dist_from_origin = 10.0f;
+
     scene->pointlights = CreateArray(arena, scene_point_light, 10);
     scene->spotlights  = CreateArray(arena, scene_spot_light,  10);
 

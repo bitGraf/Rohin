@@ -299,8 +299,7 @@ struct shader_ShadowPass {
     uint32 Handle;
 
     ShaderUniform_mat4 r_Transform;
-    ShaderUniform_mat4 r_View;
-    ShaderUniform_mat4 r_Projection;
+    ShaderUniform_mat4 r_LightSpace;
 
     struct {
         uint32 num_outputs;
@@ -315,8 +314,7 @@ struct shader_ShadowPass_Anim {
     ShaderUniform_mat4 r_Bones[128];
     ShaderUniform_int r_UseSkin;
     ShaderUniform_mat4 r_Transform;
-    ShaderUniform_mat4 r_View;
-    ShaderUniform_mat4 r_Projection;
+    ShaderUniform_mat4 r_LightSpace;
 
     struct {
         uint32 num_outputs;

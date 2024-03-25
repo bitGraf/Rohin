@@ -612,78 +612,59 @@ bool32 renderer_draw_frame(render_packet* packet, bool32 debug_mode) {
             backend->use_framebuffer(&render_state->sun_shadow_buffer);
             backend->set_viewport(0, 0, 1024, 1024);
             backend->clear_viewport(0, 0, 0, 0);
-            //backend->clear_framebuffer_attachment(&render_state->sun_shadow_buffer.attachments[0], 1, 1, 1, 1);
+            backend->clear_framebuffer_attachment(&render_state->sun_shadow_buffer.attachments[0], 1, 1, 1, 1);
 
-            // view matrix is form the pov of the light
-            laml::Mat4 light_view, shadow_projection;
-            laml::Mat4 light_trans;
-            laml::Vec3 light_root(0.0f, 0.0f, 0.0f);
-            laml::Vec3 light_pos = light_root - (20.0f * packet->sun.direction);
-            laml::Vec3 up(0.0f, 1.0f, 0.0f);
-            if (abs(laml::dot(packet->sun.direction, up)) < (0.975f)) {
-                laml::transform::lookAt(light_trans, light_pos, light_root, up);
-            } else {
-                laml::transform::lookAt(light_trans, light_pos, light_root, laml::Vec3(1.0f, 0.0f, 0.0f));
-            }
-            laml::transform::create_view_matrix_from_transform(light_view, light_trans);
-            //light_view = light_trans;
-
-            // projection matrix is to a square viewport
-            //laml::transform::create_projection_perspective(shadow_projection, 60.0f, 1.0f, 0.1f, 100.0f);
-            laml::transform::create_projection_orthographic(shadow_projection, 
-                                                            -5.0f, 5.0f, 
-                                                            -5.0f, 5.0f, 
-                                                            0.0f, 30.0f);
-            lightSpaceMatrix = laml::mul(shadow_projection, light_view);
+            lightSpaceMatrix = packet->sun.light_space;
 
             backend->disable_stencil_test();
-            backend->push_debug_group("Static Meshes");
-            { // Static Meshes
-                shader_ShadowPass& shadow_static = render_state->static_shadow_shader;
-                shader * pShadowStatic = (shader*)(&render_state->static_shadow_shader);
-                renderer_use_shader(pShadowStatic);
 
-                backend->upload_uniform_float4x4(shadow_static.r_View, light_view);
-                backend->upload_uniform_float4x4(shadow_static.r_Projection, shadow_projection);
+            if (packet->sun.cast_shadow) {
+                backend->push_debug_group("Static Meshes");
+                { // Static Meshes
+                    shader_ShadowPass& shadow_static = render_state->static_shadow_shader;
+                    shader * pShadowStatic = (shader*)(&render_state->static_shadow_shader);
+                    renderer_use_shader(pShadowStatic);
 
-                for (uint32 cmd_index = 0; cmd_index < packet->_num_static; cmd_index++) {
-                    render_command& cmd = packet->_static_cmds[cmd_index];
-                    render_material& mat = cmd.material;
+                    backend->upload_uniform_float4x4(shadow_static.r_LightSpace, lightSpaceMatrix);
 
-                    backend->upload_uniform_float4x4(shadow_static.r_Transform,
-                                                     cmd.model_matrix._data);
-                    renderer_draw_geometry(&cmd.geom);
-                }
-            }
-            backend->pop_debug_group();
+                    for (uint32 cmd_index = 0; cmd_index < packet->_num_static; cmd_index++) {
+                        render_command& cmd = packet->_static_cmds[cmd_index];
+                        render_material& mat = cmd.material;
 
-            backend->push_debug_group("Skinned Meshes");
-            { // Skinned
-                shader_ShadowPass_Anim& shadow_skinned = render_state->skinned_shadow_shader;
-                shader * pShadowSkinned = (shader*)(&render_state->skinned_shadow_shader);
-                renderer_use_shader(pShadowSkinned);
-
-                backend->upload_uniform_float4x4(shadow_skinned.r_View, light_view);
-                backend->upload_uniform_float4x4(shadow_skinned.r_Projection, shadow_projection);
-
-                for (uint32 cmd_index = 0; cmd_index < packet->_num_skinned; cmd_index++) {
-                    render_command& cmd = packet->_skinned_cmds[cmd_index];
-                    render_material& mat = cmd.material;
-
-                    // upload skeleton data
-                    AssertMsg(cmd.skeleton_idx, "Trying to render Skinned mesh with skeleton_idx 0!");
-                    const render_skeleton& skeleton = packet->skeletons[cmd.skeleton_idx];
-                    backend->upload_uniform_int(shadow_skinned.r_UseSkin, render_state->use_skins);
-                    for (uint32 b = 0; b < skeleton.num_bones; b++) {
-                        backend->upload_uniform_float4x4(shadow_skinned.r_Bones[b], skeleton.bones[b]._data);
+                        backend->upload_uniform_float4x4(shadow_static.r_Transform,
+                                                         cmd.model_matrix._data);
+                        renderer_draw_geometry(&cmd.geom);
                     }
-
-                    backend->upload_uniform_float4x4(shadow_skinned.r_Transform,
-                                                     cmd.model_matrix._data);
-                    renderer_draw_geometry(&cmd.geom);
                 }
+                backend->pop_debug_group();
+
+                backend->push_debug_group("Skinned Meshes");
+                { // Skinned
+                    shader_ShadowPass_Anim& shadow_skinned = render_state->skinned_shadow_shader;
+                    shader * pShadowSkinned = (shader*)(&render_state->skinned_shadow_shader);
+                    renderer_use_shader(pShadowSkinned);
+
+                    backend->upload_uniform_float4x4(shadow_skinned.r_LightSpace, lightSpaceMatrix);
+
+                    for (uint32 cmd_index = 0; cmd_index < packet->_num_skinned; cmd_index++) {
+                        render_command& cmd = packet->_skinned_cmds[cmd_index];
+                        render_material& mat = cmd.material;
+
+                        // upload skeleton data
+                        AssertMsg(cmd.skeleton_idx, "Trying to render Skinned mesh with skeleton_idx 0!");
+                        const render_skeleton& skeleton = packet->skeletons[cmd.skeleton_idx];
+                        backend->upload_uniform_int(shadow_skinned.r_UseSkin, render_state->use_skins);
+                        for (uint32 b = 0; b < skeleton.num_bones; b++) {
+                            backend->upload_uniform_float4x4(shadow_skinned.r_Bones[b], skeleton.bones[b]._data);
+                        }
+
+                        backend->upload_uniform_float4x4(shadow_skinned.r_Transform,
+                                                         cmd.model_matrix._data);
+                        renderer_draw_geometry(&cmd.geom);
+                    }
+                }
+                backend->pop_debug_group();
             }
-            backend->pop_debug_group();
         }
         backend->pop_debug_group();
 

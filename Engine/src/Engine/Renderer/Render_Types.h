@@ -240,6 +240,9 @@ struct render_light {
     laml::Vec3 color;
     real32 strength;
     real32 inner, outer; // cos(cone_angle)! must be precalculated
+
+    bool32 cast_shadow;
+    laml::Mat4 light_space;
 };
 
 struct render_env_map {

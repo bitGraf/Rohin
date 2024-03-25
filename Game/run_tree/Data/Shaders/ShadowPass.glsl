@@ -5,12 +5,11 @@ layout (location = 0) in vec3 a_Position;
 
 // can combine these two into ModelView matrix
 layout (location = 1) uniform mat4 r_Transform;
-layout (location = 2) uniform mat4 r_View;
 
-layout (location = 3) uniform mat4 r_Projection;
+layout (location = 2) uniform mat4 r_LightSpace;
 
 void main() {
-    gl_Position = r_Projection * r_View * r_Transform * vec4(a_Position, 1.0);
+    gl_Position = r_LightSpace * r_Transform * vec4(a_Position, 1.0);
 }
 
 #type fragment

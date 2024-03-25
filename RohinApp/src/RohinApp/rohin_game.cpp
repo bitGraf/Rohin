@@ -375,6 +375,29 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         packet->sun.color     = state->current_scene->sun.color;
         packet->sun.strength  = state->current_scene->sun.strength;
         packet->sun.strength  = state->current_scene->sun.enabled ? state->current_scene->sun.strength : 0.0f;
+        packet->sun.cast_shadow = state->current_scene->sun.cast_shadow;
+        if (packet->sun.cast_shadow) {
+            const scene_dir_light& sun = state->current_scene->sun;
+            laml::Mat4 light_view, shadow_projection;
+            laml::Mat4 light_trans;
+            laml::Vec3 light_pos = sun.origin_point - (sun.dist_from_origin * sun.direction);
+            laml::Vec3 world_up(0.0f, 1.0f, 0.0f);
+            if (abs(laml::dot(packet->sun.direction, world_up)) < (0.975f)) {
+                laml::transform::lookAt(light_trans, light_pos, sun.origin_point, world_up);
+            } else {
+                laml::transform::lookAt(light_trans, light_pos, sun.origin_point, laml::Vec3(1.0f, 0.0f, 0.0f));
+            }
+            laml::transform::create_view_matrix_from_transform(light_view, light_trans);
+            //light_view = light_trans;
+
+            // projection matrix is to a square viewport
+            //laml::transform::create_projection_perspective(shadow_projection, 60.0f, 1.0f, 0.1f, 100.0f);
+            laml::transform::create_projection_orthographic(shadow_projection, 
+                                                            -sun.shadowmap_projection_size, sun.shadowmap_projection_size, 
+                                                            -sun.shadowmap_projection_size, sun.shadowmap_projection_size, 
+                                                            0.0f, sun.shadowmap_projection_depth);
+            packet->sun.light_space = laml::mul(shadow_projection, light_view);
+        }
 
         packet->num_point_lights = (uint32)GetArrayCount(state->current_scene->pointlights);
         packet->num_spot_lights  = (uint32)GetArrayCount(state->current_scene->spotlights);

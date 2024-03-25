@@ -30,7 +30,13 @@ Bugs to fix:
         [ ] Speed up IBL_Bake writing/reading!
             [ ] combine output files? (cubemap faces/mip-mip levels?)
             [ ] hybrid load/compute?
-    [ ] !!! Shadows !!!
+    [~] Shadows
+        [x] Implement shadow-mapping for the single directional light
+        [x] Really basic (bad) PCF to make shadows smoother
+        [x] Scene controls for shadow mapping params
+        [ ] Look into methods for better soft shadows
+            [ ] Variance Shadow Mapping (VSM: https://developer.download.nvidia.com/SDK/10/direct3d/Source/VarianceShadowMapping/Doc/VarianceShadowMapping.pdf)
+                Seems promising!
 
 [ ] Animation
     [ ] Animation blending between anim_graph nodes
