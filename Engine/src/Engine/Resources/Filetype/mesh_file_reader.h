@@ -40,6 +40,7 @@ struct mesh_file_primitive_header {
     uint32 NumVerts;
     uint32 NumInds;
     uint32 MatIdx;
+    uint32 PrimType;
 };
 struct mesh_file_vertex_static {
     laml::Vec3 Position;
@@ -57,8 +58,12 @@ struct mesh_file_vertex_skinned {
     laml::Vector<int32, 4>  BoneIndices;
     laml::Vector<real32, 4> BoneWeights;
 };
+struct mesh_file_vertex_line {
+    laml::Vec3 Position;
+};
 constexpr uint64 skinned_vert_size = sizeof(mesh_file_vertex_skinned);
 constexpr uint64 static_vert_size  = sizeof(mesh_file_vertex_static);
+constexpr uint64 line_vert_size    = sizeof(mesh_file_vertex_line);
 
 struct mesh_file_skeleton_header {
     unsigned char Magic[4];

@@ -21,7 +21,7 @@ internal_func bool32 CheckHeader(mesh_file_header* Header, uint64 Size) {
     if (!CheckTag(Header->Magic, "MESH", 4)) return false;
 
     // check version number
-    if (Header->Version != 3) return false;
+    if (Header->Version != 4) return false;
 
     return true;
 }
@@ -115,10 +115,13 @@ mesh_file_result parse_mesh_file(const char* resource_file_name, mesh_file **mes
         memory_copy(tmp->Primitives[n].Indices, Indices, PrimHeader->NumInds * sizeof(uint32));
 
         uint64 vert_size = is_skinned ? skinned_vert_size : static_vert_size;
-        vert_size = vert_size;
+
+        if (PrimHeader->PrimType == 2) // LINE primitive!
+            vert_size = line_vert_size;
 
         void* VerticesFromFile = AdvanceBufferSize_(&file.data, (PrimHeader->NumVerts)*(vert_size), End);
         tmp->Primitives[n].Vertices = PushSize_(arena, (PrimHeader->NumVerts)*(vert_size));
+        tmp->Primitives[n].VertexAttribsSize = vert_size;
         memory_copy(tmp->Primitives[n].Vertices, VerticesFromFile, PrimHeader->NumVerts * vert_size);
     }
 
