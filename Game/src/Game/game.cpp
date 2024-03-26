@@ -18,127 +18,150 @@
 
 #include <imgui/imgui.h>
 
+struct bloon_path {
+    uint32 num_nodes;
+    laml::Vec3* nodes;
+    real32* path_distance;
+    real32 total_length;
+};
+
 struct game_state {
     memory_arena arena;
 
     // basic scene
     scene_3D scene;
-    entity_static  *static_entity;
-    entity_skinned *skinned_entity;
 
-    resource_static_mesh static_mesh;
-    // character
-    resource_skinned_mesh guy_mesh;
-    resource_animation guy_idle_anim;
-    resource_animation guy_walk_anim;
-    resource_animation guy_run_anim;
-    resource_animation guy_jump_anim;
-    animation_controller guy_controller;
-    laml::Vec3 position;
-    laml::Vec3 velocity;
-    laml::Quat orientation;
-    real32 max_speed;
-    real32 acc, stop_acc;
-    real32 curr_speed;
+    bloon_path path;
+    real32 level_time;
+    real32 time_since_last_spawn;
+    real32 spawn_rate;
+    uint32 num_bloons_to_spawn;
+    uint32 num_spawned;
+    laml::Vec3 spawn_location;
+    entity_static* bloons;
+
+    resource_static_mesh bloon_mesh;
+    resource_static_mesh tower_mesh;
+
+    real32 bloon_speed;
+    real32* bloon_pos;
+    real32 game_speed;
 
     bool32 debug_mode;
-    char scene_filename[256];
-    char* saved_str1;
-    char* saved_str2;
+
+    real32 sun_yp[2];
 };
 
 bool32 controller_key_press(uint16 code, void* sender, void* listener, event_context context);
 bool32 controller_key_release(uint16 code, void* sender, void* listener, event_context context);
 
+static const real32 height = 0.5f;
+static laml::Vec3 path[] = {
+    laml::Vec3(-13.358f,   height, -2.1896f),
+    laml::Vec3( -7.1466f,  height, -2.0415f),
+    laml::Vec3( -6.1836f,  height, -2.7964f),
+    laml::Vec3( -6.2542f,  height, -5.5243f),
+    laml::Vec3( -5.1489f,  height, -6.4884f),
+    laml::Vec3( -1.1935f,  height, -6.5637f),
+    laml::Vec3( -0.2058f,  height, -5.2468f),
+    laml::Vec3( -0.29983f, height, -0.14371f),
+    laml::Vec3( -0.62906f, height,  5.5002f),
+    laml::Vec3( -1.4521f,  height,  6.2527f),
+    laml::Vec3( -7.3312f,  height,  6.2998f),
+    laml::Vec3( -8.0837f,  height,  6.7231f),
+    laml::Vec3( -8.0367f,  height,  7.8519f),
+    laml::Vec3( -7.4488f,  height,  8.6749f),
+    laml::Vec3( -7.0843f,  height,  8.6044f),
+    laml::Vec3(  8.0485f,  height,  7.8519f),
+    laml::Vec3(  8.0955f,  height,  3.8306f),
+    laml::Vec3(  6.9432f,  height,  2.4901f),
+    laml::Vec3(  3.5098f,  height,  2.5372f),
+    laml::Vec3(  2.6632f,  height,  1.9022f),
+    laml::Vec3(  2.5221f,  height, -2.3778f),
+    laml::Vec3(  3.3452f,  height, -3.2244f),
+    laml::Vec3(  7.3665f,  height, -3.2479f),
+    laml::Vec3(  8.2601f,  height, -3.8593f),
+    laml::Vec3(  8.3072f,  height, -7.5984f),
+    laml::Vec3(  7.4606f,  height, -8.445f),
+    laml::Vec3(  1.8872f,  height, -8.3744f),
+    laml::Vec3(  0.93713f, height, -9.1787f),
+    laml::Vec3(  0.87598f, height, -15.0f),
+};
+
 void init_game(game_state* state, game_memory* memory) {
     memory_index offset = sizeof(game_state);
     CreateArena(&state->arena, memory->GameStorageSize-offset, (uint8*)(memory->GameStorage)+offset);
 
-    // load skinned character
-    resource_load_skinned_mesh("Data/Models/guy.mesh",       &state->guy_mesh);
-    resource_load_animation("Data/Animations/guy_idle.anim", &state->guy_idle_anim);
-    resource_load_animation("Data/Animations/guy_walk.anim", &state->guy_walk_anim);
-    resource_load_animation("Data/Animations/guy_walk.anim", &state->guy_run_anim);
-    resource_load_animation("Data/Animations/guy_jump.anim", &state->guy_jump_anim);
-
-    // Create animation_controller. define animation_graph with a few states
-    const uint32 param_jump_idx  = 0; 
-    const uint32 param_speed_idx = 1;
-    state->guy_controller = create_anim_controller(4, 2, &state->arena);
-    event_register(EVENT_CODE_KEY_PRESSED,  &state->guy_controller, controller_key_press);
-    event_register(EVENT_CODE_KEY_RELEASED, &state->guy_controller, controller_key_release);
-    define_parameter(&state->guy_controller, param_jump_idx,    param_type::PARAM_INT, "space", param_mode::PARAM_KEY_EVENT, (void*)(KEY_F));
-    define_parameter(&state->guy_controller, param_speed_idx, param_type::PARAM_FLOAT, "speed", param_mode::PARAM_POLL,      (void*)(&state->curr_speed));
-
-    const uint32 node_idle_idx = 0;
-    const uint32 node_walk_idx = 1;
-    const uint32 node_run_idx = 2;
-    const uint32 node_jump_idx = 3;
-    anim_graph_node node_idle = create_node("<idle>", 2, &state->guy_idle_anim, 0, &state->arena);
-    define_connection_float(&node_idle, 0, node_run_idx,  param_speed_idx, trigger_type::TRIGGER_GT, 2.0f);
-    define_connection_float(&node_idle, 1, node_walk_idx, param_speed_idx, trigger_type::TRIGGER_GT, 0.1f);
-    state->guy_controller.graph.nodes[node_idle_idx] = node_idle;
-
-    anim_graph_node node_walk = create_node("<walk>", 2, &state->guy_walk_anim, 0, &state->arena);
-    define_connection_float(&node_walk, 0, node_idle_idx, param_speed_idx, trigger_type::TRIGGER_LEQ, 0.1f);
-    define_connection_float(&node_walk, 1, node_run_idx,  param_speed_idx, trigger_type::TRIGGER_GT,  2.0f);
-    state->guy_controller.graph.nodes[node_walk_idx] = node_walk;
-
-    anim_graph_node node_run = create_node("<run>", 2, &state->guy_run_anim, 0, &state->arena);
-    define_connection_float(&node_run, 0, node_idle_idx, param_speed_idx, trigger_type::TRIGGER_LEQ, 0.1f);
-    define_connection_float(&node_run, 1, node_walk_idx, param_speed_idx, trigger_type::TRIGGER_LEQ, 2.0f);
-    state->guy_controller.graph.nodes[node_run_idx] = node_run;
-
-    anim_graph_node node_jump = create_node("<jump>", 1, &state->guy_jump_anim, NODE_PLAY_FULL, &state->arena);
-    define_connection_default(&node_jump, 0, node_idle_idx);
-    //define_connection_float(&node_jump, 1, node_walk_idx, param_walking_idx, trigger_type::TRIGGER_GT, 0.1f);
-    state->guy_controller.graph.nodes[node_jump_idx] = node_jump;
-
-    validate_controller(&state->guy_controller);
-
-    state->position = laml::Vec3(0.0f, 0.0f, 0.0f);
-    state->velocity = laml::Vec3(0.0f, 0.0f, 0.0f);
-    state->max_speed = 4.0f;
-    state->curr_speed = 0.0f;
-    state->acc = 4.0f;
-    state->stop_acc = 10.0f;
-
     state->debug_mode = false;
 
-    state->saved_str1 = copy_string_to_arena("test1", &state->arena);
-    state->saved_str2 = copy_string_to_arena("test2", &state->arena);
+    // load bloon mesh. all bloon entities use this same mesh
+    resource_load_static_mesh("Data/Models/bloon.mesh", &state->bloon_mesh);
+    state->bloon_mesh.materials[0].RoughnessFactor = 0.0f;
+    resource_load_static_mesh("Data/Models/tower.mesh", &state->tower_mesh);
+
+    // define bloon stats
+    state->num_bloons_to_spawn = 30;
+    state->num_spawned = 0;
+    state->spawn_rate = 0.5f;
+    state->time_since_last_spawn = 0.0f;
+    state->spawn_location = laml::Vec3(-10.0f, 0.5f, 0.0f);
+    state->bloon_speed = 1.5f;
+    state->game_speed = 1.0f;
+
+    bloon_path bp;
+    bp.nodes = path;
+    bp.num_nodes = sizeof(path)/sizeof(path[0]);
+    bp.path_distance = PushArray(&state->arena, real32, bp.num_nodes);
+    bp.path_distance[0] = 0.0f;
+    bp.total_length = 0.0f;
+    for (uint32 n = 1; n < bp.num_nodes; n++) {
+        real32 segment_length = laml::length(path[n] - path[n - 1]);
+        bp.path_distance[n] = bp.total_length + segment_length;
+        bp.total_length += segment_length;
+
+        RH_INFO("  Segment %2u: %6.2f | %6.2f", n, segment_length, bp.path_distance[n]);
+    }
+    RH_INFO("Path has %u nodes, %u segments.", bp.num_nodes, bp.num_nodes - 1);
+    RH_INFO("Total length: %.2f m", bp.total_length);
+    state->path = bp;
+
+    state->bloon_pos = PushArray(&state->arena, real32, state->num_bloons_to_spawn);
+    memory_zero(state->bloon_pos, sizeof(real32)*state->num_bloons_to_spawn);
 
     // define basic scene
     create_scene(&state->scene, "basic_scene", &state->arena);
 
-    state->scene.sun.direction = laml::normalize(laml::Vec3(1.5f, -1.0f, 0.0f));
+    state->scene.sun.direction = laml::normalize(laml::Vec3(1.5f, -1.0f, -1.0f));
     state->scene.sun.enabled = true;
     state->scene.sun.cast_shadow = true;
     state->scene.sun.strength = 20.0f;
+    state->scene.sun.shadowmap_projection_size = 15.0f;
+    state->scene.sun.shadowmap_projection_depth = 25.0f;
+    state->scene.sun.dist_from_origin = 12.5f;
+
+    laml::Mat4 rot(1.0f);
+    laml::transform::lookAt(rot, laml::Vec3(0.0f), state->scene.sun.direction, laml::Vec3(0.0f, 1.0f, 0.0f));
+    //laml::transform::create_transform_rotation(rot, state->debug_camera.orientation);
+    real32 roll;
+    laml::transform::decompose(rot, state->sun_yp[0], state->sun_yp[0], roll);
 
     resource_load_env_map("Data/env_maps/newport_loft.hdr", &state->scene.sky.environment);
-    //resource_load_env_map("Data/env_maps/metro_noord_1k.hdr", &state->scene.sky.environment);
+    state->scene.sky.draw_skybox = false;
 
-    resource_load_static_mesh("Data/Models/helmet.mesh", &state->static_mesh);
-    state->static_entity = create_static_entity(&state->scene, "static_entity", &state->static_mesh);
-    state->static_entity->position = laml::Vec3(-2.0f, 1.5f, 0.0f);
-    state->static_entity->orientation = laml::transform::quat_from_axis_angle(laml::Vec3(1.0f, 0.0f, 0.0f) , 180.0f);
+    ArrayReserve(state->scene.static_entities, state->num_bloons_to_spawn+1);
 
-    state->skinned_entity = create_skinned_entity(&state->scene, "skinned_entity", &state->guy_mesh, &state->guy_controller);
     resource_static_mesh* mesh = PushStruct(&state->arena, resource_static_mesh);
     resource_load_static_mesh("Data/Models/plane.mesh", mesh);
     mesh->materials[0].RoughnessFactor = 0.95f; // todo: pull materials out of mesh file? make it a separate thing entirely?
     mesh->materials[0].MetallicFactor = 0.0f;
     create_static_entity(&state->scene, "floor", mesh);
 
+    entity_static* ent = create_static_entity(&state->scene, "tower", &state->tower_mesh);
+    ent->position = laml::Vec3(-4.5f, 0.0f, -4.5f);
+
     RH_INFO("Scene created. %d Static entities. %d Skinned entities.",
             GetArrayCount(state->scene.static_entities),
             GetArrayCount(state->scene.skinned_entities));
-
-    state->guy_run_anim.frame_rate = 60.0f;
-    state->guy_run_anim.length = state->guy_run_anim.num_samples / 60.0f;
-
-    string_build(state->scene_filename, 256, "Data\\Scenes\\out.scene");
 
     RH_INFO("Game initialized");
 }
@@ -152,77 +175,103 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
 
         RH_INFO("------ Scene Initialized -----------------------");
     }
+    delta_time *= state->game_speed;
 
-    state->static_entity->euler_ypr[0] += 10.0f * delta_time;
-    state->static_entity->euler_ypr[1] += 20.0f * delta_time;
-    state->static_entity->euler_ypr[2] += 50.0f * delta_time;
-    state->static_entity->orientation = laml::transform::quat_from_ypr(
-        state->static_entity->euler_ypr[0],
-        state->static_entity->euler_ypr[1],
-        state->static_entity->euler_ypr[2]);
-    
-    if (!state->debug_mode) {
-        laml::Vec3 forward(0.0f, 0.0f, -1.0f);
-        laml::Vec3   right(1.0f, 0.0f,  0.0f);
-        laml::Vec3      up(0.0f, 1.0f,  0.0f);
+    state->level_time += delta_time;
+    state->time_since_last_spawn += delta_time;
 
-        bool32 move_input = false;
-        bool32 is_moving = (laml::length_sq(state->velocity) > 0.01f);
-        laml::Vec3 move_dir(0.0f);
-        if (input_is_key_down(KEY_W)) {
-            move_dir = move_dir + forward;
-            move_input = true;
-            is_moving = true;
-        }
-        if (input_is_key_down(KEY_S)) {
-            move_dir = move_dir - forward;
-            move_input = true;
-            is_moving = true;
-        }
-        if (input_is_key_down(KEY_A)) {
-            move_dir = move_dir - right;
-            move_input = true;
-            is_moving = true;
-        }
-        if (input_is_key_down(KEY_D)) {
-            move_dir = move_dir + right;
-            move_input = true;
-            is_moving = true;
-        }
+    // check if bloon needs to be spawned
+    while ((state->num_spawned < state->num_bloons_to_spawn) && (state->time_since_last_spawn > state->spawn_rate)) {
+        // spawn a balloon
+        state->num_spawned++;
+        state->time_since_last_spawn -= state->spawn_rate;
 
-        if (move_input) {
-            state->velocity = state->velocity + move_dir*state->acc*delta_time;
-        } else if (is_moving) {
-            state->velocity = state->velocity * (1 - state->stop_acc*delta_time);
-        } else {
-            state->velocity = laml::Vec3(0.0f, 0.0f, 0.0f);
-        }
-        real32 max_speed = input_is_key_down(KEY_LSHIFT) ? 0.25f*state->max_speed : state->max_speed;
-        state->curr_speed = laml::length(state->velocity);
-        if (state->curr_speed > max_speed) {
-            state->velocity = laml::normalize(state->velocity)*max_speed;
-            state->curr_speed = max_speed;
-        }
+        RH_INFO("Spawning bloon %u/%u!", state->num_spawned, state->num_bloons_to_spawn);
 
-        state->position = state->position + state->velocity*delta_time;
-        state->skinned_entity->position = state->position;
+        entity_static* bloon = create_static_entity(&state->scene, "bloon", &state->bloon_mesh);
+        bloon->position = state->path.nodes[0];
+        bloon->scale = laml::Vec3(0.3f, 0.3f, 0.3f);
     }
 
+    // update all bloons
+    uint32 curr_num_entities = (uint32)GetArrayCount(state->scene.static_entities);
+    uint32 bloon_idx = 0;
+    for (uint32 n = 0; n < curr_num_entities; n++) {
+        entity_static* bloon = &state->scene.static_entities[n];
+        if (string_compare(bloon->name, "bloon") != 0) continue;
 
-    update_controller(&state->guy_controller, delta_time);
+        state->bloon_pos[bloon_idx] += state->bloon_speed*delta_time;
+        real32 pos = state->bloon_pos[bloon_idx];
 
+        if (pos > state->path.total_length) {
+            // 'kill it'
+            bloon->position = laml::Vec3(100.0f, 0.0f, 0.0f);
+        } else {
+            uint32 idx = 0;
+            real32 f = 0.0f;
+            for (uint32 i = 0; i < (state->path.num_nodes - 1); i++) {
+                real32 left  = state->path.path_distance[i];
+                real32 right = state->path.path_distance[i+1];
+
+                if (left <= pos && pos < right) {
+                    idx = i;
+                    f = (pos - left) / (right - left);
+                    break;
+                }
+            }
+
+            bloon->position = (state->path.nodes[idx] * (1.0f-f)) + (state->path.nodes[idx+1] * f);
+        }
+
+        bloon_idx++;
+    }
+
+    // update the tower
+    for (uint32 n = 0; n < curr_num_entities; n++) {
+        entity_static* tower = &state->scene.static_entities[n];
+        if (string_compare(tower->name, "tower") != 0) continue;
+
+        real32 closest_dist = 1e6;
+        uint32 closest_idx = 0;
+        bloon_idx = 0;
+        for (uint32 m = 0; m < curr_num_entities; m++) {
+            if (m == n) continue;
+            entity_static* bloon = &state->scene.static_entities[m];
+            if (string_compare(bloon->name, "bloon") != 0) continue;
+
+            real32 dist = laml::length(bloon->position - tower->position);
+            if (dist < closest_dist) {
+                closest_dist = dist;
+                closest_idx = m;
+            }
+            bloon_idx++;
+        }
+
+        real32 tower_range = 2.0f;
+        if (closest_dist < tower_range) {
+            entity_static* bloon = &state->scene.static_entities[closest_idx];
+            laml::Mat4 tower_trans;
+            laml::transform::lookAt(tower_trans, 
+                                    laml::Vec3(tower->position.x, 0.0f, tower->position.z), 
+                                    laml::Vec3(bloon->position.x, 0.0f, bloon->position.z),
+                                    laml::Vec3(0.0f, 1.0f, 0.0f));
+            laml::Mat3 tower_rot = laml::minor(tower_trans, 3, 3);
+            laml::Mat3 offset;
+            laml::transform::create_transform_rotation(offset, 180.0f, 0.0f, 0.0f);
+            tower->orientation = laml::transform::quat_from_mat(laml::mul(offset, tower_rot));
+        }
+    }
+
+    ImGui::Begin("Bloons");
+    ImGui::Text("LevelTime:  %.2f", state->level_time);
+    ImGui::Text("SpawnTimer: %.2f", state->time_since_last_spawn);
+    ImGui::Text("Bloons: %u/%u", state->num_spawned, state->num_bloons_to_spawn);
+    ImGui::SliderFloat("GameSpeed", &state->game_speed, 0.0f, 3.0f);
+    ImGui::End();
+
+    // Debug window
     char label_name[64];
     ImGui::Begin("Scene");
-    ImGui::InputText("filename:", state->scene_filename, 256);
-    if (ImGui::Button("Write scene to disk")) {
-        RH_INFO("Saving scene to '%s'", state->scene_filename);
-        serialize_scene(state->scene_filename, &state->scene);
-    }
-    if (ImGui::Button("Reload Skybox")) {
-        RH_INFO("Dumb button pressed :3");
-        resource_load_env_map("Data/env_maps/metro_noord_1k.hdr", &state->scene.sky.environment);
-    }
-    ImGui::Text("Name: %s", state->scene.name);
     ImGui::SeparatorText("Lighting");
     
     if (ImGui::TreeNode("Skybox")) {
@@ -235,15 +284,14 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
         ImGui::Checkbox("Enabled", &state->scene.sun.enabled);
         ImGui::SameLine();
         ImGui::Checkbox("Cast Shadows", &state->scene.sun.cast_shadow);
-        static real32 sun_yp[2] = { -90.0f, -45.0f };
     //if (ImGui::CollapsingHeader("Sun")) {
         ImGui::DragFloat("Strength", &state->scene.sun.strength, 0.1f, 0.0f, 25.0f);
-        ImGui::DragFloat2("Direction", sun_yp, 0.5f, -180.0f, 180.0f);
+        ImGui::DragFloat2("Direction", state->sun_yp, 0.5f, -180.0f, 180.0f);
         ImGui::DragFloat("OrthoWidth", &state->scene.sun.shadowmap_projection_size, 0.1f, 1.0f, 50.0f);
         ImGui::DragFloat("OrthoDepth", &state->scene.sun.shadowmap_projection_depth, 0.1f, 1.0f, 100.0f);
         ImGui::DragFloat("DistFromOrigin", &state->scene.sun.dist_from_origin, 0.1f, 1.0f, 100.0f);
         ImGui::DragFloat3("Origin", state->scene.sun.origin_point._data, 0.1f, -10.0f, 10.0f);
-        state->scene.sun.direction = laml::transform::dir_from_yp(sun_yp[0], sun_yp[1]);
+        state->scene.sun.direction = laml::transform::dir_from_yp(state->sun_yp[0], state->sun_yp[1]);
         ImGui::ColorPicker3("Color", state->scene.sun.color._data);
         ImGui::TreePop();
     }
@@ -349,70 +397,6 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
 
     ImGui::End();
 
-    #if 0 // static strings don't work with dll reloading.
-    ImGui::Begin(state->saved_str1);
-    ImGui::Text(state->saved_str2);
-    ImGui::End();
-    #else
-    ImGui::Begin("AnimGraph");
-    ImGui::Text("node_time = %.3f", state->guy_controller.node_time);
-    ImGui::Text("anim_time = %.3f", state->guy_controller.anim_time);
-    ImGui::SeparatorText("Params");
-    for (uint32 n = 0; n < state->guy_controller.graph.num_params; n++) {
-        const anim_graph_param& param = state->guy_controller.graph.params[n];
-
-        switch (param.type) {
-            case param_type::PARAM_INT:   {
-                ImGui::Text("%-8s: [ int ] %d", param.name, param.curr_value.as_int);
-            } break;
-            case param_type::PARAM_FLOAT: {
-                ImGui::Text("%-8s: [float] %f", param.name, param.curr_value.as_float);
-            } break;
-        }
-    }
-    ImGui::SeparatorText("Nodes");
-    for (uint32 n = 0; n < state->guy_controller.graph.num_nodes; n++) {
-        const anim_graph_node& node = state->guy_controller.graph.nodes[n];
-
-        if (n == state->guy_controller.current_node) {
-            ImGui::Text(" * %s:'%s' - %d connections", node.name, node.anim->name, node.num_connections);
-        } else {
-            ImGui::Text("   %s:'%s' - %d connections", node.name, node.anim->name, node.num_connections);
-        }
-        for (uint32 c = 0; c < node.num_connections; c++) {
-            anim_graph_connection& con = node.connections[c];
-            anim_graph_param& param = state->guy_controller.graph.params[con.param];
-
-            if (con.trigger_type == trigger_type::TRIGGER_ALWAYS) {
-                ImGui::Text("     %d: -> '%s' by default", c, state->guy_controller.graph.nodes[con.node].name);
-            } else {
-
-                char* comp = "x";
-                switch (con.trigger_type) {
-                    case trigger_type::TRIGGER_EQ: { comp = " ="; } break;
-                    case trigger_type::TRIGGER_NEQ: { comp = "!="; } break;
-                    case trigger_type::TRIGGER_LT: { comp = " <"; } break;
-                    case trigger_type::TRIGGER_LEQ: { comp = "<="; } break;
-                    case trigger_type::TRIGGER_GT: { comp = " >"; } break;
-                    case trigger_type::TRIGGER_GEQ: { comp = ">="; } break;
-                }
-                char buffer[256] = { 0 };
-                switch (param.type) {
-                    case param_type::PARAM_INT: {
-                        string_build(buffer, 256, "%s %s %d", param.name, comp, con.trigger.as_int);
-                    } break;
-                    case param_type::PARAM_FLOAT: {
-                        string_build(buffer, 256, "%s %s %.2f", param.name, comp, con.trigger.as_int);
-                    } break;
-                }
-                ImGui::Text("     %d: -> '%s' if (%s)", c, state->guy_controller.graph.nodes[con.node].name, buffer);
-            }
-        }
-    }
-
-    ImGui::End();
-    #endif
-
     return &state->scene;
 }
 
@@ -421,6 +405,16 @@ GAME_API GAME_KEY_EVENT_FUNC(GameKeyEvent) {
 
     if (key_code == KEY_C) {
         state->debug_mode = !state->debug_mode;
+    } else if (key_code == KEY_BACKSPACE) {
+        // reset state
+        ((uint64*)state->scene.static_entities)[-1] = 2; // set count to 1 (just the floor + tower!)
+
+        state->num_spawned = 0;
+        state->level_time = 0.0f;
+        state->time_since_last_spawn = 0.0f;
+        for (uint32 n = 0; n < state->num_bloons_to_spawn; n++) {
+            state->bloon_pos[n] = 0.0f;
+        }
     }
 }
 

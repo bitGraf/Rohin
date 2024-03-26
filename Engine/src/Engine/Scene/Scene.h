@@ -9,7 +9,7 @@ struct entity_static {
     scene_3D* scene;
 
     char* name;
-    resource_static_mesh*  static_mesh;
+    const resource_static_mesh*  static_mesh;
     
     laml::Vec3 position;
     laml::Quat orientation;
@@ -22,8 +22,8 @@ struct entity_skinned {
     scene_3D* scene;
 
     char* name;
-    resource_skinned_mesh*  skinned_mesh;
-    animation_controller*   controller;
+    const resource_skinned_mesh*  skinned_mesh;
+    const animation_controller*   controller;
     
     laml::Vec3 position;
     laml::Quat orientation;

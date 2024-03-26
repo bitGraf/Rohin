@@ -193,6 +193,13 @@ bool32 game_initialize(RohinApp* app) {
     state->debug_camera.yaw   = 0.0f;
     state->debug_camera.roll  = 0.0f;
 
+    state->debug_camera.position    = laml::Vec3(0.0f, 9.0f, 8.0f);
+    state->debug_camera.orientation = laml::Quat(-0.52f, 0.00f, 0.00f, 0.85f);
+
+    laml::Mat4 rot(1.0f);
+    laml::transform::create_transform_rotation(rot, state->debug_camera.orientation);
+    laml::transform::decompose(rot, state->debug_camera.yaw, state->debug_camera.pitch, state->debug_camera.roll);
+
     return true;
 }
 
@@ -485,6 +492,7 @@ void copy_material(render_material* dst, const resource_material* src) {
     dst->AmbientStrength = src->AmbientStrength;
     dst->MetallicFactor  = src->MetallicFactor;
     dst->RoughnessFactor = src->RoughnessFactor;
+    dst->EmissiveFactor  = src->EmissiveFactor;
     dst->flag            = src->flag;
     dst->DiffuseTexture  = src->DiffuseTexture.texture;
     dst->NormalTexture   = src->NormalTexture.texture;
