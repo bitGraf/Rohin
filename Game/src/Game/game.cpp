@@ -25,31 +25,211 @@ struct bloon_path {
     real32 total_length;
 };
 
+enum class Bloon_Type : int8 { // no more than 255 bloon types!
+    NONE = 0,
+    RED,
+    BLUE,
+    GREEN,
+    YELLOW,
+    PINK,
+    BLACK,
+    WHITE,
+    PURPLE,
+    LEAD,
+    ZEBRA,
+    RAINBOW,
+    CERAMIC,
+    NUM_BLOON_TYPES
+};
+
+static const char* bloon_names[Bloon_Type::NUM_BLOON_TYPES] = {
+    "-",
+    "Red",
+    "Blue",
+    "Green",
+    "Yellow",
+    "Pink",
+    "Black",
+    "White",
+    "Purple",
+    "Lead",
+    "Zebra",
+    "Rainbow",
+    "Ceramic",
+};
+
+static const laml::Vec3 bloon_color[Bloon_Type::NUM_BLOON_TYPES] = {
+    laml::Vec3(),
+    laml::Vec3(1.0f, 0.0f, 0.0f),   // RED
+    laml::Vec3(0.0f, 0.0f, 1.0f),   // BLUE
+    laml::Vec3(0.0f, 1.0f, 0.0f),   // GREEN
+    laml::Vec3(1.0f, 1.0f, 0.0f),   // YELLOW
+    laml::Vec3(1.0f, 0.0f, 1.0f),   // PINK
+    laml::Vec3(0.0f, 0.0f, 0.0f),   // BLACK
+    laml::Vec3(1.0f, 1.0f, 1.0f),   // WHITE
+    laml::Vec3(0.7f, 0.4f, 0.8f),   // PURPLE
+    laml::Vec3(0.8f, 0.8f, 0.8f),   // LEAD
+    laml::Vec3(1.0f, 1.0f, 1.0f),   // ZEBRA
+    laml::Vec3(1.0f, 1.0f, 1.0f),   // RAINBOW
+    laml::Vec3(0.8f, 0.5f, 0.1f),   // CERAMIC
+};
+
+// bloon tags
+#define TAG_DEAD 0x8000
+
+struct bloon {
+    real32 speed;
+    real32 position; // parameter along the path.
+
+    uint16 rank; // total strength of bloon, including children
+    uint16 tags; // bit-field of various tags like magic,camo,fortified,etc.
+
+    Bloon_Type  type;
+    Bloon_Type  child_type;   // bloon type to spawn on pop
+    int8        health;       // health of the outer layer (usually 1)
+    int8        num_children; // num of children to spawn on pop
+}; // should be 16 bytes, no padding
+
+bloon* spawn_bloon(bloon* bloon_arr, real32 spawn_position, Bloon_Type type) {
+    bloon new_bloon;
+    new_bloon.position = spawn_position;
+    new_bloon.type = type;
+    
+    switch (type) {
+        case Bloon_Type::RED:  {
+            new_bloon.speed = 1.0f;
+            new_bloon.rank = 1;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::NONE;
+            new_bloon.num_children = 0;
+        } break;
+        case Bloon_Type::BLUE: {
+            new_bloon.speed = 1.4f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::RED;
+            new_bloon.num_children = 1;
+        } break;
+        case Bloon_Type::GREEN: {
+            new_bloon.speed = 1.8f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::BLUE;
+            new_bloon.num_children = 1;
+        } break;
+        case Bloon_Type::YELLOW: {
+            new_bloon.speed = 3.2f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::GREEN;
+            new_bloon.num_children = 1;
+        } break;
+        case Bloon_Type::PINK: {
+            new_bloon.speed = 3.5f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::YELLOW;
+            new_bloon.num_children = 1;
+        } break;
+        case Bloon_Type::BLACK: {
+            new_bloon.speed = 1.8f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::PINK;
+            new_bloon.num_children = 2;
+        } break;
+        case Bloon_Type::WHITE: {
+            new_bloon.speed = 2.0f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::PINK;
+            new_bloon.num_children = 2;
+        } break;
+        case Bloon_Type::PURPLE: {
+            new_bloon.speed = 3.0f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::PINK;
+            new_bloon.num_children = 2;
+        } break;
+        case Bloon_Type::LEAD: {
+            new_bloon.speed = 1.0f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::BLACK;
+            new_bloon.num_children = 2;
+        } break;
+        case Bloon_Type::ZEBRA: {
+            new_bloon.speed = 1.8f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            //new_bloon.child_type = Bloon_Type::WHITE_AND_BLACK;
+            new_bloon.child_type = Bloon_Type::WHITE;
+            new_bloon.num_children = 2;
+        } break;
+        case Bloon_Type::RAINBOW: {
+            new_bloon.speed = 2.2f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::ZEBRA;
+            new_bloon.num_children = 2;
+        } break;
+        case Bloon_Type::CERAMIC: {
+            new_bloon.speed = 2.5f;
+            new_bloon.rank = 2;
+            new_bloon.tags = 0;
+            new_bloon.health = 1;
+            new_bloon.child_type = Bloon_Type::RAINBOW;
+            new_bloon.num_children = 2;
+        } break;
+    };
+
+    ArrayPushValue(bloon_arr, new_bloon);
+
+    return ArrayPeek(bloon_arr);
+}
+
 struct game_state {
     memory_arena arena;
 
     // basic scene
     scene_3D scene;
 
-    bloon_path path;
+    resource_static_mesh bloon_mesh;
+    resource_static_mesh tower_mesh;
+
+    bool32 debug_mode;
+    real32 sun_yp[2];
+
+
+    /////
+    memory_arena bloon_arena;
     real32 level_time;
+    real32 game_speed;
+    bool paused;
+
+    uint64 bloon_arena_size;
+    bloon* bloons; // dynarray
+
+    bloon_path path;
+
     real32 time_since_last_spawn;
     real32 spawn_rate;
     uint32 num_bloons_to_spawn;
     uint32 num_spawned;
-    laml::Vec3 spawn_location;
-    entity_static* bloons;
 
-    resource_static_mesh bloon_mesh;
-    resource_static_mesh tower_mesh;
-
-    real32 bloon_speed;
-    real32* bloon_pos;
-    real32 game_speed;
-
-    bool32 debug_mode;
-
-    real32 sun_yp[2];
+    real32 kill_cd;
 };
 
 bool32 controller_key_press(uint16 code, void* sender, void* listener, event_context context);
@@ -89,6 +269,20 @@ static laml::Vec3 path[] = {
 };
 
 void init_game(game_state* state, game_memory* memory) {
+    ////////////////////////////////////////
+    RH_WARN("bloon: %llu bytes", sizeof(bloon));
+    RH_WARN(".speed:  %llu|%llu", sizeof(bloon::speed),        offsetof(bloon, speed));
+    RH_WARN(".pos:    %llu|%llu", sizeof(bloon::position),     offsetof(bloon, position));
+    RH_WARN(".rank:   %llu|%llu", sizeof(bloon::rank),         offsetof(bloon, rank));
+    RH_WARN(".tags:   %llu|%llu", sizeof(bloon::tags),         offsetof(bloon, tags));
+    RH_WARN(".type:   %llu|%llu", sizeof(bloon::type),         offsetof(bloon, type));
+    RH_WARN(".child:  %llu|%llu", sizeof(bloon::child_type),   offsetof(bloon, child_type));
+    RH_WARN(".health: %llu|%llu", sizeof(bloon::health),       offsetof(bloon, health));
+    RH_WARN(".num:    %llu|%llu", sizeof(bloon::num_children), offsetof(bloon, num_children));
+
+    RH_WARN("entity_static: %llu bytes", sizeof(entity_static));
+    ///////////////////////////////////////
+
     memory_index offset = sizeof(game_state);
     CreateArena(&state->arena, memory->GameStorageSize-offset, (uint8*)(memory->GameStorage)+offset);
 
@@ -99,14 +293,40 @@ void init_game(game_state* state, game_memory* memory) {
     state->bloon_mesh.materials[0].RoughnessFactor = 0.0f;
     resource_load_static_mesh("Data/Models/tower.mesh", &state->tower_mesh);
 
+    // allocate memory for bloons
+    uint64 INITIAL_RESERVE = 50'000;
+    state->bloon_arena_size = INITIAL_RESERVE * sizeof(bloon);
+    uint8* bloon_arena_data = (uint8*)PushSize_(&state->arena, state->bloon_arena_size);
+    CreateArena(&state->bloon_arena, state->bloon_arena_size, bloon_arena_data);
+    state->bloons = CreateArray(&state->bloon_arena, bloon, INITIAL_RESERVE-2);
+
+    create_scene(&state->scene, "basic_scene", &state->arena);
+    ArrayReserve(state->scene.static_entities, INITIAL_RESERVE);
+
+    // define basic scene
+    state->scene.sun.direction = laml::normalize(laml::Vec3(1.5f, -1.0f, -1.0f));
+    state->scene.sun.enabled = true;
+    state->scene.sun.cast_shadow = true;
+    state->scene.sun.strength = 20.0f;
+    state->scene.sun.shadowmap_projection_size = 15.0f;
+    state->scene.sun.shadowmap_projection_depth = 25.0f;
+    state->scene.sun.dist_from_origin = 12.5f;
+
+    laml::Mat4 rot(1.0f);
+    laml::transform::lookAt(rot, laml::Vec3(0.0f), state->scene.sun.direction, laml::Vec3(0.0f, 1.0f, 0.0f));
+    //laml::transform::create_transform_rotation(rot, state->debug_camera.orientation);
+    real32 roll;
+    laml::transform::decompose(rot, state->sun_yp[0], state->sun_yp[0], roll);
+
+    resource_load_env_map("Data/env_maps/newport_loft.hdr", &state->scene.sky.environment);
+    state->scene.sky.draw_skybox = false;
+
     // define bloon stats
     state->num_bloons_to_spawn = 30;
     state->num_spawned = 0;
     state->spawn_rate = 0.5f;
     state->time_since_last_spawn = 0.0f;
-    state->spawn_location = laml::Vec3(-10.0f, 0.5f, 0.0f);
-    state->bloon_speed = 1.5f;
-    state->game_speed = 1.0f;
+    state->game_speed = 3.0f;
 
     bloon_path bp;
     bp.nodes = path;
@@ -125,45 +345,48 @@ void init_game(game_state* state, game_memory* memory) {
     RH_INFO("Total length: %.2f m", bp.total_length);
     state->path = bp;
 
-    state->bloon_pos = PushArray(&state->arena, real32, state->num_bloons_to_spawn);
-    memory_zero(state->bloon_pos, sizeof(real32)*state->num_bloons_to_spawn);
-
-    // define basic scene
-    create_scene(&state->scene, "basic_scene", &state->arena);
-
-    state->scene.sun.direction = laml::normalize(laml::Vec3(1.5f, -1.0f, -1.0f));
-    state->scene.sun.enabled = true;
-    state->scene.sun.cast_shadow = true;
-    state->scene.sun.strength = 20.0f;
-    state->scene.sun.shadowmap_projection_size = 15.0f;
-    state->scene.sun.shadowmap_projection_depth = 25.0f;
-    state->scene.sun.dist_from_origin = 12.5f;
-
-    laml::Mat4 rot(1.0f);
-    laml::transform::lookAt(rot, laml::Vec3(0.0f), state->scene.sun.direction, laml::Vec3(0.0f, 1.0f, 0.0f));
-    //laml::transform::create_transform_rotation(rot, state->debug_camera.orientation);
-    real32 roll;
-    laml::transform::decompose(rot, state->sun_yp[0], state->sun_yp[0], roll);
-
-    resource_load_env_map("Data/env_maps/newport_loft.hdr", &state->scene.sky.environment);
-    state->scene.sky.draw_skybox = false;
-
-    ArrayReserve(state->scene.static_entities, state->num_bloons_to_spawn+1);
-
     resource_static_mesh* mesh = PushStruct(&state->arena, resource_static_mesh);
     resource_load_static_mesh("Data/Models/plane.mesh", mesh);
     mesh->materials[0].RoughnessFactor = 0.95f; // todo: pull materials out of mesh file? make it a separate thing entirely?
     mesh->materials[0].MetallicFactor = 0.0f;
-    create_static_entity(&state->scene, "floor", mesh);
+    entity_static* floor = create_static_entity(&state->scene, "floor", mesh);
+    floor->color = laml::Vec3(1.0f);
 
     entity_static* ent = create_static_entity(&state->scene, "tower", &state->tower_mesh);
     ent->position = laml::Vec3(-4.5f, 0.0f, -4.5f);
+    ent->color = laml::Vec3(1.0f);
 
     RH_INFO("Scene created. %d Static entities. %d Skinned entities.",
             GetArrayCount(state->scene.static_entities),
             GetArrayCount(state->scene.skinned_entities));
 
     RH_INFO("Game initialized");
+
+    state->kill_cd = 0.0f;
+    spawn_bloon(state->bloons, 0, Bloon_Type::CERAMIC);
+
+    state->paused = true;
+}
+
+// Silly way right now! basically recursively spawn/damage bloons
+void damage_bloon(bloon* bloons_arr, bloon* b, int8 dmg) {
+    b->health -= dmg;
+
+    // check if bloon is dead
+    if (b->health <= 0) {
+        int8 overkill = -b->health;
+
+        RH_INFO("%s bloon popped!", bloon_names[(int8)b->type]);
+        if (b->child_type != Bloon_Type::NONE) {
+            RH_INFO("Spawning %d %s bloons!", b->num_children, bloon_names[(int8)b->child_type]);
+            for (int8 c = 0; c < b->num_children; c++) {
+                bloon* child = spawn_bloon(bloons_arr, b->position - 0.1f*c, b->child_type);
+                damage_bloon(bloons_arr, child, overkill);
+            }
+        }
+
+        b->tags |= TAG_DEAD;
+    }
 }
 
 GAME_API GAME_UPDATE_FUNC(GameUpdate) {
@@ -175,10 +398,14 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
 
         RH_INFO("------ Scene Initialized -----------------------");
     }
-    delta_time *= state->game_speed;
+    if (state->paused)
+        delta_time *= 0.0f;
+    else
+        delta_time *= state->game_speed;
 
     state->level_time += delta_time;
     state->time_since_last_spawn += delta_time;
+    state->kill_cd += delta_time;
 
     // check if bloon needs to be spawned
     while ((state->num_spawned < state->num_bloons_to_spawn) && (state->time_since_last_spawn > state->spawn_rate)) {
@@ -186,29 +413,76 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
         state->num_spawned++;
         state->time_since_last_spawn -= state->spawn_rate;
 
-        RH_INFO("Spawning bloon %u/%u!", state->num_spawned, state->num_bloons_to_spawn);
-
-        entity_static* bloon = create_static_entity(&state->scene, "bloon", &state->bloon_mesh);
-        bloon->position = state->path.nodes[0];
-        bloon->scale = laml::Vec3(0.3f, 0.3f, 0.3f);
+        Bloon_Type type;
+        if (state->num_spawned > 15) {
+            type = Bloon_Type::BLUE;
+        } else {
+            type = Bloon_Type::RED;
+        }
+        //RH_INFO("Spawning %s bloon %u/%u!", bloon_names[(int8)type], state->num_spawned, state->num_bloons_to_spawn);
+        //spawn_bloon(state->bloons, 0.0f, type);
     }
 
     // update all bloons
-    uint32 curr_num_entities = (uint32)GetArrayCount(state->scene.static_entities);
-    uint32 bloon_idx = 0;
-    for (uint32 n = 0; n < curr_num_entities; n++) {
-        entity_static* bloon = &state->scene.static_entities[n];
-        if (string_compare(bloon->name, "bloon") != 0) continue;
 
-        state->bloon_pos[bloon_idx] += state->bloon_speed*delta_time;
-        real32 pos = state->bloon_pos[bloon_idx];
+    // 1. get total count of bloons. This will include bloons marked as popped.
+    //    We cache this now, so even if we spawn new ones, they would be after
+    //    all the existing bloons, so we wouldn't update them just yet anyway
+    uint32 num_bloons = (uint32)GetArrayCount(state->bloons);
+    ((uint64*)state->scene.static_entities)[-1] = 2; // set count to 2 (just the floor + tower!)
 
-        if (pos > state->path.total_length) {
+    // kill the strongest bloon
+    uint32 strongest_idx  = 0;
+    int8   strongest_type = 0;
+    real32 strongest_pos  = 0.0f;
+    for (uint32 n = 0; n < num_bloons; n++) {
+        bloon* b = &state->bloons[n];
+        if (b->tags & TAG_DEAD) continue;
+
+        if ((int8)b->type >= strongest_type && b->position > strongest_pos) {
+            strongest_type = (int8)b->type;
+            strongest_idx = n;
+            strongest_pos = b->position;
+        }
+    }
+
+    uint32 num_alive = 0;
+    for (uint32 n = 0; n < num_bloons; n++) {
+        bloon* b = &state->bloons[n];
+        if (b->tags & TAG_DEAD) continue;
+
+        num_alive++;
+
+        b->position += b->speed * delta_time;
+
+        // tmp! do 1 damage after distance of 25 to blues
+        if (b->position > 3.0f && n == strongest_idx && (int8)b->type == strongest_type && (state->kill_cd > 1.0f)) {
+            damage_bloon(state->bloons, b, 2);
+            state->kill_cd = 0.0f;
+        }
+
+        if (b->tags & TAG_DEAD) continue; // it might be dead now!
+
+        entity_static* ent = create_static_entity(&state->scene, "-", &state->bloon_mesh);
+        ent->scale = laml::Vec3(0.3f, 0.3f, 0.3f);
+        ent->color = bloon_color[(int8)b->type];
+        // todo: make entities instances of meshes intead of meshes themselves
+        // todo: separate mesh and material?
+        // todo: do this entire things differently.
+
+        if (b->position > state->path.total_length) {
             // 'kill it'
-            bloon->position = laml::Vec3(100.0f, 0.0f, 0.0f);
+            ent->position = laml::Vec3(100.0f, 0.0f, 0.0f);
+            b->tags |= TAG_DEAD;
+
+            // calculate bloon total and subtract from life
+            RH_WARN("%s bloon leaked!", bloon_names[(int8)b->type]);
         } else {
+            // really bad lookup of the entire path to find the two relevant
+            // nodes. should cache these or something.
             uint32 idx = 0;
             real32 f = 0.0f;
+            real32 pos = b->position;
             for (uint32 i = 0; i < (state->path.num_nodes - 1); i++) {
                 real32 left  = state->path.path_distance[i];
                 real32 right = state->path.path_distance[i+1];
@@ -220,13 +494,17 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
                 }
             }
 
-            bloon->position = (state->path.nodes[idx] * (1.0f-f)) + (state->path.nodes[idx+1] * f);
+            ent->position = (state->path.nodes[idx] * (1.0f-f)) + (state->path.nodes[idx+1] * f);
         }
-
-        bloon_idx++;
     }
 
+    ImGui::Begin("Count");
+    ImGui::Text("num_bloons = %d", num_bloons);
+    ImGui::Text("num_alive  = %d", num_alive);
+    ImGui::End();
+
     // update the tower
+    #if 0
     for (uint32 n = 0; n < curr_num_entities; n++) {
         entity_static* tower = &state->scene.static_entities[n];
         if (string_compare(tower->name, "tower") != 0) continue;
@@ -261,6 +539,7 @@ GAME_API GAME_UPDATE_FUNC(GameUpdate) {
             tower->orientation = laml::transform::quat_from_mat(laml::mul(offset, tower_rot));
         }
     }
+    #endif
 
     ImGui::Begin("Bloons");
     ImGui::Text("LevelTime:  %.2f", state->level_time);
@@ -405,16 +684,9 @@ GAME_API GAME_KEY_EVENT_FUNC(GameKeyEvent) {
 
     if (key_code == KEY_C) {
         state->debug_mode = !state->debug_mode;
-    } else if (key_code == KEY_BACKSPACE) {
-        // reset state
-        ((uint64*)state->scene.static_entities)[-1] = 2; // set count to 1 (just the floor + tower!)
-
-        state->num_spawned = 0;
-        state->level_time = 0.0f;
-        state->time_since_last_spawn = 0.0f;
-        for (uint32 n = 0; n < state->num_bloons_to_spawn; n++) {
-            state->bloon_pos[n] = 0.0f;
-        }
+    } else if (key_code == KEY_P) {
+        state->paused = !state->paused;
+        RH_INFO("Game %s.", state->paused ? "paused" : "unpaused");
     }
 }
 

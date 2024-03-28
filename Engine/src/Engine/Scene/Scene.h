@@ -16,6 +16,9 @@ struct entity_static {
     laml::Vec3 scale;
 
     real32 euler_ypr[3];
+
+    // tmp!
+    laml::Vec3 color;
 };
 
 struct entity_skinned {
@@ -23,7 +26,7 @@ struct entity_skinned {
 
     char* name;
     const resource_skinned_mesh*  skinned_mesh;
-    const animation_controller*   controller;
+    animation_controller*   controller;
     
     laml::Vec3 position;
     laml::Quat orientation;

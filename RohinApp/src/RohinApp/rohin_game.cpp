@@ -217,7 +217,8 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
         state->game = LoadGameCode(libgame_filename, loaded_libgame_filename, lock_filename);
     }
 
-    state->current_scene = state->game.GameUpdate(&state->memory, packet, delta_time);
+
+    state->current_scene = state->game.GameUpdate(&state->memory, packet, (delta_time > 0.1f) ? 0.1f : delta_time);
 
     // Create ImGui window
     ImGui::Begin("RohinGame");
@@ -337,6 +338,9 @@ bool32 game_update_and_render(RohinApp* app, render_packet* packet, real32 delta
 
                 // copy resource_material to render_material
                 copy_material(&cmd.material, &mesh->materials[p]);
+
+                // tmp! bloon color
+                cmd.material.DiffuseFactor = entity.color;
 
                 cmd.skeleton_idx = 0;
 
